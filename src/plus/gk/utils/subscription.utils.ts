@@ -189,7 +189,7 @@ export function isSubscriptionTrial(subscription: Optional<Subscription, 'state'
 }
 
 export function isSubscriptionTrialOrPaidFromState(state: SubscriptionState | undefined): boolean {
-	return state != null ? state === SubscriptionState.Trial || state === SubscriptionState.Paid : false;
+	return state === SubscriptionState.Paid;
 }
 
 export function assertSubscriptionState(
