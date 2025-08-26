@@ -98,21 +98,21 @@ function getBranchDecoration(uri: Uri, _token: CancellationToken): FileDecoratio
 			decoration = {
 				badge: GlyphChars.Warning,
 				color: new ThemeColor('gitlens.decorations.branchMissingUpstreamForegroundColor' satisfies Colors),
-				tooltip: 'Missing Upstream',
+				tooltip: '缺少上游分支',
 			};
 			break;
 		case 'upToDate':
 			decoration = {
 				badge: '\u00a0\u00a0',
 				color: new ThemeColor('gitlens.decorations.branchUpToDateForegroundColor' satisfies Colors),
-				tooltip: 'Up to Date',
+				tooltip: '已是最新',
 			};
 			break;
 		case 'unpublished':
 			decoration = {
 				badge: '\u00a0\u00a0',
 				color: new ThemeColor('gitlens.decorations.branchUnpublishedForegroundColor' satisfies Colors),
-				tooltip: 'Unpublished',
+				tooltip: '未发布',
 			};
 			break;
 		default:
@@ -126,7 +126,7 @@ function getBranchDecoration(uri: Uri, _token: CancellationToken): FileDecoratio
 		return {
 			...decoration,
 			badge: GlyphChars.Bullseye,
-			tooltip: 'Current',
+			tooltip: '当前',
 		};
 	}
 
@@ -134,7 +134,7 @@ function getBranchDecoration(uri: Uri, _token: CancellationToken): FileDecoratio
 		return {
 			...decoration,
 			badge: '●',
-			tooltip: 'Opened Worktree',
+			tooltip: '已打开的工作树',
 		};
 	}
 

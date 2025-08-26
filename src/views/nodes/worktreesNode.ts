@@ -78,7 +78,7 @@ export class WorktreesNode extends CacheableChildrenViewNode<'worktrees', ViewsW
 		const access = await this.repo.access('worktrees');
 
 		const item = new TreeItem(
-			'Worktrees',
+			'工作树',
 			access.allowed ? TreeItemCollapsibleState.Collapsed : TreeItemCollapsibleState.None,
 		);
 		item.id = this.id;

@@ -3,7 +3,7 @@
 	"version": 1,
 	"commands": {
 		"gitlens.addAuthors": {
-			"label": "Add Co-authors...",
+			"label": "添加协作者...",
 			"icon": "$(person-add)",
 			"commandPalette": "gitlens:enabled && !gitlens:readonly && !gitlens:untrusted && !gitlens:hasVirtualFolders",
 			"menus": {
@@ -24,11 +24,11 @@
 			}
 		},
 		"gitlens.ai.explainBranch": {
-			"label": "Explain Branch Changes (Preview)...",
+			"label": "解释分支更改（预览）...",
 			"commandPalette": "gitlens:enabled && !gitlens:readonly && !gitlens:untrusted && gitlens:gk:organization:ai:enabled"
 		},
 		"gitlens.ai.explainBranch:graph": {
-			"label": "Explain Branch Changes (Preview)",
+			"label": "解释分支更改（预览）",
 			"icon": "$(sparkle)",
 			"menus": {
 				"webview/context": [
@@ -41,7 +41,7 @@
 			}
 		},
 		"gitlens.ai.explainBranch:views": {
-			"label": "Explain Branch Changes (Preview)",
+			"label": "解释分支更改（预览）",
 			"icon": "$(sparkle)",
 			"menus": {
 				"view/item/context": [
@@ -54,11 +54,11 @@
 			}
 		},
 		"gitlens.ai.explainCommit": {
-			"label": "Explain Commit Changes (Preview)...",
+			"label": "解释提交更改（预览）...",
 			"commandPalette": "gitlens:enabled && !gitlens:readonly && !gitlens:untrusted && gitlens:gk:organization:ai:enabled"
 		},
 		"gitlens.ai.explainCommit:graph": {
-			"label": "Explain Changes (Preview)",
+			"label": "解释更改（预览）",
 			"icon": "$(sparkle)",
 			"menus": {
 				"webview/context": [
@@ -71,7 +71,7 @@
 			}
 		},
 		"gitlens.ai.explainCommit:views": {
-			"label": "Explain Changes (Preview)",
+			"label": "解释更改（预览）",
 			"icon": "$(sparkle)",
 			"menus": {
 				"view/item/context": [
@@ -84,11 +84,11 @@
 			}
 		},
 		"gitlens.ai.explainStash": {
-			"label": "Explain Stash Changes (Preview)...",
+			"label": "解释储藏更改（预览）...",
 			"commandPalette": "gitlens:enabled && !gitlens:readonly && !gitlens:untrusted && gitlens:gk:organization:ai:enabled"
 		},
 		"gitlens.ai.explainStash:graph": {
-			"label": "Explain Changes (Preview)",
+			"label": "解释更改（预览）",
 			"icon": "$(sparkle)",
 			"menus": {
 				"webview/context": [
@@ -101,7 +101,7 @@
 			}
 		},
 		"gitlens.ai.explainStash:views": {
-			"label": "Explain Changes (Preview)",
+			"label": "解释更改（预览）",
 			"icon": "$(sparkle)",
 			"menus": {
 				"view/item/context": [
@@ -114,11 +114,11 @@
 			}
 		},
 		"gitlens.ai.explainWip": {
-			"label": "Explain Working Changes (Preview)...",
+			"label": "解释工作更改（预览）...",
 			"commandPalette": "gitlens:enabled && !gitlens:readonly && !gitlens:untrusted && gitlens:gk:organization:ai:enabled"
 		},
 		"gitlens.ai.explainWip:graph": {
-			"label": "Explain Working Changes (Preview)",
+			"label": "解释工作更改（预览）",
 			"icon": "$(sparkle)",
 			"menus": {
 				"webview/context": [
@@ -131,7 +131,7 @@
 			}
 		},
 		"gitlens.ai.explainWip:views": {
-			"label": "Explain Working Changes (Preview)",
+			"label": "解释工作更改（预览）",
 			"icon": "$(sparkle)",
 			"menus": {
 				"view/item/context": [
@@ -144,7 +144,7 @@
 			}
 		},
 		"gitlens.ai.feedback.helpful": {
-			"label": "Helpful",
+			"label": "有帮助",
 			"icon": "$(thumbsup)",
 			"menus": {
 				"editor/title": [
@@ -162,7 +162,7 @@
 			}
 		},
 		"gitlens.ai.feedback.helpful.chosen": {
-			"label": "Helpful",
+			"label": "有帮助",
 			"icon": "$(thumbsup-filled)",
 			"menus": {
 				"editor/title": [
@@ -180,7 +180,7 @@
 			}
 		},
 		"gitlens.ai.feedback.unhelpful": {
-			"label": "Unhelpful",
+			"label": "无帮助",
 			"icon": "$(thumbsdown)",
 			"menus": {
 				"editor/title": [
@@ -198,7 +198,7 @@
 			}
 		},
 		"gitlens.ai.feedback.unhelpful.chosen": {
-			"label": "Unhelpful",
+			"label": "无帮助",
 			"icon": "$(thumbsdown-filled)",
 			"menus": {
 				"editor/title": [
@@ -216,11 +216,11 @@
 			}
 		},
 		"gitlens.ai.generateChangelog": {
-			"label": "Generate Changelog (Preview)...",
+			"label": "生成更改日志（预览）...",
 			"commandPalette": "gitlens:enabled && !gitlens:untrusted && gitlens:gk:organization:ai:enabled"
 		},
 		"gitlens.ai.generateChangelog:views": {
-			"label": "Generate Changelog (Preview)",
+			"label": "生成更改日志（预览）",
 			"icon": "$(sparkle)",
 			"menus": {
 				"view/item/context": [
@@ -238,7 +238,7 @@
 			}
 		},
 		"gitlens.ai.generateChangelogFrom:graph": {
-			"label": "Generate Changelog (Preview)...",
+			"label": "生成更改日志（预览）...",
 			"icon": "$(sparkle)",
 			"menus": {
 				"webview/context": [
@@ -251,7 +251,7 @@
 			}
 		},
 		"gitlens.ai.generateChangelogFrom:views": {
-			"label": "Generate Changelog (Preview)...",
+			"label": "生成更改日志（预览）...",
 			"icon": "$(sparkle)",
 			"menus": {
 				"view/item/context": [
@@ -264,11 +264,11 @@
 			}
 		},
 		"gitlens.ai.generateCommitMessage": {
-			"label": "Generate Commit Message",
+			"label": "生成提交消息",
 			"commandPalette": "gitlens:enabled && !gitlens:readonly && !gitlens:untrusted && gitlens:gk:organization:ai:enabled"
 		},
 		"gitlens.ai.generateCommitMessage:graph": {
-			"label": "Generate Commit Message",
+			"label": "生成提交消息",
 			"menus": {
 				"webview/context": [
 					{
@@ -280,7 +280,7 @@
 			}
 		},
 		"gitlens.ai.generateCommitMessage:scm": {
-			"label": "Generate Commit Message with GitLens",
+			"label": "使用 GitLens 生成提交消息",
 			"icon": "$(sparkle)",
 			"menus": {
 				"git.commit": [
@@ -307,12 +307,12 @@
 			}
 		},
 		"gitlens.ai.generateRebase": {
-			"label": "Rebase with AI (Preview)...",
+			"label": "使用 AI 重基（预览）...",
 			"icon": "$(sparkle)",
 			"commandPalette": "gitlens:enabled && !gitlens:untrusted && gitlens:gk:organization:ai:enabled"
 		},
 		"gitlens.ai.rebaseOntoCommit:graph": {
-			"label": "AI Rebase Current Branch onto Commit (Preview)...",
+			"label": "AI 将当前分支重基到提交（预览）...",
 			"icon": "$(sparkle)",
 			"enablement": "!operationInProgress",
 			"menus": {
@@ -326,7 +326,7 @@
 			}
 		},
 		"gitlens.ai.rebaseOntoCommit:views": {
-			"label": "AI Rebase Current Branch onto Commit (Preview)...",
+			"label": "AI 将当前分支重基到提交（预览）...",
 			"icon": "$(sparkle)",
 			"enablement": "!operationInProgress",
 			"menus": {
@@ -347,11 +347,11 @@
 			}
 		},
 		"gitlens.ai.switchProvider": {
-			"label": "Switch AI Provider/Model...",
+			"label": "切换 AI 提供商/模型...",
 			"commandPalette": "gitlens:enabled && gitlens:gk:organization:ai:enabled"
 		},
 		"gitlens.ai.switchProvider:scm": {
-			"label": "Switch GitLens AI Provider/Model...",
+			"label": "切换 GitLens AI 提供商/模型...",
 			"menus": {
 				"gitlens/scm/title/ai": [
 					{
@@ -363,55 +363,55 @@
 			}
 		},
 		"gitlens.ai.undoGenerateRebase": {
-			"label": "Undo AI Generated Changes (Preview)...",
+			"label": "撤销 AI 生成的更改（预览）...",
 			"icon": "$(discard)"
 		},
 		"gitlens.annotations.nextChange": {
-			"label": "Next Change",
+			"label": "下一个更改",
 			"icon": "$(arrow-down)"
 		},
 		"gitlens.annotations.previousChange": {
-			"label": "Previous Change",
+			"label": "上一个更改",
 			"icon": "$(arrow-up)"
 		},
 		"gitlens.applyPatchFromClipboard": {
-			"label": "Apply Copied Changes (Patch)",
+			"label": "应用复制的更改（补丁）",
 			"commandPalette": "gitlens:enabled && !gitlens:untrusted && !gitlens:hasVirtualFolders"
 		},
 		"gitlens.associateIssueWithBranch": {
-			"label": "Associate Issue with Branch...",
+			"label": "将问题与分支关联...",
 			"commandPalette": "gitlens:enabled && !gitlens:readonly && !gitlens:untrusted && !gitlens:hasVirtualFolders"
 		},
 		"gitlens.browseRepoAtRevision": {
-			"label": "Browse Repository from Revision",
+			"label": "从版本浏览仓库",
 			"icon": "$(folder-opened)",
 			"enablement": "gitlens:enabled && resourceScheme =~ /^(gitlens|pr)$/",
 			"commandPalette": "!gitlens:hasVirtualFolders && gitlens:enabled && resourceScheme =~ /^(gitlens|git|pr)$/"
 		},
 		"gitlens.browseRepoAtRevisionInNewWindow": {
-			"label": "Browse Repository from Revision in New Window",
+			"label": "在新窗口中从版本浏览仓库",
 			"icon": "$(folder-opened)",
 			"enablement": "gitlens:enabled && resourceScheme =~ /^(gitlens|pr)$/",
 			"commandPalette": "!gitlens:hasVirtualFolders && gitlens:enabled && resourceScheme =~ /^(gitlens|git|pr)$/"
 		},
 		"gitlens.browseRepoBeforeRevision": {
-			"label": "Browse Repository from Before Revision",
+			"label": "从版本之前浏览仓库",
 			"icon": "$(folder-opened)",
 			"enablement": "gitlens:enabled && resourceScheme =~ /^(gitlens|pr)$/",
 			"commandPalette": "!gitlens:hasVirtualFolders && gitlens:enabled && resourceScheme =~ /^(gitlens|git|pr)$/"
 		},
 		"gitlens.browseRepoBeforeRevisionInNewWindow": {
-			"label": "Browse Repository from Before Revision in New Window",
+			"label": "在新窗口中从版本之前浏览仓库",
 			"icon": "$(folder-opened)",
 			"enablement": "gitlens:enabled && resourceScheme =~ /^(gitlens|pr)$/",
 			"commandPalette": "!gitlens:hasVirtualFolders && gitlens:enabled && resourceScheme =~ /^(gitlens|git|pr)$/"
 		},
 		"gitlens.changeBranchMergeTarget": {
-			"label": "Change Branch Merge Target",
+			"label": "更改分支合并目标",
 			"commandPalette": "gitlens:enabled && !gitlens:readonly && !gitlens:untrusted && !gitlens:hasVirtualFolders"
 		},
 		"gitlens.changeUpstream:graph": {
-			"label": "Change Upstream...",
+			"label": "更改上游...",
 			"icon": "$(link)",
 			"enablement": "!operationInProgress",
 			"menus": {
@@ -425,7 +425,7 @@
 			}
 		},
 		"gitlens.changeUpstream:views": {
-			"label": "Change Upstream...",
+			"label": "更改上游...",
 			"icon": "$(link)",
 			"enablement": "!operationInProgress",
 			"menus": {
@@ -439,7 +439,7 @@
 			}
 		},
 		"gitlens.clearFileAnnotations": {
-			"label": "Clear File Annotations",
+			"label": "清除文件注释",
 			"icon": "$(gitlens-gitlens-filled)",
 			"commandPalette": "resource in gitlens:tabs:blameable && (gitlens:window:annotated || resource in gitlens:tabs:annotated)",
 			"menus": {
@@ -460,7 +460,7 @@
 			}
 		},
 		"gitlens.closeUnchangedFiles": {
-			"label": "Close Unchanged Files",
+			"label": "关闭未更改的文件",
 			"commandPalette": "gitlens:enabled",
 			"menus": {
 				"scm/resourceGroup/context": [
@@ -473,27 +473,27 @@
 			}
 		},
 		"gitlens.compareHeadWith": {
-			"label": "Compare HEAD with...",
+			"label": "将 HEAD 与...比较",
 			"icon": "$(compare-changes)",
 			"commandPalette": "gitlens:enabled"
 		},
 		"gitlens.compareWith": {
-			"label": "Compare References...",
+			"label": "比较引用...",
 			"icon": "$(compare-changes)",
 			"commandPalette": "gitlens:enabled"
 		},
 		"gitlens.compareWorkingWith": {
-			"label": "Compare Working Tree with...",
+			"label": "将工作树与...比较",
 			"icon": "$(compare-changes)",
 			"commandPalette": "gitlens:enabled && !gitlens:hasVirtualFolders"
 		},
 		"gitlens.composeCommits": {
-			"label": "Compose Commits (Preview)...",
+			"label": "组合提交（预览）...",
 			"icon": "$(sparkle)",
 			"commandPalette": "gitlens:enabled && !gitlens:readonly && !gitlens:untrusted"
 		},
 		"gitlens.composeCommits:graph": {
-			"label": "Compose Commits (Preview)...",
+			"label": "组合提交（预览）...",
 			"icon": "$(sparkle)",
 			"menus": {
 				"webview/context": [
@@ -506,7 +506,7 @@
 			}
 		},
 		"gitlens.composeCommits:scm": {
-			"label": "Compose Commits (Preview)...",
+			"label": "组合提交（预览）...",
 			"icon": "$(sparkle)",
 			"menus": {
 				"git.commit": [
@@ -547,7 +547,7 @@
 			}
 		},
 		"gitlens.composeCommits:views": {
-			"label": "Compose Commits (Preview)...",
+			"label": "组合提交（预览）...",
 			"icon": "$(sparkle)",
 			"menus": {
 				"view/item/context": [
@@ -560,7 +560,7 @@
 			}
 		},
 		"gitlens.composer.refresh": {
-			"label": "Refresh",
+			"label": "刷新",
 			"icon": "$(refresh)",
 			"menus": {
 				"editor/title": [
@@ -573,7 +573,7 @@
 			}
 		},
 		"gitlens.computingFileAnnotations": {
-			"label": "Computing File Annotations...",
+			"label": "计算文件注释...",
 			"icon": "$(gitlens-gitlens-filled)",
 			"menus": {
 				"editor/title": [
@@ -586,7 +586,7 @@
 			}
 		},
 		"gitlens.connectRemoteProvider": {
-			"label": "Connect Remote Integration",
+			"label": "连接远程集成",
 			"icon": "$(plug)",
 			"commandPalette": "config.gitlens.integrations.enabled && gitlens:repos:withHostingIntegrations && !gitlens:repos:withHostingIntegrationsConnected",
 			"menus": {
@@ -615,12 +615,12 @@
 			}
 		},
 		"gitlens.copyCurrentBranch": {
-			"label": "Copy Current Branch Name",
+			"label": "复制当前分支名",
 			"icon": "$(copy)",
 			"commandPalette": "gitlens:enabled"
 		},
 		"gitlens.copyDeepLinkToBranch": {
-			"label": "Copy Link to Branch",
+			"label": "复制分支链接",
 			"icon": "$(copy)",
 			"menus": {
 				"gitlens/share": [
@@ -633,7 +633,7 @@
 			}
 		},
 		"gitlens.copyDeepLinkToCommit": {
-			"label": "Copy Link to Commit",
+			"label": "复制提交链接",
 			"icon": "$(copy)",
 			"menus": {
 				"gitlens/share": [
@@ -646,7 +646,7 @@
 			}
 		},
 		"gitlens.copyDeepLinkToComparison": {
-			"label": "Copy Link to Comparison",
+			"label": "复制比较链接",
 			"icon": "$(copy)",
 			"menus": {
 				"gitlens/share": [
@@ -659,7 +659,7 @@
 			}
 		},
 		"gitlens.copyDeepLinkToFile": {
-			"label": "Copy Link to File",
+			"label": "复制文件链接",
 			"icon": "$(copy)",
 			"menus": {
 				"editor/context/copy": [
@@ -685,7 +685,7 @@
 			}
 		},
 		"gitlens.copyDeepLinkToFileAtRevision": {
-			"label": "Copy Link to File at Revision...",
+			"label": "复制版本文件链接...",
 			"icon": "$(copy)",
 			"menus": {
 				"editor/context/copy": [
@@ -712,7 +712,7 @@
 			}
 		},
 		"gitlens.copyDeepLinkToLines": {
-			"label": "Copy Link to Code",
+			"label": "复制代码链接",
 			"icon": "$(copy)",
 			"menus": {
 				"editor/context/copy": [
@@ -731,7 +731,7 @@
 			}
 		},
 		"gitlens.copyDeepLinkToRepo": {
-			"label": "Copy Link to Repository",
+			"label": "复制仓库链接",
 			"icon": "$(copy)",
 			"commandPalette": "gitlens:enabled",
 			"menus": {
@@ -745,7 +745,7 @@
 			}
 		},
 		"gitlens.copyDeepLinkToTag": {
-			"label": "Copy Link to Tag",
+			"label": "复制标签链接",
 			"icon": "$(copy)",
 			"menus": {
 				"gitlens/share": [
@@ -758,7 +758,7 @@
 			}
 		},
 		"gitlens.copyDeepLinkToWorkspace": {
-			"label": "Copy Link to Workspace",
+			"label": "复制工作区链接",
 			"icon": "$(copy)",
 			"menus": {
 				"gitlens/share": [
@@ -771,7 +771,7 @@
 			}
 		},
 		"gitlens.copyMessageToClipboard": {
-			"label": "Copy Message",
+			"label": "复制消息",
 			"icon": "$(copy)",
 			"commandPalette": "resource in gitlens:tabs:blameable",
 			"menus": {
@@ -804,11 +804,11 @@
 			}
 		},
 		"gitlens.copyPatchToClipboard": {
-			"label": "Copy Changes (Patch)",
+			"label": "复制更改（补丁）",
 			"commandPalette": "gitlens:enabled && !gitlens:untrusted && !gitlens:hasVirtualFolders"
 		},
 		"gitlens.copyPatchToClipboard:graph": {
-			"label": "Copy Changes (Patch)",
+			"label": "复制更改（补丁）",
 			"menus": {
 				"webview/context": [
 					{
@@ -820,7 +820,7 @@
 			}
 		},
 		"gitlens.copyPatchToClipboard:scm": {
-			"label": "Copy Changes (Patch)",
+			"label": "复制更改（补丁）",
 			"menus": {
 				"git.changes": [
 					{
@@ -853,7 +853,7 @@
 			}
 		},
 		"gitlens.copyPatchToClipboard:views": {
-			"label": "Copy Changes (Patch)",
+			"label": "复制更改（补丁）",
 			"menus": {
 				"view/item/context": [
 					{
@@ -875,7 +875,7 @@
 			}
 		},
 		"gitlens.copyRelativePathToClipboard": {
-			"label": "Copy Relative Path",
+			"label": "复制相对路径",
 			"icon": "$(copy)",
 			"commandPalette": "gitlens:enabled",
 			"menus": {
@@ -903,11 +903,11 @@
 			}
 		},
 		"gitlens.copyRemoteBranchesUrl": {
-			"label": "Copy Remote Branches URL",
+			"label": "复制远程分支 URL",
 			"icon": "$(copy)"
 		},
 		"gitlens.copyRemoteBranchUrl": {
-			"label": "Copy Remote Branch URL",
+			"label": "复制远程分支 URL",
 			"icon": "$(copy)",
 			"menus": {
 				"gitlens/commit/copy": [
@@ -934,7 +934,7 @@
 			}
 		},
 		"gitlens.copyRemoteCommitUrl": {
-			"label": "Copy Remote Commit URL",
+			"label": "复制远程提交 URL",
 			"icon": "$(copy)",
 			"commandPalette": "gitlens:repos:withRemotes",
 			"menus": {
@@ -954,7 +954,7 @@
 			}
 		},
 		"gitlens.copyRemoteComparisonUrl": {
-			"label": "Copy Remote Comparison URL",
+			"label": "复制远程比较 URL",
 			"icon": "$(copy)",
 			"menus": {
 				"gitlens/share": [
@@ -967,7 +967,7 @@
 			}
 		},
 		"gitlens.copyRemoteFileUrlFrom": {
-			"label": "Copy Remote File URL From...",
+			"label": "复制远程文件 URL 从...",
 			"icon": "$(copy)",
 			"commandPalette": "gitlens:repos:withRemotes",
 			"menus": {
@@ -1020,7 +1020,7 @@
 			}
 		},
 		"gitlens.copyRemoteFileUrlToClipboard": {
-			"label": "Copy Remote File URL",
+			"label": "复制远程文件 URL",
 			"icon": "$(copy)",
 			"commandPalette": "gitlens:repos:withRemotes",
 			"menus": {
@@ -1047,7 +1047,7 @@
 			}
 		},
 		"gitlens.copyRemoteFileUrlWithoutRange": {
-			"label": "Copy Remote File URL",
+			"label": "复制远程文件 URL",
 			"icon": "$(copy)",
 			"menus": {
 				"editor/title/context": [
@@ -1079,11 +1079,11 @@
 			}
 		},
 		"gitlens.copyRemotePullRequestUrl": {
-			"label": "Copy Pull Request URL",
+			"label": "复制拉取请求 URL",
 			"icon": "$(copy)"
 		},
 		"gitlens.copyRemoteRepositoryUrl": {
-			"label": "Copy Remote Repository URL",
+			"label": "复制远程仓库 URL",
 			"icon": "$(copy)",
 			"menus": {
 				"gitlens/share": [
@@ -1096,7 +1096,7 @@
 			}
 		},
 		"gitlens.copyShaToClipboard": {
-			"label": "Copy SHA",
+			"label": "复制 SHA",
 			"icon": "$(copy)",
 			"commandPalette": "resource in gitlens:tabs:blameable",
 			"menus": {
@@ -1141,11 +1141,11 @@
 			}
 		},
 		"gitlens.copyWorkingChangesToWorktree": {
-			"label": "Copy Working Changes to Worktree...",
+			"label": "复制工作更改到工作树...",
 			"commandPalette": "gitlens:enabled && !gitlens:untrusted && !gitlens:hasVirtualFolders"
 		},
 		"gitlens.copyWorkingChangesToWorktree:views": {
-			"label": "Copy Working Changes to Worktree...",
+			"label": "复制工作更改到工作树...",
 			"menus": {
 				"view/item/context": [
 					{
@@ -1157,7 +1157,7 @@
 			}
 		},
 		"gitlens.createCloudPatch": {
-			"label": "Create Patch...",
+			"label": "创建补丁...",
 			"commandPalette": "gitlens:enabled && gitlens:gk:organization:drafts:enabled && config.gitlens.cloudPatches.enabled",
 			"menus": {
 				"gitlens/commit/file/commit": [
@@ -1182,7 +1182,7 @@
 			}
 		},
 		"gitlens.createPatch": {
-			"label": "Create Patch...",
+			"label": "创建补丁...",
 			"commandPalette": "false && gitlens:enabled && !gitlens:untrusted && !gitlens:hasVirtualFolders",
 			"menus": {
 				"gitlens/commit/file/commit": [
@@ -1207,12 +1207,12 @@
 			}
 		},
 		"gitlens.createPullRequestOnRemote": {
-			"label": "Create Pull Request on Remote",
+			"label": "在远程创建拉取请求",
 			"icon": "$(git-pull-request-create)",
 			"commandPalette": "gitlens:repos:withRemotes"
 		},
 		"gitlens.diffDirectory": {
-			"label": "Open Directory Compare (difftool) with...",
+			"label": "打开目录比较（difftool）与...",
 			"commandPalette": "gitlens:enabled && !gitlens:hasVirtualFolders",
 			"menus": {
 				"gitlens/scm/resourceGroup/changes": [
@@ -1225,7 +1225,7 @@
 			}
 		},
 		"gitlens.diffDirectoryWithHead": {
-			"label": "Open Directory Compare (difftool)",
+			"label": "打开目录比较（difftool）",
 			"commandPalette": "gitlens:enabled && !gitlens:hasVirtualFolders",
 			"menus": {
 				"gitlens/scm/resourceGroup/changes": [
@@ -1238,7 +1238,7 @@
 			}
 		},
 		"gitlens.diffFolderWithRevision": {
-			"label": "Open Folder Changes with Revision...",
+			"label": "打开文件夹与版本的更改...",
 			"commandPalette": "gitlens:enabled && !gitlens:hasVirtualFolders",
 			"menus": {
 				"gitlens/explorer/changes": [
@@ -1258,7 +1258,7 @@
 			}
 		},
 		"gitlens.diffFolderWithRevisionFrom": {
-			"label": "Open Folder Changes with Branch or Tag...",
+			"label": "打开文件夹与分支或标签的更改...",
 			"commandPalette": "gitlens:enabled && !gitlens:hasVirtualFolders",
 			"menus": {
 				"gitlens/explorer/changes": [
@@ -1278,7 +1278,7 @@
 			}
 		},
 		"gitlens.diffLineWithPrevious": {
-			"label": "Open Line Changes with Previous Revision",
+			"label": "打开与上一版本的行更改",
 			"commandPalette": "resource in gitlens:tabs:blameable",
 			"menus": {
 				"gitlens/editor/context/changes": [
@@ -1308,7 +1308,7 @@
 			]
 		},
 		"gitlens.diffLineWithWorking": {
-			"label": "Open Line Changes with Working File",
+			"label": "打开与工作文件的行更改",
 			"commandPalette": "resource in gitlens:tabs:blameable",
 			"menus": {
 				"gitlens/editor/context/changes": [
@@ -1327,13 +1327,13 @@
 			}
 		},
 		"gitlens.diffWithNext": {
-			"label": "Open Changes with Next Revision",
+			"label": "打开与下一版本的更改",
 			"icon": "$(gitlens-next-commit)",
 			"enablement": "gitlens:enabled && resourceScheme =~ /^(gitlens|git|pr)$/",
 			"commandPalette": "gitlens:enabled && resourceScheme =~ /^(gitlens|git|pr)$/"
 		},
 		"gitlens.diffWithNext:editor/title": {
-			"label": "Open Changes with Next Revision",
+			"label": "打开与下一版本的更改",
 			"icon": "$(gitlens-next-commit)",
 			"enablement": "gitlens:enabled && resourceScheme =~ /^(gitlens|git|pr)$/",
 			"menus": {
@@ -1347,7 +1347,7 @@
 			}
 		},
 		"gitlens.diffWithNext:key": {
-			"label": "Open Changes with Next Revision",
+			"label": "打开与下一版本的更改",
 			"icon": "$(gitlens-next-commit)",
 			"enablement": "gitlens:enabled && resourceScheme =~ /^(gitlens|git|pr)$/",
 			"keybindings": [
@@ -1363,12 +1363,12 @@
 			]
 		},
 		"gitlens.diffWithPrevious": {
-			"label": "Open Changes with Previous Revision",
+			"label": "打开与上一版本的更改",
 			"icon": "$(gitlens-prev-commit)",
 			"commandPalette": "resource in gitlens:tabs:tracked"
 		},
 		"gitlens.diffWithPrevious:editor": {
-			"label": "Open Changes with Previous Revision",
+			"label": "打开与上一版本的更改",
 			"icon": "$(gitlens-prev-commit)",
 			"menus": {
 				"gitlens/editor/changes": [
@@ -1386,7 +1386,7 @@
 			}
 		},
 		"gitlens.diffWithPrevious:editor/title": {
-			"label": "Open Changes with Previous Revision",
+			"label": "打开与上一版本的更改",
 			"icon": "$(gitlens-prev-commit)",
 			"menus": {
 				"editor/title": [
@@ -1400,7 +1400,7 @@
 			}
 		},
 		"gitlens.diffWithPrevious:explorer": {
-			"label": "Open Changes with Previous Revision",
+			"label": "打开与上一版本的更改",
 			"icon": "$(gitlens-prev-commit)",
 			"menus": {
 				"gitlens/explorer/changes": [
@@ -1413,7 +1413,7 @@
 			}
 		},
 		"gitlens.diffWithPrevious:key": {
-			"label": "Open Changes with Previous Revision",
+			"label": "打开与上一版本的更改",
 			"icon": "$(gitlens-prev-commit)",
 			"keybindings": [
 				{
@@ -1428,7 +1428,7 @@
 			]
 		},
 		"gitlens.diffWithRevision": {
-			"label": "Open Changes with Revision...",
+			"label": "打开与版本的更改...",
 			"icon": "$(gitlens-prev-commit-menu)",
 			"commandPalette": "resource in gitlens:tabs:tracked",
 			"menus": {
@@ -1467,7 +1467,7 @@
 			}
 		},
 		"gitlens.diffWithRevisionFrom": {
-			"label": "Open Changes with Branch or Tag...",
+			"label": "打开与分支或标签的更改...",
 			"commandPalette": "resource in gitlens:tabs:tracked",
 			"menus": {
 				"gitlens/commit/file/changes": [
@@ -1505,12 +1505,12 @@
 			}
 		},
 		"gitlens.diffWithWorking": {
-			"label": "Open Changes with Working File",
+			"label": "打开与工作文件的更改",
 			"icon": "$(gitlens-compare-ref-working)",
 			"commandPalette": "gitlens:enabled && resourceScheme =~ /^(gitlens|git|pr)$/"
 		},
 		"gitlens.diffWithWorking:editor": {
-			"label": "Open Changes with Working File",
+			"label": "打开与工作文件的更改",
 			"icon": "$(gitlens-compare-ref-working)",
 			"menus": {
 				"gitlens/editor/changes": [
@@ -1530,7 +1530,7 @@
 			}
 		},
 		"gitlens.diffWithWorking:editor/title": {
-			"label": "Open Changes with Working File",
+			"label": "打开与工作文件的更改",
 			"icon": "$(gitlens-compare-ref-working)",
 			"menus": {
 				"editor/title": [
@@ -1543,7 +1543,7 @@
 			}
 		},
 		"gitlens.diffWithWorking:key": {
-			"label": "Open Changes with Working File",
+			"label": "打开与工作文件的更改",
 			"icon": "$(gitlens-compare-ref-working)",
 			"keybindings": [
 				{
@@ -1558,15 +1558,15 @@
 			]
 		},
 		"gitlens.disableDebugLogging": {
-			"label": "Disable Debug Logging",
+			"label": "禁用调试日志",
 			"commandPalette": "config.gitlens.outputLevel == debug"
 		},
 		"gitlens.disableRebaseEditor": {
-			"label": "Disable Interactive Rebase Editor",
+			"label": "禁用交互式变基编辑器",
 			"commandPalette": "gitlens:enabled"
 		},
 		"gitlens.disconnectRemoteProvider": {
-			"label": "Disconnect Remote Integration",
+			"label": "断开远程集成",
 			"icon": "$(gitlens-unplug)",
 			"commandPalette": "config.gitlens.integrations.enabled && gitlens:repos:withHostingIntegrationsConnected",
 			"menus": {
@@ -1585,15 +1585,15 @@
 			}
 		},
 		"gitlens.enableDebugLogging": {
-			"label": "Enable Debug Logging",
+			"label": "启用调试日志",
 			"commandPalette": "config.gitlens.outputLevel != debug"
 		},
 		"gitlens.enableRebaseEditor": {
-			"label": "Enable Interactive Rebase Editor",
+			"label": "启用交互式变基编辑器",
 			"commandPalette": "gitlens:enabled"
 		},
 		"gitlens.externalDiff": {
-			"label": "Open Changes (difftool)",
+			"label": "打开更改（差异工具）",
 			"commandPalette": "!gitlens:hasVirtualFolders && resource in gitlens:tabs:tracked",
 			"menus": {
 				"gitlens/commit/file/changes": [
@@ -1613,7 +1613,7 @@
 			}
 		},
 		"gitlens.externalDiffAll": {
-			"label": "Open All Changes (difftool)",
+			"label": "打开所有更改（差异工具）",
 			"commandPalette": "gitlens:enabled && !gitlens:hasVirtualFolders",
 			"menus": {
 				"gitlens/scm/resourceGroup/changes": [
@@ -1626,7 +1626,7 @@
 			}
 		},
 		"gitlens.fetchRepositories": {
-			"label": "Fetch",
+			"label": "拉取",
 			"icon": "$(repo-fetch)",
 			"enablement": "!operationInProgress",
 			"commandPalette": "gitlens:repos:withRemotes && !gitlens:readonly && !gitlens:untrusted && !gitlens:hasVirtualFolders",
@@ -1682,7 +1682,7 @@
 			}
 		},
 		"gitlens.getStarted": {
-			"label": "Get Started",
+			"label": "开始使用",
 			"commandPalette": "gitlens:walkthroughSupported",
 			"menus": {
 				"extension/context": [
@@ -1695,7 +1695,7 @@
 			}
 		},
 		"gitlens.ghpr.views.openOrCreateWorktree": {
-			"label": "Checkout Pull Request in Worktree (GitLens)...",
+			"label": "在工作树中检出拉取请求 (GitLens)...",
 			"enablement": "!operationInProgress",
 			"menus": {
 				"view/item/context": [
@@ -1708,7 +1708,7 @@
 			}
 		},
 		"gitlens.gitCommands": {
-			"label": "Git Command Palette",
+			"label": "Git 命令面板",
 			"commandPalette": "!gitlens:disabled",
 			"keybindings": [
 				{
@@ -1723,143 +1723,143 @@
 			]
 		},
 		"gitlens.gitCommands.branch": {
-			"label": "Git Branch...",
+			"label": "Git 分支...",
 			"commandPalette": "!gitlens:disabled && !gitlens:readonly && !gitlens:untrusted && !gitlens:hasVirtualFolders"
 		},
 		"gitlens.gitCommands.branch.create": {
-			"label": "Git Create Branch...",
+			"label": "Git 创建分支...",
 			"commandPalette": "!gitlens:disabled && !gitlens:readonly && !gitlens:untrusted && !gitlens:hasVirtualFolders"
 		},
 		"gitlens.gitCommands.branch.delete": {
-			"label": "Git Delete Branch...",
+			"label": "Git 删除分支...",
 			"commandPalette": "!gitlens:disabled && !gitlens:readonly && !gitlens:untrusted && !gitlens:hasVirtualFolders"
 		},
 		"gitlens.gitCommands.branch.prune": {
-			"label": "Git Prune Branches...",
+			"label": "Git 修剪分支...",
 			"commandPalette": "!gitlens:disabled && !gitlens:readonly && !gitlens:untrusted && !gitlens:hasVirtualFolders"
 		},
 		"gitlens.gitCommands.branch.rename": {
-			"label": "Git Rename Branch...",
+			"label": "Git 重命名分支...",
 			"commandPalette": "!gitlens:disabled && !gitlens:readonly && !gitlens:untrusted && !gitlens:hasVirtualFolders"
 		},
 		"gitlens.gitCommands.branch.upstream": {
-			"label": "Git Change Branch Upstream...",
+			"label": "Git 更改分支上游...",
 			"commandPalette": "!gitlens:disabled && !gitlens:readonly && !gitlens:untrusted && !gitlens:hasVirtualFolders"
 		},
 		"gitlens.gitCommands.checkout": {
-			"label": "Git Checkout...",
+			"label": "Git 检出...",
 			"commandPalette": "!gitlens:disabled && !gitlens:readonly && !gitlens:untrusted && !gitlens:hasVirtualFolders"
 		},
 		"gitlens.gitCommands.cherryPick": {
-			"label": "Git Cherry Pick...",
+			"label": "Git 指定提取...",
 			"commandPalette": "!gitlens:disabled && !gitlens:readonly && !gitlens:untrusted && !gitlens:hasVirtualFolders"
 		},
 		"gitlens.gitCommands.history": {
-			"label": "Git History (log)...",
+			"label": "Git 历史记录...",
 			"commandPalette": "!gitlens:disabled && !gitlens:readonly && !gitlens:untrusted && !gitlens:hasVirtualFolders"
 		},
 		"gitlens.gitCommands.merge": {
-			"label": "Git Merge...",
+			"label": "Git 合并...",
 			"commandPalette": "!gitlens:disabled && !gitlens:readonly && !gitlens:untrusted && !gitlens:hasVirtualFolders"
 		},
 		"gitlens.gitCommands.rebase": {
-			"label": "Git Rebase...",
+			"label": "Git 变基...",
 			"commandPalette": "!gitlens:disabled && !gitlens:readonly && !gitlens:untrusted && !gitlens:hasVirtualFolders"
 		},
 		"gitlens.gitCommands.remote": {
-			"label": "Git Remote...",
+			"label": "Git 远程...",
 			"commandPalette": "!gitlens:disabled && !gitlens:readonly && !gitlens:untrusted && !gitlens:hasVirtualFolders"
 		},
 		"gitlens.gitCommands.remote.add": {
-			"label": "Git Add Remote...",
+			"label": "Git 添加远程...",
 			"commandPalette": "!gitlens:disabled && !gitlens:readonly && !gitlens:untrusted && !gitlens:hasVirtualFolders"
 		},
 		"gitlens.gitCommands.remote.prune": {
-			"label": "Git Prune Remote...",
+			"label": "Git 修剪远程...",
 			"commandPalette": "!gitlens:disabled && !gitlens:readonly && !gitlens:untrusted && !gitlens:hasVirtualFolders"
 		},
 		"gitlens.gitCommands.remote.remove": {
-			"label": "Git Remove Remote...",
+			"label": "Git 删除远程...",
 			"commandPalette": "!gitlens:disabled && !gitlens:readonly && !gitlens:untrusted && !gitlens:hasVirtualFolders"
 		},
 		"gitlens.gitCommands.reset": {
-			"label": "Git Reset...",
+			"label": "Git 重置...",
 			"commandPalette": "!gitlens:disabled && !gitlens:readonly && !gitlens:untrusted && !gitlens:hasVirtualFolders"
 		},
 		"gitlens.gitCommands.revert": {
-			"label": "Git Revert...",
+			"label": "Git 撤销...",
 			"commandPalette": "!gitlens:disabled && !gitlens:readonly && !gitlens:untrusted && !gitlens:hasVirtualFolders"
 		},
 		"gitlens.gitCommands.show": {
-			"label": "Git Show...",
+			"label": "Git 显示...",
 			"commandPalette": "!gitlens:disabled && !gitlens:readonly && !gitlens:untrusted && !gitlens:hasVirtualFolders"
 		},
 		"gitlens.gitCommands.stash": {
-			"label": "Git Stash...",
+			"label": "Git 存储...",
 			"commandPalette": "!gitlens:disabled && !gitlens:readonly && !gitlens:untrusted && !gitlens:hasVirtualFolders"
 		},
 		"gitlens.gitCommands.stash.drop": {
-			"label": "Git Drop Stash...",
+			"label": "Git 删除存储...",
 			"commandPalette": "!gitlens:disabled && !gitlens:readonly && !gitlens:untrusted && !gitlens:hasVirtualFolders"
 		},
 		"gitlens.gitCommands.stash.list": {
-			"label": "Git Stash List...",
+			"label": "Git 存储列表...",
 			"commandPalette": "!gitlens:disabled && !gitlens:readonly && !gitlens:untrusted && !gitlens:hasVirtualFolders"
 		},
 		"gitlens.gitCommands.stash.pop": {
-			"label": "Git Pop Stash...",
+			"label": "Git 弹出存储...",
 			"commandPalette": "!gitlens:disabled && !gitlens:readonly && !gitlens:untrusted && !gitlens:hasVirtualFolders"
 		},
 		"gitlens.gitCommands.stash.push": {
-			"label": "Git Push Stash...",
+			"label": "Git 推送存储...",
 			"commandPalette": "!gitlens:disabled && !gitlens:readonly && !gitlens:untrusted && !gitlens:hasVirtualFolders"
 		},
 		"gitlens.gitCommands.stash.rename": {
-			"label": "Git Rename Stash...",
+			"label": "Git 重命名存储...",
 			"commandPalette": "!gitlens:disabled && !gitlens:readonly && !gitlens:untrusted && !gitlens:hasVirtualFolders"
 		},
 		"gitlens.gitCommands.status": {
-			"label": "Git Status...",
+			"label": "Git 状态...",
 			"commandPalette": "!gitlens:disabled && !gitlens:readonly && !gitlens:untrusted && !gitlens:hasVirtualFolders"
 		},
 		"gitlens.gitCommands.switch": {
-			"label": "Git Switch to...",
+			"label": "Git 切换到...",
 			"commandPalette": "!gitlens:disabled && !gitlens:readonly && !gitlens:untrusted && !gitlens:hasVirtualFolders"
 		},
 		"gitlens.gitCommands.tag": {
-			"label": "Git Tag...",
+			"label": "Git 标签...",
 			"commandPalette": "!gitlens:disabled && !gitlens:readonly && !gitlens:untrusted && !gitlens:hasVirtualFolders"
 		},
 		"gitlens.gitCommands.tag.create": {
-			"label": "Git Create Tag...",
+			"label": "Git 创建标签...",
 			"commandPalette": "!gitlens:disabled && !gitlens:readonly && !gitlens:untrusted && !gitlens:hasVirtualFolders"
 		},
 		"gitlens.gitCommands.tag.delete": {
-			"label": "Git Delete Tag...",
+			"label": "Git 删除标签...",
 			"commandPalette": "!gitlens:disabled && !gitlens:readonly && !gitlens:untrusted && !gitlens:hasVirtualFolders"
 		},
 		"gitlens.gitCommands.worktree": {
-			"label": "Git Worktree...",
+			"label": "Git 工作树...",
 			"commandPalette": "!gitlens:disabled && !gitlens:readonly && !gitlens:untrusted && !gitlens:hasVirtualFolders"
 		},
 		"gitlens.gitCommands.worktree.create": {
-			"label": "Git Create Worktree...",
+			"label": "Git 创建工作树...",
 			"commandPalette": "!gitlens:disabled && !gitlens:readonly && !gitlens:untrusted && !gitlens:hasVirtualFolders"
 		},
 		"gitlens.gitCommands.worktree.delete": {
-			"label": "Git Delete Worktree...",
+			"label": "Git 删除工作树...",
 			"commandPalette": "!gitlens:disabled && !gitlens:readonly && !gitlens:untrusted && !gitlens:hasVirtualFolders"
 		},
 		"gitlens.gitCommands.worktree.open": {
-			"label": "Git Open Worktree...",
+			"label": "Git 打开工作树...",
 			"commandPalette": "!gitlens:disabled && !gitlens:readonly && !gitlens:untrusted && !gitlens:hasVirtualFolders"
 		},
 		"gitlens.gk.switchOrganization": {
-			"label": "Switch Organization...",
+			"label": "切换组织...",
 			"commandPalette": "gitlens:gk:hasOrganizations"
 		},
 		"gitlens.graph.addAuthor": {
-			"label": "Add as Co-author",
+			"label": "添加为共同作者",
 			"icon": "$(person-add)",
 			"menus": {
 				"webview/context": [
@@ -1872,7 +1872,7 @@
 			}
 		},
 		"gitlens.graph.associateIssueWithBranch": {
-			"label": "Associate Issue with Branch...",
+			"label": "将问题与分支关联...",
 			"enablement": "!operationInProgress",
 			"menus": {
 				"webview/context": [
@@ -1885,7 +1885,7 @@
 			}
 		},
 		"gitlens.graph.cherryPick": {
-			"label": "Cherry Pick Commit...",
+			"label": "指定提取提交...",
 			"enablement": "!operationInProgress",
 			"menus": {
 				"webview/context": [
@@ -1898,7 +1898,7 @@
 			}
 		},
 		"gitlens.graph.cherryPick.multi": {
-			"label": "Cherry Pick Commits...",
+			"label": "指定提取提交项...",
 			"enablement": "!operationInProgress",
 			"menus": {
 				"webview/context": [
@@ -1911,7 +1911,7 @@
 			}
 		},
 		"gitlens.graph.columnAuthorOff": {
-			"label": "Hide Author Column",
+			"label": "隐藏作者列",
 			"enablement": "webviewItemValue =~ /\\bcolumns:canHide\\b/",
 			"menus": {
 				"webview/context": [
@@ -1924,7 +1924,7 @@
 			}
 		},
 		"gitlens.graph.columnAuthorOn": {
-			"label": "Show Author Column",
+			"label": "显示作者列",
 			"menus": {
 				"webview/context": [
 					{
@@ -1936,7 +1936,7 @@
 			}
 		},
 		"gitlens.graph.columnChangesOff": {
-			"label": "Hide Changes Column",
+			"label": "隐藏更改列",
 			"enablement": "webviewItemValue =~ /\\bcolumns:canHide\\b/",
 			"menus": {
 				"webview/context": [
@@ -1949,7 +1949,7 @@
 			}
 		},
 		"gitlens.graph.columnChangesOn": {
-			"label": "Show Changes Column",
+			"label": "显示更改列",
 			"menus": {
 				"webview/context": [
 					{
@@ -1961,7 +1961,7 @@
 			}
 		},
 		"gitlens.graph.columnDateTimeOff": {
-			"label": "Hide Date Column",
+			"label": "隐藏日期列",
 			"enablement": "webviewItemValue =~ /\\bcolumns:canHide\\b/",
 			"menus": {
 				"webview/context": [
@@ -1974,7 +1974,7 @@
 			}
 		},
 		"gitlens.graph.columnDateTimeOn": {
-			"label": "Show Date Column",
+			"label": "显示日期列",
 			"menus": {
 				"webview/context": [
 					{
@@ -1986,7 +1986,7 @@
 			}
 		},
 		"gitlens.graph.columnGraphCompact": {
-			"label": "Use Compact Graph Column",
+			"label": "使用紧凑图形列",
 			"menus": {
 				"webview/context": [
 					{
@@ -1998,7 +1998,7 @@
 			}
 		},
 		"gitlens.graph.columnGraphDefault": {
-			"label": "Use Expanded Graph Column",
+			"label": "使用展开图形列",
 			"menus": {
 				"webview/context": [
 					{
@@ -2010,7 +2010,7 @@
 			}
 		},
 		"gitlens.graph.columnGraphOff": {
-			"label": "Hide Graph Column",
+			"label": "隐藏图形列",
 			"enablement": "webviewItemValue =~ /\\bcolumns:canHide\\b/",
 			"menus": {
 				"webview/context": [
@@ -2023,7 +2023,7 @@
 			}
 		},
 		"gitlens.graph.columnGraphOn": {
-			"label": "Show Graph Column",
+			"label": "显示图形列",
 			"menus": {
 				"webview/context": [
 					{
@@ -2035,7 +2035,7 @@
 			}
 		},
 		"gitlens.graph.columnMessageOff": {
-			"label": "Hide Commit Message Column",
+			"label": "隐藏提交消息列",
 			"enablement": "webviewItemValue =~ /\\bcolumns:canHide\\b/",
 			"menus": {
 				"webview/context": [
@@ -2048,7 +2048,7 @@
 			}
 		},
 		"gitlens.graph.columnMessageOn": {
-			"label": "Show Commit Message Column",
+			"label": "显示提交消息列",
 			"menus": {
 				"webview/context": [
 					{
@@ -2060,7 +2060,7 @@
 			}
 		},
 		"gitlens.graph.columnRefOff": {
-			"label": "Hide Branch / Tag Column",
+			"label": "隐藏分支/标签列",
 			"enablement": "webviewItemValue =~ /\\bcolumns:canHide\\b/",
 			"menus": {
 				"webview/context": [
@@ -2073,7 +2073,7 @@
 			}
 		},
 		"gitlens.graph.columnRefOn": {
-			"label": "Show Branch / Tag Column",
+			"label": "显示分支/标签列",
 			"menus": {
 				"webview/context": [
 					{
@@ -2085,7 +2085,7 @@
 			}
 		},
 		"gitlens.graph.columnShaOff": {
-			"label": "Hide SHA Column",
+			"label": "隐藏 SHA 列",
 			"enablement": "webviewItemValue =~ /\\bcolumns:canHide\\b/",
 			"menus": {
 				"webview/context": [
@@ -2098,7 +2098,7 @@
 			}
 		},
 		"gitlens.graph.columnShaOn": {
-			"label": "Show SHA Column",
+			"label": "显示 SHA 列",
 			"menus": {
 				"webview/context": [
 					{
@@ -2110,7 +2110,7 @@
 			}
 		},
 		"gitlens.graph.commitViaSCM": {
-			"label": "Commit via Source Control...",
+			"label": "通过源代码控制提交...",
 			"menus": {
 				"webview/context": [
 					{
@@ -2122,7 +2122,7 @@
 			}
 		},
 		"gitlens.graph.compareAncestryWithWorking": {
-			"label": "Compare Working Tree to Common Base",
+			"label": "将工作树与公共基础比较",
 			"menus": {
 				"webview/context": [
 					{
@@ -2134,7 +2134,7 @@
 			}
 		},
 		"gitlens.graph.compareBranchWithHead": {
-			"label": "Compare with HEAD",
+			"label": "与 HEAD 比较",
 			"icon": "$(compare-changes)",
 			"menus": {
 				"webview/context": [
@@ -2147,7 +2147,7 @@
 			}
 		},
 		"gitlens.graph.compareSelectedCommits.multi": {
-			"label": "Compare Selected Commits",
+			"label": "比较选中的提交",
 			"icon": "$(compare-changes)",
 			"menus": {
 				"webview/context": [
@@ -2160,7 +2160,7 @@
 			}
 		},
 		"gitlens.graph.compareWithHead": {
-			"label": "Compare to/from HEAD",
+			"label": "与 HEAD 来回比较",
 			"icon": "$(compare-changes)",
 			"menus": {
 				"webview/context": [
@@ -2173,7 +2173,7 @@
 			}
 		},
 		"gitlens.graph.compareWithMergeBase": {
-			"label": "Compare with Common Base",
+			"label": "与公共基础比较",
 			"menus": {
 				"webview/context": [
 					{
@@ -2185,7 +2185,7 @@
 			}
 		},
 		"gitlens.graph.compareWithUpstream": {
-			"label": "Compare with Upstream",
+			"label": "与上游比较",
 			"menus": {
 				"webview/context": [
 					{
@@ -2197,7 +2197,7 @@
 			}
 		},
 		"gitlens.graph.compareWithWorking": {
-			"label": "Compare Working Tree to Here",
+			"label": "将工作树与此处比较",
 			"icon": "$(gitlens-compare-ref-working)",
 			"menus": {
 				"webview/context": [
@@ -2210,7 +2210,7 @@
 			}
 		},
 		"gitlens.graph.copy": {
-			"label": "Copy",
+			"label": "复制",
 			"icon": "$(copy)",
 			"menus": {
 				"webview/context": [
@@ -2223,7 +2223,7 @@
 			}
 		},
 		"gitlens.graph.copyDeepLinkToBranch": {
-			"label": "Copy Link to Branch",
+			"label": "复制分支链接",
 			"icon": "$(copy)",
 			"menus": {
 				"gitlens/share": [
@@ -2236,7 +2236,7 @@
 			}
 		},
 		"gitlens.graph.copyDeepLinkToCommit": {
-			"label": "Copy Link to Commit",
+			"label": "复制提交链接",
 			"icon": "$(copy)",
 			"menus": {
 				"gitlens/share": [
@@ -2249,7 +2249,7 @@
 			}
 		},
 		"gitlens.graph.copyDeepLinkToRepo": {
-			"label": "Copy Link to Repository",
+			"label": "复制仓库链接",
 			"icon": "$(copy)",
 			"menus": {
 				"gitlens/share": [
@@ -2262,7 +2262,7 @@
 			}
 		},
 		"gitlens.graph.copyDeepLinkToTag": {
-			"label": "Copy Link to Tag",
+			"label": "复制标签链接",
 			"icon": "$(copy)",
 			"menus": {
 				"gitlens/share": [
@@ -2275,7 +2275,7 @@
 			}
 		},
 		"gitlens.graph.copyMessage": {
-			"label": "Copy Message",
+			"label": "复制消息",
 			"icon": "$(copy)",
 			"menus": {
 				"webview/context": [
@@ -2288,7 +2288,7 @@
 			}
 		},
 		"gitlens.graph.copyRemoteBranchUrl": {
-			"label": "Copy Remote Branch URL",
+			"label": "复制远程分支 URL",
 			"icon": "$(copy)",
 			"menus": {
 				"gitlens/share": [
@@ -2301,7 +2301,7 @@
 			}
 		},
 		"gitlens.graph.copyRemoteCommitUrl": {
-			"label": "Copy Remote Commit URL",
+			"label": "复制远程提交 URL",
 			"icon": "$(copy)",
 			"menus": {
 				"gitlens/share": [
@@ -2314,7 +2314,7 @@
 			}
 		},
 		"gitlens.graph.copyRemoteCommitUrl.multi": {
-			"label": "Copy Remote Commit URLs",
+			"label": "复制远程提交 URL",
 			"icon": "$(copy)",
 			"menus": {
 				"gitlens/share": [
@@ -2327,7 +2327,7 @@
 			}
 		},
 		"gitlens.graph.copySha": {
-			"label": "Copy SHA",
+			"label": "复制 SHA",
 			"icon": "$(copy)",
 			"menus": {
 				"webview/context": [
@@ -2340,7 +2340,7 @@
 			}
 		},
 		"gitlens.graph.copyWorkingChangesToWorktree": {
-			"label": "Copy Working Changes to Worktree...",
+			"label": "复制工作更改到工作树...",
 			"menus": {
 				"webview/context": [
 					{
@@ -2352,7 +2352,7 @@
 			}
 		},
 		"gitlens.graph.createBranch": {
-			"label": "Create Branch...",
+			"label": "创建分支...",
 			"icon": "$(add)",
 			"enablement": "!operationInProgress",
 			"menus": {
@@ -2376,7 +2376,7 @@
 			}
 		},
 		"gitlens.graph.createCloudPatch": {
-			"label": "Create Patch...",
+			"label": "创建补丁...",
 			"menus": {
 				"webview/context": [
 					{
@@ -2388,7 +2388,7 @@
 			}
 		},
 		"gitlens.graph.createPatch": {
-			"label": "Create Patch...",
+			"label": "创建补丁...",
 			"menus": {
 				"webview/context": [
 					{
@@ -2400,7 +2400,7 @@
 			}
 		},
 		"gitlens.graph.createPullRequest": {
-			"label": "Create Pull Request...",
+			"label": "创建拉取请求...",
 			"icon": "$(git-pull-request-create)",
 			"menus": {
 				"webview/context": [
@@ -2413,7 +2413,7 @@
 			}
 		},
 		"gitlens.graph.createTag": {
-			"label": "Create Tag...",
+			"label": "创建标签...",
 			"icon": "$(add)",
 			"enablement": "!operationInProgress",
 			"menus": {
@@ -2432,7 +2432,7 @@
 			}
 		},
 		"gitlens.graph.createWorktree": {
-			"label": "Create Worktree...",
+			"label": "创建工作树...",
 			"icon": "$(add)",
 			"enablement": "!operationInProgress",
 			"menus": {
@@ -2446,7 +2446,7 @@
 			}
 		},
 		"gitlens.graph.deleteBranch": {
-			"label": "Delete Branch...",
+			"label": "删除分支...",
 			"icon": "$(trash)",
 			"enablement": "!operationInProgress",
 			"menus": {
@@ -2460,7 +2460,7 @@
 			}
 		},
 		"gitlens.graph.deleteTag": {
-			"label": "Delete Tag...",
+			"label": "删除标签...",
 			"icon": "$(trash)",
 			"enablement": "!operationInProgress",
 			"menus": {
@@ -2474,7 +2474,7 @@
 			}
 		},
 		"gitlens.graph.fetch": {
-			"label": "Fetch",
+			"label": "拉取",
 			"icon": "$(repo-fetch)",
 			"enablement": "!operationInProgress",
 			"menus": {
@@ -2493,7 +2493,7 @@
 			}
 		},
 		"gitlens.graph.hideLocalBranch": {
-			"label": "Hide Local Branch",
+			"label": "隐藏本地分支",
 			"menus": {
 				"webview/context": [
 					{
@@ -2505,7 +2505,7 @@
 			}
 		},
 		"gitlens.graph.hideRefGroup": {
-			"label": "Hide",
+			"label": "隐藏",
 			"menus": {
 				"webview/context": [
 					{
@@ -2517,7 +2517,7 @@
 			}
 		},
 		"gitlens.graph.hideRemote": {
-			"label": "Hide Remote",
+			"label": "隐藏远程",
 			"menus": {
 				"webview/context": [
 					{
@@ -2529,7 +2529,7 @@
 			}
 		},
 		"gitlens.graph.hideRemoteBranch": {
-			"label": "Hide Remote Branch",
+			"label": "隐藏远程分支",
 			"menus": {
 				"webview/context": [
 					{
@@ -2541,7 +2541,7 @@
 			}
 		},
 		"gitlens.graph.hideTag": {
-			"label": "Hide Tag",
+			"label": "隐藏标签",
 			"menus": {
 				"webview/context": [
 					{
@@ -2553,7 +2553,7 @@
 			}
 		},
 		"gitlens.graph.mergeBranchInto": {
-			"label": "Merge Branch into Current Branch...",
+			"label": "将分支合并到当前分支...",
 			"enablement": "!operationInProgress",
 			"menus": {
 				"webview/context": [
@@ -2566,7 +2566,7 @@
 			}
 		},
 		"gitlens.graph.openBranchOnRemote": {
-			"label": "Open Branch on Remote",
+			"label": "在远程上打开分支",
 			"icon": "$(globe)",
 			"menus": {
 				"webview/context": [
@@ -2579,7 +2579,7 @@
 			}
 		},
 		"gitlens.graph.openChangedFileDiffs": {
-			"label": "Open All Changes",
+			"label": "打开所有更改",
 			"icon": "$(diff-multiple)",
 			"menus": {
 				"gitlens/graph/commit/changes": [
@@ -2591,7 +2591,7 @@
 			}
 		},
 		"gitlens.graph.openChangedFileDiffsIndividually": {
-			"label": "Open All Changes Individually",
+			"label": "单独打开所有更改",
 			"menus": {
 				"gitlens/graph/commit/changes": [
 					{
@@ -2603,7 +2603,7 @@
 			}
 		},
 		"gitlens.graph.openChangedFileDiffsWithMergeBase": {
-			"label": "Open All Changes with Common Base",
+			"label": "打开与公共基础的所有更改",
 			"icon": "$(diff-multiple)",
 			"menus": {
 				"webview/context": [
@@ -2616,7 +2616,7 @@
 			}
 		},
 		"gitlens.graph.openChangedFileDiffsWithWorking": {
-			"label": "Open All Changes with Working Tree",
+			"label": "打开与工作树的所有更改",
 			"icon": "$(diff-multiple)",
 			"menus": {
 				"gitlens/graph/commit/changes": [
@@ -2629,7 +2629,7 @@
 			}
 		},
 		"gitlens.graph.openChangedFileDiffsWithWorkingIndividually": {
-			"label": "Open All Changes with Working Tree Individually",
+			"label": "单独打开与工作树的所有更改",
 			"menus": {
 				"gitlens/graph/commit/changes": [
 					{
@@ -2641,7 +2641,7 @@
 			}
 		},
 		"gitlens.graph.openChangedFileRevisions": {
-			"label": "Open Files at Revision",
+			"label": "打开版本文件",
 			"menus": {
 				"gitlens/graph/commit/changes": [
 					{
@@ -2652,7 +2652,7 @@
 			}
 		},
 		"gitlens.graph.openChangedFiles": {
-			"label": "Open Files",
+			"label": "打开文件",
 			"menus": {
 				"gitlens/graph/commit/changes": [
 					{
@@ -2663,7 +2663,7 @@
 			}
 		},
 		"gitlens.graph.openCommitOnRemote": {
-			"label": "Open Commit on Remote",
+			"label": "在远程上打开提交",
 			"icon": "$(globe)",
 			"menus": {
 				"webview/context": [
@@ -2676,7 +2676,7 @@
 			}
 		},
 		"gitlens.graph.openCommitOnRemote.multi": {
-			"label": "Open Commits on Remote",
+			"label": "在远程上打开提交项",
 			"icon": "$(globe)",
 			"menus": {
 				"webview/context": [
@@ -2689,7 +2689,7 @@
 			}
 		},
 		"gitlens.graph.openInWorktree": {
-			"label": "Open in Worktree",
+			"label": "在工作树中打开",
 			"icon": "$(window)",
 			"menus": {
 				"webview/context": [
@@ -2702,7 +2702,7 @@
 			}
 		},
 		"gitlens.graph.openOnlyChangedFiles": {
-			"label": "Open Changed & Close Unchanged Files",
+			"label": "打开已更改并关闭未更改的文件",
 			"menus": {
 				"gitlens/graph/commit/changes": [
 					{
@@ -2713,7 +2713,7 @@
 			}
 		},
 		"gitlens.graph.openPullRequest": {
-			"label": "Open Pull Request",
+			"label": "打开拉取请求",
 			"icon": "$(git-pull-request)",
 			"menus": {
 				"webview/context": [
@@ -2726,7 +2726,7 @@
 			}
 		},
 		"gitlens.graph.openPullRequestChanges": {
-			"label": "Open Pull Request Changes",
+			"label": "打开拉取请求更改",
 			"icon": "$(diff-multiple)",
 			"menus": {
 				"webview/context": [
@@ -2739,7 +2739,7 @@
 			}
 		},
 		"gitlens.graph.openPullRequestComparison": {
-			"label": "Compare Pull Request",
+			"label": "比较拉取请求",
 			"icon": "$(compare-changes)",
 			"menus": {
 				"webview/context": [
@@ -2752,7 +2752,7 @@
 			}
 		},
 		"gitlens.graph.openPullRequestOnRemote": {
-			"label": "Open Pull Request on Remote",
+			"label": "在远程上打开拉取请求",
 			"icon": "$(globe)",
 			"menus": {
 				"webview/context": [
@@ -2765,7 +2765,7 @@
 			}
 		},
 		"gitlens.graph.openWorktree": {
-			"label": "Open Worktree",
+			"label": "打开工作树",
 			"icon": "$(window)",
 			"menus": {
 				"webview/context": [
@@ -2778,7 +2778,7 @@
 			}
 		},
 		"gitlens.graph.openWorktreeInNewWindow": {
-			"label": "Open Worktree in New Window",
+			"label": "在新窗口中打开工作树",
 			"icon": "$(empty-window)",
 			"menus": {
 				"webview/context": [
@@ -2791,7 +2791,7 @@
 			}
 		},
 		"gitlens.graph.publishBranch": {
-			"label": "Publish Branch",
+			"label": "发布分支",
 			"icon": "$(cloud-upload)",
 			"enablement": "!operationInProgress",
 			"menus": {
@@ -2805,7 +2805,7 @@
 			}
 		},
 		"gitlens.graph.pull": {
-			"label": "Pull",
+			"label": "拉取",
 			"icon": "$(repo-pull)",
 			"enablement": "!operationInProgress",
 			"menus": {
@@ -2824,7 +2824,7 @@
 			}
 		},
 		"gitlens.graph.push": {
-			"label": "Push",
+			"label": "推送",
 			"icon": "$(repo-push)",
 			"enablement": "!operationInProgress",
 			"menus": {
@@ -2843,12 +2843,12 @@
 			}
 		},
 		"gitlens.graph.pushWithForce": {
-			"label": "Push (force)",
+			"label": "推送（强制）",
 			"icon": "$(repo-force-push)",
 			"enablement": "!operationInProgress"
 		},
 		"gitlens.graph.rebaseOntoBranch": {
-			"label": "Rebase Current Branch onto Branch...",
+			"label": "将当前分支变基到分支...",
 			"enablement": "!operationInProgress",
 			"menus": {
 				"webview/context": [
@@ -2861,7 +2861,7 @@
 			}
 		},
 		"gitlens.graph.rebaseOntoCommit": {
-			"label": "Rebase Current Branch onto Commit...",
+			"label": "将当前分支变基到提交...",
 			"enablement": "!operationInProgress",
 			"menus": {
 				"webview/context": [
@@ -2874,7 +2874,7 @@
 			}
 		},
 		"gitlens.graph.rebaseOntoUpstream": {
-			"label": "Rebase Current Branch onto Upstream...",
+			"label": "将当前分支变基到上游...",
 			"enablement": "!operationInProgress",
 			"menus": {
 				"webview/context": [
@@ -2887,7 +2887,7 @@
 			}
 		},
 		"gitlens.graph.refresh": {
-			"label": "Refresh",
+			"label": "刷新",
 			"icon": "$(refresh)",
 			"menus": {
 				"editor/title": [
@@ -2900,7 +2900,7 @@
 			}
 		},
 		"gitlens.graph.renameBranch": {
-			"label": "Rename Branch...",
+			"label": "重命名分支...",
 			"enablement": "!operationInProgress",
 			"menus": {
 				"webview/context": [
@@ -2913,7 +2913,7 @@
 			}
 		},
 		"gitlens.graph.resetColumnsCompact": {
-			"label": "Reset Columns to Compact Layout",
+			"label": "重置列为紧凑布局",
 			"menus": {
 				"webview/context": [
 					{
@@ -2925,7 +2925,7 @@
 			}
 		},
 		"gitlens.graph.resetColumnsDefault": {
-			"label": "Reset Columns to Default Layout",
+			"label": "重置列为默认布局",
 			"menus": {
 				"webview/context": [
 					{
@@ -2937,7 +2937,7 @@
 			}
 		},
 		"gitlens.graph.resetCommit": {
-			"label": "Reset Current Branch to Previous Commit...",
+			"label": "将当前分支重置到上一提交...",
 			"enablement": "!operationInProgress",
 			"menus": {
 				"webview/context": [
@@ -2950,7 +2950,7 @@
 			}
 		},
 		"gitlens.graph.resetToCommit": {
-			"label": "Reset Current Branch to Commit...",
+			"label": "将当前分支重置到提交...",
 			"enablement": "!operationInProgress",
 			"menus": {
 				"webview/context": [
@@ -2963,7 +2963,7 @@
 			}
 		},
 		"gitlens.graph.resetToTag": {
-			"label": "Reset Current Branch to Tag...",
+			"label": "将当前分支重置到标签...",
 			"icon": "$(gitlens-reset)",
 			"enablement": "!operationInProgress",
 			"menus": {
@@ -2977,7 +2977,7 @@
 			}
 		},
 		"gitlens.graph.resetToTip": {
-			"label": "Reset Current Branch to Tip...",
+			"label": "将当前分支重置到顶端...",
 			"enablement": "!operationInProgress",
 			"menus": {
 				"webview/context": [
@@ -2990,7 +2990,7 @@
 			}
 		},
 		"gitlens.graph.revert": {
-			"label": "Revert Commit...",
+			"label": "撤销提交...",
 			"enablement": "!operationInProgress",
 			"menus": {
 				"webview/context": [
@@ -3003,7 +3003,7 @@
 			}
 		},
 		"gitlens.graph.scrollMarkerLocalBranchOff": {
-			"label": "Hide Local Branch Markers",
+			"label": "隐藏本地分支标记",
 			"menus": {
 				"gitlens/graph/markers": [
 					{
@@ -3015,7 +3015,7 @@
 			}
 		},
 		"gitlens.graph.scrollMarkerLocalBranchOn": {
-			"label": "Show Local Branch Markers",
+			"label": "显示本地分支标记",
 			"menus": {
 				"gitlens/graph/markers": [
 					{
@@ -3027,7 +3027,7 @@
 			}
 		},
 		"gitlens.graph.scrollMarkerPullRequestOff": {
-			"label": "Hide Pull Request Markers",
+			"label": "隐藏拉取请求标记",
 			"menus": {
 				"gitlens/graph/markers": [
 					{
@@ -3039,7 +3039,7 @@
 			}
 		},
 		"gitlens.graph.scrollMarkerPullRequestOn": {
-			"label": "Show Pull Request Markers",
+			"label": "显示拉取请求标记",
 			"menus": {
 				"gitlens/graph/markers": [
 					{
@@ -3051,7 +3051,7 @@
 			}
 		},
 		"gitlens.graph.scrollMarkerRemoteBranchOff": {
-			"label": "Hide Remote Branch Markers",
+			"label": "隐藏远程分支标记",
 			"menus": {
 				"gitlens/graph/markers": [
 					{
@@ -3063,7 +3063,7 @@
 			}
 		},
 		"gitlens.graph.scrollMarkerRemoteBranchOn": {
-			"label": "Show Remote Branch Markers",
+			"label": "显示远程分支标记",
 			"menus": {
 				"gitlens/graph/markers": [
 					{
@@ -3075,7 +3075,7 @@
 			}
 		},
 		"gitlens.graph.scrollMarkerStashOff": {
-			"label": "Hide Stash Markers",
+			"label": "隐藏存储标记",
 			"menus": {
 				"gitlens/graph/markers": [
 					{
@@ -3087,7 +3087,7 @@
 			}
 		},
 		"gitlens.graph.scrollMarkerStashOn": {
-			"label": "Show Stash Markers",
+			"label": "显示存储标记",
 			"menus": {
 				"gitlens/graph/markers": [
 					{
@@ -3099,7 +3099,7 @@
 			}
 		},
 		"gitlens.graph.scrollMarkerTagOff": {
-			"label": "Hide Tag Markers",
+			"label": "隐藏标签标记",
 			"menus": {
 				"gitlens/graph/markers": [
 					{
@@ -3111,7 +3111,7 @@
 			}
 		},
 		"gitlens.graph.scrollMarkerTagOn": {
-			"label": "Show Tag Markers",
+			"label": "显示标签标记",
 			"menus": {
 				"gitlens/graph/markers": [
 					{
@@ -3123,7 +3123,7 @@
 			}
 		},
 		"gitlens.graph.shareAsCloudPatch": {
-			"label": "Share as Cloud Patch...",
+			"label": "作为云补丁共享...",
 			"menus": {
 				"gitlens/share": [
 					{
@@ -3135,7 +3135,7 @@
 			}
 		},
 		"gitlens.graph.showInDetailsView": {
-			"label": "Inspect Details",
+			"label": "检查详情",
 			"icon": "$(eye)",
 			"menus": {
 				"webview/context": [
@@ -3148,7 +3148,7 @@
 			}
 		},
 		"gitlens.graph.split": {
-			"label": "Split Commit Graph",
+			"label": "分割提交图",
 			"icon": "$(split-horizontal)",
 			"commandPalette": "gitlens:enabled && config.gitlens.graph.allowMultiple",
 			"menus": {
@@ -3169,7 +3169,7 @@
 			}
 		},
 		"gitlens.graph.switchToAnotherBranch": {
-			"label": "Switch Branch...",
+			"label": "切换分支...",
 			"icon": "$(gitlens-switch)",
 			"enablement": "!operationInProgress",
 			"menus": {
@@ -3183,7 +3183,7 @@
 			}
 		},
 		"gitlens.graph.switchToBranch": {
-			"label": "Switch to Branch...",
+			"label": "切换到分支...",
 			"icon": "$(gitlens-switch)",
 			"enablement": "!operationInProgress",
 			"menus": {
@@ -3197,7 +3197,7 @@
 			}
 		},
 		"gitlens.graph.switchToCommit": {
-			"label": "Switch to Commit...",
+			"label": "切换到提交...",
 			"icon": "$(gitlens-switch)",
 			"enablement": "!operationInProgress",
 			"menus": {
@@ -3211,7 +3211,7 @@
 			}
 		},
 		"gitlens.graph.switchToEditorLayout": {
-			"label": "Prefer Commit Graph in Editor",
+			"label": "在编辑器中优先使用提交图",
 			"enablement": "config.gitlens.graph.layout != editor",
 			"commandPalette": "gitlens:enabled && config.gitlens.graph.layout != editor",
 			"menus": {
@@ -3224,7 +3224,7 @@
 			}
 		},
 		"gitlens.graph.switchToPanelLayout": {
-			"label": "Prefer Commit Graph in Panel",
+			"label": "在面板中优先使用提交图",
 			"enablement": "config.gitlens.graph.layout != panel",
 			"commandPalette": "gitlens:enabled && config.gitlens.graph.layout != panel",
 			"menus": {
@@ -3237,7 +3237,7 @@
 			}
 		},
 		"gitlens.graph.switchToTag": {
-			"label": "Switch to Tag...",
+			"label": "切换到标签...",
 			"icon": "$(gitlens-switch)",
 			"enablement": "!operationInProgress",
 			"menus": {
@@ -3251,7 +3251,7 @@
 			}
 		},
 		"gitlens.graph.undoCommit": {
-			"label": "Undo Commit",
+			"label": "撤销提交",
 			"icon": "$(discard)",
 			"enablement": "!operationInProgress",
 			"menus": {
@@ -3265,7 +3265,7 @@
 			}
 		},
 		"gitlens.inviteToLiveShare": {
-			"label": "Invite to Live Share",
+			"label": "邀请到 Live Share",
 			"icon": "$(live-share)",
 			"menus": {
 				"view/item/context": [
@@ -3283,22 +3283,22 @@
 			}
 		},
 		"gitlens.launchpad.indicator.toggle": {
-			"label": "Toggle Launchpad Indicator",
+			"label": "切换启动台指示器",
 			"icon": "$(rocket)",
 			"commandPalette": "gitlens:enabled"
 		},
 		"gitlens.openAssociatedPullRequestOnRemote": {
-			"label": "Open Associated Pull Request",
+			"label": "打开关联的拉取请求",
 			"icon": "$(git-pull-request)",
 			"commandPalette": "gitlens:repos:withRemotes"
 		},
 		"gitlens.openBlamePriorToChange": {
-			"label": "Open Blame Prior to Change",
+			"label": "打开更改前的责任人",
 			"icon": "$(versions)",
 			"commandPalette": "resource in gitlens:tabs:tracked"
 		},
 		"gitlens.openBranchesOnRemote": {
-			"label": "Open Branches on Remote",
+			"label": "在远程上打开分支",
 			"icon": "$(globe)",
 			"commandPalette": "gitlens:repos:withRemotes",
 			"menus": {
@@ -3323,12 +3323,12 @@
 			}
 		},
 		"gitlens.openBranchOnRemote": {
-			"label": "Open Branch on Remote",
+			"label": "在远程上打开分支",
 			"icon": "$(globe)",
 			"commandPalette": "gitlens:repos:withRemotes"
 		},
 		"gitlens.openChangedFiles": {
-			"label": "Open Changed Files",
+			"label": "打开已更改的文件",
 			"commandPalette": "gitlens:enabled",
 			"menus": {
 				"scm/resourceGroup/context": [
@@ -3341,10 +3341,10 @@
 			}
 		},
 		"gitlens.openCloudPatch": {
-			"label": "Open Cloud Patch..."
+			"label": "打开云补丁..."
 		},
 		"gitlens.openCommitOnRemote": {
-			"label": "Open Commit on Remote",
+			"label": "在远程上打开提交",
 			"icon": "$(globe)",
 			"commandPalette": "gitlens:repos:withRemotes",
 			"menus": {
@@ -3373,7 +3373,7 @@
 			}
 		},
 		"gitlens.openComparisonOnRemote": {
-			"label": "Open Comparison on Remote",
+			"label": "在远程上打开比较",
 			"icon": "$(globe)",
 			"menus": {
 				"view/item/context": [
@@ -3397,16 +3397,16 @@
 			}
 		},
 		"gitlens.openCurrentBranchOnRemote": {
-			"label": "Open Current Branch on Remote",
+			"label": "在远程上打开当前分支",
 			"icon": "$(globe)",
 			"commandPalette": "gitlens:repos:withRemotes"
 		},
 		"gitlens.openFileFromRemote": {
-			"label": "Open File from Remote",
+			"label": "从远程打开文件",
 			"commandPalette": "gitlens:enabled"
 		},
 		"gitlens.openFileHistory": {
-			"label": "Open File History",
+			"label": "打开文件历史",
 			"commandPalette": "resource in gitlens:tabs:tracked",
 			"menus": {
 				"gitlens/commit/file/history": [
@@ -3437,7 +3437,7 @@
 			}
 		},
 		"gitlens.openFileOnRemote": {
-			"label": "Open File on Remote",
+			"label": "在远程上打开文件",
 			"icon": "$(globe)",
 			"commandPalette": "gitlens:repos:withRemotes",
 			"menus": {
@@ -3499,7 +3499,7 @@
 			}
 		},
 		"gitlens.openFileOnRemoteFrom": {
-			"label": "Open File on Remote From...",
+			"label": "从...在远程上打开文件",
 			"icon": "$(globe)",
 			"commandPalette": "gitlens:repos:withRemotes",
 			"menus": {
@@ -3541,17 +3541,17 @@
 			}
 		},
 		"gitlens.openFileRevision": {
-			"label": "Open File at Revision...",
+			"label": "打开版本文件...",
 			"icon": "$(gitlens-open-revision)",
 			"commandPalette": "resource in gitlens:tabs:tracked"
 		},
 		"gitlens.openFileRevisionFrom": {
-			"label": "Open File at Revision from...",
+			"label": "从...打开版本文件",
 			"icon": "$(gitlens-open-revision)",
 			"commandPalette": "resource in gitlens:tabs:tracked"
 		},
 		"gitlens.openFolderHistory": {
-			"label": "Open Folder History",
+			"label": "打开文件夹历史",
 			"menus": {
 				"gitlens/explorer/folder/history": [
 					{
@@ -3568,7 +3568,7 @@
 			}
 		},
 		"gitlens.openOnlyChangedFiles": {
-			"label": "Open Changed & Close Unchanged Files",
+			"label": "打开已更改并关闭未更改的文件",
 			"commandPalette": "gitlens:enabled",
 			"menus": {
 				"scm/resourceGroup/context": [
@@ -3581,7 +3581,7 @@
 			}
 		},
 		"gitlens.openPatch": {
-			"label": "Open Patch...",
+			"label": "打开补丁...",
 			"commandPalette": "false && gitlens:enabled",
 			"menus": {
 				"editor/title": [
@@ -3592,7 +3592,7 @@
 			}
 		},
 		"gitlens.openPullRequestOnRemote": {
-			"label": "Open Pull Request on Remote",
+			"label": "在远程上打开拉取请求",
 			"icon": "$(globe)",
 			"menus": {
 				"view/item/context": [
@@ -3611,7 +3611,7 @@
 			}
 		},
 		"gitlens.openRepoOnRemote": {
-			"label": "Open Repository on Remote",
+			"label": "在远程上打开仓库",
 			"icon": "$(globe)",
 			"commandPalette": "gitlens:repos:withRemotes",
 			"menus": {
@@ -3641,13 +3641,13 @@
 			}
 		},
 		"gitlens.openRevisionFile": {
-			"label": "Open File at Revision",
+			"label": "打开版本文件",
 			"icon": "$(gitlens-open-revision)",
 			"enablement": "gitlens:enabled && resourceScheme =~ /^(gitlens|pr)$/",
 			"commandPalette": "gitlens:enabled && resourceScheme =~ /^(gitlens|git|pr)$/ && isInDiffEditor"
 		},
 		"gitlens.openRevisionFile:editor/title": {
-			"label": "Open File at Revision",
+			"label": "打开版本文件",
 			"icon": "$(gitlens-open-revision)",
 			"enablement": "gitlens:enabled && resourceScheme =~ /^(gitlens|pr)$/",
 			"menus": {
@@ -3661,16 +3661,16 @@
 			}
 		},
 		"gitlens.openRevisionFromRemote": {
-			"label": "Open File at Revision from Remote",
+			"label": "从远程打开版本文件",
 			"commandPalette": "gitlens:enabled"
 		},
 		"gitlens.openWorkingFile": {
-			"label": "Open File",
+			"label": "打开文件",
 			"icon": "$(go-to-file)",
 			"commandPalette": "gitlens:enabled && resourceScheme =~ /^(gitlens|git|pr)$/"
 		},
 		"gitlens.openWorkingFile:editor/context": {
-			"label": "Open File",
+			"label": "打开文件",
 			"icon": "$(go-to-file)",
 			"menus": {
 				"editor/context": [
@@ -3683,7 +3683,7 @@
 			}
 		},
 		"gitlens.openWorkingFile:editor/title": {
-			"label": "Open File",
+			"label": "打开文件",
 			"icon": "$(go-to-file)",
 			"menus": {
 				"editor/title": [
@@ -3708,22 +3708,22 @@
 			}
 		},
 		"gitlens.pastePatchFromClipboard": {
-			"label": "Paste Copied Changes (Patch)",
+			"label": "粘贴复制的更改（补丁）",
 			"commandPalette": "gitlens:enabled && !gitlens:untrusted && !gitlens:hasVirtualFolders"
 		},
 		"gitlens.plus.cloudIntegrations.connect": {
-			"label": "Connect Integrations..."
+			"label": "连接集成..."
 		},
 		"gitlens.plus.cloudIntegrations.manage": {
-			"label": "Manage Integrations...",
+			"label": "管理集成...",
 			"commandPalette": "gitlens:plus"
 		},
 		"gitlens.plus.hide": {
-			"label": "Hide Pro Features",
+			"label": "隐藏 Pro 功能",
 			"commandPalette": "config.gitlens.plusFeatures.enabled"
 		},
 		"gitlens.plus.login": {
-			"label": "Sign In to GitKraken...",
+			"label": "登录到 GitKraken...",
 			"commandPalette": "!gitlens:plus",
 			"menus": {
 				"view/item/context": [
@@ -3736,43 +3736,43 @@
 			}
 		},
 		"gitlens.plus.logout": {
-			"label": "Sign Out of GitKraken",
+			"label": "退出 GitKraken",
 			"commandPalette": true
 		},
 		"gitlens.plus.manage": {
-			"label": "Manage Your Account...",
+			"label": "管理您的账户...",
 			"commandPalette": "gitlens:plus"
 		},
 		"gitlens.plus.reactivateProTrial": {
-			"label": "Reactivate Pro Trial",
+			"label": "重新激活 Pro 试用",
 			"commandPalette": "gitlens:plus:state == 5"
 		},
 		"gitlens.plus.referFriend": {
-			"label": "Refer a friend",
+			"label": "推荐朋友",
 			"commandPalette": "gitlens:plus:state == 6"
 		},
 		"gitlens.plus.refreshRepositoryAccess": {
-			"label": "Refresh Repository Access",
+			"label": "刷新仓库访问权限",
 			"commandPalette": "gitlens:enabled"
 		},
 		"gitlens.plus.restore": {
-			"label": "Restore Pro Features",
+			"label": "恢复 Pro 功能",
 			"commandPalette": "!config.gitlens.plusFeatures.enabled"
 		},
 		"gitlens.plus.signUp": {
-			"label": "Sign Up for GitKraken...",
+			"label": "注册 GitKraken...",
 			"commandPalette": "!gitlens:plus"
 		},
 		"gitlens.plus.simulateSubscription": {
-			"label": "Simulate Subscription (Debugging)",
+			"label": "模拟订阅（调试）",
 			"commandPalette": "gitlens:enabled && gitlens:debugging"
 		},
 		"gitlens.plus.upgrade": {
-			"label": "Upgrade to Pro...",
+			"label": "升级到 Pro...",
 			"commandPalette": true
 		},
 		"gitlens.pullRepositories": {
-			"label": "Pull",
+			"label": "拉取",
 			"icon": "$(repo-pull)",
 			"enablement": "!operationInProgress",
 			"commandPalette": "gitlens:repos:withRemotes && !gitlens:readonly && !gitlens:untrusted && !gitlens:hasVirtualFolders",
@@ -3828,7 +3828,7 @@
 			}
 		},
 		"gitlens.pushRepositories": {
-			"label": "Push",
+			"label": "推送",
 			"icon": "$(repo-push)",
 			"enablement": "!operationInProgress",
 			"commandPalette": "gitlens:repos:withRemotes && !gitlens:readonly && !gitlens:untrusted && !gitlens:hasVirtualFolders",
@@ -3884,7 +3884,7 @@
 			}
 		},
 		"gitlens.quickOpenFileHistory": {
-			"label": "Quick Open File History",
+			"label": "快速打开文件历史",
 			"commandPalette": "resource in gitlens:tabs:tracked",
 			"menus": {
 				"gitlens/commit/file/history": [
@@ -3914,7 +3914,7 @@
 			}
 		},
 		"gitlens.regenerateMarkdownDocument": {
-			"label": "Regenerate",
+			"label": "重新生成",
 			"icon": "$(refresh)",
 			"menus": {
 				"editor/title": [
@@ -3934,15 +3934,15 @@
 			}
 		},
 		"gitlens.reset": {
-			"label": "Reset Stored Data...",
+			"label": "重置存储的数据...",
 			"commandPalette": true
 		},
 		"gitlens.resetViewsLayout": {
-			"label": "Reset Views Layout",
+			"label": "重置视图布局",
 			"commandPalette": true
 		},
 		"gitlens.restore.file:views": {
-			"label": "Restore Changes (Checkout)",
+			"label": "恢复更改（检出）",
 			"menus": {
 				"view/item/context": [
 					{
@@ -3959,7 +3959,7 @@
 			}
 		},
 		"gitlens.restorePrevious.file:views": {
-			"label": "Restore Previous Changes",
+			"label": "恢复之前的更改",
 			"menus": {
 				"view/item/context": [
 					{
@@ -3976,7 +3976,7 @@
 			}
 		},
 		"gitlens.revealCommitInView": {
-			"label": "Reveal Commit in Side Bar",
+			"label": "在侧边栏中显示提交",
 			"commandPalette": "resource in gitlens:tabs:blameable",
 			"menus": {
 				"gitlens/commit/file/commit": [
@@ -3996,7 +3996,7 @@
 			}
 		},
 		"gitlens.setUpstream:graph": {
-			"label": "Set Upstream...",
+			"label": "设置上游...",
 			"icon": "$(link)",
 			"enablement": "!operationInProgress",
 			"menus": {
@@ -4010,7 +4010,7 @@
 			}
 		},
 		"gitlens.setUpstream:views": {
-			"label": "Set Upstream...",
+			"label": "设置上游...",
 			"icon": "$(link)",
 			"enablement": "!operationInProgress",
 			"menus": {
@@ -4024,7 +4024,7 @@
 			}
 		},
 		"gitlens.shareAsCloudPatch": {
-			"label": "Share as Cloud Patch...",
+			"label": "作为云补丁共享...",
 			"commandPalette": "gitlens:enabled && gitlens:gk:organization:drafts:enabled && config.gitlens.cloudPatches.enabled",
 			"menus": {
 				"git.changes": [
@@ -4051,24 +4051,24 @@
 			}
 		},
 		"gitlens.showAccountView": {
-			"label": "Show Account on Home",
+			"label": "在主页上显示账户",
 			"commandPalette": true
 		},
 		"gitlens.showBranchesView": {
-			"label": "Show Branches View",
+			"label": "显示分支视图",
 			"commandPalette": "gitlens:enabled"
 		},
 		"gitlens.showCommitDetailsView": {
-			"label": "Show Inspect View",
+			"label": "显示检查视图",
 			"commandPalette": "gitlens:enabled"
 		},
 		"gitlens.showCommitInView": {
-			"label": "Inspect Commit Details",
+			"label": "检查提交详情",
 			"icon": "$(eye)",
 			"commandPalette": "resource in gitlens:tabs:blameable"
 		},
 		"gitlens.showCommitSearch": {
-			"label": "Search Commits",
+			"label": "搜索提交",
 			"icon": "$(search)",
 			"commandPalette": "gitlens:enabled",
 			"menus": {
@@ -4087,7 +4087,7 @@
 			}
 		},
 		"gitlens.showCommitsInView": {
-			"label": "Search for Commits within Selection",
+			"label": "在选中范围内搜索提交",
 			"commandPalette": "resource in gitlens:tabs:blameable",
 			"menus": {
 				"gitlens/editor/context/changes": [
@@ -4100,23 +4100,23 @@
 			}
 		},
 		"gitlens.showCommitsView": {
-			"label": "Show Commits View",
+			"label": "显示提交视图",
 			"commandPalette": "gitlens:enabled"
 		},
 		"gitlens.showContributorsView": {
-			"label": "Show Contributors View",
+			"label": "显示贡献者视图",
 			"commandPalette": "gitlens:enabled"
 		},
 		"gitlens.showDraftsView": {
-			"label": "Show Cloud Patches View",
+			"label": "显示云补丁视图",
 			"commandPalette": "gitlens:enabled && gitlens:gk:organization:drafts:enabled"
 		},
 		"gitlens.showFileHistoryView": {
-			"label": "Show File History View",
+			"label": "显示文件历史视图",
 			"commandPalette": "gitlens:enabled"
 		},
 		"gitlens.showGraph": {
-			"label": "Show Commit Graph",
+			"label": "显示提交图",
 			"icon": "$(gitlens-graph)",
 			"commandPalette": "gitlens:enabled",
 			"menus": {
@@ -4190,21 +4190,21 @@
 			}
 		},
 		"gitlens.showGraphPage": {
-			"label": "Show Commit Graph in Editor",
+			"label": "在编辑器中显示提交图",
 			"icon": "$(gitlens-graph)",
 			"commandPalette": "gitlens:enabled"
 		},
 		"gitlens.showGraphView": {
-			"label": "Show Commit Graph View",
+			"label": "显示提交图视图",
 			"icon": "$(gitlens-graph)",
 			"commandPalette": "gitlens:enabled"
 		},
 		"gitlens.showHomeView": {
-			"label": "Show Home View",
+			"label": "显示主页视图",
 			"commandPalette": true
 		},
 		"gitlens.showInCommitGraph": {
-			"label": "Open in Commit Graph",
+			"label": "在提交图中打开",
 			"icon": "$(gitlens-graph)",
 			"menus": {
 				"gitlens/commit/file/commit": [
@@ -4234,11 +4234,11 @@
 			}
 		},
 		"gitlens.showInCommitGraphView": {
-			"label": "Open in Commit Graph",
+			"label": "在提交图中打开",
 			"icon": "$(gitlens-graph)"
 		},
 		"gitlens.showInDetailsView": {
-			"label": "Inspect Details",
+			"label": "检查详情",
 			"icon": "$(eye)",
 			"menus": {
 				"gitlens/commit/file/commit": [
@@ -4263,21 +4263,21 @@
 			}
 		},
 		"gitlens.showLastQuickPick": {
-			"label": "Show Last Opened Quick Pick",
+			"label": "显示上次打开的快速选择",
 			"commandPalette": "gitlens:enabled"
 		},
 		"gitlens.showLaunchpad": {
-			"label": "Open Launchpad",
+			"label": "打开启动台",
 			"icon": "$(rocket)",
 			"commandPalette": "gitlens:enabled"
 		},
 		"gitlens.showLaunchpadView": {
-			"label": "Show Launchpad View",
+			"label": "显示启动台视图",
 			"icon": "$(rocket)",
 			"commandPalette": "gitlens:enabled"
 		},
 		"gitlens.showLineCommitInView": {
-			"label": "Inspect Line Commit Details",
+			"label": "检查行提交详情",
 			"icon": "$(eye)",
 			"commandPalette": "resource in gitlens:tabs:blameable",
 			"menus": {
@@ -4296,7 +4296,7 @@
 			}
 		},
 		"gitlens.showLineHistoryView": {
-			"label": "Show Line History View",
+			"label": "显示行历史视图",
 			"commandPalette": "gitlens:enabled && !gitlens:hasVirtualFolders",
 			"menus": {
 				"gitlens/views/grouped/fileHistory": [
@@ -4328,18 +4328,18 @@
 			}
 		},
 		"gitlens.showPatchDetailsPage": {
-			"label": "Show Patch Details",
+			"label": "显示补丁详情",
 			"commandPalette": "gitlens:enabled && gitlens:gk:organization:drafts:enabled && config.gitlens.cloudPatches.enabled"
 		},
 		"gitlens.showQuickBranchHistory": {
-			"label": "Show Branch History",
+			"label": "显示分支历史",
 			"commandPalette": "gitlens:enabled"
 		},
 		"gitlens.showQuickCommitDetails": {
-			"label": "Quick Show Commit"
+			"label": "快速显示提交"
 		},
 		"gitlens.showQuickCommitFileDetails": {
-			"label": "Quick Show Line Commit",
+			"label": "快速显示行提交",
 			"commandPalette": "resource in gitlens:tabs:blameable",
 			"menus": {
 				"gitlens/editor/context/changes": [
@@ -4368,7 +4368,7 @@
 			]
 		},
 		"gitlens.showQuickFileHistory": {
-			"label": "Show File History",
+			"label": "显示文件历史",
 			"commandPalette": "resource in gitlens:tabs:tracked",
 			"keybindings": [
 				{
@@ -4383,7 +4383,7 @@
 			]
 		},
 		"gitlens.showQuickRepoHistory": {
-			"label": "Show Current Branch History",
+			"label": "显示当前分支历史",
 			"commandPalette": "gitlens:enabled",
 			"keybindings": [
 				{
@@ -4398,7 +4398,7 @@
 			]
 		},
 		"gitlens.showQuickRepoStatus": {
-			"label": "Show Repository Status",
+			"label": "显示仓库状态",
 			"commandPalette": "gitlens:enabled",
 			"keybindings": [
 				{
@@ -4413,13 +4413,13 @@
 			]
 		},
 		"gitlens.showQuickRevisionDetails": {
-			"label": "Show Revision Commit",
+			"label": "显示修订提交",
 			"icon": "$(gitlens-commit-horizontal)",
 			"enablement": "gitlens:enabled && resourceScheme =~ /^(gitlens|pr)$/",
 			"commandPalette": "gitlens:enabled && resourceScheme =~ /^(gitlens|git|pr)$/"
 		},
 		"gitlens.showQuickRevisionDetails:editor": {
-			"label": "Show Revision Commit",
+			"label": "显示修订提交",
 			"icon": "$(gitlens-commit-horizontal)",
 			"enablement": "gitlens:enabled && resourceScheme =~ /^(gitlens|pr)$/",
 			"menus": {
@@ -4433,7 +4433,7 @@
 			}
 		},
 		"gitlens.showQuickRevisionDetails:editor/title": {
-			"label": "Show Revision Commit",
+			"label": "显示修订提交",
 			"icon": "$(gitlens-commit-horizontal)",
 			"enablement": "gitlens:enabled && resourceScheme =~ /^(gitlens|pr)$/",
 			"menus": {
@@ -4447,15 +4447,15 @@
 			}
 		},
 		"gitlens.showQuickStashList": {
-			"label": "Show Stashes",
+			"label": "显示存储",
 			"commandPalette": "gitlens:enabled"
 		},
 		"gitlens.showRemotesView": {
-			"label": "Show Remotes View",
+			"label": "显示远程视图",
 			"commandPalette": "gitlens:enabled"
 		},
 		"gitlens.showRepositoriesView": {
-			"label": "Show Repositories View",
+			"label": "显示仓库视图",
 			"commandPalette": "gitlens:enabled && !gitlens:hasVirtualFolders",
 			"menus": {
 				"view/item/context": [
@@ -4480,11 +4480,11 @@
 			}
 		},
 		"gitlens.showSearchAndCompareView": {
-			"label": "Show Search & Compare View",
+			"label": "显示搜索和比较视图",
 			"commandPalette": "gitlens:enabled"
 		},
 		"gitlens.showSettingsPage": {
-			"label": "Open Settings",
+			"label": "打开设置",
 			"icon": "$(gear)",
 			"commandPalette": true,
 			"menus": {
@@ -4498,7 +4498,7 @@
 			}
 		},
 		"gitlens.showSettingsPage!autolinks": {
-			"label": "Configure Autolinks",
+			"label": "配置自动链接",
 			"icon": "$(gear)",
 			"commandPalette": true,
 			"menus": {
@@ -4517,7 +4517,7 @@
 			}
 		},
 		"gitlens.showSettingsPage!branches-view": {
-			"label": "Open View Settings",
+			"label": "打开视图设置",
 			"icon": "$(gear)",
 			"menus": {
 				"gitlens/views/grouped/more": [
@@ -4564,7 +4564,7 @@
 			}
 		},
 		"gitlens.showSettingsPage!commit-graph": {
-			"label": "Open Commit Graph Settings",
+			"label": "打开提交图设置",
 			"icon": "$(gear)",
 			"menus": {
 				"gitlens/graph/configuration": [
@@ -4576,7 +4576,7 @@
 			}
 		},
 		"gitlens.showSettingsPage!commits-view": {
-			"label": "Open View Settings",
+			"label": "打开视图设置",
 			"icon": "$(gear)",
 			"menus": {
 				"gitlens/views/grouped/more": [
@@ -4623,7 +4623,7 @@
 			}
 		},
 		"gitlens.showSettingsPage!contributors-view": {
-			"label": "Open View Settings",
+			"label": "打开视图设置",
 			"icon": "$(gear)",
 			"menus": {
 				"gitlens/views/grouped/more": [
@@ -4670,7 +4670,7 @@
 			}
 		},
 		"gitlens.showSettingsPage!file-annotations": {
-			"label": "Open File Annotation Settings",
+			"label": "打开文件注释设置",
 			"icon": "$(gear)",
 			"menus": {
 				"gitlens/editor/annotations": [
@@ -4683,7 +4683,7 @@
 			}
 		},
 		"gitlens.showSettingsPage!file-history-view": {
-			"label": "Open View Settings",
+			"label": "打开视图设置",
 			"icon": "$(gear)",
 			"menus": {
 				"gitlens/views/grouped/more": [
@@ -4730,7 +4730,7 @@
 			}
 		},
 		"gitlens.showSettingsPage!line-history-view": {
-			"label": "Open View Settings",
+			"label": "打开视图设置",
 			"icon": "$(gear)",
 			"menus": {
 				"view/item/context": [
@@ -4755,7 +4755,7 @@
 			}
 		},
 		"gitlens.showSettingsPage!remotes-view": {
-			"label": "Open View Settings",
+			"label": "打开视图设置",
 			"icon": "$(gear)",
 			"menus": {
 				"gitlens/views/grouped/more": [
@@ -4792,7 +4792,7 @@
 			}
 		},
 		"gitlens.showSettingsPage!repositories-view": {
-			"label": "Open View Settings",
+			"label": "打开视图设置",
 			"icon": "$(gear)",
 			"menus": {
 				"gitlens/views/grouped/more": [
@@ -4829,7 +4829,7 @@
 			}
 		},
 		"gitlens.showSettingsPage!search-compare-view": {
-			"label": "Open View Settings",
+			"label": "打开视图设置",
 			"icon": "$(gear)",
 			"menus": {
 				"gitlens/views/grouped/more": [
@@ -4866,7 +4866,7 @@
 			}
 		},
 		"gitlens.showSettingsPage!stashes-view": {
-			"label": "Open View Settings",
+			"label": "打开视图设置",
 			"icon": "$(gear)",
 			"menus": {
 				"gitlens/views/grouped/more": [
@@ -4903,7 +4903,7 @@
 			}
 		},
 		"gitlens.showSettingsPage!tags-view": {
-			"label": "Open View Settings",
+			"label": "打开视图设置",
 			"icon": "$(gear)",
 			"menus": {
 				"gitlens/views/grouped/more": [
@@ -4940,11 +4940,11 @@
 			}
 		},
 		"gitlens.showSettingsPage!views": {
-			"label": "Open Settings",
+			"label": "打开设置",
 			"icon": "$(gear)"
 		},
 		"gitlens.showSettingsPage!worktrees-view": {
-			"label": "Open View Settings",
+			"label": "打开视图设置",
 			"icon": "$(gear)",
 			"menus": {
 				"gitlens/views/grouped/more": [
@@ -4981,32 +4981,32 @@
 			}
 		},
 		"gitlens.showStashesView": {
-			"label": "Show Stashes View",
+			"label": "显示存储视图",
 			"commandPalette": "gitlens:enabled && !gitlens:hasVirtualFolders"
 		},
 		"gitlens.showTagsView": {
-			"label": "Show Tags View",
+			"label": "显示标签视图",
 			"commandPalette": "gitlens:enabled"
 		},
 		"gitlens.showTimelinePage": {
-			"label": "Show Visual History",
+			"label": "显示可视化历史",
 			"icon": "$(graph-scatter)",
 			"commandPalette": "gitlens:enabled"
 		},
 		"gitlens.showTimelineView": {
-			"label": "Show Visual File History View",
+			"label": "显示可视化文件历史视图",
 			"commandPalette": "gitlens:enabled"
 		},
 		"gitlens.showWorkspacesView": {
-			"label": "Show Cloud Workspaces View",
+			"label": "显示云工作区视图",
 			"commandPalette": "gitlens:enabled && !gitlens:hasVirtualFolders"
 		},
 		"gitlens.showWorktreesView": {
-			"label": "Show Worktrees View",
+			"label": "显示工作树视图",
 			"commandPalette": "gitlens:enabled && !gitlens:hasVirtualFolders"
 		},
 		"gitlens.star.branch:graph": {
-			"label": "Add to Favorites",
+			"label": "添加到收藏夹",
 			"icon": "$(star-empty)",
 			"menus": {
 				"webview/context": [
@@ -5019,7 +5019,7 @@
 			}
 		},
 		"gitlens.star.branch:views": {
-			"label": "Add to Favorites",
+			"label": "添加到收藏夹",
 			"icon": "$(star-empty)",
 			"menus": {
 				"view/item/context": [
@@ -5037,7 +5037,7 @@
 			}
 		},
 		"gitlens.star.branch.multi:views": {
-			"label": "Add to Favorites",
+			"label": "添加到收藏夹",
 			"icon": "$(star-empty)",
 			"menus": {
 				"view/item/context": [
@@ -5055,7 +5055,7 @@
 			}
 		},
 		"gitlens.star.repository:views": {
-			"label": "Add to Favorites",
+			"label": "添加到收藏夹",
 			"icon": "$(star-empty)",
 			"menus": {
 				"view/item/context": [
@@ -5083,7 +5083,7 @@
 			}
 		},
 		"gitlens.star.repository.multi:views": {
-			"label": "Add to Favorites",
+			"label": "添加到收藏夹",
 			"icon": "$(star-empty)",
 			"menus": {
 				"view/item/context": [
@@ -5101,12 +5101,12 @@
 			}
 		},
 		"gitlens.startWork": {
-			"label": "Start Work",
+			"label": "开始工作",
 			"icon": "$(rocket)",
 			"commandPalette": "gitlens:enabled"
 		},
 		"gitlens.stashApply:graph": {
-			"label": "Apply Stash...",
+			"label": "应用存储...",
 			"icon": "$(gitlens-stash-pop)",
 			"enablement": "!operationInProgress",
 			"menus": {
@@ -5120,7 +5120,7 @@
 			}
 		},
 		"gitlens.stashApply:views": {
-			"label": "Apply Stash...",
+			"label": "应用存储...",
 			"icon": "$(gitlens-stash-pop)",
 			"enablement": "!operationInProgress",
 			"menus": {
@@ -5139,7 +5139,7 @@
 			}
 		},
 		"gitlens.stashDelete:graph": {
-			"label": "Drop Stash...",
+			"label": "丢弃存储...",
 			"icon": "$(trash)",
 			"enablement": "!operationInProgress",
 			"menus": {
@@ -5153,7 +5153,7 @@
 			}
 		},
 		"gitlens.stashDelete:views": {
-			"label": "Drop Stash...",
+			"label": "丢弃存储...",
 			"icon": "$(trash)",
 			"enablement": "!operationInProgress",
 			"menus": {
@@ -5172,7 +5172,7 @@
 			}
 		},
 		"gitlens.stashDelete.multi:views": {
-			"label": "Drop Stashes...",
+			"label": "丢弃存储项...",
 			"icon": "$(trash)",
 			"enablement": "!operationInProgress",
 			"menus": {
@@ -5186,13 +5186,13 @@
 			}
 		},
 		"gitlens.stashesApply": {
-			"label": "Apply a Stash...",
+			"label": "应用一个存储...",
 			"icon": "$(gitlens-stash-pop)",
 			"enablement": "!operationInProgress",
 			"commandPalette": "gitlens:enabled && !gitlens:readonly && !gitlens:untrusted && !gitlens:hasVirtualFolders"
 		},
 		"gitlens.stashesApply:views": {
-			"label": "Apply a Stash...",
+			"label": "应用一个存储...",
 			"icon": "$(gitlens-stash-pop)",
 			"enablement": "!operationInProgress",
 			"menus": {
@@ -5240,7 +5240,7 @@
 			}
 		},
 		"gitlens.stashRename:graph": {
-			"label": "Rename Stash...",
+			"label": "重命名存储...",
 			"icon": "$(edit)",
 			"enablement": "!operationInProgress",
 			"menus": {
@@ -5254,7 +5254,7 @@
 			}
 		},
 		"gitlens.stashRename:views": {
-			"label": "Rename Stash...",
+			"label": "重命名存储...",
 			"icon": "$(edit)",
 			"enablement": "!operationInProgress",
 			"menus": {
@@ -5273,13 +5273,13 @@
 			}
 		},
 		"gitlens.stashSave": {
-			"label": "Stash All Changes...",
+			"label": "存储所有更改...",
 			"icon": "$(gitlens-stash-save)",
 			"enablement": "!operationInProgress",
 			"commandPalette": "gitlens:enabled && !gitlens:readonly && !gitlens:untrusted && !gitlens:hasVirtualFolders"
 		},
 		"gitlens.stashSave:graph": {
-			"label": "Stash All Changes...",
+			"label": "存储所有更改...",
 			"icon": "$(gitlens-stash-save)",
 			"enablement": "!operationInProgress",
 			"menus": {
@@ -5293,7 +5293,7 @@
 			}
 		},
 		"gitlens.stashSave:scm": {
-			"label": "Stash All Changes...",
+			"label": "存储所有更改...",
 			"icon": "$(gitlens-stash-save)",
 			"enablement": "!operationInProgress",
 			"commandPalette": "gitlens:enabled && !gitlens:readonly && !gitlens:untrusted && !gitlens:hasVirtualFolders",
@@ -5315,7 +5315,7 @@
 			}
 		},
 		"gitlens.stashSave:views": {
-			"label": "Stash All Changes...",
+			"label": "存储所有更改...",
 			"icon": "$(gitlens-stash-save)",
 			"enablement": "!operationInProgress",
 			"menus": {
@@ -5363,7 +5363,7 @@
 			}
 		},
 		"gitlens.stashSave.files:scm": {
-			"label": "Stash Changes...",
+			"label": "存储更改...",
 			"icon": "$(gitlens-stash-save)",
 			"enablement": "!operationInProgress",
 			"menus": {
@@ -5382,7 +5382,7 @@
 			}
 		},
 		"gitlens.stashSave.files:views": {
-			"label": "Stash Changes...",
+			"label": "存储更改...",
 			"icon": "$(gitlens-stash-save)",
 			"enablement": "!operationInProgress",
 			"menus": {
@@ -5406,7 +5406,7 @@
 			}
 		},
 		"gitlens.stashSave.staged:scm": {
-			"label": "Stash Staged Changes...",
+			"label": "存储已暂存更改...",
 			"icon": "$(gitlens-stash-save)",
 			"enablement": "!operationInProgress",
 			"commandPalette": "gitlens:enabled && !gitlens:readonly && !gitlens:untrusted && !gitlens:hasVirtualFolders",
@@ -5426,7 +5426,7 @@
 			}
 		},
 		"gitlens.stashSave.unstaged:scm": {
-			"label": "Stash Unstaged Changes...",
+			"label": "存储未暂存更改...",
 			"icon": "$(gitlens-stash-save)",
 			"enablement": "!operationInProgress",
 			"commandPalette": "gitlens:enabled && !gitlens:readonly && !gitlens:untrusted && !gitlens:hasVirtualFolders",
@@ -5446,11 +5446,11 @@
 			}
 		},
 		"gitlens.switchMode": {
-			"label": "Switch Mode",
+			"label": "切换模式",
 			"commandPalette": "gitlens:enabled"
 		},
 		"gitlens.timeline.refresh": {
-			"label": "Refresh",
+			"label": "刷新",
 			"icon": "$(refresh)",
 			"menus": {
 				"editor/title": [
@@ -5463,7 +5463,7 @@
 			}
 		},
 		"gitlens.timeline.split": {
-			"label": "Split Visual History",
+			"label": "分割可视化历史",
 			"icon": "$(split-horizontal)",
 			"commandPalette": "gitlens:enabled && config.gitlens.visualHistory.allowMultiple",
 			"menus": {
@@ -5499,12 +5499,12 @@
 			]
 		},
 		"gitlens.toggleFileBlame": {
-			"label": "Toggle File Blame",
+			"label": "切换文件责任人",
 			"icon": "$(gitlens-gitlens)",
 			"commandPalette": "resource in gitlens:tabs:blameable || config.gitlens.blame.toggleMode == window"
 		},
 		"gitlens.toggleFileBlame:editor": {
-			"label": "Toggle File Blame",
+			"label": "切换文件责任人",
 			"icon": "$(gitlens-gitlens)",
 			"menus": {
 				"gitlens/editor/annotations": [
@@ -5517,7 +5517,7 @@
 			}
 		},
 		"gitlens.toggleFileBlame:editor/title": {
-			"label": "Toggle File Blame",
+			"label": "切换文件责任人",
 			"icon": "$(gitlens-gitlens)",
 			"menus": {
 				"editor/title": [
@@ -5531,7 +5531,7 @@
 			}
 		},
 		"gitlens.toggleFileBlame:key": {
-			"label": "Toggle File Blame",
+			"label": "切换文件责任人",
 			"icon": "$(gitlens-gitlens)",
 			"keybindings": [
 				{
@@ -5546,12 +5546,12 @@
 			]
 		},
 		"gitlens.toggleFileChanges": {
-			"label": "Toggle File Changes",
+			"label": "切换文件更改",
 			"icon": "$(gitlens-gitlens)",
 			"commandPalette": "(resource in gitlens:tabs:blameable  || config.gitlens.changes.toggleMode == window) && !gitlens:hasVirtualFolders"
 		},
 		"gitlens.toggleFileChanges:editor": {
-			"label": "Toggle File Changes",
+			"label": "切换文件更改",
 			"icon": "$(gitlens-gitlens)",
 			"menus": {
 				"gitlens/editor/annotations": [
@@ -5564,7 +5564,7 @@
 			}
 		},
 		"gitlens.toggleFileChanges:editor/title": {
-			"label": "Toggle File Changes",
+			"label": "切换文件更改",
 			"icon": "$(gitlens-gitlens)",
 			"menus": {
 				"editor/title": [
@@ -5578,16 +5578,16 @@
 			}
 		},
 		"gitlens.toggleFileChangesOnly": {
-			"label": "Toggle File Changes",
+			"label": "切换文件更改",
 			"icon": "$(gitlens-gitlens)"
 		},
 		"gitlens.toggleFileHeatmap": {
-			"label": "Toggle File Heatmap",
+			"label": "切换文件热力图",
 			"icon": "$(gitlens-gitlens)",
 			"commandPalette": "resource in gitlens:tabs:blameable || config.gitlens.heatmap.toggleMode == window"
 		},
 		"gitlens.toggleFileHeatmap:editor": {
-			"label": "Toggle File Heatmap",
+			"label": "切换文件热力图",
 			"icon": "$(gitlens-gitlens)",
 			"menus": {
 				"gitlens/editor/annotations": [
@@ -5600,7 +5600,7 @@
 			}
 		},
 		"gitlens.toggleFileHeatmap:editor/title": {
-			"label": "Toggle File Heatmap",
+			"label": "切换文件热力图",
 			"icon": "$(gitlens-gitlens)",
 			"menus": {
 				"editor/title": [
@@ -5614,7 +5614,7 @@
 			}
 		},
 		"gitlens.toggleFileHeatmapInDiffLeft": {
-			"label": "Toggle File Heatmap",
+			"label": "切换文件热力图",
 			"icon": "$(gitlens-gitlens)",
 			"menus": {
 				"gitlens/editor/annotations": [
@@ -5627,7 +5627,7 @@
 			}
 		},
 		"gitlens.toggleFileHeatmapInDiffRight": {
-			"label": "Toggle File Heatmap",
+			"label": "切换文件热力图",
 			"icon": "$(gitlens-gitlens)",
 			"menus": {
 				"gitlens/editor/annotations": [
@@ -5640,29 +5640,29 @@
 			}
 		},
 		"gitlens.toggleGraph": {
-			"label": "Toggle Commit Graph",
+			"label": "切换提交图",
 			"icon": "$(gitlens-graph)",
 			"commandPalette": "gitlens:enabled"
 		},
 		"gitlens.toggleLineBlame": {
-			"label": "Toggle Line Blame",
+			"label": "切换行责任人",
 			"commandPalette": "!gitlens:disabled"
 		},
 		"gitlens.toggleMaximizedGraph": {
-			"label": "Toggle Maximized Commit Graph",
+			"label": "切换最大化提交图",
 			"icon": "$(gitlens-graph)",
 			"commandPalette": "gitlens:enabled"
 		},
 		"gitlens.toggleReviewMode": {
-			"label": "Toggle Review Mode",
+			"label": "切换审阅模式",
 			"commandPalette": "gitlens:enabled"
 		},
 		"gitlens.toggleZenMode": {
-			"label": "Toggle Zen Mode",
+			"label": "切换禅模式",
 			"commandPalette": "gitlens:enabled"
 		},
 		"gitlens.unstar.branch:graph": {
-			"label": "Remove from Favorites",
+			"label": "从收藏夹中移除",
 			"icon": "$(star-full)",
 			"menus": {
 				"webview/context": [
@@ -5675,7 +5675,7 @@
 			}
 		},
 		"gitlens.unstar.branch:views": {
-			"label": "Remove from Favorites",
+			"label": "从收藏夹中移除",
 			"icon": "$(star-full)",
 			"menus": {
 				"view/item/context": [
@@ -5693,7 +5693,7 @@
 			}
 		},
 		"gitlens.unstar.branch.multi:views": {
-			"label": "Remove from Favorites",
+			"label": "从收藏夹中移除",
 			"icon": "$(star-full)",
 			"menus": {
 				"view/item/context": [
@@ -5711,7 +5711,7 @@
 			}
 		},
 		"gitlens.unstar.repository:views": {
-			"label": "Remove from Favorites",
+			"label": "从收藏夹中移除",
 			"icon": "$(star-full)",
 			"menus": {
 				"view/item/context": [
@@ -5739,7 +5739,7 @@
 			}
 		},
 		"gitlens.unstar.repository.multi:views": {
-			"label": "Remove from Favorites",
+			"label": "从收藏夹中移除",
 			"icon": "$(star-full)",
 			"menus": {
 				"view/item/context": [
@@ -5757,7 +5757,7 @@
 			}
 		},
 		"gitlens.views.abortPausedOperation": {
-			"label": "Abort",
+			"label": "中止",
 			"icon": "$(circle-slash)",
 			"menus": {
 				"view/item/context": [
@@ -5775,7 +5775,7 @@
 			}
 		},
 		"gitlens.views.addAuthor": {
-			"label": "Add as Co-author",
+			"label": "添加为共同作者",
 			"icon": "$(person-add)",
 			"menus": {
 				"view/item/context": [
@@ -5793,7 +5793,7 @@
 			}
 		},
 		"gitlens.views.addAuthor.multi": {
-			"label": "Add as Co-authors",
+			"label": "添加为共同作者",
 			"icon": "$(person-add)",
 			"menus": {
 				"view/item/context": [
@@ -5806,7 +5806,7 @@
 			}
 		},
 		"gitlens.views.addAuthors": {
-			"label": "Add Co-authors...",
+			"label": "添加协作者...",
 			"icon": "$(person-add)",
 			"menus": {
 				"gitlens/views/grouped/contributors": [
@@ -5843,12 +5843,12 @@
 			}
 		},
 		"gitlens.views.addPullRequestRemote": {
-			"label": "Add Pull Request Remote",
+			"label": "添加拉取请求远程",
 			"icon": "$(add)",
 			"enablement": "!operationInProgress"
 		},
 		"gitlens.views.addRemote": {
-			"label": "Add Remote...",
+			"label": "添加远程...",
 			"icon": "$(add)",
 			"enablement": "!operationInProgress",
 			"menus": {
@@ -5891,7 +5891,7 @@
 			}
 		},
 		"gitlens.views.applyChanges": {
-			"label": "Apply Changes",
+			"label": "应用更改",
 			"enablement": "!operationInProgress",
 			"menus": {
 				"view/item/context": [
@@ -5909,7 +5909,7 @@
 			}
 		},
 		"gitlens.views.associateIssueWithBranch": {
-			"label": "Associate Issue with Branch...",
+			"label": "将问题与分支关联...",
 			"enablement": "!operationInProgress",
 			"menus": {
 				"view/item/context": [
@@ -5922,7 +5922,7 @@
 			}
 		},
 		"gitlens.views.branches.attach": {
-			"label": "Group into GitLens View",
+			"label": "组合到 GitLens 视图",
 			"icon": "$(close)",
 			"menus": {
 				"view/title": [
@@ -5940,7 +5940,7 @@
 			}
 		},
 		"gitlens.views.branches.copy": {
-			"label": "Copy",
+			"label": "复制",
 			"keybindings": [
 				{
 					"key": "ctrl+c",
@@ -5950,7 +5950,7 @@
 			]
 		},
 		"gitlens.views.branches.refresh": {
-			"label": "Refresh",
+			"label": "刷新",
 			"icon": "$(refresh)",
 			"menus": {
 				"view/item/context": [
@@ -5970,7 +5970,7 @@
 			}
 		},
 		"gitlens.views.branches.setFilesLayoutToAuto": {
-			"label": "View Files as Auto",
+			"label": "以自动模式查看文件",
 			"icon": "$(list-tree)",
 			"enablement": "config.gitlens.views.branches.files.layout != auto",
 			"menus": {
@@ -6008,7 +6008,7 @@
 			}
 		},
 		"gitlens.views.branches.setFilesLayoutToList": {
-			"label": "View Files as List",
+			"label": "以列表模式查看文件",
 			"icon": "$(gitlens-list-auto)",
 			"enablement": "config.gitlens.views.branches.files.layout != list",
 			"menus": {
@@ -6046,7 +6046,7 @@
 			}
 		},
 		"gitlens.views.branches.setFilesLayoutToTree": {
-			"label": "View Files as Tree",
+			"label": "以树形模式查看文件",
 			"icon": "$(list-flat)",
 			"enablement": "config.gitlens.views.branches.files.layout != tree",
 			"menus": {
@@ -6084,7 +6084,7 @@
 			}
 		},
 		"gitlens.views.branches.setLayoutToList": {
-			"label": "View as List",
+			"label": "以列表模式查看",
 			"icon": "$(list-tree)",
 			"enablement": "config.gitlens.views.branches.branches.layout != list",
 			"menus": {
@@ -6132,7 +6132,7 @@
 			}
 		},
 		"gitlens.views.branches.setLayoutToTree": {
-			"label": "View as Tree",
+			"label": "以树形模式查看",
 			"icon": "$(list-flat)",
 			"enablement": "config.gitlens.views.branches.branches.layout != tree",
 			"menus": {
@@ -6180,7 +6180,7 @@
 			}
 		},
 		"gitlens.views.branches.setShowAvatarsOff": {
-			"label": "Hide Avatars",
+			"label": "隐藏头像",
 			"menus": {
 				"gitlens/views/grouped/more": [
 					{
@@ -6216,7 +6216,7 @@
 			}
 		},
 		"gitlens.views.branches.setShowAvatarsOn": {
-			"label": "Show Avatars",
+			"label": "显示头像",
 			"menus": {
 				"gitlens/views/grouped/more": [
 					{
@@ -6252,7 +6252,7 @@
 			}
 		},
 		"gitlens.views.branches.setShowBranchComparisonOff": {
-			"label": "Hide Branch Comparisons",
+			"label": "隐藏分支比较",
 			"menus": {
 				"gitlens/views/grouped/more": [
 					{
@@ -6293,7 +6293,7 @@
 			}
 		},
 		"gitlens.views.branches.setShowBranchComparisonOn": {
-			"label": "Show Branch Comparisons",
+			"label": "显示分支比较",
 			"menus": {
 				"gitlens/views/grouped/more": [
 					{
@@ -6329,7 +6329,7 @@
 			}
 		},
 		"gitlens.views.branches.setShowBranchPullRequestOff": {
-			"label": "Hide Branch Pull Requests",
+			"label": "隐藏分支拉取请求",
 			"menus": {
 				"gitlens/views/grouped/more": [
 					{
@@ -6365,7 +6365,7 @@
 			}
 		},
 		"gitlens.views.branches.setShowBranchPullRequestOn": {
-			"label": "Show Branch Pull Requests",
+			"label": "显示分支拉取请求",
 			"menus": {
 				"gitlens/views/grouped/more": [
 					{
@@ -6401,7 +6401,7 @@
 			}
 		},
 		"gitlens.views.branches.setShowRemoteBranchesOff": {
-			"label": "Hide Remote Branches",
+			"label": "隐藏远程分支",
 			"menus": {
 				"gitlens/views/grouped/more": [
 					{
@@ -6437,7 +6437,7 @@
 			}
 		},
 		"gitlens.views.branches.setShowRemoteBranchesOn": {
-			"label": "Show Remote Branches",
+			"label": "显示远程分支",
 			"menus": {
 				"gitlens/views/grouped/more": [
 					{
@@ -6473,7 +6473,7 @@
 			}
 		},
 		"gitlens.views.branches.setShowStashesOff": {
-			"label": "Hide Stashes",
+			"label": "隐藏存储项",
 			"menus": {
 				"gitlens/views/grouped/more": [
 					{
@@ -6509,7 +6509,7 @@
 			}
 		},
 		"gitlens.views.branches.setShowStashesOn": {
-			"label": "Show Stashes",
+			"label": "显示存储",
 			"menus": {
 				"gitlens/views/grouped/more": [
 					{
@@ -6613,7 +6613,7 @@
 			}
 		},
 		"gitlens.views.cherryPick": {
-			"label": "Cherry Pick Commit...",
+			"label": "指定提取提交...",
 			"enablement": "!operationInProgress",
 			"menus": {
 				"view/item/context": [
@@ -6626,7 +6626,7 @@
 			}
 		},
 		"gitlens.views.cherryPick.multi": {
-			"label": "Cherry Pick Commits...",
+			"label": "指定提取提交项...",
 			"enablement": "!operationInProgress",
 			"menus": {
 				"view/item/context": [
@@ -6708,7 +6708,7 @@
 			}
 		},
 		"gitlens.views.commitDetails.refresh": {
-			"label": "Refresh",
+			"label": "刷新",
 			"icon": "$(refresh)",
 			"menus": {
 				"view/item/context": [
@@ -6728,7 +6728,7 @@
 			}
 		},
 		"gitlens.views.commits.attach": {
-			"label": "Group into GitLens View",
+			"label": "组合到 GitLens 视图",
 			"icon": "$(close)",
 			"menus": {
 				"view/title": [
@@ -6746,7 +6746,7 @@
 			}
 		},
 		"gitlens.views.commits.copy": {
-			"label": "Copy",
+			"label": "复制",
 			"keybindings": [
 				{
 					"key": "ctrl+c",
@@ -6756,7 +6756,7 @@
 			]
 		},
 		"gitlens.views.commits.refresh": {
-			"label": "Refresh",
+			"label": "刷新",
 			"icon": "$(refresh)",
 			"menus": {
 				"view/item/context": [
@@ -6865,7 +6865,7 @@
 			}
 		},
 		"gitlens.views.commits.setFilesLayoutToAuto": {
-			"label": "View Files as Auto",
+			"label": "以自动模式查看文件",
 			"icon": "$(list-tree)",
 			"enablement": "config.gitlens.views.commits.files.layout != auto",
 			"menus": {
@@ -6903,7 +6903,7 @@
 			}
 		},
 		"gitlens.views.commits.setFilesLayoutToList": {
-			"label": "View Files as List",
+			"label": "以列表模式查看文件",
 			"icon": "$(gitlens-list-auto)",
 			"enablement": "config.gitlens.views.commits.files.layout != list",
 			"menus": {
@@ -6941,7 +6941,7 @@
 			}
 		},
 		"gitlens.views.commits.setFilesLayoutToTree": {
-			"label": "View Files as Tree",
+			"label": "以树形模式查看文件",
 			"icon": "$(list-flat)",
 			"enablement": "config.gitlens.views.commits.files.layout != tree",
 			"menus": {
@@ -6979,7 +6979,7 @@
 			}
 		},
 		"gitlens.views.commits.setShowAvatarsOff": {
-			"label": "Hide Avatars",
+			"label": "隐藏头像",
 			"menus": {
 				"gitlens/views/grouped/more": [
 					{
@@ -7015,7 +7015,7 @@
 			}
 		},
 		"gitlens.views.commits.setShowAvatarsOn": {
-			"label": "Show Avatars",
+			"label": "显示头像",
 			"menus": {
 				"gitlens/views/grouped/more": [
 					{
@@ -7272,7 +7272,7 @@
 			}
 		},
 		"gitlens.views.commits.setShowStashesOff": {
-			"label": "Hide Stashes",
+			"label": "隐藏存储项",
 			"menus": {
 				"gitlens/views/grouped/more": [
 					{
@@ -7308,7 +7308,7 @@
 			}
 		},
 		"gitlens.views.commits.setShowStashesOn": {
-			"label": "Show Stashes",
+			"label": "显示存储",
 			"menus": {
 				"gitlens/views/grouped/more": [
 					{
@@ -7364,7 +7364,7 @@
 			}
 		},
 		"gitlens.views.compareAncestryWithWorking": {
-			"label": "Compare Working Tree to Common Base",
+			"label": "将工作树与公共基础比较",
 			"menus": {
 				"view/item/context": [
 					{
@@ -7376,7 +7376,7 @@
 			}
 		},
 		"gitlens.views.compareBranchWithHead": {
-			"label": "Compare with HEAD",
+			"label": "与 HEAD 比较",
 			"icon": "$(compare-changes)",
 			"menus": {
 				"view/item/context": [
@@ -7412,7 +7412,7 @@
 			}
 		},
 		"gitlens.views.compareWithHead": {
-			"label": "Compare to/from HEAD",
+			"label": "与 HEAD 来回比较",
 			"icon": "$(compare-changes)",
 			"menus": {
 				"view/item/context": [
@@ -7436,7 +7436,7 @@
 			}
 		},
 		"gitlens.views.compareWithMergeBase": {
-			"label": "Compare with Common Base",
+			"label": "与公共基础比较",
 			"menus": {
 				"view/item/context": [
 					{
@@ -7460,7 +7460,7 @@
 			}
 		},
 		"gitlens.views.compareWithUpstream": {
-			"label": "Compare with Upstream",
+			"label": "与上游比较",
 			"menus": {
 				"view/item/context": [
 					{
@@ -7472,7 +7472,7 @@
 			}
 		},
 		"gitlens.views.compareWithWorking": {
-			"label": "Compare Working Tree to Here",
+			"label": "将工作树与此处比较",
 			"icon": "$(gitlens-compare-ref-working)",
 			"menus": {
 				"view/item/context": [
@@ -7513,7 +7513,7 @@
 			}
 		},
 		"gitlens.views.contributors.attach": {
-			"label": "Group into GitLens View",
+			"label": "组合到 GitLens 视图",
 			"icon": "$(close)",
 			"menus": {
 				"view/title": [
@@ -7531,7 +7531,7 @@
 			}
 		},
 		"gitlens.views.contributors.copy": {
-			"label": "Copy",
+			"label": "复制",
 			"keybindings": [
 				{
 					"key": "ctrl+c",
@@ -7541,7 +7541,7 @@
 			]
 		},
 		"gitlens.views.contributors.refresh": {
-			"label": "Refresh",
+			"label": "刷新",
 			"icon": "$(refresh)",
 			"menus": {
 				"view/item/context": [
@@ -7561,7 +7561,7 @@
 			}
 		},
 		"gitlens.views.contributors.setFilesLayoutToAuto": {
-			"label": "View Files as Auto",
+			"label": "以自动模式查看文件",
 			"icon": "$(list-tree)",
 			"enablement": "config.gitlens.views.contributors.files.layout != auto",
 			"menus": {
@@ -7599,7 +7599,7 @@
 			}
 		},
 		"gitlens.views.contributors.setFilesLayoutToList": {
-			"label": "View Files as List",
+			"label": "以列表模式查看文件",
 			"icon": "$(gitlens-list-auto)",
 			"enablement": "config.gitlens.views.contributors.files.layout != list",
 			"menus": {
@@ -7637,7 +7637,7 @@
 			}
 		},
 		"gitlens.views.contributors.setFilesLayoutToTree": {
-			"label": "View Files as Tree",
+			"label": "以树形模式查看文件",
 			"icon": "$(list-flat)",
 			"enablement": "config.gitlens.views.contributors.files.layout != tree",
 			"menus": {
@@ -7749,7 +7749,7 @@
 			}
 		},
 		"gitlens.views.contributors.setShowAvatarsOff": {
-			"label": "Hide Avatars",
+			"label": "隐藏头像",
 			"menus": {
 				"gitlens/views/grouped/more": [
 					{
@@ -7785,7 +7785,7 @@
 			}
 		},
 		"gitlens.views.contributors.setShowAvatarsOn": {
-			"label": "Show Avatars",
+			"label": "显示头像",
 			"menus": {
 				"gitlens/views/grouped/more": [
 					{
@@ -7985,7 +7985,7 @@
 			}
 		},
 		"gitlens.views.copy": {
-			"label": "Copy",
+			"label": "复制",
 			"icon": "$(copy)",
 			"menus": {
 				"view/item/context": [
@@ -8021,7 +8021,7 @@
 			}
 		},
 		"gitlens.views.copyRemoteCommitUrl": {
-			"label": "Copy Remote Commit URL",
+			"label": "复制远程提交 URL",
 			"icon": "$(copy)",
 			"menus": {
 				"gitlens/share": [
@@ -8034,7 +8034,7 @@
 			}
 		},
 		"gitlens.views.copyRemoteCommitUrl.multi": {
-			"label": "Copy Remote Commit URLs",
+			"label": "复制远程提交 URL",
 			"icon": "$(copy)",
 			"menus": {
 				"gitlens/share": [
@@ -8073,7 +8073,7 @@
 			}
 		},
 		"gitlens.views.createBranch": {
-			"label": "Create Branch...",
+			"label": "创建分支...",
 			"icon": "$(add)",
 			"enablement": "!operationInProgress",
 			"menus": {
@@ -8119,7 +8119,7 @@
 			}
 		},
 		"gitlens.views.createPullRequest": {
-			"label": "Create Pull Request...",
+			"label": "创建拉取请求...",
 			"icon": "$(git-pull-request-create)",
 			"menus": {
 				"view/item/context": [
@@ -8147,7 +8147,7 @@
 			}
 		},
 		"gitlens.views.createTag": {
-			"label": "Create Tag...",
+			"label": "创建标签...",
 			"icon": "$(add)",
 			"enablement": "!operationInProgress",
 			"menus": {
@@ -8188,7 +8188,7 @@
 			}
 		},
 		"gitlens.views.createWorktree": {
-			"label": "Create Worktree...",
+			"label": "创建工作树...",
 			"icon": "$(add)",
 			"enablement": "!operationInProgress",
 			"menus": {
@@ -8212,7 +8212,7 @@
 			}
 		},
 		"gitlens.views.deleteBranch": {
-			"label": "Delete Branch...",
+			"label": "删除分支...",
 			"icon": "$(trash)",
 			"enablement": "!operationInProgress",
 			"menus": {
@@ -8240,7 +8240,7 @@
 			}
 		},
 		"gitlens.views.deleteTag": {
-			"label": "Delete Tag...",
+			"label": "删除标签...",
 			"icon": "$(trash)",
 			"enablement": "!operationInProgress",
 			"menus": {
@@ -8345,7 +8345,7 @@
 			}
 		},
 		"gitlens.views.drafts.copy": {
-			"label": "Copy",
+			"label": "复制",
 			"keybindings": [
 				{
 					"key": "ctrl+c",
@@ -8408,7 +8408,7 @@
 			}
 		},
 		"gitlens.views.drafts.refresh": {
-			"label": "Refresh",
+			"label": "刷新",
 			"icon": "$(refresh)",
 			"menus": {
 				"view/item/context": [
@@ -8428,7 +8428,7 @@
 			}
 		},
 		"gitlens.views.drafts.setShowAvatarsOff": {
-			"label": "Hide Avatars",
+			"label": "隐藏头像",
 			"menus": {
 				"view/item/context": [
 					{
@@ -8447,7 +8447,7 @@
 			}
 		},
 		"gitlens.views.drafts.setShowAvatarsOn": {
-			"label": "Show Avatars",
+			"label": "显示头像",
 			"menus": {
 				"view/item/context": [
 					{
@@ -8506,7 +8506,7 @@
 			}
 		},
 		"gitlens.views.fetch": {
-			"label": "Fetch",
+			"label": "拉取",
 			"icon": "$(repo-fetch)",
 			"enablement": "!operationInProgress",
 			"menus": {
@@ -8571,7 +8571,7 @@
 			}
 		},
 		"gitlens.views.fileHistory.attach": {
-			"label": "Group into GitLens View",
+			"label": "组合到 GitLens 视图",
 			"icon": "$(close)",
 			"menus": {
 				"view/title": [
@@ -8616,7 +8616,7 @@
 			}
 		},
 		"gitlens.views.fileHistory.copy": {
-			"label": "Copy",
+			"label": "复制",
 			"keybindings": [
 				{
 					"key": "ctrl+c",
@@ -8626,7 +8626,7 @@
 			]
 		},
 		"gitlens.views.fileHistory.refresh": {
-			"label": "Refresh",
+			"label": "刷新",
 			"icon": "$(refresh)",
 			"menus": {
 				"view/item/context": [
@@ -8958,7 +8958,7 @@
 			}
 		},
 		"gitlens.views.fileHistory.setShowAvatarsOff": {
-			"label": "Hide Avatars",
+			"label": "隐藏头像",
 			"menus": {
 				"gitlens/views/grouped/more": [
 					{
@@ -8994,7 +8994,7 @@
 			}
 		},
 		"gitlens.views.fileHistory.setShowAvatarsOn": {
-			"label": "Show Avatars",
+			"label": "显示头像",
 			"menus": {
 				"gitlens/views/grouped/more": [
 					{
@@ -9122,7 +9122,7 @@
 			}
 		},
 		"gitlens.views.graph.refresh": {
-			"label": "Refresh",
+			"label": "刷新",
 			"icon": "$(refresh)",
 			"menus": {
 				"view/item/context": [
@@ -9142,7 +9142,7 @@
 			}
 		},
 		"gitlens.views.graphDetails.refresh": {
-			"label": "Refresh",
+			"label": "刷新",
 			"icon": "$(refresh)",
 			"menus": {
 				"view/item/context": [
@@ -9326,7 +9326,7 @@
 			}
 		},
 		"gitlens.views.home.refresh": {
-			"label": "Refresh",
+			"label": "刷新",
 			"icon": "$(refresh)",
 			"menus": {
 				"view/item/context": [
@@ -9366,7 +9366,7 @@
 			}
 		},
 		"gitlens.views.launchpad.attach": {
-			"label": "Group into GitLens View",
+			"label": "组合到 GitLens 视图",
 			"icon": "$(close)",
 			"menus": {
 				"view/title": [
@@ -9414,7 +9414,7 @@
 			}
 		},
 		"gitlens.views.launchpad.refresh": {
-			"label": "Refresh",
+			"label": "刷新",
 			"icon": "$(refresh)",
 			"menus": {
 				"view/item/context": [
@@ -9434,7 +9434,7 @@
 			}
 		},
 		"gitlens.views.launchpad.setFilesLayoutToAuto": {
-			"label": "View Files as Auto",
+			"label": "以自动模式查看文件",
 			"icon": "$(list-tree)",
 			"enablement": "config.gitlens.views.launchpad.files.layout != auto",
 			"menus": {
@@ -9472,7 +9472,7 @@
 			}
 		},
 		"gitlens.views.launchpad.setFilesLayoutToList": {
-			"label": "View Files as List",
+			"label": "以列表模式查看文件",
 			"icon": "$(gitlens-list-auto)",
 			"enablement": "config.gitlens.views.launchpad.files.layout != list",
 			"menus": {
@@ -9510,7 +9510,7 @@
 			}
 		},
 		"gitlens.views.launchpad.setFilesLayoutToTree": {
-			"label": "View Files as Tree",
+			"label": "以树形模式查看文件",
 			"icon": "$(list-flat)",
 			"enablement": "config.gitlens.views.launchpad.files.layout != tree",
 			"menus": {
@@ -9548,7 +9548,7 @@
 			}
 		},
 		"gitlens.views.launchpad.setShowAvatarsOff": {
-			"label": "Hide Avatars",
+			"label": "隐藏头像",
 			"menus": {
 				"gitlens/views/grouped/more": [
 					{
@@ -9584,7 +9584,7 @@
 			}
 		},
 		"gitlens.views.launchpad.setShowAvatarsOn": {
-			"label": "Show Avatars",
+			"label": "显示头像",
 			"menus": {
 				"gitlens/views/grouped/more": [
 					{
@@ -9660,7 +9660,7 @@
 			}
 		},
 		"gitlens.views.lineHistory.copy": {
-			"label": "Copy",
+			"label": "复制",
 			"keybindings": [
 				{
 					"key": "ctrl+c",
@@ -9670,7 +9670,7 @@
 			]
 		},
 		"gitlens.views.lineHistory.refresh": {
-			"label": "Refresh",
+			"label": "刷新",
 			"icon": "$(refresh)",
 			"menus": {
 				"view/item/context": [
@@ -9730,7 +9730,7 @@
 			}
 		},
 		"gitlens.views.lineHistory.setShowAvatarsOff": {
-			"label": "Hide Avatars",
+			"label": "隐藏头像",
 			"menus": {
 				"view/item/context": [
 					{
@@ -9749,7 +9749,7 @@
 			}
 		},
 		"gitlens.views.lineHistory.setShowAvatarsOn": {
-			"label": "Show Avatars",
+			"label": "显示头像",
 			"menus": {
 				"view/item/context": [
 					{
@@ -9789,7 +9789,7 @@
 			"label": "Load More"
 		},
 		"gitlens.views.mergeBranchInto": {
-			"label": "Merge Branch into Current Branch...",
+			"label": "将分支合并到当前分支...",
 			"enablement": "!operationInProgress",
 			"menus": {
 				"view/item/context": [
@@ -9819,7 +9819,7 @@
 			}
 		},
 		"gitlens.views.openBranchOnRemote": {
-			"label": "Open Branch on Remote",
+			"label": "在远程上打开分支",
 			"icon": "$(globe)",
 			"menus": {
 				"view/item/context": [
@@ -9843,7 +9843,7 @@
 			}
 		},
 		"gitlens.views.openBranchOnRemote.multi": {
-			"label": "Open Branches on Remote",
+			"label": "在远程上打开分支",
 			"icon": "$(globe)",
 			"menus": {
 				"view/item/context": [
@@ -9856,7 +9856,7 @@
 			}
 		},
 		"gitlens.views.openChangedFileDiffs": {
-			"label": "Open All Changes",
+			"label": "打开所有更改",
 			"icon": "$(diff-multiple)",
 			"menus": {
 				"gitlens/commit/changes": [
@@ -9888,7 +9888,7 @@
 			}
 		},
 		"gitlens.views.openChangedFileDiffsWithMergeBase": {
-			"label": "Open All Changes with Common Base",
+			"label": "打开与公共基础的所有更改",
 			"icon": "$(diff-multiple)",
 			"menus": {
 				"view/item/context": [
@@ -9901,7 +9901,7 @@
 			}
 		},
 		"gitlens.views.openChangedFileDiffsWithWorking": {
-			"label": "Open All Changes with Working Tree",
+			"label": "打开与工作树的所有更改",
 			"icon": "$(diff-multiple)",
 			"menus": {
 				"gitlens/commit/changes": [
@@ -9925,7 +9925,7 @@
 			}
 		},
 		"gitlens.views.openChangedFileRevisions": {
-			"label": "Open Files at Revision",
+			"label": "打开版本文件",
 			"menus": {
 				"gitlens/commit/changes": [
 					{
@@ -9936,7 +9936,7 @@
 			}
 		},
 		"gitlens.views.openChangedFiles": {
-			"label": "Open Files",
+			"label": "打开文件",
 			"menus": {
 				"gitlens/commit/changes": [
 					{
@@ -9977,7 +9977,7 @@
 			}
 		},
 		"gitlens.views.openChangesWithWorking": {
-			"label": "Open Changes with Working File",
+			"label": "打开与工作文件的更改",
 			"icon": "$(gitlens-compare-ref-working)",
 			"menus": {
 				"gitlens/commit/file/changes": [
@@ -9997,7 +9997,7 @@
 			}
 		},
 		"gitlens.views.openCommitOnRemote": {
-			"label": "Open Commit on Remote",
+			"label": "在远程上打开提交",
 			"icon": "$(globe)",
 			"menus": {
 				"gitlens/commit/file/commit": [
@@ -10024,7 +10024,7 @@
 			}
 		},
 		"gitlens.views.openCommitOnRemote.multi": {
-			"label": "Open Commits on Remote",
+			"label": "在远程上打开提交项",
 			"icon": "$(globe)",
 			"menus": {
 				"view/item/context": [
@@ -10061,7 +10061,7 @@
 			}
 		},
 		"gitlens.views.openFile": {
-			"label": "Open File",
+			"label": "打开文件",
 			"icon": "$(go-to-file)",
 			"menus": {
 				"view/item/context": [
@@ -10084,7 +10084,7 @@
 			}
 		},
 		"gitlens.views.openFileRevision": {
-			"label": "Open File at Revision",
+			"label": "打开版本文件",
 			"icon": "$(gitlens-open-revision)",
 			"menus": {
 				"view/item/context": [
@@ -10147,7 +10147,7 @@
 			}
 		},
 		"gitlens.views.openInWorktree": {
-			"label": "Open in Worktree",
+			"label": "在工作树中打开",
 			"icon": "$(empty-window)",
 			"menus": {
 				"view/item/context": [
@@ -10170,7 +10170,7 @@
 			}
 		},
 		"gitlens.views.openOnlyChangedFiles": {
-			"label": "Open Changed & Close Unchanged Files",
+			"label": "打开已更改并关闭未更改的文件",
 			"menus": {
 				"gitlens/commit/changes": [
 					{
@@ -10211,7 +10211,7 @@
 			}
 		},
 		"gitlens.views.openPullRequest": {
-			"label": "Open Pull Request",
+			"label": "打开拉取请求",
 			"icon": "$(git-pull-request)",
 			"menus": {
 				"view/item/context": [
@@ -10229,7 +10229,7 @@
 			}
 		},
 		"gitlens.views.openPullRequestChanges": {
-			"label": "Open Pull Request Changes",
+			"label": "打开拉取请求更改",
 			"icon": "$(diff-multiple)",
 			"menus": {
 				"view/item/context": [
@@ -10247,7 +10247,7 @@
 			}
 		},
 		"gitlens.views.openPullRequestComparison": {
-			"label": "Compare Pull Request",
+			"label": "比较拉取请求",
 			"icon": "$(compare-changes)",
 			"menus": {
 				"view/item/context": [
@@ -10292,7 +10292,7 @@
 			}
 		},
 		"gitlens.views.openWorktree": {
-			"label": "Open Worktree",
+			"label": "打开工作树",
 			"icon": "$(window)",
 			"menus": {
 				"view/item/context": [
@@ -10333,7 +10333,7 @@
 			}
 		},
 		"gitlens.views.openWorktreeInNewWindow": {
-			"label": "Open Worktree in New Window",
+			"label": "在新窗口中打开工作树",
 			"icon": "$(empty-window)",
 			"menus": {
 				"view/item/context": [
@@ -10389,7 +10389,7 @@
 			}
 		},
 		"gitlens.views.patchDetails.refresh": {
-			"label": "Refresh",
+			"label": "刷新",
 			"icon": "$(refresh)",
 			"menus": {
 				"view/item/context": [
@@ -10422,7 +10422,7 @@
 			}
 		},
 		"gitlens.views.publishBranch": {
-			"label": "Publish Branch",
+			"label": "发布分支",
 			"icon": "$(cloud-upload)",
 			"enablement": "!operationInProgress",
 			"menus": {
@@ -10460,7 +10460,7 @@
 			}
 		},
 		"gitlens.views.pull": {
-			"label": "Pull",
+			"label": "拉取",
 			"icon": "$(repo-pull)",
 			"enablement": "!operationInProgress",
 			"menus": {
@@ -10530,7 +10530,7 @@
 			}
 		},
 		"gitlens.views.pullRequest.copy": {
-			"label": "Copy",
+			"label": "复制",
 			"keybindings": [
 				{
 					"key": "ctrl+c",
@@ -10540,7 +10540,7 @@
 			]
 		},
 		"gitlens.views.pullRequest.refresh": {
-			"label": "Refresh",
+			"label": "刷新",
 			"icon": "$(refresh)",
 			"menus": {
 				"view/item/context": [
@@ -10560,7 +10560,7 @@
 			}
 		},
 		"gitlens.views.pullRequest.setFilesLayoutToAuto": {
-			"label": "View Files as Auto",
+			"label": "以自动模式查看文件",
 			"icon": "$(list-tree)",
 			"enablement": "config.gitlens.views.pullRequest.files.layout != auto",
 			"menus": {
@@ -10581,7 +10581,7 @@
 			}
 		},
 		"gitlens.views.pullRequest.setFilesLayoutToList": {
-			"label": "View Files as List",
+			"label": "以列表模式查看文件",
 			"icon": "$(gitlens-list-auto)",
 			"enablement": "config.gitlens.views.pullRequest.files.layout != list",
 			"menus": {
@@ -10602,7 +10602,7 @@
 			}
 		},
 		"gitlens.views.pullRequest.setFilesLayoutToTree": {
-			"label": "View Files as Tree",
+			"label": "以树形模式查看文件",
 			"icon": "$(list-flat)",
 			"enablement": "config.gitlens.views.pullRequest.files.layout != tree",
 			"menus": {
@@ -10623,7 +10623,7 @@
 			}
 		},
 		"gitlens.views.pullRequest.setShowAvatarsOff": {
-			"label": "Hide Avatars",
+			"label": "隐藏头像",
 			"menus": {
 				"view/item/context": [
 					{
@@ -10642,7 +10642,7 @@
 			}
 		},
 		"gitlens.views.pullRequest.setShowAvatarsOn": {
-			"label": "Show Avatars",
+			"label": "显示头像",
 			"menus": {
 				"view/item/context": [
 					{
@@ -10661,7 +10661,7 @@
 			}
 		},
 		"gitlens.views.push": {
-			"label": "Push",
+			"label": "推送",
 			"icon": "$(repo-push)",
 			"enablement": "!operationInProgress",
 			"menus": {
@@ -10767,7 +10767,7 @@
 			}
 		},
 		"gitlens.views.pushWithForce": {
-			"label": "Push (force)",
+			"label": "推送（强制）",
 			"icon": "$(repo-force-push)",
 			"enablement": "!operationInProgress",
 			"menus": {
@@ -10791,7 +10791,7 @@
 			}
 		},
 		"gitlens.views.rebaseOntoBranch": {
-			"label": "Rebase Current Branch onto Branch...",
+			"label": "将当前分支变基到分支...",
 			"enablement": "!operationInProgress",
 			"menus": {
 				"view/item/context": [
@@ -10804,7 +10804,7 @@
 			}
 		},
 		"gitlens.views.rebaseOntoCommit": {
-			"label": "Rebase Current Branch onto Commit...",
+			"label": "将当前分支变基到提交...",
 			"enablement": "!operationInProgress",
 			"menus": {
 				"gitlens/commit/file/commit": [
@@ -10824,7 +10824,7 @@
 			}
 		},
 		"gitlens.views.rebaseOntoUpstream": {
-			"label": "Rebase Current Branch onto Upstream...",
+			"label": "将当前分支变基到上游...",
 			"enablement": "!operationInProgress",
 			"menus": {
 				"view/item/context": [
@@ -10837,7 +10837,7 @@
 			}
 		},
 		"gitlens.views.refreshNode": {
-			"label": "Refresh",
+			"label": "刷新",
 			"icon": "$(refresh)",
 			"menus": {
 				"view/item/context": [
@@ -10860,7 +10860,7 @@
 			}
 		},
 		"gitlens.views.remotes.attach": {
-			"label": "Group into GitLens View",
+			"label": "组合到 GitLens 视图",
 			"icon": "$(close)",
 			"menus": {
 				"view/title": [
@@ -10878,7 +10878,7 @@
 			}
 		},
 		"gitlens.views.remotes.copy": {
-			"label": "Copy",
+			"label": "复制",
 			"keybindings": [
 				{
 					"key": "ctrl+c",
@@ -10888,7 +10888,7 @@
 			]
 		},
 		"gitlens.views.remotes.refresh": {
-			"label": "Refresh",
+			"label": "刷新",
 			"icon": "$(refresh)",
 			"menus": {
 				"view/item/context": [
@@ -10908,7 +10908,7 @@
 			}
 		},
 		"gitlens.views.remotes.setFilesLayoutToAuto": {
-			"label": "View Files as Auto",
+			"label": "以自动模式查看文件",
 			"icon": "$(list-tree)",
 			"enablement": "config.gitlens.views.remotes.files.layout != auto",
 			"menus": {
@@ -10946,7 +10946,7 @@
 			}
 		},
 		"gitlens.views.remotes.setFilesLayoutToList": {
-			"label": "View Files as List",
+			"label": "以列表模式查看文件",
 			"icon": "$(gitlens-list-auto)",
 			"enablement": "config.gitlens.views.remotes.files.layout != list",
 			"menus": {
@@ -10984,7 +10984,7 @@
 			}
 		},
 		"gitlens.views.remotes.setFilesLayoutToTree": {
-			"label": "View Files as Tree",
+			"label": "以树形模式查看文件",
 			"icon": "$(list-flat)",
 			"enablement": "config.gitlens.views.remotes.files.layout != tree",
 			"menus": {
@@ -11022,7 +11022,7 @@
 			}
 		},
 		"gitlens.views.remotes.setLayoutToList": {
-			"label": "View as List",
+			"label": "以列表模式查看",
 			"icon": "$(list-tree)",
 			"enablement": "config.gitlens.views.remotes.branches.layout != list",
 			"menus": {
@@ -11060,7 +11060,7 @@
 			}
 		},
 		"gitlens.views.remotes.setLayoutToTree": {
-			"label": "View as Tree",
+			"label": "以树形模式查看",
 			"icon": "$(list-flat)",
 			"enablement": "config.gitlens.views.remotes.branches.layout != tree",
 			"menus": {
@@ -11098,7 +11098,7 @@
 			}
 		},
 		"gitlens.views.remotes.setShowAvatarsOff": {
-			"label": "Hide Avatars",
+			"label": "隐藏头像",
 			"menus": {
 				"gitlens/views/grouped/more": [
 					{
@@ -11134,7 +11134,7 @@
 			}
 		},
 		"gitlens.views.remotes.setShowAvatarsOn": {
-			"label": "Show Avatars",
+			"label": "显示头像",
 			"menus": {
 				"gitlens/views/grouped/more": [
 					{
@@ -11170,7 +11170,7 @@
 			}
 		},
 		"gitlens.views.remotes.setShowBranchPullRequestOff": {
-			"label": "Hide Branch Pull Requests",
+			"label": "隐藏分支拉取请求",
 			"menus": {
 				"gitlens/views/grouped/more": [
 					{
@@ -11206,7 +11206,7 @@
 			}
 		},
 		"gitlens.views.remotes.setShowBranchPullRequestOn": {
-			"label": "Show Branch Pull Requests",
+			"label": "显示分支拉取请求",
 			"menus": {
 				"gitlens/views/grouped/more": [
 					{
@@ -11275,7 +11275,7 @@
 			}
 		},
 		"gitlens.views.renameBranch": {
-			"label": "Rename Branch...",
+			"label": "重命名分支...",
 			"enablement": "!operationInProgress",
 			"menus": {
 				"view/item/context": [
@@ -11288,7 +11288,7 @@
 			}
 		},
 		"gitlens.views.repositories.attach": {
-			"label": "Group into GitLens View",
+			"label": "组合到 GitLens 视图",
 			"icon": "$(close)",
 			"menus": {
 				"view/title": [
@@ -11306,7 +11306,7 @@
 			}
 		},
 		"gitlens.views.repositories.copy": {
-			"label": "Copy",
+			"label": "复制",
 			"keybindings": [
 				{
 					"key": "ctrl+c",
@@ -11316,7 +11316,7 @@
 			]
 		},
 		"gitlens.views.repositories.refresh": {
-			"label": "Refresh",
+			"label": "刷新",
 			"icon": "$(refresh)",
 			"menus": {
 				"view/item/context": [
@@ -11446,7 +11446,7 @@
 			}
 		},
 		"gitlens.views.repositories.setBranchesShowBranchComparisonOff": {
-			"label": "Hide Branch Comparisons",
+			"label": "隐藏分支比较",
 			"menus": {
 				"gitlens/views/grouped/more": [
 					{
@@ -11502,7 +11502,7 @@
 			}
 		},
 		"gitlens.views.repositories.setBranchesShowBranchComparisonOn": {
-			"label": "Show Branch Comparisons",
+			"label": "显示分支比较",
 			"menus": {
 				"gitlens/views/grouped/more": [
 					{
@@ -11620,7 +11620,7 @@
 			}
 		},
 		"gitlens.views.repositories.setFilesLayoutToAuto": {
-			"label": "View Files as Auto",
+			"label": "以自动模式查看文件",
 			"icon": "$(list-tree)",
 			"enablement": "config.gitlens.views.repositories.files.layout != auto",
 			"menus": {
@@ -11658,7 +11658,7 @@
 			}
 		},
 		"gitlens.views.repositories.setFilesLayoutToList": {
-			"label": "View Files as List",
+			"label": "以列表模式查看文件",
 			"icon": "$(gitlens-list-auto)",
 			"enablement": "config.gitlens.views.repositories.files.layout != list",
 			"menus": {
@@ -11696,7 +11696,7 @@
 			}
 		},
 		"gitlens.views.repositories.setFilesLayoutToTree": {
-			"label": "View Files as Tree",
+			"label": "以树形模式查看文件",
 			"icon": "$(list-flat)",
 			"enablement": "config.gitlens.views.repositories.files.layout != tree",
 			"menus": {
@@ -11734,7 +11734,7 @@
 			}
 		},
 		"gitlens.views.repositories.setShowAvatarsOff": {
-			"label": "Hide Avatars",
+			"label": "隐藏头像",
 			"menus": {
 				"gitlens/views/grouped/more": [
 					{
@@ -11770,7 +11770,7 @@
 			}
 		},
 		"gitlens.views.repositories.setShowAvatarsOn": {
-			"label": "Show Avatars",
+			"label": "显示头像",
 			"menus": {
 				"gitlens/views/grouped/more": [
 					{
@@ -11943,7 +11943,7 @@
 			}
 		},
 		"gitlens.views.repositories.setShowSectionStashesOff": {
-			"label": "Hide Stashes",
+			"label": "隐藏存储项",
 			"menus": {
 				"gitlens/view/repositories/sections": [
 					{
@@ -11955,7 +11955,7 @@
 			}
 		},
 		"gitlens.views.repositories.setShowSectionStashesOn": {
-			"label": "Show Stashes",
+			"label": "显示存储",
 			"menus": {
 				"gitlens/view/repositories/sections": [
 					{
@@ -12059,7 +12059,7 @@
 			}
 		},
 		"gitlens.views.resetCommit": {
-			"label": "Reset Current Branch to Previous Commit...",
+			"label": "将当前分支重置到上一提交...",
 			"enablement": "!operationInProgress",
 			"menus": {
 				"gitlens/commit/file/commit": [
@@ -12079,7 +12079,7 @@
 			}
 		},
 		"gitlens.views.resetToCommit": {
-			"label": "Reset Current Branch to Commit...",
+			"label": "将当前分支重置到提交...",
 			"enablement": "!operationInProgress",
 			"menus": {
 				"gitlens/commit/file/commit": [
@@ -12099,7 +12099,7 @@
 			}
 		},
 		"gitlens.views.resetToTip": {
-			"label": "Reset Current Branch to Tip...",
+			"label": "将当前分支重置到顶端...",
 			"enablement": "!operationInProgress",
 			"menus": {
 				"view/item/context": [
@@ -12141,7 +12141,7 @@
 			}
 		},
 		"gitlens.views.revert": {
-			"label": "Revert Commit...",
+			"label": "撤销提交...",
 			"enablement": "!operationInProgress",
 			"menus": {
 				"gitlens/commit/file/commit": [
@@ -12278,7 +12278,7 @@
 			}
 		},
 		"gitlens.views.scm.grouped.branches.visibility.show": {
-			"label": "Show Branches View",
+			"label": "显示分支视图",
 			"menus": {
 				"gitlens/views/grouped/visibility": [
 					{
@@ -12394,7 +12394,7 @@
 			}
 		},
 		"gitlens.views.scm.grouped.commits.visibility.show": {
-			"label": "Show Commits View",
+			"label": "显示提交视图",
 			"menus": {
 				"gitlens/views/grouped/visibility": [
 					{
@@ -12510,7 +12510,7 @@
 			}
 		},
 		"gitlens.views.scm.grouped.contributors.visibility.show": {
-			"label": "Show Contributors View",
+			"label": "显示贡献者视图",
 			"menus": {
 				"gitlens/views/grouped/visibility": [
 					{
@@ -12639,7 +12639,7 @@
 			}
 		},
 		"gitlens.views.scm.grouped.fileHistory.visibility.show": {
-			"label": "Show File History View",
+			"label": "显示文件历史视图",
 			"menus": {
 				"gitlens/views/grouped/visibility": [
 					{
@@ -12755,7 +12755,7 @@
 			}
 		},
 		"gitlens.views.scm.grouped.launchpad.visibility.show": {
-			"label": "Show Launchpad View",
+			"label": "显示启动台视图",
 			"menus": {
 				"gitlens/views/grouped/visibility": [
 					{
@@ -12767,7 +12767,7 @@
 			}
 		},
 		"gitlens.views.scm.grouped.refresh": {
-			"label": "Refresh",
+			"label": "刷新",
 			"icon": "$(refresh)",
 			"enablement": "!gitlens:views:scm:grouped:welcome",
 			"menus": {
@@ -12892,7 +12892,7 @@
 			}
 		},
 		"gitlens.views.scm.grouped.remotes.visibility.show": {
-			"label": "Show Remotes View",
+			"label": "显示远程视图",
 			"menus": {
 				"gitlens/views/grouped/visibility": [
 					{
@@ -13002,7 +13002,7 @@
 			}
 		},
 		"gitlens.views.scm.grouped.repositories.visibility.show": {
-			"label": "Show Repositories View",
+			"label": "显示仓库视图",
 			"menus": {
 				"gitlens/views/grouped/visibility": [
 					{
@@ -13131,7 +13131,7 @@
 			}
 		},
 		"gitlens.views.scm.grouped.searchAndCompare.visibility.show": {
-			"label": "Show Search & Compare View",
+			"label": "显示搜索和比较视图",
 			"menus": {
 				"gitlens/views/grouped/visibility": [
 					{
@@ -13247,7 +13247,7 @@
 			}
 		},
 		"gitlens.views.scm.grouped.stashes.visibility.show": {
-			"label": "Show Stashes View",
+			"label": "显示存储视图",
 			"menus": {
 				"gitlens/views/grouped/visibility": [
 					{
@@ -13363,7 +13363,7 @@
 			}
 		},
 		"gitlens.views.scm.grouped.tags.visibility.show": {
-			"label": "Show Tags View",
+			"label": "显示标签视图",
 			"menus": {
 				"gitlens/views/grouped/visibility": [
 					{
@@ -13479,7 +13479,7 @@
 			}
 		},
 		"gitlens.views.scm.grouped.worktrees.visibility.show": {
-			"label": "Show Worktrees View",
+			"label": "显示工作树视图",
 			"menus": {
 				"gitlens/views/grouped/visibility": [
 					{
@@ -13491,7 +13491,7 @@
 			}
 		},
 		"gitlens.views.searchAndCompare.attach": {
-			"label": "Group into GitLens View",
+			"label": "组合到 GitLens 视图",
 			"icon": "$(close)",
 			"menus": {
 				"view/title": [
@@ -13541,7 +13541,7 @@
 			}
 		},
 		"gitlens.views.searchAndCompare.copy": {
-			"label": "Copy",
+			"label": "复制",
 			"keybindings": [
 				{
 					"key": "ctrl+c",
@@ -13551,7 +13551,7 @@
 			]
 		},
 		"gitlens.views.searchAndCompare.refresh": {
-			"label": "Refresh",
+			"label": "刷新",
 			"icon": "$(refresh)",
 			"menus": {
 				"view/item/context": [
@@ -13596,7 +13596,7 @@
 			}
 		},
 		"gitlens.views.searchAndCompare.selectForCompare": {
-			"label": "Compare References...",
+			"label": "比较引用...",
 			"icon": "$(compare-changes)",
 			"menus": {
 				"gitlens/view/searchAndCompare/new": [
@@ -13616,7 +13616,7 @@
 			}
 		},
 		"gitlens.views.searchAndCompare.setFilesLayoutToAuto": {
-			"label": "View Files as Auto",
+			"label": "以自动模式查看文件",
 			"icon": "$(list-tree)",
 			"enablement": "config.gitlens.views.searchAndCompare.files.layout != auto",
 			"menus": {
@@ -13654,7 +13654,7 @@
 			}
 		},
 		"gitlens.views.searchAndCompare.setFilesLayoutToList": {
-			"label": "View Files as List",
+			"label": "以列表模式查看文件",
 			"icon": "$(gitlens-list-auto)",
 			"enablement": "config.gitlens.views.searchAndCompare.files.layout != list",
 			"menus": {
@@ -13692,7 +13692,7 @@
 			}
 		},
 		"gitlens.views.searchAndCompare.setFilesLayoutToTree": {
-			"label": "View Files as Tree",
+			"label": "以树形模式查看文件",
 			"icon": "$(list-flat)",
 			"enablement": "config.gitlens.views.searchAndCompare.files.layout != tree",
 			"menus": {
@@ -13730,7 +13730,7 @@
 			}
 		},
 		"gitlens.views.searchAndCompare.setShowAvatarsOff": {
-			"label": "Hide Avatars",
+			"label": "隐藏头像",
 			"menus": {
 				"gitlens/views/grouped/more": [
 					{
@@ -13766,7 +13766,7 @@
 			}
 		},
 		"gitlens.views.searchAndCompare.setShowAvatarsOn": {
-			"label": "Show Avatars",
+			"label": "显示头像",
 			"menus": {
 				"gitlens/views/grouped/more": [
 					{
@@ -14536,7 +14536,7 @@
 			}
 		},
 		"gitlens.views.stashes.attach": {
-			"label": "Group into GitLens View",
+			"label": "组合到 GitLens 视图",
 			"icon": "$(close)",
 			"menus": {
 				"view/title": [
@@ -14554,7 +14554,7 @@
 			}
 		},
 		"gitlens.views.stashes.copy": {
-			"label": "Copy",
+			"label": "复制",
 			"keybindings": [
 				{
 					"key": "ctrl+c",
@@ -14564,7 +14564,7 @@
 			]
 		},
 		"gitlens.views.stashes.refresh": {
-			"label": "Refresh",
+			"label": "刷新",
 			"icon": "$(refresh)",
 			"menus": {
 				"view/item/context": [
@@ -14584,7 +14584,7 @@
 			}
 		},
 		"gitlens.views.stashes.setFilesLayoutToAuto": {
-			"label": "View Files as Auto",
+			"label": "以自动模式查看文件",
 			"icon": "$(list-tree)",
 			"enablement": "config.gitlens.views.stashes.files.layout != auto",
 			"menus": {
@@ -14622,7 +14622,7 @@
 			}
 		},
 		"gitlens.views.stashes.setFilesLayoutToList": {
-			"label": "View Files as List",
+			"label": "以列表模式查看文件",
 			"icon": "$(gitlens-list-auto)",
 			"enablement": "config.gitlens.views.stashes.files.layout != list",
 			"menus": {
@@ -14660,7 +14660,7 @@
 			}
 		},
 		"gitlens.views.stashes.setFilesLayoutToTree": {
-			"label": "View Files as Tree",
+			"label": "以树形模式查看文件",
 			"icon": "$(list-flat)",
 			"enablement": "config.gitlens.views.stashes.files.layout != tree",
 			"menus": {
@@ -14718,7 +14718,7 @@
 			}
 		},
 		"gitlens.views.switchToAnotherBranch": {
-			"label": "Switch Branch...",
+			"label": "切换分支...",
 			"icon": "$(gitlens-switch)",
 			"enablement": "!operationInProgress",
 			"menus": {
@@ -14783,7 +14783,7 @@
 			}
 		},
 		"gitlens.views.switchToBranch": {
-			"label": "Switch to Branch...",
+			"label": "切换到分支...",
 			"icon": "$(gitlens-switch)",
 			"enablement": "!operationInProgress",
 			"menus": {
@@ -14842,7 +14842,7 @@
 			}
 		},
 		"gitlens.views.tags.attach": {
-			"label": "Group into GitLens View",
+			"label": "组合到 GitLens 视图",
 			"icon": "$(close)",
 			"menus": {
 				"view/title": [
@@ -14860,7 +14860,7 @@
 			}
 		},
 		"gitlens.views.tags.copy": {
-			"label": "Copy",
+			"label": "复制",
 			"keybindings": [
 				{
 					"key": "ctrl+c",
@@ -14870,7 +14870,7 @@
 			]
 		},
 		"gitlens.views.tags.refresh": {
-			"label": "Refresh",
+			"label": "刷新",
 			"icon": "$(refresh)",
 			"menus": {
 				"view/item/context": [
@@ -14890,7 +14890,7 @@
 			}
 		},
 		"gitlens.views.tags.setFilesLayoutToAuto": {
-			"label": "View Files as Auto",
+			"label": "以自动模式查看文件",
 			"icon": "$(list-tree)",
 			"enablement": "config.gitlens.views.tags.files.layout != auto",
 			"menus": {
@@ -14928,7 +14928,7 @@
 			}
 		},
 		"gitlens.views.tags.setFilesLayoutToList": {
-			"label": "View Files as List",
+			"label": "以列表模式查看文件",
 			"icon": "$(gitlens-list-auto)",
 			"enablement": "config.gitlens.views.tags.files.layout != list",
 			"menus": {
@@ -14966,7 +14966,7 @@
 			}
 		},
 		"gitlens.views.tags.setFilesLayoutToTree": {
-			"label": "View Files as Tree",
+			"label": "以树形模式查看文件",
 			"icon": "$(list-flat)",
 			"enablement": "config.gitlens.views.tags.files.layout != tree",
 			"menus": {
@@ -15004,7 +15004,7 @@
 			}
 		},
 		"gitlens.views.tags.setLayoutToList": {
-			"label": "View as List",
+			"label": "以列表模式查看",
 			"icon": "$(list-tree)",
 			"enablement": "config.gitlens.views.tags.branches.layout != list",
 			"menus": {
@@ -15042,7 +15042,7 @@
 			}
 		},
 		"gitlens.views.tags.setLayoutToTree": {
-			"label": "View as Tree",
+			"label": "以树形模式查看",
 			"icon": "$(list-flat)",
 			"enablement": "config.gitlens.views.tags.branches.layout != tree",
 			"menus": {
@@ -15080,7 +15080,7 @@
 			}
 		},
 		"gitlens.views.tags.setShowAvatarsOff": {
-			"label": "Hide Avatars",
+			"label": "隐藏头像",
 			"menus": {
 				"gitlens/views/grouped/more": [
 					{
@@ -15116,7 +15116,7 @@
 			}
 		},
 		"gitlens.views.tags.setShowAvatarsOn": {
-			"label": "Show Avatars",
+			"label": "显示头像",
 			"menus": {
 				"gitlens/views/grouped/more": [
 					{
@@ -15172,7 +15172,7 @@
 			}
 		},
 		"gitlens.views.timeline.refresh": {
-			"label": "Refresh",
+			"label": "刷新",
 			"icon": "$(refresh)",
 			"menus": {
 				"view/item/context": [
@@ -15192,7 +15192,7 @@
 			}
 		},
 		"gitlens.views.title.createBranch": {
-			"label": "Create Branch...",
+			"label": "创建分支...",
 			"icon": "$(add)",
 			"enablement": "!operationInProgress",
 			"menus": {
@@ -15220,7 +15220,7 @@
 			}
 		},
 		"gitlens.views.title.createTag": {
-			"label": "Create Tag...",
+			"label": "创建标签...",
 			"icon": "$(add)",
 			"enablement": "!operationInProgress",
 			"menus": {
@@ -15248,7 +15248,7 @@
 			}
 		},
 		"gitlens.views.title.createWorktree": {
-			"label": "Create Worktree...",
+			"label": "创建工作树...",
 			"icon": "$(add)",
 			"enablement": "!operationInProgress",
 			"menus": {
@@ -15276,7 +15276,7 @@
 			}
 		},
 		"gitlens.views.undoCommit": {
-			"label": "Undo Commit",
+			"label": "撤销提交",
 			"icon": "$(discard)",
 			"enablement": "!operationInProgress",
 			"menus": {
@@ -15412,7 +15412,7 @@
 			}
 		},
 		"gitlens.views.workspaces.copy": {
-			"label": "Copy",
+			"label": "复制",
 			"keybindings": [
 				{
 					"key": "ctrl+c",
@@ -15544,7 +15544,7 @@
 			}
 		},
 		"gitlens.views.workspaces.refresh": {
-			"label": "Refresh",
+			"label": "刷新",
 			"icon": "$(refresh)",
 			"menus": {
 				"view/item/context": [
@@ -15649,7 +15649,7 @@
 			}
 		},
 		"gitlens.views.worktrees.attach": {
-			"label": "Group into GitLens View",
+			"label": "组合到 GitLens 视图",
 			"icon": "$(close)",
 			"menus": {
 				"view/title": [
@@ -15667,7 +15667,7 @@
 			}
 		},
 		"gitlens.views.worktrees.copy": {
-			"label": "Copy",
+			"label": "复制",
 			"keybindings": [
 				{
 					"key": "ctrl+c",
@@ -15677,7 +15677,7 @@
 			]
 		},
 		"gitlens.views.worktrees.refresh": {
-			"label": "Refresh",
+			"label": "刷新",
 			"icon": "$(refresh)",
 			"menus": {
 				"view/item/context": [
@@ -15697,7 +15697,7 @@
 			}
 		},
 		"gitlens.views.worktrees.setFilesLayoutToAuto": {
-			"label": "View Files as Auto",
+			"label": "以自动模式查看文件",
 			"icon": "$(list-tree)",
 			"enablement": "config.gitlens.views.worktrees.files.layout != auto",
 			"menus": {
@@ -15735,7 +15735,7 @@
 			}
 		},
 		"gitlens.views.worktrees.setFilesLayoutToList": {
-			"label": "View Files as List",
+			"label": "以列表模式查看文件",
 			"icon": "$(gitlens-list-auto)",
 			"enablement": "config.gitlens.views.worktrees.files.layout != list",
 			"menus": {
@@ -15773,7 +15773,7 @@
 			}
 		},
 		"gitlens.views.worktrees.setFilesLayoutToTree": {
-			"label": "View Files as Tree",
+			"label": "以树形模式查看文件",
 			"icon": "$(list-flat)",
 			"enablement": "config.gitlens.views.worktrees.files.layout != tree",
 			"menus": {
@@ -15811,7 +15811,7 @@
 			}
 		},
 		"gitlens.views.worktrees.setLayoutToList": {
-			"label": "View as List",
+			"label": "以列表模式查看",
 			"icon": "$(list-tree)",
 			"enablement": "config.gitlens.views.worktrees.branches.layout != list",
 			"menus": {
@@ -15849,7 +15849,7 @@
 			}
 		},
 		"gitlens.views.worktrees.setLayoutToTree": {
-			"label": "View as Tree",
+			"label": "以树形模式查看",
 			"icon": "$(list-flat)",
 			"enablement": "config.gitlens.views.worktrees.branches.layout != tree",
 			"menus": {
@@ -15887,7 +15887,7 @@
 			}
 		},
 		"gitlens.views.worktrees.setShowAvatarsOff": {
-			"label": "Hide Avatars",
+			"label": "隐藏头像",
 			"menus": {
 				"gitlens/views/grouped/more": [
 					{
@@ -15923,7 +15923,7 @@
 			}
 		},
 		"gitlens.views.worktrees.setShowAvatarsOn": {
-			"label": "Show Avatars",
+			"label": "显示头像",
 			"menus": {
 				"gitlens/views/grouped/more": [
 					{
@@ -16031,7 +16031,7 @@
 			}
 		},
 		"gitlens.views.worktrees.setShowBranchPullRequestOff": {
-			"label": "Hide Branch Pull Requests",
+			"label": "隐藏分支拉取请求",
 			"menus": {
 				"gitlens/views/grouped/more": [
 					{
@@ -16067,7 +16067,7 @@
 			}
 		},
 		"gitlens.views.worktrees.setShowBranchPullRequestOn": {
-			"label": "Show Branch Pull Requests",
+			"label": "显示分支拉取请求",
 			"menus": {
 				"gitlens/views/grouped/more": [
 					{
@@ -16103,7 +16103,7 @@
 			}
 		},
 		"gitlens.views.worktrees.setShowStashesOff": {
-			"label": "Hide Stashes",
+			"label": "隐藏存储项",
 			"menus": {
 				"gitlens/views/grouped/more": [
 					{
@@ -16139,7 +16139,7 @@
 			}
 		},
 		"gitlens.views.worktrees.setShowStashesOn": {
-			"label": "Show Stashes",
+			"label": "显示存储",
 			"menus": {
 				"gitlens/views/grouped/more": [
 					{
