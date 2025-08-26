@@ -59,8 +59,8 @@ export interface RevertGitCommandArgs {
 
 export class RevertGitCommand extends QuickCommand<State> {
 	constructor(container: Container, args?: RevertGitCommandArgs) {
-		super(container, 'revert', 'revert', 'Revert', {
-			description: 'undoes the changes of specified commits, by creating new commits with inverted changes',
+		super(container, 'revert', 'revert', '撤销提交', {
+			description: '通过创建具有相反更改的新提交来撤销指定提交的更改',
 		});
 
 		this.initialState = { confirm: true, ...args?.state };

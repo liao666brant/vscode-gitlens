@@ -831,7 +831,7 @@ export async function undoCommit(container: Container, commit: GitRevisionRefere
 	// Check for uncommitted changes before prompting
 	const hasChanges = await svc.status.hasWorkingChanges();
 	if (hasChanges) {
-		const confirm = { title: 'Undo Commit' };
+		const confirm = { title: '撤销提交' };
 		const cancel = { title: 'Cancel', isCloseAffordance: true };
 		const result = await window.showWarningMessage(
 			`You have uncommitted changes in the working tree.\n\nDo you still want to undo ${getReferenceLabel(

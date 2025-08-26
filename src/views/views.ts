@@ -535,15 +535,15 @@ export class Views implements Disposable {
 
 		const newInstall = !configuration.get('advanced.skipOnboarding') && getContext('gitlens:install:new', false);
 
-		const confirm: MessageItem = { title: 'OK', isCloseAffordance: true };
-		const Restore: MessageItem = { title: 'Restore Previous Locations' };
+		const confirm: MessageItem = { title: '确定', isCloseAffordance: true };
+		const Restore: MessageItem = { title: '恢复之前的位置' };
 
 		const buttons = newInstall ? [confirm] : [confirm, Restore];
 
 		const result = await window.showInformationMessage(
 			newInstall
-				? 'GitLens groups many related views—Commits, Branches, Stashes, etc—together for easier view management. Use the tabs in the view header to navigate, detach, or regroup views.'
-				: "In GitLens 16, we've grouped many related views—Commits, Branches, Stashes, etc—together for easier view management. Use the tabs in the view header to navigate, detach, or regroup views.",
+				? 'GitLens 将许多相关视图（提交、分支、储藏等）组合在一起，便于视图管理。使用视图标题中的选项卡来导航、分离或重新组合视图。'
+				: '在 GitLens 16 中，我们将许多相关视图（提交、分支、储藏等）组合在一起，便于视图管理。使用视图标题中的选项卡来导航、分离或重新组合视图。',
 			...buttons,
 		);
 

@@ -64,7 +64,7 @@ export class ContributorsNode extends CacheableChildrenViewNode<
 	}
 
 	getTreeItem(): TreeItem {
-		const item = new TreeItem('Contributors', TreeItemCollapsibleState.Collapsed);
+		const item = new TreeItem('贡献者', TreeItemCollapsibleState.Collapsed);
 		item.id = this.id;
 		item.contextValue = ContextValues.Contributors;
 		if (this.options?.icon !== false) {

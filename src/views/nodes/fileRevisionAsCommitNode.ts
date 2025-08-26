@@ -152,7 +152,7 @@ export class FileRevisionAsCommitNode extends ViewRefFileNode<
 		}
 
 		if (this.commit.file?.hasConflicts) {
-			return createCommand<[DiffWithCommandArgs]>('gitlens.diffWith', 'Open Changes', {
+			return createCommand<[DiffWithCommandArgs]>('gitlens.diffWith', '打开更改', {
 				lhs: {
 					sha: 'MERGE_HEAD',
 					uri: GitUri.fromFile(this.file, this.repoPath, undefined, true),
@@ -169,7 +169,7 @@ export class FileRevisionAsCommitNode extends ViewRefFileNode<
 
 		return createCommand<[undefined, DiffWithPreviousCommandArgs]>(
 			'gitlens.diffWithPrevious:views',
-			'Open Changes with Previous Revision',
+			'打开与上一版本的更改',
 			undefined,
 			{
 				commit: this.commit,

@@ -189,10 +189,10 @@ export class ViewCommands implements Disposable {
 		}
 
 		if (urls.length > 10) {
-			const confirm = { title: 'Open' };
-			const cancel = { title: 'Cancel', isCloseAffordance: true };
+			const confirm = { title: '打开' };
+			const cancel = { title: '取消', isCloseAffordance: true };
 			const result = await window.showWarningMessage(
-				`Are you sure you want to open ${urls.length} URLs?`,
+				`您确定要打开 ${urls.length} 个 URL 吗？`,
 				{ modal: true },
 				confirm,
 				cancel,
@@ -682,7 +682,7 @@ export class ViewCommands implements Disposable {
 				rhs: refs.head.ref,
 			},
 			{
-				title: `Changes in Pull Request #${pr.id}`,
+				title: `拉取请求 #${pr.id} 中的更改`,
 			},
 		);
 	}

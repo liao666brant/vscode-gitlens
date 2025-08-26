@@ -114,7 +114,7 @@ export class AutolinkedItemsNode extends SubscribeableViewNode<'autolinks', View
 
 	getTreeItem(): TreeItem {
 		const item = new TreeItem(
-			'Autolinked Issues and Pull Requests',
+			'自动链接的问题和拉取请求',
 			this.expand ? TreeItemCollapsibleState.Expanded : TreeItemCollapsibleState.Collapsed,
 		);
 		item.id = this.id;

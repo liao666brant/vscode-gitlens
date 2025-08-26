@@ -471,12 +471,12 @@ export class SubscriptionService implements Disposable {
 		} = this._subscription;
 
 		if (account?.verified === false) {
-			const verify: MessageItem = { title: 'Resend Email' };
-			const confirm: MessageItem = { title: 'Continue', isCloseAffordance: true };
+			const verify: MessageItem = { title: '重新发送邮件' };
+			const confirm: MessageItem = { title: '继续', isCloseAffordance: true };
 
 			const result = await window.showInformationMessage(
-				'Welcome to GitLens',
-				{ modal: true, detail: 'Verify the email we just sent you to start your Pro trial.' },
+				'欢迎使用 GitLens',
+				{ modal: true, detail: '请验证我们刚发送给您的邮件以开始 Pro 试用。' },
 				verify,
 				confirm,
 			);
@@ -485,13 +485,13 @@ export class SubscriptionService implements Disposable {
 				void this.resendVerification(source);
 			}
 		} else if (isSubscriptionPaid(this._subscription)) {
-			const learn: MessageItem = { title: 'Learn More' };
-			const confirm: MessageItem = { title: 'Continue', isCloseAffordance: true };
+			const learn: MessageItem | undefined = isWalkthroughSupported() ? { title: '了解更多' } : undefined;
+			const confirm: MessageItem = { title: '继续', isCloseAffordance: true };
 			const result = await window.showInformationMessage(
-				`You are now on ${actual.name} and have full access to all GitLens Pro features.`,
+				`您现在使用的是 ${actual.name} 计划，可以完全访问所有 GitLens Pro 功能。`,
 				{ modal: true },
 				confirm,
-				learn,
+				...(learn ? [learn] : []),
 			);
 
 			if (result === learn) {
@@ -500,35 +500,37 @@ export class SubscriptionService implements Disposable {
 		} else if (isSubscriptionTrial(this._subscription)) {
 			const days = getSubscriptionTimeRemaining(this._subscription, 'days') ?? 0;
 
-			const learn: MessageItem = { title: 'Learn More' };
-			const confirm: MessageItem = { title: 'Continue', isCloseAffordance: true };
+			const learn: MessageItem | undefined = isWalkthroughSupported() ? { title: '了解更多' } : undefined;
+			const confirm: MessageItem = { title: '继续', isCloseAffordance: true };
 			const result = await window.showInformationMessage(
-				`Welcome to your ${effective.name} Trial.\n\nYou now have full access to all GitLens Pro features for ${
-					days < 1 ? '<1 more day' : pluralize('day', days, { infix: ' more ' })
-				}.`,
+				`欢迎使用您的 ${effective.name} 试用版。\n\n您现在可以完全访问所有 GitLens Pro 功能，剩余时间 ${
+					days < 1 ? '不到1天' : `${days}天`
+				}。`,
 				{
 					modal: true,
-					detail: 'Your trial also includes access to the GitKraken DevEx platform, unleashing powerful Git visualization & productivity capabilities everywhere you work: IDE, desktop, browser, and terminal.',
+					detail: '您的试用版还包括对 GitKraken DevEx 平台的访问，在您工作的任何地方都能释放强大的 Git 可视化和生产力功能：IDE、桌面、浏览器和终端。',
 				},
 				confirm,
-				learn,
+				...(learn ? [learn] : []),
 			);
 
 			if (result === learn) {
 				void this.learnAboutPro({ source: 'prompt', detail: { action: 'trial-started' } }, source);
 			}
 		} else {
-			const upgrade: MessageItem = { title: 'Upgrade to Pro' };
-			const learn: MessageItem = { title: 'Community vs. Pro' };
-			const confirm: MessageItem = { title: 'Continue', isCloseAffordance: true };
+			const upgrade: MessageItem = { title: '升级到 Pro' };
+			const learn: MessageItem | undefined = isWalkthroughSupported()
+				? { title: 'Community 对比 Pro' }
+				: undefined;
+			const confirm: MessageItem = { title: '继续', isCloseAffordance: true };
 			const result = await window.showInformationMessage(
-				`You are now on ${actual.name}.`,
+				`您现在使用的是 ${actual.name} 计划。`,
 				{
 					modal: true,
-					detail: 'You only have access to Pro features on publicly-hosted repos. For full access to all Pro features, please upgrade to GitLens Pro.',
+					detail: '您只能在公开托管的仓库中使用 Pro 功能。要获得所有 Pro 功能的完整访问权限，请升级到 GitLens Pro。',
 				},
 				upgrade,
-				learn,
+				...(learn ? [learn] : []),
 				confirm,
 			);
 

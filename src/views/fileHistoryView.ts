@@ -179,10 +179,10 @@ export class FileHistoryView extends ViewBase<
 		void setContext('gitlens:views:fileHistory:cursorFollowing', enabled);
 
 		if (this.grouped) {
-			this.groupedLabel = (this._followCursor ? 'Line History' : 'File History').toLocaleLowerCase();
+			this.groupedLabel = (this._followCursor ? '行历史' : '文件历史').toLocaleLowerCase();
 			this.description = this.groupedLabel;
 		} else {
-			this.title = this._followCursor ? 'Line History' : 'File History';
+			this.title = this._followCursor ? '行历史' : '文件历史';
 		}
 
 		const root = this.ensureRoot(true);

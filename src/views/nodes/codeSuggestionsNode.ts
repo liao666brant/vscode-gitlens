@@ -35,7 +35,7 @@ export class CodeSuggestionsNode extends CacheableChildrenViewNode<'drafts-code-
 			}
 
 			if (!children?.length) {
-				children = [new MessageNode(this.view, this, 'No code suggestions')];
+				children = [new MessageNode(this.view, this, '无代码建议')];
 			}
 
 			this.children = children;

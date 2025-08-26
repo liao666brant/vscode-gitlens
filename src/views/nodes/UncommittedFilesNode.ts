@@ -83,7 +83,7 @@ export class UncommittedFilesNode extends ViewNode<'uncommitted-files', ViewsWit
 	}
 
 	getTreeItem(): TreeItem {
-		const item = new TreeItem('Uncommitted changes', TreeItemCollapsibleState.Collapsed);
+		const item = new TreeItem('未提交的更改', TreeItemCollapsibleState.Collapsed);
 		item.id = this.id;
 		item.contextValue = ContextValues.UncommittedFiles;
 		item.iconPath = new ThemeIcon('folder');

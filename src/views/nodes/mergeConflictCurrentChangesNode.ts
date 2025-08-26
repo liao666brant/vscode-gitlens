@@ -47,7 +47,7 @@ export class MergeConflictCurrentChangesNode extends ViewNode<
 	async getTreeItem(): Promise<TreeItem> {
 		const commit = await this.getCommit();
 
-		const item = new TreeItem('Current changes', TreeItemCollapsibleState.None);
+		const item = new TreeItem('当前更改', TreeItemCollapsibleState.None);
 		item.contextValue = ContextValues.MergeConflictCurrentChanges;
 		item.description = `${getReferenceLabel(this.currentRef, { expand: false, icon: false })}${
 			commit != null ? ` (${getReferenceLabel(commit, { expand: false, icon: false })})` : ' (HEAD)'
@@ -65,14 +65,14 @@ export class MergeConflictCurrentChangesNode extends ViewNode<
 		if (this.status.mergeBase == null) {
 			return createCoreCommand(
 				'vscode.open',
-				'Open Revision',
+				'打开版本',
 				this.view.container.git
 					.getRepositoryService(this.status.repoPath)
 					.getRevisionUri('HEAD', this.file.path),
 			);
 		}
 
-		return createCommand<[DiffWithCommandArgs]>('gitlens.diffWith', 'Open Changes', {
+		return createCommand<[DiffWithCommandArgs]>('gitlens.diffWith', '打开更改', {
 			lhs: {
 				sha: this.status.mergeBase,
 				uri: GitUri.fromFile(this.file, this.status.repoPath, undefined, true),

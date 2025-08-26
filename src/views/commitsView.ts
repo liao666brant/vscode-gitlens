@@ -168,10 +168,10 @@ export class CommitsViewNode extends RepositoriesSubscribeableNode<CommitsView, 
 				new CommandMessageNode(
 					this.view,
 					this,
-					createCommand('gitlens.showGraph', 'Show Commit Graph'),
-					'Visualize commits on the Commit Graph',
+					createCommand('gitlens.showGraph', '显示提交图'),
+					'在提交图中可视化提交',
 					undefined,
-					'Visualize commits on the Commit Graph',
+					'在提交图中可视化提交',
 					new ThemeIcon('gitlens-graph'),
 				),
 			);

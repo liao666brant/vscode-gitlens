@@ -90,7 +90,7 @@ export abstract class ActionMessageNodeBase extends CommandMessageNode {
 		contextValue?: AllowedContextValues,
 		resourceUri?: Uri,
 	) {
-		const command = { command: `gitlens.node.action:${actionCommandCounter.next()}`, title: 'Execute action' };
+		const command = { command: `gitlens.node.action:${actionCommandCounter.next()}`, title: '执行操作' };
 		super(view, parent, command, message, description, tooltip, iconPath, contextValue, resourceUri);
 
 		this._disposable = commands.registerCommand(command.command, this.action.bind(this));
@@ -308,7 +308,7 @@ export abstract class PagerNode extends ViewNode<'pager'> {
 
 	override getCommand(): Command | undefined {
 		return {
-			title: 'Load more',
+			title: '加载更多',
 			command: 'gitlens.views.loadMoreChildren',
 			arguments: [this],
 		};
@@ -333,7 +333,7 @@ export class LoadMoreNode extends PagerNode {
 			options?.message ??
 				(options?.pageSize === 0
 					? `Load all ${GlyphChars.Space}${GlyphChars.Dash}${GlyphChars.Space} this may take a while`
-					: 'Load more'),
+					: '加载更多'),
 			previousNode,
 			options,
 		);
