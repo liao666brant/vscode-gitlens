@@ -44,10 +44,10 @@ export class GiteaRemote extends RemoteProvider {
 					url: this.issueLinkPattern,
 					alphanumeric: false,
 					ignoreCase: false,
-					title: `Open Issue #<num> on ${this.name}`,
+					title: `在 ${this.name} 上打开问题 #<num>`,
 
 					type: 'issue',
-					description: `${this.name} Issue #<num>`,
+					description: `${this.name} 问题 #<num>`,
 				},
 			];
 		}

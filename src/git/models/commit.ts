@@ -462,7 +462,7 @@ export class GitCommit implements GitRevisionReference {
 
 		function formatStat(type: 'added' | 'changed' | 'deleted', value: number) {
 			if (style === 'expanded') {
-				return `${pluralize('file', value)} ${type}`;
+				return `${value} 个文件${type === 'added' ? ' 已添加' : type === 'changed' ? ' 已修改' : ' 已删除'}`;
 			}
 
 			const label = `${type === 'added' ? '+' : type === 'deleted' ? '-' : '~'}${value}`;
@@ -516,7 +516,7 @@ export class GitCommit implements GitRevisionReference {
 			const lineStats = [];
 
 			if (additions) {
-				const additionsText = pluralize('addition', additions);
+				const additionsText = `${additions} 处新增`;
 				if (options?.color) {
 					lineStats.push(
 						/*html*/ `<span style="color:var(--vscode-gitDecoration-addedResourceForeground);">${additionsText}</span>`,
@@ -527,7 +527,7 @@ export class GitCommit implements GitRevisionReference {
 			}
 
 			if (deletions) {
-				const deletionsText = pluralize('deletion', deletions);
+				const deletionsText = `${deletions} 处删除`;
 				if (options?.color) {
 					lineStats.push(
 						/*html*/ `<span style="color:var(--vscode-gitDecoration-deletedResourceForeground);">${deletionsText}</span>`,

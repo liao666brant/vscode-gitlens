@@ -90,13 +90,13 @@ export async function ensurePullRequestRemote(
 
 	if (found) return true;
 
-	const confirm = { title: 'Add Remote' };
-	const cancel = { title: 'Cancel', isCloseAffordance: true };
+	const confirm = { title: '添加远程' };
+	const cancel = { title: '取消', isCloseAffordance: true };
 	if (!options?.silent) {
 		const result = await window.showInformationMessage(
 			`${
-				options?.promptMessage ?? `Unable to find a remote for PR #${pr.id}.`
-			}\nWould you like to add a remote for '${identity.provider.repoDomain}?`,
+				options?.promptMessage ?? `无法为 PR #${pr.id} 找到对应的远程。`
+			}\n是否要为“${identity.provider.repoDomain}”添加一个远程？`,
 			{ modal: true },
 			confirm,
 			cancel,

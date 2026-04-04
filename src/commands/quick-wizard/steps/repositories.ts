@@ -31,6 +31,14 @@ import { RevealInSideBarQuickInputButton } from '../quickButtons.js';
 import type { StepController } from '../stepsController.js';
 import { appendReposToTitle, canPickStepContinue, createPickStep } from '../utils/steps.utils.js';
 
+function formatFileCount(count: number, type: 'staged' | 'unstaged') {
+	return `${count} 个${type === 'staged' ? '已暂存' : '未暂存'}文件`;
+}
+
+function formatCommitCount(count: number, direction: 'ahead' | 'behind') {
+	return `${count} 个提交${direction === 'ahead' ? '领先' : '落后'}`;
+}
+
 export async function* pickRepositoryStep<
 	State extends PartialStepState & { repo?: string | Repository },
 	Context extends StepsContext<any> & { repos: Repository[]; associatedView: ViewsWithRepositoryFolders },
@@ -70,17 +78,17 @@ export async function* pickRepositoryStep<
 		return repos[0];
 	}
 
-	const placeholder = options?.placeholder ?? 'Choose a repository';
+	const placeholder = options?.placeholder ?? '选择仓库';
 
 	const step = createPickStep<RepositoryQuickPickItem>({
 		title: context.title,
-		placeholder: !repos.length ? `${placeholder} — no opened repositories found` : placeholder,
+		placeholder: !repos.length ? `${placeholder} — 未找到已打开的仓库` : placeholder,
 		canGoBack: context.steps?.canGoBack,
 		items: !repos.length
 			? [
 					createDirectiveQuickPickItem(Directive.Cancel, true, {
-						label: 'Cancel',
-						detail: 'No opened repositories found',
+						label: '取消',
+						detail: '未找到已打开的仓库',
 					}),
 				]
 			: Promise.all(
@@ -142,18 +150,18 @@ export async function* pickRepositoriesStep<
 		repos = sortRepositoriesGrouped(grouped);
 	}
 
-	const placeholder = options?.placeholder ?? 'Choose a repository';
+	const placeholder = options?.placeholder ?? '选择仓库';
 
 	const step = createPickStep<RepositoryQuickPickItem>({
 		multiselect: true,
 		title: context.title,
-		placeholder: !repos.length ? `${placeholder} — no opened repositories found` : placeholder,
+		placeholder: !repos.length ? `${placeholder} — 未找到已打开的仓库` : placeholder,
 		canGoBack: context.steps?.canGoBack,
 		items: !repos.length
 			? [
 					createDirectiveQuickPickItem(Directive.Cancel, true, {
-						label: 'Cancel',
-						detail: 'No opened repositories found',
+						label: '取消',
+						detail: '未找到已打开的仓库',
 					}),
 				]
 			: Promise.all(
@@ -218,15 +226,15 @@ function getShowRepositoryStatusStepItems<
 
 	let workingTreeStatus;
 	if (computed.staged === 0 && computed.unstaged === 0) {
-		workingTreeStatus = 'No working tree changes';
+		workingTreeStatus = '工作树没有更改';
 	} else {
 		workingTreeStatus = `$(files) ${
-			computed.staged ? `${pluralize('staged file', computed.staged)} (${computed.stagedStatus})` : ''
+			computed.staged ? `${formatFileCount(computed.staged, 'staged')}（${computed.stagedStatus}）` : ''
 		}${
 			computed.unstaged
-				? `${computed.staged ? ', ' : ''}${pluralize('unstaged file', computed.unstaged)} (${
+				? `${computed.staged ? '，' : ''}${formatFileCount(computed.unstaged, 'unstaged')}（${
 						computed.unstagedStatus
-					})`
+					}）`
 				: ''
 		}`;
 	}
@@ -235,28 +243,28 @@ function getShowRepositoryStatusStepItems<
 		if (context.status.upstream.state.ahead === 0 && context.status.upstream.state.behind === 0) {
 			items.push(
 				createDirectiveQuickPickItem(Directive.Noop, true, {
-					label: `$(git-branch) ${context.status.branch} is up to date with $(git-branch) ${context.status.upstream?.name}`,
+					label: `$(git-branch) ${context.status.branch} 已与 $(git-branch) ${context.status.upstream?.name} 保持同步`,
 					detail: workingTreeStatus,
 				}),
 			);
 		} else if (context.status.upstream.state.ahead !== 0 && context.status.upstream.state.behind !== 0) {
 			items.push(
 				createDirectiveQuickPickItem(Directive.Noop, true, {
-					label: `$(git-branch) ${context.status.branch} has diverged from $(git-branch) ${context.status.upstream?.name}`,
+					label: `$(git-branch) ${context.status.branch} 与 $(git-branch) ${context.status.upstream?.name} 已分叉`,
 					detail: workingTreeStatus,
 				}),
 			);
 		} else if (context.status.upstream.state.ahead !== 0) {
 			items.push(
 				createDirectiveQuickPickItem(Directive.Noop, true, {
-					label: `$(git-branch) ${context.status.branch} is ahead of $(git-branch) ${context.status.upstream?.name}`,
+					label: `$(git-branch) ${context.status.branch} 领先于 $(git-branch) ${context.status.upstream?.name}`,
 					detail: workingTreeStatus,
 				}),
 			);
 		} else if (context.status.upstream.state.behind !== 0) {
 			items.push(
 				createDirectiveQuickPickItem(Directive.Noop, true, {
-					label: `$(git-branch) ${context.status.branch} is behind $(git-branch) ${context.status.upstream?.name}`,
+					label: `$(git-branch) ${context.status.branch} 落后于 $(git-branch) ${context.status.upstream?.name}`,
 					detail: workingTreeStatus,
 				}),
 			);
@@ -265,7 +273,7 @@ function getShowRepositoryStatusStepItems<
 		if (context.status.upstream.state.behind !== 0) {
 			items.push(
 				new GitWizardQuickPickItem(
-					`$(cloud-download) ${pluralize('commit', context.status.upstream.state.behind)} behind`,
+					`$(cloud-download) ${formatCommitCount(context.status.upstream.state.behind, 'behind')}`,
 					{
 						command: 'log',
 						state: {
@@ -283,7 +291,7 @@ function getShowRepositoryStatusStepItems<
 		if (context.status.upstream.state.ahead !== 0) {
 			items.push(
 				new GitWizardQuickPickItem(
-					`$(cloud-upload) ${pluralize('commit', context.status.upstream.state.ahead)} ahead`,
+					`$(cloud-upload) ${formatCommitCount(context.status.upstream.state.ahead, 'ahead')}`,
 					{
 						command: 'log',
 						state: {
@@ -300,7 +308,7 @@ function getShowRepositoryStatusStepItems<
 	} else {
 		items.push(
 			createDirectiveQuickPickItem(Directive.Noop, true, {
-				label: `$(git-branch) ${context.status.branch} has no upstream`,
+				label: `$(git-branch) ${context.status.branch} 没有上游分支`,
 				detail: workingTreeStatus,
 			}),
 		);
@@ -323,25 +331,19 @@ function getShowRepositoryStatusStepItems<
 	}
 
 	if (computed.staged > 0) {
-		items.push(new OpenChangedFilesCommandQuickPickItem(computed.stagedAddsAndChanges, 'Open Staged Files'));
+		items.push(new OpenChangedFilesCommandQuickPickItem(computed.stagedAddsAndChanges, '打开已暂存文件'));
 
-		items.push(
-			new OpenOnlyChangedFilesCommandQuickPickItem(computed.stagedAddsAndChanges, 'Open Only Staged Files'),
-		);
+		items.push(new OpenOnlyChangedFilesCommandQuickPickItem(computed.stagedAddsAndChanges, '仅打开已暂存文件'));
 	}
 
 	if (computed.unstaged > 0) {
-		items.push(new OpenChangedFilesCommandQuickPickItem(computed.unstagedAddsAndChanges, 'Open Unstaged Files'));
+		items.push(new OpenChangedFilesCommandQuickPickItem(computed.unstagedAddsAndChanges, '打开未暂存文件'));
 
-		items.push(
-			new OpenOnlyChangedFilesCommandQuickPickItem(computed.unstagedAddsAndChanges, 'Open Only Unstaged Files'),
-		);
+		items.push(new OpenOnlyChangedFilesCommandQuickPickItem(computed.unstagedAddsAndChanges, '仅打开未暂存文件'));
 	}
 
 	if (context.status.files.length) {
-		items.push(
-			new CommandQuickPickItem('Close Unchanged Files', new ThemeIcon('x'), 'gitlens.closeUnchangedFiles'),
-		);
+		items.push(new CommandQuickPickItem('关闭未更改文件', new ThemeIcon('x'), 'gitlens.closeUnchangedFiles'));
 	}
 
 	return items;

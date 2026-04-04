@@ -7,15 +7,15 @@ export function createConflictDetectionError(reason: ConflictDetectionErrorReaso
 function getConflictDetectionErrorMessage(reason: ConflictDetectionErrorReason): string {
 	switch (reason) {
 		case 'unsupported':
-			return 'Unable to detect conflicts because Git 2.38 or later is required';
+			return '无法检测冲突，因为需要 Git 2.38 或更高版本';
 		case 'noParent':
-			return 'Unable to detect conflicts because the selection includes the initial commit';
+			return '无法检测冲突，因为所选范围包含初始提交';
 		case 'noMergeBase':
-			return "Unable to detect conflicts because the branches don't share a common history";
+			return '无法检测冲突，因为这些分支没有共同历史';
 		case 'refNotFound':
-			return "Unable to detect conflicts because the branch or commit doesn't exist";
+			return '无法检测冲突，因为分支或提交不存在';
 		case 'other':
 		default:
-			return 'Unable to detect conflicts';
+			return '无法检测冲突';
 	}
 }

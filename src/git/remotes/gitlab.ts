@@ -70,20 +70,20 @@ export class GitLabRemote extends RemoteProvider<GitLabRepositoryDescriptor> {
 					url: this.issueLinkPattern,
 					alphanumeric: false,
 					ignoreCase: false,
-					title: `Open Issue #<num> on ${this.name}`,
+					title: `在 ${this.name} 上打开问题 #<num>`,
 
 					type: 'issue',
-					description: `${this.name} Issue #<num>`,
+					description: `${this.name} 问题 #<num>`,
 				},
 				{
 					prefix: '!',
 					url: `${this.baseUrl}/-/merge_requests/<num>`,
 					alphanumeric: false,
 					ignoreCase: false,
-					title: `Open Merge Request !<num> on ${this.name}`,
+					title: `在 ${this.name} 上打开合并请求 !<num>`,
 
 					type: 'pullrequest',
-					description: `${this.name} Merge Request !<num>`,
+					description: `${this.name} 合并请求 !<num>`,
 				},
 				{
 					tokenize: (
@@ -100,7 +100,7 @@ export class GitLabRemote extends RemoteProvider<GitLabRepositoryDescriptor> {
 									const url = encodeUrl(
 										`${this.protocol}://${this.domain}/${unescapeMarkdown(repo)}/-/issues/${num}`,
 									);
-									const title = ` "Open Issue #${num} from ${repo} on ${this.name}"`;
+									const title = ` "在 ${this.name} 上打开来自 ${repo} 的问题 #${num}"`;
 
 									const token = `\x00${tokenMapping.size}\x00`;
 									if (outputFormat === 'markdown') {
@@ -118,7 +118,7 @@ export class GitLabRemote extends RemoteProvider<GitLabRepositoryDescriptor> {
 												footnoteIndex = footnotes.size + 1;
 												footnotes.set(
 													footnoteIndex,
-													`[${getIssueOrPullRequestMarkdownIcon()} GitLab Issue ${repo}#${num} $(loading~spin)](${url}${title}")`,
+													`[${getIssueOrPullRequestMarkdownIcon()} GitLab 问题 ${repo}#${num} $(loading~spin)](${url}${title}")`,
 												);
 											}
 										} else {
@@ -142,7 +142,7 @@ export class GitLabRemote extends RemoteProvider<GitLabRepositoryDescriptor> {
 										footnoteIndex = footnotes.size + 1;
 										footnotes.set(
 											footnoteIndex,
-											`[${getIssueOrPullRequestMarkdownIcon()} GitLab Issue ${repo}#${num}](${url}${title})`,
+											`[${getIssueOrPullRequestMarkdownIcon()} GitLab 问题 ${repo}#${num}](${url}${title})`,
 										);
 									}
 
@@ -168,10 +168,10 @@ export class GitLabRemote extends RemoteProvider<GitLabRepositoryDescriptor> {
 								url: `${this.protocol}://${this.domain}/${ownerAndRepo}/-/issues/${num}`,
 								alphanumeric: false,
 								ignoreCase: true,
-								title: `Open Issue #<num> from ${ownerAndRepo} on ${this.name}`,
+								title: `在 ${this.name} 上打开来自 ${ownerAndRepo} 的问题 #<num>`,
 
 								type: 'issue',
-								description: `${this.name} Issue ${ownerAndRepo}#${num}`,
+								description: `${this.name} 问题 ${ownerAndRepo}#${num}`,
 								descriptor: {
 									key: this.remoteKey,
 									owner: owner,
@@ -198,7 +198,7 @@ export class GitLabRemote extends RemoteProvider<GitLabRepositoryDescriptor> {
 										const url = encodeUrl(
 											`${this.protocol}://${this.domain}/${repo}/-/merge_requests/${num}`,
 										);
-										const title = ` "Open Merge Request !${num} from ${repo} on ${this.name}"`;
+										const title = ` "在 ${this.name} 上打开来自 ${repo} 的合并请求 !${num}"`;
 
 										const token = `\x00${tokenMapping.size}\x00`;
 										if (outputFormat === 'markdown') {
@@ -218,7 +218,7 @@ export class GitLabRemote extends RemoteProvider<GitLabRepositoryDescriptor> {
 														footnoteIndex,
 														`[${getIssueOrPullRequestMarkdownIcon()} ${
 															this.name
-														} Merge Request ${repo}!${num} $(loading~spin)](${url}${title}")`,
+														} 合并请求 ${repo}!${num} $(loading~spin)](${url}${title}")`,
 													);
 												}
 											} else {
@@ -244,7 +244,7 @@ export class GitLabRemote extends RemoteProvider<GitLabRepositoryDescriptor> {
 												footnoteIndex,
 												`[${getIssueOrPullRequestMarkdownIcon()} ${
 													this.name
-												} Merge Request ${repo}!${num}](${url}${title})`,
+												} 合并请求 ${repo}!${num}](${url}${title})`,
 											);
 										}
 										return token;
@@ -270,10 +270,10 @@ export class GitLabRemote extends RemoteProvider<GitLabRepositoryDescriptor> {
 								url: `${this.protocol}://${this.domain}/${ownerAndRepo}/-/merge_requests/${num}`,
 								alphanumeric: false,
 								ignoreCase: true,
-								title: `Open Merge Request !<num> from ${ownerAndRepo} on ${this.name}`,
+								title: `在 ${this.name} 上打开来自 ${ownerAndRepo} 的合并请求 !<num>`,
 
 								type: 'pullrequest',
-								description: `${this.name} Merge Request !${num} from ${ownerAndRepo}`,
+								description: `${this.name} 来自 ${ownerAndRepo} 的合并请求 !${num}`,
 
 								descriptor: {
 									key: this.remoteKey,

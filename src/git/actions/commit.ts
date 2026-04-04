@@ -124,7 +124,7 @@ export async function openCommitChanges(
 	if (!options?.title) {
 		options = {
 			...options,
-			title: `Changes in ${shortenRevision(commit.sha, { strings: { working: 'Working Tree' } })}`,
+			title: `更改：${shortenRevision(commit.sha, { strings: { working: '工作树' } })}`,
 		};
 	}
 
@@ -207,9 +207,9 @@ export async function openMultipleChanges(
 	if (options != null) {
 		({ title, ...options } = options);
 	}
-	title ??= `Changes between ${shortenRevision(refs.lhs, { strings: { working: 'Working Tree' } })} ${
+	title ??= `更改对比：${shortenRevision(refs.lhs, { strings: { working: '工作树' } })} ${
 		GlyphChars.ArrowLeftRightLong
-	} ${shortenRevision(refs.rhs, { strings: { working: 'Working Tree' } })}`;
+	} ${shortenRevision(refs.rhs, { strings: { working: '工作树' } })}`;
 
 	const svc = container.git.getRepositoryService(refs.repoPath);
 
@@ -437,7 +437,7 @@ export async function openFolderCompare(
 	let comparison;
 	if (refs.lhs === '') {
 		debugger;
-		throw new Error('Cannot get files for comparisons of a ref with working tree');
+		throw new Error('无法获取引用与工作树对比所需的文件');
 	} else if (refs.rhs === '') {
 		comparison = refs.lhs;
 	} else {
@@ -451,17 +451,17 @@ export async function openFolderCompare(
 	if (files == null) {
 		void window.showWarningMessage(
 			`在 ${shortenRevision(refs.lhs, {
-				strings: { working: 'Working Tree' },
+				strings: { working: '工作树' },
 			})} ${GlyphChars.ArrowLeftRightLong} ${shortenRevision(refs.rhs, {
-				strings: { working: 'Working Tree' },
+				strings: { working: '工作树' },
 			})} 之间，'${relativePath}' 没有更改`,
 		);
 		return;
 	}
 
-	const title = `Changes in ${relativePath} between ${shortenRevision(refs.lhs, {
-		strings: { working: 'Working Tree' },
-	})} ${GlyphChars.ArrowLeftRightLong} ${shortenRevision(refs.rhs, { strings: { working: 'Working Tree' } })}`;
+	const title = `更改：${relativePath}，对比 ${shortenRevision(refs.lhs, {
+		strings: { working: '工作树' },
+	})} ${GlyphChars.ArrowLeftRightLong} ${shortenRevision(refs.rhs, { strings: { working: '工作树' } })}`;
 
 	return openMultipleChanges(container, files, refs, false, { ...options, title: title });
 }

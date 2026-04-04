@@ -61,7 +61,7 @@ export abstract class RemoteProvider<T extends ResourceDescriptor = ResourceDesc
 			{
 				url: this.issueLinkPattern,
 				prefix: '',
-				title: `Open Issue #<num> on ${this.name}`,
+				title: `在 ${this.name} 上打开问题 #<num>`,
 				referenceType: 'branch',
 				alphanumeric: false,
 				ignoreCase: true,

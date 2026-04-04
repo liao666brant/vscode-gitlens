@@ -32,20 +32,20 @@ export class BitbucketRemote extends RemoteProvider<RepositoryDescriptor> {
 					url: this.issueLinkPattern,
 					alphanumeric: false,
 					ignoreCase: true,
-					title: `Open Issue #<num> on ${this.name}`,
+					title: `在 ${this.name} 上打开问题 #<num>`,
 
 					type: 'issue',
-					description: `${this.name} Issue #<num>`,
+					description: `${this.name} 问题 #<num>`,
 				},
 				{
 					prefix: 'pull request #',
 					url: `${this.baseUrl}/pull-requests/<num>`,
 					alphanumeric: false,
 					ignoreCase: true,
-					title: `Open Pull Request #<num> on ${this.name}`,
+					title: `在 ${this.name} 上打开拉取请求 #<num>`,
 
 					type: 'pullrequest',
-					description: `${this.name} Pull Request #<num>`,
+					description: `${this.name} 拉取请求 #<num>`,
 				},
 			];
 		}

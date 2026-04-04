@@ -8,21 +8,21 @@ import { RemoteResourceType } from '../models/remoteResource.js';
 export function getNameFromRemoteResource(resource: RemoteResource): string {
 	switch (resource.type) {
 		case RemoteResourceType.Branch:
-			return 'Branch';
+			return '分支';
 		case RemoteResourceType.Branches:
-			return 'Branches';
+			return '分支';
 		case RemoteResourceType.Commit:
-			return 'Commit';
+			return '提交';
 		case RemoteResourceType.Comparison:
-			return 'Comparison';
+			return '对比';
 		case RemoteResourceType.CreatePullRequest:
-			return 'Create Pull Request';
+			return '创建拉取请求';
 		case RemoteResourceType.File:
-			return 'File';
+			return '文件';
 		case RemoteResourceType.Repo:
-			return 'Repository';
+			return '仓库';
 		case RemoteResourceType.Revision:
-			return 'File';
+			return '文件';
 		// case RemoteResourceType.Tag:
 		// 	return 'Tag';
 		default:

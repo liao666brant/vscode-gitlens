@@ -87,10 +87,10 @@ export class AzureDevOpsRemote extends RemoteProvider {
 					url: this.issueLinkPattern,
 					alphanumeric: false,
 					ignoreCase: false,
-					title: `Open Work Item #<num> on ${this.name}`,
+					title: `在 ${this.name} 上打开工作项 #<num>`,
 
 					type: 'issue',
-					description: `${this.name} Work Item #<num>`,
+					description: `${this.name} 工作项 #<num>`,
 				},
 				{
 					// Default Pull request message when merging a PR in ADO. Will not catch commits & pushes following a different pattern.
@@ -98,10 +98,10 @@ export class AzureDevOpsRemote extends RemoteProvider {
 					url: `${this.baseUrl}/pullrequest/<num>`,
 					alphanumeric: false,
 					ignoreCase: false,
-					title: `Open Pull Request #<num> on ${this.name}`,
+					title: `在 ${this.name} 上打开拉取请求 #<num>`,
 
 					type: 'pullrequest',
-					description: `${this.name} Pull Request #<num>`,
+					description: `${this.name} 拉取请求 #<num>`,
 				},
 			];
 		}

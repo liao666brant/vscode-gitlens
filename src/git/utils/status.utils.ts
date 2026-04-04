@@ -1,7 +1,14 @@
 import { GlyphChars } from '../../constants.js';
-import { pluralize } from '../../system/string.js';
 import type { GitTrackingUpstream } from '../models/branch.js';
 import type { GitDiffFileStats } from '../models/diff.js';
+
+function formatFileCount(count: number) {
+	return `${count} 个文件`;
+}
+
+function formatCommitCount(count: number, direction: 'behind' | 'ahead', withIcon: boolean) {
+	return `${count} 个提交${withIcon ? ` ${direction === 'behind' ? '$(arrow-down)' : '$(arrow-up)'}` : ''}${direction === 'behind' ? ' 落后' : ' 领先'}`;
+}
 
 export function getFormattedDiffStatus(
 	stats: GitDiffFileStats,
@@ -24,13 +31,13 @@ export function getFormattedDiffStatus(
 	if (options?.expand) {
 		let status = '';
 		if (added) {
-			status += `${pluralize('file', added)} added`;
+			status += `${formatFileCount(added)} 已添加`;
 		}
 		if (changed) {
-			status += `${status.length === 0 ? '' : separator}${pluralize('file', changed)} changed`;
+			status += `${status.length === 0 ? '' : separator}${formatFileCount(changed)} 已修改`;
 		}
 		if (deleted) {
-			status += `${status.length === 0 ? '' : separator}${pluralize('file', deleted)} deleted`;
+			status += `${status.length === 0 ? '' : separator}${formatFileCount(deleted)} 已删除`;
 		}
 		return `${prefix}${status}${suffix}`;
 	}
@@ -84,19 +91,15 @@ export function getUpstreamStatus(
 	if (expand) {
 		let status = '';
 		if (upstream.missing) {
-			status = 'missing';
+			status = '缺失';
 		} else {
 			if (behind) {
-				status += `${pluralize('commit', behind, {
-					infix: icons ? '$(arrow-down) ' : undefined,
-				})} behind`;
+				status += formatCommitCount(behind, 'behind', icons);
 			}
 			if (ahead) {
-				status += `${status.length === 0 ? '' : separator}${pluralize('commit', ahead, {
-					infix: icons ? '$(arrow-up) ' : undefined,
-				})} ahead`;
+				status += `${status.length === 0 ? '' : separator}${formatCommitCount(ahead, 'ahead', icons)}`;
 				if (suffix.includes(upstream.name.split('/')[0])) {
-					status += ' of';
+					status += ' 相对于';
 				}
 			}
 		}

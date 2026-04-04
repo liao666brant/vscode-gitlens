@@ -68,18 +68,18 @@ export class GitHubRemote extends RemoteProvider<GitHubRepositoryDescriptor> {
 					url: this.issueLinkPattern,
 					alphanumeric: false,
 					ignoreCase: false,
-					title: `Open Issue or Pull Request #<num> on ${this.name}`,
+					title: `在 ${this.name} 上打开问题或拉取请求 #<num>`,
 
-					description: `${this.name} Issue or Pull Request #<num>`,
+					description: `${this.name} 问题或拉取请求 #<num>`,
 				},
 				{
 					prefix: 'gh-',
 					url: this.issueLinkPattern,
 					alphanumeric: false,
 					ignoreCase: true,
-					title: `Open Issue or Pull Request #<num> on ${this.name}`,
+					title: `在 ${this.name} 上打开问题或拉取请求 #<num>`,
 
-					description: `${this.name} Issue or Pull Request #<num>`,
+					description: `${this.name} 问题或拉取请求 #<num>`,
 				},
 				{
 					tokenize: (
@@ -96,7 +96,7 @@ export class GitHubRemote extends RemoteProvider<GitHubRepositoryDescriptor> {
 									const url = encodeUrl(
 										`${this.protocol}://${this.domain}/${unescapeMarkdown(repo)}/issues/${num}`,
 									);
-									const title = ` "Open Issue or Pull Request #${num} from ${repo} on ${this.name}"`;
+									const title = ` "在 ${this.name} 上打开来自 ${repo} 的问题或拉取请求 #${num}"`;
 
 									const token = `\x00${tokenMapping.size}\x00`;
 									if (outputFormat === 'markdown') {
@@ -116,7 +116,7 @@ export class GitHubRemote extends RemoteProvider<GitHubRepositoryDescriptor> {
 													footnoteIndex,
 													`[${getIssueOrPullRequestMarkdownIcon()} ${
 														this.name
-													} Issue or Pull Request ${repo}#${num} $(loading~spin)](${url}${title}")`,
+													} 问题或拉取请求 ${repo}#${num} $(loading~spin)](${url}${title}")`,
 												);
 											}
 										} else {
@@ -142,7 +142,7 @@ export class GitHubRemote extends RemoteProvider<GitHubRepositoryDescriptor> {
 											footnoteIndex,
 											`[${getIssueOrPullRequestMarkdownIcon()} ${
 												this.name
-											} Issue or Pull Request ${repo}#${num}](${url}${title})`,
+											} 问题或拉取请求 ${repo}#${num}](${url}${title})`,
 										);
 									}
 
@@ -168,9 +168,9 @@ export class GitHubRemote extends RemoteProvider<GitHubRepositoryDescriptor> {
 								url: `${this.protocol}://${this.domain}/${ownerAndRepo}/issues/${num}`,
 								alphanumeric: false,
 								ignoreCase: true,
-								title: `Open Issue or Pull Request #<num> from ${ownerAndRepo} on ${this.name}`,
+								title: `在 ${this.name} 上打开来自 ${ownerAndRepo} 的问题或拉取请求 #<num>`,
 
-								description: `${this.name} Issue or Pull Request ${ownerAndRepo}#${num}`,
+								description: `${this.name} 问题或拉取请求 ${ownerAndRepo}#${num}`,
 
 								descriptor: {
 									key: this.remoteKey,

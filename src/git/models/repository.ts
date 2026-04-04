@@ -536,8 +536,8 @@ export class Repository implements Disposable {
 				location: ProgressLocation.Notification,
 				title:
 					opts.branch != null
-						? `${opts.pull ? 'Pulling' : 'Fetching'} ${opts.branch.name}...`
-						: `Fetching ${opts.remote ? `${opts.remote} of ` : ''}${this.name}...`,
+						? `${opts.pull ? '正在拉取' : '正在抓取'} ${opts.branch.name}...`
+						: `正在抓取 ${opts.remote ? `${opts.remote} 的 ` : ''}${this.name}...`,
 			},
 			() => this.fetchCore(opts),
 		);
@@ -560,7 +560,7 @@ export class Repository implements Disposable {
 			if (FetchError.is(ex)) {
 				void showGitErrorMessage(ex);
 			} else {
-				void showGitErrorMessage(ex, 'Unable to fetch');
+				void showGitErrorMessage(ex, '无法抓取');
 			}
 		}
 	}
@@ -611,7 +611,7 @@ export class Repository implements Disposable {
 		return window.withProgress(
 			{
 				location: ProgressLocation.Notification,
-				title: `Pulling ${this.name}...`,
+				title: `正在拉取 ${this.name}...`,
 			},
 			() => this.pullCore(opts),
 		);
@@ -633,7 +633,7 @@ export class Repository implements Disposable {
 			if (PullError.is(ex)) {
 				void showGitErrorMessage(ex);
 			} else {
-				void showGitErrorMessage(ex, 'Unable to pull');
+				void showGitErrorMessage(ex, '无法拉取');
 			}
 		}
 	}
@@ -684,8 +684,8 @@ export class Repository implements Disposable {
 			{
 				location: ProgressLocation.Notification,
 				title: isBranchReference(opts.reference)
-					? `${opts.publish != null ? 'Publishing ' : 'Pushing '}${opts.reference.name}...`
-					: `Pushing ${this.name}...`,
+					? `${opts.publish != null ? '正在发布 ' : '正在推送 '}${opts.reference.name}...`
+					: `正在推送 ${this.name}...`,
 			},
 			() => this.pushCore(opts),
 		);
@@ -710,7 +710,7 @@ export class Repository implements Disposable {
 			if (PushError.is(ex)) {
 				void showGitErrorMessage(ex);
 			} else {
-				void showGitErrorMessage(ex, 'Unable to push');
+				void showGitErrorMessage(ex, '无法推送');
 			}
 		}
 	}
@@ -775,7 +775,7 @@ export class Repository implements Disposable {
 		return window.withProgress(
 			{
 				location: ProgressLocation.Notification,
-				title: `Switching ${this.name} to ${ref}...`,
+				title: `正在将 ${this.name} 切换到 ${ref}...`,
 				cancellable: false,
 			},
 			() => this.switchCore(ref, opts),
@@ -793,7 +793,7 @@ export class Repository implements Disposable {
 			if (CheckoutError.is(ex)) {
 				void showGitErrorMessage(ex);
 			} else {
-				void showGitErrorMessage(ex, 'Unable to switch to reference');
+				void showGitErrorMessage(ex, '无法切换到引用');
 			}
 		}
 	}

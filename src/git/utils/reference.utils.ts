@@ -128,9 +128,9 @@ export function getReferenceLabel(
 				let label;
 				if (options.label) {
 					if (options.capitalize && options.expand) {
-						label = `${ref.remote ? 'Remote ' : ''}Branch `;
+						label = `${ref.remote ? '远程' : ''}分支 `;
 					} else {
-						label = `${ref.remote ? 'remote ' : ''}branch `;
+						label = `${ref.remote ? '远程' : ''}分支 `;
 					}
 				} else {
 					label = '';
@@ -140,7 +140,7 @@ export function getReferenceLabel(
 				break;
 			}
 			case 'tag':
-				result = `${options.label ? 'tag ' : ''}${
+				result = `${options.label ? '标签 ' : ''}${
 					options.icon ? `$(tag)${GlyphChars.Space}${refName}` : refName
 				}`;
 				break;
@@ -155,7 +155,7 @@ export function getReferenceLabel(
 						}`;
 					}
 
-					result = `${options.label ? 'stash ' : ''}${
+					result = `${options.label ? '存储 ' : ''}${
 						options.icon
 							? `$(archive)${GlyphChars.Space}${message ?? ref.name}`
 							: (message ?? (ref.stashNumber ? `#${ref.stashNumber}` : ref.name))
@@ -177,12 +177,12 @@ export function getReferenceLabel(
 						if (options?.quoted) {
 							refName = `'${refName}'`;
 						}
-						prefix = 'before ';
+						prefix = '在此之前的';
 					} else {
 						prefix = '';
 					}
 
-					result = `${options.label ? `${prefix}commit ` : ''}${
+					result = `${options.label ? `${prefix}提交 ` : ''}${
 						options.icon
 							? `$(git-commit)${GlyphChars.Space}${refName}${message ?? ''}`
 							: `${refName}${message ?? ''}`
@@ -198,11 +198,11 @@ export function getReferenceLabel(
 	const expanded = options.expand ? ` (${refs.map(r => r.name).join(', ')})` : '';
 	switch (refs[0].refType) {
 		case 'branch':
-			return `${refs.length} branches${expanded}`;
+			return `${refs.length} 个分支${expanded}`;
 		case 'tag':
-			return `${refs.length} tags${expanded}`;
+			return `${refs.length} 个标签${expanded}`;
 		default:
-			return `${refs.length} ${isStashReference(refs[0]) ? 'stashes' : 'commits'}${expanded}`;
+			return `${refs.length} 个${isStashReference(refs[0]) ? '存储' : '提交'}${expanded}`;
 	}
 }
 
@@ -213,16 +213,16 @@ export function getReferenceNameWithoutRemote(ref: GitReference): string {
 	return ref.name;
 }
 
-export function getReferenceTypeLabel(ref: GitReference | undefined): 'Branch' | 'Commit' | 'Stash' | 'Tag' {
+export function getReferenceTypeLabel(ref: GitReference | undefined): '分支' | '提交' | '存储' | '标签' {
 	switch (ref?.refType) {
 		case 'branch':
-			return 'Branch';
+			return '分支';
 		case 'stash':
-			return 'Stash';
+			return '存储';
 		case 'tag':
-			return 'Tag';
+			return '标签';
 		default:
-			return 'Commit';
+			return '提交';
 	}
 }
 

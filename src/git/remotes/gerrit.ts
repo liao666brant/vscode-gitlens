@@ -49,9 +49,9 @@ export class GerritRemote extends RemoteProvider {
 					url: this.issueLinkPattern,
 					alphanumeric: true,
 					ignoreCase: true,
-					title: `Open Change #<num> on ${this.name}`,
+					title: `在 ${this.name} 上打开更改 #<num>`,
 
-					description: `${this.name} Change #<num>`,
+					description: `${this.name} 更改 #<num>`,
 				},
 			];
 		}
