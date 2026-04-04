@@ -56,12 +56,7 @@ export class GlFeatureNav extends GlElement {
 		return html`
 			${when(
 				this.blockRepoFeatures,
-				() => html`
-					<p>
-						<code-icon icon="question"></code-icon> 需要仓库的功能当前
-						不可用
-					</p>
-				`,
+				() => html` <p><code-icon icon="question"></code-icon> 需要仓库的功能当前 不可用</p> `,
 			)}
 			<nav class="nav-list">
 				<h2 class="nav-list__title t-eyebrow sticky">设置</h2>
@@ -85,10 +80,7 @@ export class GlFeatureNav extends GlElement {
 								)}"
 								aria-label="在 GitKraken.dev 上连接集成"
 								><code-icon class="nav-list__icon" icon="gl-unplug"></code-icon
-								><gl-tooltip
-									hoist
-									class="nav-list__label"
-									content="在 GitKraken.dev 上连接集成"
+								><gl-tooltip hoist class="nav-list__label" content="在 GitKraken.dev 上连接集成"
 									><span>连接集成</span></gl-tooltip
 								>
 							</a>
@@ -106,10 +98,7 @@ export class GlFeatureNav extends GlElement {
 								)}"
 								aria-label="在 GitKraken.dev 上管理集成"
 								><code-icon class="nav-list__icon" icon="settings"></code-icon
-								><gl-tooltip
-									hoist
-									class="nav-list__label"
-									content="在 GitKraken.dev 上管理集成"
+								><gl-tooltip hoist class="nav-list__label" content="在 GitKraken.dev 上管理集成"
 									><span>管理集成</span></gl-tooltip
 								>
 							</a>
@@ -205,7 +194,7 @@ export class GlFeatureNav extends GlElement {
 										href="${createCommandLink<OpenWalkthroughCommandArgs>(
 											'gitlens.openWalkthrough',
 											{
-												step: 'streamline-collaboration',
+												step: 'accelerate-pr-reviews',
 												source: { source: 'home', detail: 'old-home' },
 											},
 										)}"
@@ -213,10 +202,7 @@ export class GlFeatureNav extends GlElement {
 										data-org-requires="drafts"
 										aria-label="打开代码建议演练"
 										><code-icon class="nav-list__icon" icon="gl-code-suggestion"></code-icon
-										><gl-tooltip
-											hoist
-											class="nav-list__group"
-											content="打开代码建议演练"
+										><gl-tooltip hoist class="nav-list__group" content="打开代码建议演练"
 											><span class="nav-list__label">代码建议</span
 											><span class="nav-list__desc">新!</span></gl-tooltip
 										>

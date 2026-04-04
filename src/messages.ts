@@ -177,11 +177,7 @@ export async function showBitbucketPRCommitLinksAppNotInstalledWarningMessage(re
 }
 
 export function showFileNotUnderSourceControlWarningMessage(message: string): Promise<MessageItem | undefined> {
-	return showMessage(
-		'warn',
-		`${message}。该文件可能不在源代码管理下。`,
-		'suppressFileNotUnderSourceControlWarning',
-	);
+	return showMessage('warn', `${message}。该文件可能不在源代码管理下。`, 'suppressFileNotUnderSourceControlWarning');
 }
 
 export function showGitDisabledErrorMessage(): Promise<MessageItem | undefined> {
@@ -193,10 +189,7 @@ export function showGitDisabledErrorMessage(): Promise<MessageItem | undefined> 
 }
 
 export function showGitInvalidConfigErrorMessage(): Promise<MessageItem | undefined> {
-	return showMessage(
-		'error',
-		'GitLens 无法使用 Git。您的 Git 配置似乎无效。请解决 Git 配置的任何问题并重新加载。',
-	);
+	return showMessage('error', 'GitLens 无法使用 Git。您的 Git 配置似乎无效。请解决 Git 配置的任何问题并重新加载。');
 }
 
 export function showGitMissingErrorMessage(): Promise<MessageItem | undefined> {
@@ -250,11 +243,7 @@ export function showNoRepositoryWarningMessage(message: string): Promise<Message
 }
 
 export function showRebaseSwitchToTextWarningMessage(): Promise<MessageItem | undefined> {
-	return showMessage(
-		'warn',
-		'关闭 git-rebase-todo 文件或变基编辑器将开始变基。',
-		'suppressRebaseSwitchToTextWarning',
-	);
+	return showMessage('warn', '关闭 git-rebase-todo 文件或变基编辑器将开始变基。', undefined);
 }
 export function showGkDisconnectedTooManyFailedRequestsWarningMessage(): Promise<MessageItem | undefined> {
 	return showMessage(
@@ -301,15 +290,9 @@ export function showIntegrationRequestFailed500WarningMessage(message: string): 
 }
 
 export function showIntegrationRequestTimedOutWarningMessage(providerName: string): Promise<MessageItem | undefined> {
-	return showMessage(
-		'error',
-		`${providerName} 请求超时。`,
-		'suppressIntegrationRequestTimedOutWarning',
-		undefined,
-		{
-			title: '确定',
-		},
-	);
+	return showMessage('error', `${providerName} 请求超时。`, 'suppressIntegrationRequestTimedOutWarning', undefined, {
+		title: '确定',
+	});
 }
 
 export async function showWhatsNewMessage(majorVersion: string): Promise<void> {
@@ -320,7 +303,7 @@ export async function showWhatsNewMessage(majorVersion: string): Promise<void> {
 		`已升级到 GitLens ${majorVersion}${
 			majorVersion === '17'
 				? '，包含 GitLens Pro 中全新的 [GitKraken AI](https://gitkraken.com/solutions/gitkraken-ai?source=gitlens&product=gitlens&utm_source=gitlens-extension&utm_medium=in-app-links) 访问权限、AI 变更日志和拉取请求创建以及 Bitbucket 集成。'
-				: " — 查看新功能。"
+				: ' — 查看新功能。'
 		}`,
 		undefined,
 		null,

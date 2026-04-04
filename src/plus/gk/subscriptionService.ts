@@ -62,6 +62,7 @@ import { flatten } from '../../system/object.js';
 import { pauseOnCancelOrTimeout } from '../../system/promise.js';
 import { pluralize } from '../../system/string.js';
 import { createDisposable } from '../../system/unifiedDisposable.js';
+import { isWalkthroughSupported } from '../../telemetry/walkthroughStateProvider.js';
 import { LoginUriPathPrefix } from './authenticationConnection.js';
 import { authenticationProviderScopes } from './authenticationProvider.js';
 import type { GKCheckInResponse } from './models/checkin.js';
