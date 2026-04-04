@@ -56,7 +56,7 @@ export class GlOverview extends SignalWatcher(LitElement) {
 		return this._inactiveOverviewState.render({
 			pending: () => this.renderPending(),
 			complete: summary => this.renderComplete(summary),
-			error: () => html`<span>Error</span>`,
+			error: () => html`<span>错误</span>`,
 		});
 	}
 
@@ -94,7 +94,7 @@ export class GlOverview extends SignalWatcher(LitElement) {
 		const { repository } = overview;
 		return html`
 			<gl-branch-section
-				label="recent"
+				label="最近更新"
 				.isFetching=${isFetching}
 				.repo=${repository.path}
 				.branches=${overview.recent}
@@ -103,9 +103,9 @@ export class GlOverview extends SignalWatcher(LitElement) {
 					slot="heading-actions"
 					@gl-change=${this.onChangeRecentThresholdFilter}
 					.options=${[
-						{ value: 'OneDay', label: '1 day' },
-						{ value: 'OneWeek', label: '1 week' },
-						{ value: 'OneMonth', label: '1 month' },
+						{ value: 'OneDay', label: '1 天' },
+						{ value: 'OneWeek', label: '1 周' },
+						{ value: 'OneMonth', label: '1 个月' },
 					] satisfies {
 						value: OverviewRecentThreshold;
 						label: string;
@@ -118,7 +118,7 @@ export class GlOverview extends SignalWatcher(LitElement) {
 				this._inactiveOverviewState.filter.stale?.show === true && overview.stale,
 				() => html`
 					<gl-branch-section
-						label="stale"
+						label="陈旧"
 						.repo=${repository.path}
 						.branches=${overview.stale!}
 					></gl-branch-section>

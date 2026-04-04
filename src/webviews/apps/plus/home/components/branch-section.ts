@@ -127,7 +127,7 @@ export class GlBranchSection extends LitElement {
 							branch =>
 								html`<gl-branch-card expandable .repo=${this.repo} .branch=${branch}></gl-branch-card>`,
 						),
-					() => html`<p>No ${this.label} branches</p>`,
+					() => html`<p>没有${this.label}分支</p>`,
 				)}
 			</gl-section>
 		`;

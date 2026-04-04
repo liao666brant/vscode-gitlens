@@ -14,7 +14,7 @@ import {
 } from '../../../../../plus/launchpad/models/launchpad.js';
 import { createCommandLink } from '../../../../../system/commands.js';
 import { fromNow } from '../../../../../system/date.js';
-import { interpolate, pluralize } from '../../../../../system/string.js';
+import { interpolate } from '../../../../../system/string.js';
 import type {
 	BranchRef,
 	CreatePullRequestCommandArgs,
@@ -590,7 +590,7 @@ export abstract class GlBranchCardBase extends GlElement {
 				symbol="icons"
 			></commit-stats>
 			<span class="wip__tooltip" slot="content">
-				<p>${parts.length ? `${parts.join(', ')} in the working tree` : 'No working tree changes'}</p>
+				<p>${parts.length ? `工作树中：${parts.join('，')}` : '工作树中没有更改'}</p>
 			</span>
 		</gl-tooltip>`;
 	}
@@ -622,30 +622,30 @@ export abstract class GlBranchCardBase extends GlElement {
 
 				const wipParts = getWipTooltipParts(workingTreeState);
 				if (wipParts.length) {
-					wipTooltip = html`<p class="tracking__tooltip--wip">${wipParts.join(', ')} in the working tree</p>`;
+					wipTooltip = html`<p class="tracking__tooltip--wip">工作树中：${wipParts.join('，')}</p>`;
 				}
 			}
 		}
 
 		let tooltip;
 		if (this.branch.upstream.missing) {
-			tooltip = html`${renderBranchName(this.branch.name)} is missing its upstream
+			tooltip = html`${renderBranchName(this.branch.name)} 缺少上游分支
 			${renderBranchName(this.branch.upstream.name)}`;
 		} else {
 			const status: string[] = [];
 			if (state.behind) {
-				status.push(`${pluralize('commit', state.behind)} behind`);
+				status.push(`落后 ${state.behind} 个提交`);
 			}
 			if (state.ahead) {
-				status.push(`${pluralize('commit', state.ahead)} ahead of`);
+				status.push(`领先 ${state.ahead} 个提交`);
 			}
 
 			if (status.length) {
-				tooltip = html`${renderBranchName(this.branch.name)} is
-				${status.join(', ')}${renderBranchName(this.branch.upstream?.name)}`;
+				tooltip = html`${renderBranchName(this.branch.name)} 相对于
+				${renderBranchName(this.branch.upstream?.name)} ${status.join('，')}`;
 			} else {
-				tooltip = html`${renderBranchName(this.branch.name)} is up to date with
-				${renderBranchName(this.branch.upstream?.name)}`;
+				tooltip = html`${renderBranchName(this.branch.name)} 与 ${renderBranchName(this.branch.upstream?.name)}
+				已保持同步`;
 			}
 		}
 
@@ -705,7 +705,7 @@ export abstract class GlBranchCardBase extends GlElement {
 		if (timestamp == null) return nothing;
 
 		return html`<formatted-date
-			tooltip="Last commit on "
+			tooltip="最后一次提交于 "
 			.date=${new Date(timestamp)}
 			class="branch-item__date"
 		></formatted-date>`;
@@ -786,14 +786,15 @@ export abstract class GlBranchCardBase extends GlElement {
 								})}"
 							>
 								<code-icon icon="git-pull-request" slot="prefix"></code-icon>
-								<span>Create a Pull Request</span>
+								<span>创建拉取请求</span>
 							</gl-button>
 							${this._homeState.orgSettings.ai &&
 							this._homeState.aiEnabled &&
 							this.remote?.provider?.supportedFeatures?.createPullRequestWithDetails
 								? html`<gl-button
 										class="branch-item__missing"
-										tooltip="Create a Pull Request with AI (Preview)"
+										tooltip="使用 AI 创建拉取请求（预览）"
+										aria-label="使用 AI 创建拉取请求（预览）"
 										appearance="secondary"
 										href="${this._webview.createCommandLink<CreatePullRequestCommandArgs>(
 											'gitlens.createPullRequest:',
@@ -951,8 +952,8 @@ export class GlBranchCard extends GlBranchCardBase {
 		if (this.isWorktree) {
 			actions.push(
 				html`<action-item
-					label="Open Worktree"
-					alt-label="Open Worktree in New Window"
+					label="打开工作树"
+					alt-label="在新窗口中打开工作树"
 					icon="browser"
 					alt-icon="empty-window"
 					href=${this.createWebviewCommandLinkWithBranchRef('gitlens.openWorktree:')}
@@ -965,7 +966,7 @@ export class GlBranchCard extends GlBranchCardBase {
 		} else {
 			actions.push(
 				html`<action-item
-					label="Switch to Branch..."
+					label="切换到分支..."
 					icon="gl-switch"
 					href=${this.createWebviewCommandLinkWithBranchRef('gitlens.switchToBranch:')}
 				></action-item>`,
@@ -974,14 +975,14 @@ export class GlBranchCard extends GlBranchCardBase {
 
 		actions.push(
 			html`<action-item
-				label="Open in Commit Graph"
+				label="在提交图中打开"
 				icon="gl-graph"
 				href=${this.createWebviewCommandLinkWithBranchRef<OpenInGraphParams>('gitlens.showInCommitGraph:', {
 					type: 'branch',
 				})}
 			></action-item>`,
 			html`<action-item
-				label=${this.isWorktree ? 'Open in Worktrees View' : 'Open in Branches View'}
+				label=${this.isWorktree ? '在工作树视图中打开' : '在分支视图中打开'}
 				icon="arrow-right"
 				href=${this.createWebviewCommandLinkWithBranchRef('gitlens.openInView.branch:')}
 			></action-item>`,
@@ -998,8 +999,8 @@ export class GlBranchCard extends GlBranchCardBase {
 		if (this.isWorktree) {
 			actions.push(
 				html`<action-item
-					label="Open Worktree"
-					alt-label="Open Worktree in New Window"
+					label="打开工作树"
+					alt-label="在新窗口中打开工作树"
 					icon="browser"
 					alt-icon="empty-window"
 					href=${this.createWebviewCommandLinkWithBranchRef('gitlens.openWorktree:')}
@@ -1021,7 +1022,7 @@ export class GlBranchCard extends GlBranchCardBase {
 				if (hasWip) {
 					actions.push(
 						html`<action-item
-							label="Explain Working Changes (Preview)"
+							label="解释工作区更改（预览）"
 							icon="sparkle"
 							href=${this.createWebviewCommandLinkWithBranchRef('gitlens.ai.explainWip:')}
 						></action-item>`,
@@ -1029,7 +1030,7 @@ export class GlBranchCard extends GlBranchCardBase {
 				} else {
 					actions.push(
 						html`<action-item
-							label="Explain Branch Changes (Preview)"
+							label="解释分支更改（预览）"
 							icon="sparkle"
 							href=${this.createWebviewCommandLinkWithBranchRef('gitlens.ai.explainBranch:')}
 						></action-item>`,
@@ -1039,7 +1040,7 @@ export class GlBranchCard extends GlBranchCardBase {
 		} else {
 			actions.push(
 				html`<action-item
-					label="Switch to Branch..."
+					label="切换到分支..."
 					icon="gl-switch"
 					href=${this.createWebviewCommandLinkWithBranchRef('gitlens.switchToBranch:')}
 				></action-item>`,
@@ -1048,7 +1049,7 @@ export class GlBranchCard extends GlBranchCardBase {
 			if (aiEnabled) {
 				actions.push(
 					html`<action-item
-						label="Explain Branch Changes (Preview)"
+						label="解释分支更改（预览）"
 						icon="sparkle"
 						href=${this.createWebviewCommandLinkWithBranchRef('gitlens.ai.explainBranch:')}
 					></action-item>`,
@@ -1059,14 +1060,14 @@ export class GlBranchCard extends GlBranchCardBase {
 		// branch actions
 		actions.push(
 			html`<action-item
-				label="Fetch"
+				label="抓取"
 				icon="repo-fetch"
 				href=${this.createWebviewCommandLinkWithBranchRef('gitlens.fetch:')}
 			></action-item>`,
 		);
 		actions.push(
 			html` <action-item
-				label="Visualize Branch History"
+				label="可视化分支历史"
 				icon="graph-scatter"
 				href=${this._webview.createCommandLink<OpenInTimelineParams>('gitlens.visualizeHistory.branch:', {
 					type: 'branch',
@@ -1077,14 +1078,14 @@ export class GlBranchCard extends GlBranchCardBase {
 		);
 		actions.push(
 			html`<action-item
-				label="Open in Commit Graph"
+				label="在提交图中打开"
 				icon="gl-graph"
 				href=${this.createWebviewCommandLinkWithBranchRef<OpenInGraphParams>('gitlens.showInCommitGraph:', {
 					type: 'branch',
 				})}
 			></action-item>`,
 			html`<action-item
-				label=${this.isWorktree ? 'Open in Worktrees View' : 'Open in Branches View'}
+				label=${this.isWorktree ? '在工作树视图中打开' : '在分支视图中打开'}
 				icon="arrow-right"
 				href=${this.createWebviewCommandLinkWithBranchRef('gitlens.openInView.branch:')}
 			></action-item>`,
@@ -1096,17 +1097,17 @@ export class GlBranchCard extends GlBranchCardBase {
 	protected getPrActions(): TemplateResult[] {
 		return [
 			html`<action-item
-				label="Open Pull Request Changes"
+				label="打开拉取请求更改"
 				icon="request-changes"
 				href=${this.createWebviewCommandLinkWithBranchRef('gitlens.openPullRequestChanges:')}
 			></action-item>`,
 			html`<action-item
-				label="Compare Pull Request"
+				label="比较拉取请求"
 				icon="git-compare"
 				href=${this.createWebviewCommandLinkWithBranchRef('gitlens.openPullRequestComparison:')}
 			></action-item>`,
 			html`<action-item
-				label="Open Pull Request Details"
+				label="打开拉取请求详情"
 				icon="eye"
 				href=${this.createWebviewCommandLinkWithBranchRef('gitlens.openPullRequestDetails:')}
 			></action-item>`,
@@ -1255,13 +1256,13 @@ function getLaunchpadItemGrouping(group: ReturnType<typeof getLaunchpadItemGroup
 function getWipTooltipParts(workingTreeState: { added: number; changed: number; deleted: number }) {
 	const parts = [];
 	if (workingTreeState.added) {
-		parts.push(`${pluralize('file', workingTreeState.added ?? 0)} added`);
+		parts.push(`已添加 ${workingTreeState.added} 个文件`);
 	}
 	if (workingTreeState.changed) {
-		parts.push(`${pluralize('file', workingTreeState.changed ?? 0)} changed`);
+		parts.push(`已修改 ${workingTreeState.changed} 个文件`);
 	}
 	if (workingTreeState.deleted) {
-		parts.push(`${pluralize('file', workingTreeState.deleted ?? 0)} deleted`);
+		parts.push(`已删除 ${workingTreeState.deleted} 个文件`);
 	}
 	return parts;
 }

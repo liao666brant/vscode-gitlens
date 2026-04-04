@@ -87,16 +87,16 @@ export class GlDetailsBase extends LitElement {
 		switch (this._filterMode) {
 			case 'off':
 				icon = 'filter';
-				label = `Search matched ${matchCount} of ${totalCount} files\nClick to highlight matching files`;
+				label = `搜索匹配了 ${totalCount} 个文件中的 ${matchCount} 个\n点击高亮匹配文件`;
 				break;
 			case 'mixed':
 				icon = 'filter-filled';
-				label = `Search matched ${matchCount} of ${totalCount} files\nClick to show only matching files`;
+				label = `搜索匹配了 ${totalCount} 个文件中的 ${matchCount} 个\n点击仅显示匹配文件`;
 				className = 'filter-mode-mixed';
 				break;
 			case 'matched':
 				icon = 'filter-filled';
-				label = `Showing ${matchCount} of ${totalCount} files\nClick to show all files`;
+				label = `当前显示 ${totalCount} 个文件中的 ${matchCount} 个\n点击显示全部文件`;
 				break;
 		}
 
@@ -130,22 +130,22 @@ export class GlDetailsBase extends LitElement {
 	protected renderLayoutAction(): TemplateResult<1> | typeof nothing {
 		let value = 'tree';
 		let icon = 'list-tree';
-		let label = 'View as Tree';
+		let label = '以树形显示';
 		switch (this.fileLayout) {
 			case 'auto':
 				value = 'list';
 				icon = 'gl-list-auto';
-				label = 'View as List';
+				label = '以列表显示';
 				break;
 			case 'list':
 				value = 'tree';
 				icon = 'list-flat';
-				label = 'View as Tree';
+				label = '以树形显示';
 				break;
 			case 'tree':
 				value = 'auto';
 				icon = 'list-tree';
-				label = 'View as Auto';
+				label = '自动显示';
 				break;
 		}
 
@@ -219,7 +219,7 @@ export class GlDetailsBase extends LitElement {
 		} else {
 			if (staged.length) {
 				children.push({
-					label: 'Staged Changes',
+					label: '已暂存更改',
 					path: '/:staged:/',
 					level: 1, // isMulti ? 2 : 1,
 					branch: true,
@@ -235,7 +235,7 @@ export class GlDetailsBase extends LitElement {
 
 			if (unstaged.length) {
 				children.push({
-					label: 'Unstaged Changes',
+					label: '未暂存更改',
 					path: '/:unstaged:/',
 					level: 1, // isMulti ? 2 : 1,
 					branch: true,
@@ -287,10 +287,7 @@ export class GlDetailsBase extends LitElement {
 		if (!filteredFiles.length) {
 			return [
 				{
-					label:
-						this._filterMode === 'matched' && this.searchContext != null
-							? 'No matching files'
-							: 'No changes',
+					label: this._filterMode === 'matched' && this.searchContext != null ? '没有匹配的文件' : '没有更改',
 					path: '',
 					level: options.level,
 					branch: false,
@@ -366,7 +363,7 @@ export class GlDetailsBase extends LitElement {
 			return [
 				{
 					icon: 'gl-cloud-patch-share',
-					label: 'Share Staged Changes',
+					label: '分享已暂存更改',
 					action: 'staged-create-patch',
 				},
 			];
@@ -379,7 +376,7 @@ export class GlDetailsBase extends LitElement {
 			return [
 				{
 					icon: 'gl-cloud-patch-share',
-					label: 'Share Unstaged Changes',
+					label: '分享未暂存更改',
 					action: 'unstaged-create-patch',
 				},
 			];

@@ -149,7 +149,7 @@ export class GlActiveWork extends SignalWatcher(LitElement) {
 		return this._activeOverviewState.render({
 			pending: () => this.renderPending(),
 			complete: overview => this.renderComplete(overview),
-			error: () => html`<span>Error</span>`,
+			error: () => html`<span>错误</span>`,
 		});
 	}
 
@@ -172,7 +172,7 @@ export class GlActiveWork extends SignalWatcher(LitElement) {
 	private renderComplete(overview: GetActiveOverviewResponse, isFetching = false) {
 		const repo = overview?.repository;
 		const activeBranch = overview?.active;
-		if (!repo || !activeBranch) return html`<span>None</span>`;
+		if (!repo || !activeBranch) return html`<span>无</span>`;
 		const hasMultipleRepositories = this._homeState.repositories.openCount > 1;
 
 		return html`
@@ -187,7 +187,7 @@ export class GlActiveWork extends SignalWatcher(LitElement) {
 							?expandable=${true}
 							@gl-click=${this.onRepositorySelectorClicked}
 							><span slot="tooltip">
-								Switch to Another Repository...
+								切换到其他仓库...
 								<hr />
 								${repo.name}
 							</span></gl-repo-button-group
@@ -195,7 +195,7 @@ export class GlActiveWork extends SignalWatcher(LitElement) {
 					>
 					<gl-breadcrumb-item collapsibleState="none" icon="git-branch" class="heading-branch-breadcrumb"
 						><gl-ref-button .ref=${activeBranch.reference} @click=${this.onBranchSelectorClicked}
-							><span slot="tooltip">Switch to Another Branch... </span></gl-ref-button
+							><span slot="tooltip">切换到其他分支... </span></gl-ref-button
 						></gl-breadcrumb-item
 					>
 				</gl-breadcrumbs>
@@ -205,7 +205,8 @@ export class GlActiveWork extends SignalWatcher(LitElement) {
 						?disabled=${isFetching}
 						class="section-heading-action"
 						appearance="toolbar"
-						tooltip="Fetch All"
+						tooltip="抓取全部"
+						aria-label="抓取全部"
 						href=${this._webview.createCommandLink('gitlens.fetch:')}
 						><code-icon icon="repo-fetch"></code-icon
 					></gl-button>
@@ -214,7 +215,8 @@ export class GlActiveWork extends SignalWatcher(LitElement) {
 						?disabled=${isFetching}
 						class="section-heading-action"
 						appearance="toolbar"
-						tooltip="Visualize Repo History"
+						tooltip="可视化仓库历史"
+						aria-label="可视化仓库历史"
 						href=${this._webview.createCommandLink<OpenInTimelineParams>('gitlens.visualizeHistory.repo:', {
 							type: 'repo',
 							repoPath: this._activeOverviewState.state!.repository.path,
@@ -225,7 +227,8 @@ export class GlActiveWork extends SignalWatcher(LitElement) {
 						?disabled=${isFetching}
 						class="section-heading-action"
 						appearance="toolbar"
-						tooltip="Open in Commit Graph"
+						tooltip="在提交图中打开"
+						aria-label="在提交图中打开"
 						href=${this._webview.createCommandLink<OpenInGraphParams>('gitlens.showInCommitGraph:', {
 							type: 'repo',
 							repoPath: this._activeOverviewState.state!.repository.path,
@@ -320,7 +323,7 @@ export class GlActiveBranchCard extends GlBranchCardBase {
 							repoPath: this.repo,
 							source: 'home',
 						})}
-						>Generate Commit Message</menu-item
+						>生成提交消息</menu-item
 					>`,
 				);
 				actions.push(html`<menu-divider></menu-divider>`);
@@ -328,7 +331,7 @@ export class GlActiveBranchCard extends GlBranchCardBase {
 					html`<menu-item
 						?disabled=${isFetching}
 						href=${this.createWebviewCommandLinkWithBranchRef('gitlens.ai.explainWip:')}
-						>Explain Working Changes (Preview)</menu-item
+						>解释工作区更改（预览）</menu-item
 					>`,
 				);
 			}
@@ -337,7 +340,7 @@ export class GlActiveBranchCard extends GlBranchCardBase {
 				html`<menu-item
 					?disabled=${isFetching}
 					href=${this.createWebviewCommandLinkWithBranchRef('gitlens.ai.explainBranch:')}
-					>Explain Branch Changes (Preview)</menu-item
+					>解释分支更改（预览）</menu-item
 				>`,
 			);
 
@@ -347,7 +350,7 @@ export class GlActiveBranchCard extends GlBranchCardBase {
 					html`<menu-item
 						?disabled=${isFetching}
 						href=${this.createWebviewCommandLinkWithBranchRef('gitlens.createCloudPatch:')}
-						>Share as Cloud Patch</menu-item
+						>分享为云补丁</menu-item
 					>`,
 				);
 			}
@@ -358,7 +361,8 @@ export class GlActiveBranchCard extends GlBranchCardBase {
 					?disabled=${isFetching}
 					href=${this.createWebviewCommandLinkWithBranchRef('gitlens.createCloudPatch:')}
 					appearance="secondary"
-					tooltip="Share as Cloud Patch"
+					tooltip="分享为云补丁"
+					aria-label="分享为云补丁"
 					><code-icon icon="gl-cloud-patch-share"></code-icon>
 				</gl-button>
 			`;
@@ -373,7 +377,13 @@ export class GlActiveBranchCard extends GlBranchCardBase {
 			.arrow=${false}
 			distance="0"
 		>
-			<gl-button slot="anchor" appearance="toolbar" tooltipPlacement="top" aria-label="Additional Actions">
+			<gl-button
+				slot="anchor"
+				appearance="toolbar"
+				tooltipPlacement="top"
+				tooltip="更多操作"
+				aria-label="更多操作"
+			>
 				<code-icon icon="ellipsis"></code-icon>
 			</gl-button>
 			<div slot="content">${actions}</div>
@@ -404,10 +414,8 @@ export class GlActiveBranchCard extends GlBranchCardBase {
 					href=${this.createWebviewCommandLinkWithBranchRef('gitlens.composeCommits:')}
 					appearance="secondary"
 					density="compact"
-					><code-icon icon="wand" slot="prefix"></code-icon>Compose Commits...<span slot="tooltip"
-						><strong>Compose Commits</strong> (Preview)<br /><i
-							>Automatically or interactively organize changes into meaningful commits</i
-						></span
+					><code-icon icon="wand" slot="prefix"></code-icon>组合提交...<span slot="tooltip"
+						><strong>组合提交</strong>（预览）<br /><i>自动或交互式地将更改整理为有意义的提交</i></span
 					></gl-button
 				>
 			`);
@@ -428,10 +436,8 @@ export class GlActiveBranchCard extends GlBranchCardBase {
 					density="compact"
 				>
 					<code-icon icon="cloud-upload" slot="${ifDefined(hasWip ? undefined : 'prefix')}"></code-icon>
-					${hasWip ? '' : 'Publish Branch'}
-					<span slot="tooltip"
-						>Publish (push) <strong>${name}</strong> to ${upstream?.name ?? 'a remote'}</span
-					>
+					${hasWip ? '' : '发布分支'}
+					<span slot="tooltip">发布（推送）<strong>${name}</strong> 到 ${upstream?.name ?? '某个远程'}</span>
 				</gl-button>
 			`);
 
@@ -451,14 +457,14 @@ export class GlActiveBranchCard extends GlBranchCardBase {
 						density="compact"
 					>
 						<code-icon icon="repo-pull" slot="${ifDefined(hasWip ? undefined : 'prefix')}"></code-icon>
-						${hasWip ? '' : 'Pull'}
+						${hasWip ? '' : '拉取'}
 						<gl-tracking-pill
 							.ahead=${upstream.state.ahead}
 							.behind=${upstream.state.behind}
 							slot="suffix"
 						></gl-tracking-pill>
 						<span slot="tooltip"
-							>Pull${upstream?.name ? html` from <strong>${upstream.name}</strong>` : ''}</span
+							>拉取${upstream?.name ? html` 自 <strong>${upstream.name}</strong>` : ''}</span
 						>
 					</gl-button>
 					<gl-button
@@ -470,7 +476,7 @@ export class GlActiveBranchCard extends GlBranchCardBase {
 					>
 						<code-icon icon="repo-force-push"></code-icon>
 						<span slot="tooltip"
-							>Force Push${upstream?.name ? html` to <strong>${upstream.name}</strong>` : ''}</span
+							>强制推送${upstream?.name ? html` 到 <strong>${upstream.name}</strong>` : ''}</span
 						>
 					</gl-button>
 				`);
@@ -488,14 +494,14 @@ export class GlActiveBranchCard extends GlBranchCardBase {
 						density="compact"
 					>
 						<code-icon icon="repo-pull" slot="${ifDefined(hasWip ? undefined : 'prefix')}"></code-icon>
-						${hasWip ? '' : 'Pull'}
+						${hasWip ? '' : '拉取'}
 						<gl-tracking-pill
 							.ahead=${upstream.state.ahead}
 							.behind=${upstream.state.behind}
 							slot="suffix"
 						></gl-tracking-pill>
 						<span slot="tooltip"
-							>Pull${upstream?.name ? html` from <strong>${upstream.name}</strong>` : ''}</span
+							>拉取${upstream?.name ? html` 自 <strong>${upstream.name}</strong>` : ''}</span
 						>
 					</gl-button>
 				`);
@@ -513,14 +519,14 @@ export class GlActiveBranchCard extends GlBranchCardBase {
 						density="compact"
 					>
 						<code-icon icon="repo-push" slot="prefix"></code-icon>
-						${hasWip ? '' : 'Push'}
+						${hasWip ? '' : '推送'}
 						<gl-tracking-pill
 							.ahead=${upstream.state.ahead}
 							.behind=${upstream.state.behind}
 							slot="suffix"
 						></gl-tracking-pill>
 						<span slot="tooltip"
-							>Push${upstream?.name ? html` to <strong>${upstream.name}</strong>` : ''}</span
+							>推送${upstream?.name ? html` 到 <strong>${upstream.name}</strong>` : ''}</span
 						>
 					</gl-button>
 				`);
@@ -549,17 +555,17 @@ export class GlActiveBranchCard extends GlBranchCardBase {
 	protected getPrActions(): TemplateResult[] {
 		return [
 			html`<action-item
-				label="Open Pull Request Changes"
+				label="打开拉取请求更改"
 				icon="request-changes"
 				href=${this.createWebviewCommandLinkWithBranchRef('gitlens.openPullRequestChanges:')}
 			></action-item>`,
 			html`<action-item
-				label="Compare Pull Request"
+				label="比较拉取请求"
 				icon="git-compare"
 				href=${this.createWebviewCommandLinkWithBranchRef('gitlens.openPullRequestComparison:')}
 			></action-item>`,
 			html`<action-item
-				label="Open Pull Request Details"
+				label="打开拉取请求详情"
 				icon="eye"
 				href=${this.createWebviewCommandLinkWithBranchRef('gitlens.openPullRequestDetails:')}
 			></action-item>`,
@@ -576,7 +582,7 @@ export class GlActiveBranchCard extends GlBranchCardBase {
 			if (!this.expanded) return nothing;
 
 			return html`<div class="branch-item__row" full>
-				<span class="branch-item__missing" full>Current work item</span>
+				<span class="branch-item__missing" full>当前工作项</span>
 				<gl-button
 					class="associate-issue-action"
 					appearance="toolbar"
@@ -585,8 +591,8 @@ export class GlActiveBranchCard extends GlBranchCardBase {
 						branch: this.branch.reference,
 						source: 'home',
 					})}
-					tooltip="Associate Issue with Branch"
-					aria-label="Associate Issue with Branch"
+					tooltip="将问题与分支关联"
+					aria-label="将问题与分支关联"
 					><issue-icon></issue-icon>
 				</gl-button>
 			</div>`;

@@ -7,7 +7,7 @@ import { shortenRevision } from '../../../../../git/utils/revision.utils.js';
 import { debug } from '../../../../../system/decorators/log.js';
 import { debounce } from '../../../../../system/function/debounce.js';
 import { defer } from '../../../../../system/promise.js';
-import { pluralize, truncateMiddle } from '../../../../../system/string.js';
+import { truncateMiddle } from '../../../../../system/string.js';
 import type { State, TimelineDatum, TimelineSliceBy } from '../../../../plus/timeline/protocol.js';
 import { GlElement } from '../../../shared/components/element.js';
 import { createFromDateDelta, formatDate, fromNow } from '../../../shared/date.js';
@@ -199,7 +199,7 @@ export class GlTimelineChart extends GlElement {
 	private renderNotice() {
 		if (this._loading?.pending || this.data == null) {
 			return html`<div class="notice notice--blur">
-				<gl-watermark-loader pulse><p>Loading...</p></gl-watermark-loader>
+				<gl-watermark-loader pulse><p>加载中...</p></gl-watermark-loader>
 			</div>`;
 		}
 
@@ -236,13 +236,13 @@ export class GlTimelineChart extends GlElement {
 				? html`<gl-button
 						appearance="toolbar"
 						@click=${(e: MouseEvent) => (e.shiftKey || e.altKey ? this.resetZoom() : this.zoom(-1))}
-						aria-label="Zoom Out"
+						aria-label="缩小"
 					>
 						<code-icon icon="zoom-out"></code-icon>
-						<span slot="tooltip">Zoom Out<br />[Alt] Reset Zoom</span>
+						<span slot="tooltip">缩小<br />[Alt] 重置缩放</span>
 					</gl-button>`
 				: nothing}
-			<gl-button appearance="toolbar" @click=${() => this.zoom(0.5)} tooltip="Zoom In" aria-label="Zoom In">
+			<gl-button appearance="toolbar" @click=${() => this.zoom(0.5)} tooltip="放大" aria-label="放大">
 				<code-icon icon="zoom-in"></code-icon>
 			</gl-button>
 		</div>`;
@@ -588,7 +588,7 @@ export class GlTimelineChart extends GlElement {
 		deletionsSeries[0] = 'deletions';
 
 		const axes: Record<string, string> = { time: 'x', additions: 'y2', deletions: 'y2' };
-		const names: Record<string, string> = { additions: 'Additions', deletions: 'Deletions' };
+		const names: Record<string, string> = { additions: '新增', deletions: '删除' };
 		const types: Record<string, ChartTypes> = { additions: 'bar', deletions: 'bar' };
 		const xs: Record<string, string> = { additions: 'time', deletions: 'time' };
 
@@ -763,7 +763,7 @@ export class GlTimelineChart extends GlElement {
 						},
 						y2: {
 							padding: this.compact ? { top: 0, bottom: 0 } : undefined,
-							label: this.compact ? undefined : { text: 'Lines changed', position: 'outer-middle' },
+							label: this.compact ? undefined : { text: '更改行数', position: 'outer-middle' },
 							show: true,
 							tick: {
 								format: (y: number) => (this.compact ? '' : y),
@@ -829,21 +829,17 @@ export class GlTimelineChart extends GlElement {
 
 							if (commit.sha === '') {
 								return /*html*/ `<div class="bb-tooltip">
-									<div class="author">Working Tree</div>
-									<div class="message"><span class="message__content">No uncommitted changes</span></div>
+									<div class="author">工作树</div>
+									<div class="message"><span class="message__content">没有未提交的更改</span></div>
 								</div>`;
 							}
 
 							const additions = commit.additions;
 							const deletions = commit.deletions;
 							const additionsLabel =
-								additions == null
-									? ''
-									: /*html*/ `<span class="additions">+${pluralize('line', additions)}</span>`;
+								additions == null ? '' : /*html*/ `<span class="additions">+${additions} 行</span>`;
 							let deletionsLabel =
-								deletions == null
-									? ''
-									: /*html*/ `<span class="deletions">-${pluralize('line', deletions)}</span>`;
+								deletions == null ? '' : /*html*/ `<span class="deletions">-${deletions} 行</span>`;
 							if (additionsLabel) {
 								deletionsLabel = `, ${deletionsLabel}`;
 							}

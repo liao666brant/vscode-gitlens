@@ -267,7 +267,7 @@ export class PatchDetailsApp extends App<Serialized<State>> {
 			const result = await this.sendRequest(GenerateRequest, undefined);
 
 			if (result.error) {
-				this.component.generate = { error: { message: result.error.message ?? 'Error retrieving content' } };
+				this.component.generate = { error: { message: result.error.message ?? '获取内容时出错' } };
 			} else if (result.title || result.description) {
 				this.component.generate = {
 					title: result.title,
@@ -288,7 +288,7 @@ export class PatchDetailsApp extends App<Serialized<State>> {
 				this.component.generate = undefined;
 			}
 		} catch (_ex) {
-			this.component.generate = { error: { message: 'Error retrieving content' } };
+			this.component.generate = { error: { message: '获取内容时出错' } };
 		}
 	}
 
@@ -363,12 +363,12 @@ export class PatchDetailsApp extends App<Serialized<State>> {
 			const result = await this.sendRequest(ExplainRequest, undefined);
 
 			if (result.error) {
-				this.component.explain = { error: { message: result.error.message ?? 'Error retrieving content' } };
+				this.component.explain = { error: { message: result.error.message ?? '获取内容时出错' } };
 			} else {
 				this.component.explain = result;
 			}
 		} catch (_ex) {
-			this.component.explain = { error: { message: 'Error retrieving content' } };
+			this.component.explain = { error: { message: '获取内容时出错' } };
 		}
 	}
 

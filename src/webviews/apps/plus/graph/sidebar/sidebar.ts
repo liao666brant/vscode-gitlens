@@ -21,11 +21,11 @@ interface Icon {
 }
 type IconTypes = 'branches' | 'remotes' | 'stashes' | 'tags' | 'worktrees';
 const icons: Icon[] = [
-	{ type: 'branches', icon: 'gl-branches-view', command: 'gitlens.showBranchesView', tooltip: 'Branches' },
-	{ type: 'remotes', icon: 'gl-remotes-view', command: 'gitlens.showRemotesView', tooltip: 'Remotes' },
-	{ type: 'stashes', icon: 'gl-stashes-view', command: 'gitlens.showStashesView', tooltip: 'Stashes' },
-	{ type: 'tags', icon: 'gl-tags-view', command: 'gitlens.showTagsView', tooltip: 'Tags' },
-	{ type: 'worktrees', icon: 'gl-worktrees-view', command: 'gitlens.showWorktreesView', tooltip: 'Worktrees' },
+	{ type: 'branches', icon: 'gl-branches-view', command: 'gitlens.showBranchesView', tooltip: '分支' },
+	{ type: 'remotes', icon: 'gl-remotes-view', command: 'gitlens.showRemotesView', tooltip: '远程' },
+	{ type: 'stashes', icon: 'gl-stashes-view', command: 'gitlens.showStashesView', tooltip: '存储' },
+	{ type: 'tags', icon: 'gl-tags-view', command: 'gitlens.showTagsView', tooltip: '标签' },
+	{ type: 'worktrees', icon: 'gl-worktrees-view', command: 'gitlens.showWorktreesView', tooltip: '工作树' },
 ];
 
 type Counts = Record<IconTypes, number | undefined>;
@@ -160,7 +160,12 @@ export class GlGraphSideBar extends SignalWatcher(LitElement) {
 		if (this.include != null && !this.include.includes(icon.type)) return;
 
 		return html`<gl-tooltip placement="right" content="${icon.tooltip}">
-			<a class="item" href="command:${icon.command}" @click=${() => this.sendTelemetry(icon.command)}>
+			<a
+				class="item"
+				href="command:${icon.command}"
+				aria-label=${icon.tooltip}
+				@click=${() => this.sendTelemetry(icon.command)}
+			>
 				<code-icon icon="${icon.icon}"></code-icon>
 				${this._countsTask.render({
 					pending: () =>

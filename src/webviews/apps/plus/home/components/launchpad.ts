@@ -6,7 +6,6 @@ import { customElement, state } from 'lit/decorators.js';
 import type { ConnectCloudIntegrationsCommandArgs } from '../../../../../commands/cloudIntegrations.js';
 import type { LaunchpadCommandArgs } from '../../../../../plus/launchpad/launchpad.js';
 import { createCommandLink } from '../../../../../system/commands.js';
-import { pluralize } from '../../../../../system/string.js';
 import type { GetLaunchpadSummaryResponse, State } from '../../../../home/protocol.js';
 import { DidChangeLaunchpad, GetLaunchpadSummary } from '../../../../home/protocol.js';
 import { stateContext } from '../../../home/context.js';
@@ -24,6 +23,10 @@ import '../../../shared/components/skeleton-loader.js';
 import './branch-section.js';
 
 type LaunchpadSummary = GetLaunchpadSummaryResponse;
+
+function formatPullRequestCount(count: number) {
+	return `${count} 个拉取请求`;
+}
 
 @customElement('gl-launchpad')
 export class GlLaunchpad extends SignalWatcher(LitElement) {
@@ -151,16 +154,17 @@ export class GlLaunchpad extends SignalWatcher(LitElement) {
 	override render(): unknown {
 		return html`
 			<gl-section ?loading=${this._summaryState.computed.status === 'pending'}>
-				<span slot="heading">Launchpad</span>
+				<span slot="heading">启动台</span>
 				<div class="summary">${this.renderSummaryResult()}</div>
 				<button-container grouping="gap-wide">
-					<gl-button full class="start-work" href=${this.startWorkCommand}>Start Work on an Issue</gl-button>
+					<gl-button full class="start-work" href=${this.startWorkCommand}>开始处理问题</gl-button>
 					<gl-button
 						appearance="secondary"
 						density="compact"
 						class="start-work"
 						href=${this.createBranchCommand}
-						tooltip="Create New Branch"
+						tooltip="创建新分支"
+						aria-label="创建新分支"
 						><code-icon icon="custom-start-work"></code-icon
 					></gl-button>
 				</button-container>
@@ -180,7 +184,7 @@ export class GlLaunchpad extends SignalWatcher(LitElement) {
 						)}"
 					>
 						<code-icon class="launchpad-action__icon" icon="plug"></code-icon>
-						<span>Connect to see PRs and Issue here</span>
+						<span>连接后即可在此查看 PR 和问题</span>
 					</a>
 				</li>
 			</ul>`;
@@ -191,7 +195,7 @@ export class GlLaunchpad extends SignalWatcher(LitElement) {
 			complete: summary => this.renderSummary(summary),
 			error: () =>
 				html`<ul class="menu">
-					<li>Error loading summary</li>
+					<li>加载摘要时出错</li>
 				</ul>`,
 		});
 	}
@@ -213,19 +217,19 @@ export class GlLaunchpad extends SignalWatcher(LitElement) {
 
 		if ('error' in summary) {
 			return html`<ul class="menu">
-				<li>Unable to load items</li>
+				<li>无法加载项目</li>
 			</ul>`;
 		}
 
 		if (summary.total === 0) {
 			return html`<ul class="menu">
-				<li>You are all caught up!</li>
+				<li>你已全部处理完毕！</li>
 			</ul>`;
 		}
 		if (!summary.hasGroupedItems) {
 			return html`<ul class="menu">
-				<li>No pull requests need your attention</li>
-				<li>(${summary.total} other pull requests)</li>
+				<li>没有需要你关注的拉取请求</li>
+				<li>（另外还有 ${summary.total} 个拉取请求）</li>
 			</ul>`;
 		}
 
@@ -249,7 +253,7 @@ export class GlLaunchpad extends SignalWatcher(LitElement) {
 						html`<li>
 							<a href=${commandUrl} class="launchpad-action launchpad-action--mergable">
 								<code-icon class="launchpad-action__icon" icon="rocket"></code-icon>
-								<span>${pluralize('pull request', total)} can be merged</span>
+								<span>${formatPullRequestCount(total)}可合并</span>
 							</a>
 						</li>`,
 					);
@@ -263,19 +267,19 @@ export class GlLaunchpad extends SignalWatcher(LitElement) {
 					if (summary.blocked!.unassignedReviewers) {
 						messages.push({
 							count: summary.blocked!.unassignedReviewers,
-							message: `${summary.blocked!.unassignedReviewers > 1 ? 'need' : 'needs'} reviewers`,
+							message: '需要审阅者',
 						});
 					}
 					if (summary.blocked!.failedChecks) {
 						messages.push({
 							count: summary.blocked!.failedChecks,
-							message: `${summary.blocked!.failedChecks > 1 ? 'have' : 'has'} failed CI checks`,
+							message: '存在失败的 CI 检查',
 						});
 					}
 					if (summary.blocked!.conflicts) {
 						messages.push({
 							count: summary.blocked!.conflicts,
-							message: `${summary.blocked!.conflicts > 1 ? 'have' : 'has'} conflicts`,
+							message: '存在冲突',
 						});
 					}
 
@@ -290,7 +294,7 @@ export class GlLaunchpad extends SignalWatcher(LitElement) {
 							html`<li>
 								<a href=${commandUrl} class="launchpad-action launchpad-action--blocked">
 									<code-icon class="launchpad-action__icon" icon="error"></code-icon>
-									<span>${pluralize('pull request', total)} ${messages[0].message}</span>
+									<span>${messages[0].count} 个拉取请求${messages[0].message}</span>
 								</a>
 							</li>`,
 						);
@@ -300,8 +304,8 @@ export class GlLaunchpad extends SignalWatcher(LitElement) {
 								<a href=${commandUrl} class="launchpad-action launchpad-action--blocked">
 									<code-icon class="launchpad-action__icon" icon="error"></code-icon>
 									<span
-										>${pluralize('pull request', total)} ${total > 1 ? 'are' : 'is'} blocked
-										(${messages.map(m => `${m.count} ${m.message}`).join(', ')})</span
+										>${formatPullRequestCount(total)}被阻塞
+										（${messages.map(m => `${m.count} 个拉取请求${m.message}`).join('，')}）</span
 									>
 								</a>
 							</li>`,
@@ -326,10 +330,7 @@ export class GlLaunchpad extends SignalWatcher(LitElement) {
 						html`<li>
 							<a href=${commandUrl} class="launchpad-action launchpad-action--attention">
 								<code-icon class="launchpad-action__icon" icon="report"></code-icon>
-								<span
-									>${pluralize('pull request', total)} ${total > 1 ? 'require' : 'requires'}
-									follow-up</span
-								>
+								<span>${formatPullRequestCount(total)}需要后续处理</span>
 							</a>
 						</li>`,
 					);
@@ -351,10 +352,7 @@ export class GlLaunchpad extends SignalWatcher(LitElement) {
 						html`<li>
 							<a href=${commandUrl} class="launchpad-action launchpad-action--attention">
 								<code-icon class="launchpad-action__icon" icon="comment-unresolved"></code-icon>
-								<span
-									>${pluralize('pull request', total)} ${total > 1 ? 'need' : 'needs'} your
-									review</span
-								>
+								<span>${formatPullRequestCount(total)}需要你审阅</span>
 							</a>
 						</li>`,
 					);
@@ -365,4 +363,8 @@ export class GlLaunchpad extends SignalWatcher(LitElement) {
 
 		return html`<menu class="menu">${result}</menu>`;
 	}
+}
+
+function formatPullRequestCount(count: number): string {
+	return `${count} 个拉取请求`;
 }

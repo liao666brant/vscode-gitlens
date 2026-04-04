@@ -238,10 +238,10 @@ export class CommitMessage extends LitElement {
 	aiGenerated: boolean = false;
 
 	@property({ type: String, attribute: 'explanation-label' })
-	explanationLabel?: string = 'Auto-composition Summary:';
+	explanationLabel?: string = '自动组合摘要：';
 
 	@property({ type: String })
-	placeholder: string = 'Enter commit message...';
+	placeholder: string = '输入提交消息...';
 
 	@property({ type: Boolean, reflect: true })
 	editable: boolean = false;
@@ -293,6 +293,7 @@ export class CommitMessage extends LitElement {
 					class="commit-message__input${this.explanation ? ' has-explanation' : ''}"
 					.value=${this.message ?? ''}
 					.placeholder=${this.placeholder}
+					aria-label="提交消息"
 					rows="3"
 					aria-valid=${this.validityMessage ? 'false' : 'true'}
 					?invalid=${this.validityMessage ? 'true' : 'false'}
@@ -308,7 +309,7 @@ export class CommitMessage extends LitElement {
 							class="commit-message__ai-button"
 							appearance="toolbar"
 							?disabled=${this.generating}
-							.tooltip=${this.generating ? 'Generating...' : 'Generate commit message with AI'}
+							.tooltip=${this.generating ? '生成中...' : '使用 AI 生成提交消息'}
 							@click=${() => this.onGenerateCommitMessageClick()}
 						>
 							<code-icon
@@ -316,16 +317,16 @@ export class CommitMessage extends LitElement {
 								.modifier=${this.generating ? 'spin' : ''}
 								slot="prefix"
 							></code-icon>
-							${this.explanation || this.aiGenerated ? 'Regenerate Message' : 'Generate Message'}
+							${this.explanation || this.aiGenerated ? '重新生成消息' : '生成消息'}
 						</gl-button>`,
 					() =>
 						html`<gl-button
 							class="commit-message__ai-button"
 							appearance="toolbar"
-							.tooltip=${this.aiDisabledReason || 'AI features are disabled'}
+							.tooltip=${this.aiDisabledReason || 'AI 功能已禁用'}
 						>
 							<code-icon icon="sparkle" slot="prefix"></code-icon>
-							${this.explanation || this.aiGenerated ? 'Regenerate Message' : 'Generate Message'}
+							${this.explanation || this.aiGenerated ? '重新生成消息' : '生成消息'}
 						</gl-button>`,
 				)}
 			</div>
@@ -363,7 +364,7 @@ export class CommitMessage extends LitElement {
 							class="commit-message__ai-button"
 							appearance="toolbar"
 							?disabled=${this.generating}
-							.tooltip=${this.generating ? 'Generating...' : 'Generate commit message with AI'}
+							.tooltip=${this.generating ? '生成中...' : '使用 AI 生成提交消息'}
 							@click=${() => this.onGenerateCommitMessageClick()}
 						>
 							<code-icon
@@ -371,18 +372,18 @@ export class CommitMessage extends LitElement {
 								.modifier=${this.generating ? 'spin' : ''}
 								slot="prefix"
 							></code-icon>
-							${this.explanation || this.aiGenerated ? 'Regenerate Message' : 'Generate Message'}
+							${this.explanation || this.aiGenerated ? '重新生成消息' : '生成消息'}
 						</gl-button>`,
 					() =>
 						this.editable
 							? html`<gl-button
 									class="commit-message__ai-button"
 									appearance="toolbar"
-									.tooltip=${this.aiDisabledReason || 'AI features are disabled'}
+									.tooltip=${this.aiDisabledReason || 'AI 功能已禁用'}
 									disabled
 								>
 									<code-icon icon="sparkle" slot="prefix"></code-icon>
-									${this.explanation || this.aiGenerated ? 'Regenerate Message' : 'Generate Message'}
+									${this.explanation || this.aiGenerated ? '重新生成消息' : '生成消息'}
 								</gl-button>`
 							: nothing,
 				)}
@@ -458,7 +459,7 @@ export class CommitMessage extends LitElement {
 
 		const valid = this.message ? this.message.length > 0 : false;
 		if (!valid && reportErrors) {
-			this.validityMessage = 'Error: Commit message is required.';
+			this.validityMessage = '提交消息为必填项。';
 		} else {
 			this.validityMessage = undefined;
 		}

@@ -279,7 +279,7 @@ export class HunkItem extends LitElement {
 							this.isRename,
 							() =>
 								html`<code-icon class="file-icon" icon="arrow-right"></code-icon
-									><span class="file-name">File Rename</span>`,
+									><span class="file-name">文件重命名</span>`,
 							() => html`<span class="file-name">${this.renderHunkHeader()}</span>`,
 						)}
 					</div>
@@ -314,7 +314,7 @@ export class HunkItem extends LitElement {
 				const [_, _oldStart, _oldLines, newStart, newLines] = match;
 				const startLine = parseInt(newStart, 10);
 				const endLine = startLine + parseInt(newLines, 10) - 1;
-				hunkHeader = `Lines ${startLine}-${endLine}`;
+				hunkHeader = `行 ${startLine}-${endLine}`;
 			}
 		}
 
@@ -323,7 +323,7 @@ export class HunkItem extends LitElement {
 
 	private renderDiffContent() {
 		if (!this.content || typeof this.content !== 'string') {
-			return html`<span class="diff-line">No content available</span>`;
+			return html`<span class="diff-line">无内容可用</span>`;
 		}
 
 		// Special rendering for rename hunks

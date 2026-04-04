@@ -30,7 +30,6 @@ import type { DateTimeFormat } from '../../../../../system/date.js';
 import { formatDate, fromNow } from '../../../../../system/date.js';
 import { first, groupByFilterMap } from '../../../../../system/iterable.js';
 import { hasKeys } from '../../../../../system/object.js';
-import { pluralize } from '../../../../../system/string.js';
 import type {
 	GraphAvatars,
 	GraphColumnName,
@@ -640,7 +639,7 @@ export const GlGraphReact = memo((initProps: GraphWrapperInitProps) => {
 	const renderFooter = useCallback((): ReactElement | undefined => {
 		// No results found
 		if (props.searchResults?.count === 0) {
-			return <span>No results found</span>;
+			return <span>未找到结果</span>;
 		}
 
 		// Only show footer when we have results AND not currently loading
@@ -654,21 +653,16 @@ export const GlGraphReact = memo((initProps: GraphWrapperInitProps) => {
 			!props.searchResults.hasMore &&
 			(props.searchResults.commitsLoaded.count === props.searchResults.count || !props.paging?.hasMore)
 		) {
-			return (
-				<span className="graph-footer__message">
-					{`Showing all ${pluralize('result', props.searchResults.count)}`}
-				</span>
-			);
+			return <span className="graph-footer__message">{`已显示全部 ${props.searchResults.count} 条结果`}</span>;
 		}
 
 		// We have search results but all commits aren't loaded yet
 		return (
 			<>
 				<span className="graph-footer__message">
-					{`Showing ${pluralize('result', props.searchResults.commitsLoaded.count)} of ${pluralize(
-						'result',
-						props.searchResults.count,
-					)}${props.searchResults.hasMore ? '+' : ''}`}
+					{`已显示 ${props.searchResults.commitsLoaded.count} / ${props.searchResults.count}${
+						props.searchResults.hasMore ? '+' : ''
+					} 条结果`}
 				</span>
 				<a
 					style={{ marginLeft: '0.5rem' }}
@@ -686,7 +680,7 @@ export const GlGraphReact = memo((initProps: GraphWrapperInitProps) => {
 						}
 					}}
 				>
-					{props.searchMode === 'filter' ? 'Load more results...' : 'Load more commits...'}
+					{props.searchMode === 'filter' ? '加载更多结果...' : '加载更多提交...'}
 				</a>
 			</>
 		);
@@ -739,10 +733,10 @@ export const GlGraphReact = memo((initProps: GraphWrapperInitProps) => {
 						<div className="graph-row-actions" onMouseOver={() => initProps.onRowActionHover?.()}>
 							<gl-button
 								onClick={() => initProps.onRowAction?.({ action: 'compose-commits', row: row })}
-								tooltip="Compose Commits..."
-								aria-label="Compose Commits..."
+								tooltip="组合提交..."
+								aria-label="组合提交..."
 							>
-								<code-icon slot="prefix" icon="wand"></code-icon>Compose Commits...
+								<code-icon slot="prefix" icon="wand"></code-icon>组合提交...
 							</gl-button>
 							<div>
 								<gl-button
@@ -750,16 +744,16 @@ export const GlGraphReact = memo((initProps: GraphWrapperInitProps) => {
 									onClick={() =>
 										initProps.onRowAction?.({ action: 'generate-commit-message', row: row })
 									}
-									tooltip="Generate Commit Message"
-									aria-label="Generate Commit Message"
+									tooltip="生成提交消息"
+									aria-label="生成提交消息"
 								>
 									<code-icon icon="sparkle"></code-icon>
 								</gl-button>
 								<gl-button
 									appearance="toolbar"
 									onClick={() => initProps.onRowAction?.({ action: 'stash-save', row: row })}
-									tooltip="Stash All Changes..."
-									aria-label="Stash All Changes..."
+									tooltip="储藏所有更改..."
+									aria-label="储藏所有更改..."
 								>
 									<code-icon icon="gl-stash-save"></code-icon>
 								</gl-button>

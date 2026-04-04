@@ -161,7 +161,7 @@ export class GlMergeConflictWarning extends LitElement {
 	private renderConflictsLink(label: string) {
 		if (!this.conflicts) return label;
 
-		return html`<gl-tooltip hoist content="Show Conflicts">
+		return html`<gl-tooltip hoist content="显示冲突">
 			<a href="${this.onShowConflictsUrl}" class="link">${label}</a>
 		</gl-tooltip>`;
 	}
@@ -173,11 +173,11 @@ export class GlMergeConflictWarning extends LitElement {
 		const isBranch = ref.refType === 'branch';
 		const tooltip = isInGraph
 			? isBranch
-				? 'Jump to Branch'
-				: 'Jump to Commit'
+				? '跳转到分支'
+				: '跳转到提交'
 			: isBranch
-				? 'Open Branch in Commit Graph'
-				: 'Open Commit in Commit Graph';
+				? '在提交图中打开分支'
+				: '在提交图中打开提交';
 		const jumpUrl = this.createJumpUrl(ref);
 
 		return html`<gl-tooltip hoist content=${tooltip}>
@@ -206,22 +206,20 @@ export class GlMergeConflictWarning extends LitElement {
 				status === 'rebase',
 				() =>
 					html`<action-item
-						label="Open in Rebase Editor"
+						label="在变基编辑器中打开"
 						href=${this.onOpenEditorUrl}
 						icon="edit"
 					></action-item>`,
 			)}
 			${when(
 				status !== 'revert' && !(status === 'rebase' && this.conflicts),
-				() => html`
-					<action-item label="Continue" icon="debug-continue" href=${this.onContinueUrl}></action-item>
-				`,
+				() => html` <action-item label="继续" icon="debug-continue" href=${this.onContinueUrl}></action-item> `,
 			)}
 			${when(
 				status !== 'merge',
-				() => html`<action-item label="Skip" icon="debug-step-over" href=${this.onSkipUrl}></action-item>`,
+				() => html`<action-item label="跳过" icon="debug-step-over" href=${this.onSkipUrl}></action-item>`,
 			)}
-			<action-item label="Abort" href=${this.onAbortUrl} icon="circle-slash"></action-item>
+			<action-item label="中止" href=${this.onAbortUrl} icon="circle-slash"></action-item>
 		</action-nav>`;
 	}
 }

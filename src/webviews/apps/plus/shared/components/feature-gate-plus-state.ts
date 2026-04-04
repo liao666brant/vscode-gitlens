@@ -13,7 +13,6 @@ import type { FeaturePreview } from '../../../../../features.js';
 import { getFeaturePreviewStatus } from '../../../../../features.js';
 import type { SubscriptionUpgradeCommandArgs } from '../../../../../plus/gk/models/subscription.js';
 import { createCommandLink } from '../../../../../system/commands.js';
-import { pluralize } from '../../../../../system/string.js';
 import type { GlButton } from '../../../shared/components/button.js';
 import type { PromosContext } from '../../../shared/contexts/promos.js';
 import { promosContext } from '../../../shared/contexts/promos.js';
@@ -149,7 +148,7 @@ export class GlFeatureGatePlusState extends LitElement {
 							class="inline"
 							appearance="${ifDefined(appearance)}"
 							href="${createCommandLink<Source>('gitlens.plus.resendVerification', this.source)}"
-							>Resend Email</gl-button
+							>重新发送邮件</gl-button
 						>
 						<gl-button
 							class="inline"
@@ -158,7 +157,7 @@ export class GlFeatureGatePlusState extends LitElement {
 							><code-icon icon="refresh"></code-icon
 						></gl-button>
 					</p>
-					<p>You must verify your email before you can continue.</p>
+					<p>继续前请先验证你的邮箱。</p>
 				`;
 
 			case SubscriptionState.Community:
@@ -169,33 +168,33 @@ export class GlFeatureGatePlusState extends LitElement {
 				return html`<slot name="feature"></slot>
 					<p>
 						${this.featureRestriction === 'private-repos'
-							? 'Unlock this feature for privately hosted repos with '
-							: 'Unlock this feature with '} <a href="${urls.communityVsPro}">GitLens Pro</a>.
+							? html`使用 <a href="${urls.communityVsPro}">GitLens Pro</a> 为私有托管仓库解锁此功能。`
+							: html`使用 <a href="${urls.communityVsPro}">GitLens Pro</a> 解锁此功能。`}
 					</p>
 					<p class="actions-row">
 						<gl-button
 							class="inline"
 							appearance="${ifDefined(appearance)}"
 							href="${createCommandLink<Source>('gitlens.plus.signUp', this.source)}"
-							>&nbsp;Try GitLens Pro&nbsp;</gl-button
+							>&nbsp;试用 GitLens Pro&nbsp;</gl-button
 						><span
-							>or
-							<a href="${createCommandLink<Source>('gitlens.plus.login', this.source)}" title="Sign In"
-								>sign in</a
+							>或
+							<a href="${createCommandLink<Source>('gitlens.plus.login', this.source)}" title="登录"
+								>登录</a
 							></span
 						>
 					</p>
 					<p>
-						Get ${pluralize('day', proTrialLengthInDays)} of
-						<a href="${urls.communityVsPro}">GitLens Pro</a> for free — no credit card required.
+						免费体验 <a href="${urls.communityVsPro}">GitLens Pro</a> ${proTrialLengthInDays}
+						天，无需信用卡。
 					</p>`;
 
 			case SubscriptionState.TrialExpired:
 				return html`<slot name="feature"></slot>
 					<p>
 						${this.featureRestriction === 'private-repos'
-							? 'Unlock this feature for privately hosted repos with '
-							: 'Unlock this feature with '} <a href="${urls.communityVsPro}">GitLens Pro</a>.
+							? html`使用 <a href="${urls.communityVsPro}">GitLens Pro</a> 为私有托管仓库解锁此功能。`
+							: html`使用 <a href="${urls.communityVsPro}">GitLens Pro</a> 解锁此功能。`}
 					</p>
 					<p class="actions-row">
 						<gl-button
@@ -205,7 +204,7 @@ export class GlFeatureGatePlusState extends LitElement {
 								plan: 'pro',
 								...(this.source ?? { source: 'feature-gate' }),
 							})}"
-							>Upgrade to Pro</gl-button
+							>升级到 Pro</gl-button
 						>
 					</p>
 					<p>${this.renderPromo()}</p>`;
@@ -217,13 +216,13 @@ export class GlFeatureGatePlusState extends LitElement {
 							class="inline"
 							appearance="${ifDefined(appearance)}"
 							href="${createCommandLink<Source>('gitlens.plus.reactivateProTrial', this.source)}"
-							>Continue</gl-button
+							>继续</gl-button
 						>
 					</p>
 					<p>
-						Reactivate your GitLens Pro trial and experience
-						${this.featureWithArticleIfNeeded ? `${this.featureWithArticleIfNeeded} and ` : ''}all the new
-						Pro features — free for another ${pluralize('day', proTrialLengthInDays)}!
+						重新激活你的 GitLens Pro 试用，再次免费体验
+						${this.featureWithArticleIfNeeded ? `${this.featureWithArticleIfNeeded} 和` : ''}所有新 Pro
+						功能， 额外获得 ${proTrialLengthInDays} 天！
 					</p> `;
 		}
 
@@ -237,19 +236,18 @@ export class GlFeatureGatePlusState extends LitElement {
 		if (used === 0) {
 			return html`<slot name="feature"></slot>
 				<gl-button appearance="${ifDefined(appearance)}" href="${ifDefined(this.featurePreviewCommandLink)}"
-					>Continue</gl-button
+					>继续</gl-button
 				>
 				<p>
-					Continue to preview
-					${this.featureWithArticleIfNeeded ? `${this.featureWithArticleIfNeeded} on` : ''} privately hosted
-					repos, or
-					<a href="${createCommandLink<Source>('gitlens.plus.login', this.source)}" title="Sign In">sign in</a
+					继续在私有托管仓库中预览
+					${this.featureWithArticleIfNeeded ? this.featureWithArticleIfNeeded : '此功能'}，或
+					<a href="${createCommandLink<Source>('gitlens.plus.login', this.source)}" title="登录">登录</a
 					>.<br />
-					${appearance !== 'alert' ? html`<br />` : ''} For full access to all GitLens Pro features,
+					${appearance !== 'alert' ? html`<br />` : ''}若要完整使用所有 GitLens Pro 功能，
 					<a href="${createCommandLink<Source>('gitlens.plus.signUp', this.source)}"
-						>start your free ${proTrialLengthInDays}-day Pro trial</a
+						>开始免费试用 ${proTrialLengthInDays} 天 GitLens Pro</a
 					>
-					— no credit card required.
+					— 无需信用卡。
 				</p> `;
 		}
 
@@ -262,23 +260,22 @@ export class GlFeatureGatePlusState extends LitElement {
 					class="inline"
 					appearance="${ifDefined(appearance)}"
 					href="${ifDefined(this.featurePreviewCommandLink)}"
-					>Continue Preview</gl-button
+					>继续预览</gl-button
 				><span
-					>or
-					<a href="${createCommandLink<Source>('gitlens.plus.login', this.source)}" title="Sign In"
-						>sign in</a
+					>或
+					<a href="${createCommandLink<Source>('gitlens.plus.login', this.source)}" title="登录"
+						>登录</a
 					></span
 				>
 			</p>
 			<p>
-				After continuing, you will have ${pluralize('day', left, { infix: ' more ' })} to preview
-				${this.featureWithArticleIfNeeded ? `${this.featureWithArticleIfNeeded} on` : ''} privately hosted
-				repos.<br />
-				${appearance !== 'alert' ? html`<br />` : ''} For full access to all GitLens Pro features,
+				继续后，你还可以再预览 ${left} 次
+				${this.featureWithArticleIfNeeded ? this.featureWithArticleIfNeeded : '此功能'}（限私有托管仓库）。<br />
+				${appearance !== 'alert' ? html`<br />` : ''}若要完整使用所有 GitLens Pro 功能，
 				<a href="${createCommandLink<Source>('gitlens.plus.signUp', this.source)}"
-					>start your free ${proTrialLengthInDays}-day Pro trial</a
+					>开始免费试用 ${proTrialLengthInDays} 天 GitLens Pro</a
 				>
-				— no credit card required.
+				— 无需信用卡。
 			</p>
 		`;
 	}
@@ -288,31 +285,28 @@ export class GlFeatureGatePlusState extends LitElement {
 			case 'graph':
 				switch (used) {
 					case 1:
-						return html`<p>Try Commit Search</p>
+						return html`<p>试试提交搜索</p>
 							<p>
-								Search for commits in your repo by author, commit message, SHA, file, change, or type.
-								Turn on the commit filter to show only commits that match your query.
+								可按作者、提交消息、SHA、文件、变更或类型在仓库中搜索提交。启用提交过滤器后，
+								将仅显示与你查询匹配的提交。
 							</p>
 							<p>
 								<img
 									src="${this.webroot ?? ''}/media/graph-commit-search.webp"
 									style="width:100%"
-									alt="Graph Commit Search"
+									alt="提交图搜索"
 								/>
 							</p> `;
 
 					case 2:
 						return html`
-							<p>Try the Graph Minimap</p>
-							<p>
-								Visualize the amount of changes to a repository over time, and inspect specific points
-								in the history to locate branches, stashes, tags and pull requests.
-							</p>
+							<p>试试图小地图</p>
+							<p>可视化仓库随时间变化的更改量，并在历史中的特定位置查看分支、存储、标签和拉取请求。</p>
 							<p>
 								<img
 									src="${this.webroot ?? ''}/media/graph-minimap.webp"
 									style="width:100%"
-									alt="Graph Minimap"
+									alt="图小地图"
 								/>
 							</p>
 						`;

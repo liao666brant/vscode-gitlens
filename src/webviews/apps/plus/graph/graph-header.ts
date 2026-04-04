@@ -206,8 +206,8 @@ export class GlGraphHeader extends SignalWatcher(LitElement) {
 			const repoName = this.graphState.repositories?.[0]?.name ?? '';
 			const rsp: DidChooseRefParams = alt
 				? await this._ipc.sendRequest(ChooseRefRequest, {
-						title: `Jump to Reference ${GlyphChars.Dot} ${repoName}`,
-						placeholder: 'Choose a reference to jump to',
+						title: `跳转到引用 ${GlyphChars.Dot} ${repoName}`,
+						placeholder: '选择要跳转到的引用',
 					})
 				: await this._ipc.sendRequest(JumpToHeadRequest, undefined);
 			this._telemetry.sendEvent({ name: 'graph/action/jumpTo', data: { alt: alt } });
@@ -927,7 +927,7 @@ export class GlGraphHeader extends SignalWatcher(LitElement) {
 					.source=${{ source: 'graph' } as const}
 					@gl-click=${this.onRepositorySelectorClicked}
 					><span slot="tooltip">
-						Switch to Another Repository...
+						切换到其他仓库...
 						<hr />
 						${repo?.name}
 					</span></gl-repo-button-group
@@ -939,7 +939,12 @@ export class GlGraphHeader extends SignalWatcher(LitElement) {
 							branchState?.pr,
 							pr => html`
 								<gl-popover placement="bottom">
-									<button slot="anchor" type="button" class="action-button">
+									<button
+										slot="anchor"
+										type="button"
+										class="action-button"
+										aria-label=${`打开拉取请求 #${pr.id}`}
+									>
 										<issue-pull-request
 											type="pr"
 											identifier=${`#${pr.id}`}
@@ -974,19 +979,24 @@ export class GlGraphHeader extends SignalWatcher(LitElement) {
 							?worktree=${branchState?.worktree}
 						>
 							<div slot="tooltip">
-								Switch Branch...
+								切换分支...
 								<hr />
 								<gl-branch-name .name=${branch?.name}></gl-branch-name>${branchState?.worktree
-									? html`<i> (in a worktree)</i> `
+									? html`<i>（位于工作树）</i> `
 									: ''}
 							</div>
 						</gl-ref-button>
-						<gl-button class="jump-to-ref" appearance="toolbar" @click=${this.handleJumpToRef}>
+						<gl-button
+							class="jump-to-ref"
+							appearance="toolbar"
+							aria-label="跳转到 HEAD"
+							@click=${this.handleJumpToRef}
+						>
 							<code-icon icon="target"></code-icon>
 							<span slot="tooltip">
-								Jump to HEAD
+								跳转到 HEAD
 								<br />
-								[Alt] Jump to Reference...
+								[Alt] 跳转到引用...
 							</span>
 						</gl-button>
 						<span>
@@ -1010,13 +1020,14 @@ export class GlGraphHeader extends SignalWatcher(LitElement) {
 								class="action-button action-button--mcp"
 								href=${createCommandLink('gitlens.ai.mcp.install', { source: 'graph' })}
 								slot="anchor"
+								aria-label="为 GitLens 安装 GitKraken MCP"
 							>
 								<code-icon class="action-button__icon" icon="mcp"></code-icon>
 							</a>
 							<div class="mcp-tooltip__content" slot="content">
-								<strong>Install GitKraken MCP for GitLens</strong> <br />
-								Leverage Git and Integration information from GitLens in AI chat.
-								<a href="https://help.gitkraken.com/mcp/mcp-getting-started">Learn more</a>
+								<strong>为 GitLens 安装 GitKraken MCP</strong> <br />
+								在 AI 聊天中利用来自 GitLens 的 Git 与集成信息。
+								<a href="https://help.gitkraken.com/mcp/mcp-getting-started">了解更多</a>
 							</div>
 						</gl-popover>
 					`,
@@ -1029,12 +1040,11 @@ export class GlGraphHeader extends SignalWatcher(LitElement) {
 							confirm: true,
 							state: { subcommand: 'create', reference: branch },
 						})}
+						aria-label="创建新分支"
 					>
 						<code-icon class="action-button__icon" icon="custom-start-work"></code-icon>
 					</a>
-					<span slot="content">
-						Create New Branch from <gl-branch-name .name=${branch?.name}></gl-branch-name>
-					</span>
+					<span slot="content"> 从 <gl-branch-name .name=${branch?.name}></gl-branch-name> 创建新分支 </span>
 				</gl-tooltip>
 				<gl-tooltip placement="bottom">
 					<a
@@ -1044,19 +1054,19 @@ export class GlGraphHeader extends SignalWatcher(LitElement) {
 							} satisfies Omit<LaunchpadCommandArgs, 'command'>),
 						)}`}
 						class="action-button"
+						aria-label="打开启动台"
 					>
 						<code-icon icon="rocket"></code-icon>
 					</a>
 					<span slot="content">
-						<strong>Launchpad</strong> &mdash; organizes your pull requests into actionable groups to help
-						you focus and keep your team unblocked
+						<strong>启动台</strong> &mdash; 将拉取请求整理成可执行分组，帮助你保持专注并让团队保持畅通
 					</span>
 				</gl-tooltip>
 				<gl-tooltip placement="bottom">
 					<a
 						href=${this._webview.createCommandLink('gitlens.visualizeHistory.repo:')}
 						class="action-button"
-						aria-label=${`Open Visual History`}
+						aria-label=${`打开可视化历史`}
 					>
 						<span>
 							<code-icon
@@ -1067,23 +1077,22 @@ export class GlGraphHeader extends SignalWatcher(LitElement) {
 						</span>
 					</a>
 					<span slot="content">
-						<strong>Visual History</strong> — visualize the evolution of a repository, branch, folder, or
-						file and identify when the most impactful changes were made and by whom
+						<strong>可视化历史</strong> —
+						可视化仓库、分支、文件夹或文件的演变，并识别何时、由谁做出了最具影响力的更改
 					</span>
 				</gl-tooltip>
 				<gl-tooltip placement="bottom">
 					<a
 						href=${'command:gitlens.showHomeView'}
 						class="action-button"
-						aria-label=${`Open GitLens Home View`}
+						aria-label=${`打开 GitLens 主页视图`}
 					>
 						<span>
 							<code-icon class="action-button__icon" icon=${'gl-gitlens'} aria-hidden="true"></code-icon>
 						</span>
 					</a>
 					<span slot="content">
-						<strong>GitLens Home</strong> — track, manage, and collaborate on your branches and pull
-						requests, all in one intuitive hub
+						<strong>GitLens 主页</strong> — 在一个直观的中心跟踪、管理并协作处理你的分支和拉取请求
 					</span>
 				</gl-tooltip>
 				${when(
@@ -1121,24 +1130,24 @@ export class GlGraphHeader extends SignalWatcher(LitElement) {
 	private renderBranchVisibility(repo: RepositoryShape | undefined) {
 		const { branchesVisibility } = this.graphState;
 
-		return html`<gl-tooltip placement="top" content="Branches Visibility">
+		return html`<gl-tooltip placement="top" content="分支可见性">
 			<sl-select value=${ifDefined(branchesVisibility)} @sl-change=${this.handleBranchesVisibility} hoist>
 				<code-icon icon="chevron-down" slot="expand-icon"></code-icon>
-				<sl-option value="all" ?disabled=${repo?.virtual}> All Branches </sl-option>
-				<sl-option value="current">Current Branch</sl-option>
+				<sl-option value="all" ?disabled=${repo?.virtual}> 所有分支 </sl-option>
+				<sl-option value="current">当前分支</sl-option>
 				<menu-divider></menu-divider>
 				<sl-option value="smart" ?disabled=${repo?.virtual}>
-					Smart Branches
+					智能分支
 					${when(
 						!repo?.virtual,
 						() => html`
 							<gl-tooltip placement="right" slot="suffix">
 								<code-icon icon="info"></code-icon>
 								<span slot="content">
-									Shows only relevant branches
+									仅显示相关分支
 									<br />
 									<br />
-									<i>Includes the current branch, its upstream, and its base or target branch</i>
+									<i>包括当前分支、其上游分支及其基准或目标分支</i>
 								</span>
 							</gl-tooltip>
 						`,
@@ -1146,14 +1155,14 @@ export class GlGraphHeader extends SignalWatcher(LitElement) {
 					)}
 				</sl-option>
 				<sl-option value="favorited" ?disabled=${repo?.virtual}>
-					Favorited Branches
+					收藏分支
 					<gl-tooltip placement="right" slot="suffix">
 						<code-icon icon="info"></code-icon>
 						<span slot="content">
-							Shows only branches that have been starred as favorites
+							仅显示已加星标收藏的分支
 							<br />
 							<br />
-							<i>Also includes the current branch</i>
+							<i>也包括当前分支</i>
 						</span>
 					</gl-tooltip>
 				</sl-option>
@@ -1172,15 +1181,15 @@ export class GlGraphHeader extends SignalWatcher(LitElement) {
 			distance=${0}
 		>
 			<gl-tooltip placement="top" slot="anchor">
-				<button type="button" id="hiddenRefs" class="action-button">
+				<button type="button" id="hiddenRefs" class="action-button" aria-label="隐藏的分支 / 标签">
 					<code-icon icon=${`eye-closed`}></code-icon>
 					${Object.values(excludeRefs ?? {}).length}
 					<code-icon class="action-button__more" icon="chevron-down" aria-hidden="true"></code-icon>
 				</button>
-				<span slot="content">Hidden Branches / Tags</span>
+				<span slot="content">隐藏的分支 / 标签</span>
 			</gl-tooltip>
 			<div slot="content">
-				<menu-label>Hidden Branches / Tags</menu-label>
+				<menu-label>隐藏的分支 / 标签</menu-label>
 				${when(
 					this.excludeRefs.length > 0,
 					() => html`
@@ -1203,7 +1212,7 @@ export class GlGraphHeader extends SignalWatcher(LitElement) {
 								this.handleOnToggleRefsVisibilityClick(event, this.excludeRefs, true);
 							}}
 						>
-							Show All
+							显示全部
 						</menu-item>
 					`,
 				)}
@@ -1237,7 +1246,7 @@ export class GlGraphHeader extends SignalWatcher(LitElement) {
 						distance=${0}
 					>
 						<gl-tooltip placement="top" slot="anchor">
-							<button type="button" class="action-button">
+							<button type="button" class="action-button" aria-label="图过滤">
 								<code-icon icon=${`filter${this.hasFilters ? '-filled' : ''}`}></code-icon>
 								<code-icon
 									class="action-button__more"
@@ -1245,24 +1254,24 @@ export class GlGraphHeader extends SignalWatcher(LitElement) {
 									aria-hidden="true"
 								></code-icon>
 							</button>
-							<span slot="content">Graph Filtering</span>
+							<span slot="content">图过滤</span>
 						</gl-tooltip>
 						<div slot="content">
-							<menu-label>Graph Filters</menu-label>
+							<menu-label>图过滤器</menu-label>
 							${when(
 								repo?.virtual !== true,
 								() => html`
 									<menu-item role="none">
 										<gl-tooltip
 											placement="right"
-											content="Only follow the first parent of merge commits to provide a more linear history"
+											content="仅跟随合并提交的第一父提交，以提供更线性的历史"
 										>
 											<gl-checkbox
 												value="onlyFollowFirstParent"
 												@gl-change-value=${this.handleFilterChange}
 												?checked=${config?.onlyFollowFirstParent ?? false}
 											>
-												Simplify Merge History
+												简化合并历史
 											</gl-checkbox>
 										</gl-tooltip>
 									</menu-item>
@@ -1273,7 +1282,7 @@ export class GlGraphHeader extends SignalWatcher(LitElement) {
 											@gl-change-value=${this.handleFilterChange}
 											?checked=${excludeTypes?.remotes ?? false}
 										>
-											Hide Remote-only Branches
+											隐藏仅远程分支
 										</gl-checkbox>
 									</menu-item>
 									<menu-item role="none">
@@ -1282,7 +1291,7 @@ export class GlGraphHeader extends SignalWatcher(LitElement) {
 											@gl-change-value=${this.handleFilterChange}
 											?checked=${excludeTypes?.stashes ?? false}
 										>
-											Hide Stashes
+											隐藏存储
 										</gl-checkbox>
 									</menu-item>
 								`,
@@ -1293,7 +1302,7 @@ export class GlGraphHeader extends SignalWatcher(LitElement) {
 									@gl-change-value=${this.handleFilterChange}
 									?checked=${excludeTypes?.tags ?? false}
 								>
-									Hide Tags
+									隐藏标签
 								</gl-checkbox>
 							</menu-item>
 							<menu-divider></menu-divider>
@@ -1303,7 +1312,7 @@ export class GlGraphHeader extends SignalWatcher(LitElement) {
 									@gl-change-value=${this.handleFilterChange}
 									?checked=${config?.dimMergeCommits ?? false}
 								>
-									Dim Merge Commit Rows
+									弱化显示合并提交行
 								</gl-checkbox>
 							</menu-item>
 						</div>
@@ -1342,13 +1351,13 @@ export class GlGraphHeader extends SignalWatcher(LitElement) {
 								type="button"
 								role="checkbox"
 								class="action-button"
-								aria-label="Toggle Minimap"
+								aria-label="切换小地图"
 								aria-checked=${config?.minimap ?? false}
 								@click=${() => this.handleMinimapToggled()}
 							>
 								<code-icon class="action-button__icon" icon="graph-line"></code-icon>
 							</button>
-							<span slot="content">Toggle Minimap</span>
+							<span slot="content">切换小地图</span>
 						</gl-tooltip>
 						<gl-popover
 							class="popover"
@@ -1358,28 +1367,28 @@ export class GlGraphHeader extends SignalWatcher(LitElement) {
 							distance=${0}
 						>
 							<gl-tooltip placement="top" distance=${7} slot="anchor">
-								<button type="button" class="action-button" aria-label="Minimap Options">
+								<button type="button" class="action-button" aria-label="小地图选项">
 									<code-icon
 										class="action-button__more"
 										icon="chevron-down"
 										aria-hidden="true"
 									></code-icon>
 								</button>
-								<span slot="content">Minimap Options</span>
+								<span slot="content">小地图选项</span>
 							</gl-tooltip>
 							<div slot="content">
-								<menu-label>Minimap</menu-label>
+								<menu-label>小地图</menu-label>
 								<menu-item role="none">
 									<gl-radio-group
 										value=${config?.minimapDataType ?? 'commits'}
 										@gl-change-value=${this.handleMinimapDataTypeChanged}
 									>
-										<gl-radio name="minimap-datatype" value="commits"> Commits </gl-radio>
-										<gl-radio name="minimap-datatype" value="lines"> Lines Changed </gl-radio>
+										<gl-radio name="minimap-datatype" value="commits"> 提交 </gl-radio>
+										<gl-radio name="minimap-datatype" value="lines"> 变更行数 </gl-radio>
 									</gl-radio-group>
 								</menu-item>
 								<menu-divider></menu-divider>
-								<menu-label>Markers</menu-label>
+								<menu-label>标记</menu-label>
 								<menu-item role="none">
 									<gl-checkbox
 										value="localBranches"
@@ -1387,7 +1396,7 @@ export class GlGraphHeader extends SignalWatcher(LitElement) {
 										?checked=${config?.minimapMarkerTypes?.includes('localBranches') ?? false}
 									>
 										<span class="minimap-marker-swatch" data-marker="localBranches"></span>
-										Local Branches
+										本地分支
 									</gl-checkbox>
 								</menu-item>
 								<menu-item role="none">
@@ -1397,7 +1406,7 @@ export class GlGraphHeader extends SignalWatcher(LitElement) {
 										?checked=${config?.minimapMarkerTypes?.includes('remoteBranches') ?? true}
 									>
 										<span class="minimap-marker-swatch" data-marker="remoteBranches"></span>
-										Remote Branches
+										远程分支
 									</gl-checkbox>
 								</menu-item>
 								<menu-item role="none">
@@ -1407,7 +1416,7 @@ export class GlGraphHeader extends SignalWatcher(LitElement) {
 										?checked=${config?.minimapMarkerTypes?.includes('pullRequests') ?? true}
 									>
 										<span class="minimap-marker-swatch" data-marker="pullRequests"></span>
-										Pull Requests
+										拉取请求
 									</gl-checkbox>
 								</menu-item>
 								<menu-item role="none">
@@ -1417,7 +1426,7 @@ export class GlGraphHeader extends SignalWatcher(LitElement) {
 										?checked=${config?.minimapMarkerTypes?.includes('stashes') ?? false}
 									>
 										<span class="minimap-marker-swatch" data-marker="stashes"></span>
-										Stashes
+										存储
 									</gl-checkbox>
 								</menu-item>
 								<menu-item role="none">
@@ -1427,7 +1436,7 @@ export class GlGraphHeader extends SignalWatcher(LitElement) {
 										?checked=${config?.minimapMarkerTypes?.includes('tags') ?? true}
 									>
 										<span class="minimap-marker-swatch" data-marker="tags"></span>
-										Tags
+										标签
 									</gl-checkbox>
 								</menu-item>
 							</div>

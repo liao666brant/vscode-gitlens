@@ -127,7 +127,7 @@ export class GlWipDetails extends GlDetailsBase {
 	}
 
 	override get filesChangedPaneLabel(): string {
-		return 'Working Changes';
+		return '工作区更改';
 	}
 
 	protected override renderChangedFilesActions(): TemplateResult<1> | undefined {
@@ -141,13 +141,11 @@ export class GlWipDetails extends GlDetailsBase {
 						repoPath: this.wip?.repo.path,
 						source: 'inspect',
 					})}
-					><code-icon icon="wand" slot="prefix"></code-icon>Compose Commits...<span slot="tooltip"
-						><strong>Compose Commits</strong> (Preview)<br /><i
-							>Automatically or interactively organize changes into meaningful commits</i
-						></span
+					><code-icon icon="wand" slot="prefix"></code-icon>组合提交...<span slot="tooltip"
+						><strong>组合提交</strong>（预览）<br /><i>自动或交互式地将更改整理为有意义的提交</i></span
 					></gl-button
 				>
-				<gl-button appearance="secondary" href="command:workbench.view.scm" tooltip="Commit via SCM"
+				<gl-button appearance="secondary" href="command:workbench.view.scm" tooltip="通过源代码管理提交"
 					><code-icon rotate="45" icon="arrow-up"></code-icon
 				></gl-button>
 			</button-container>
@@ -157,7 +155,7 @@ export class GlWipDetails extends GlDetailsBase {
 	private renderSecondaryAction(hasPrimary = true) {
 		if (!this.draftsEnabled || this.inReview) return undefined;
 
-		let label = 'Share as Cloud Patch';
+		let label = '分享为云补丁';
 		let action = 'create-patch';
 		const pr = this.wip?.pullRequest;
 		if (pr?.state === 'opened' && equalsIgnoreCase(pr.provider.domain, 'github.com')) {
@@ -171,10 +169,10 @@ export class GlWipDetails extends GlDetailsBase {
 			// }
 
 			if (!this.inReview) {
-				label = 'Suggest Changes for PR';
+				label = '为 PR 提交建议更改';
 				action = 'start-patch-review';
 			} else {
-				label = 'Close Suggestion for PR';
+				label = '结束 PR 建议更改';
 				action = 'end-patch-review';
 			}
 
@@ -208,7 +206,7 @@ export class GlWipDetails extends GlDetailsBase {
 					appearance="secondary"
 					density="compact"
 					data-action="create-patch"
-					tooltip="Share as Cloud Patch"
+					tooltip="分享为云补丁"
 					@click=${() => this.onDataActionClick('create-patch')}
 				>
 					<code-icon icon="gl-cloud-patch-share"></code-icon>
@@ -236,9 +234,9 @@ export class GlWipDetails extends GlDetailsBase {
 		if (this.isUnpublished) {
 			return html`
 				<gl-button full data-action="publish-branch" @click=${() => this.onDataActionClick('publish-branch')}>
-					<code-icon icon="cloud-upload" slot="prefix"></code-icon>Publish Branch<span slot="tooltip"
-						>Publish (push) <strong>${this.wip?.branch?.name}</strong> to
-						${this.wip?.branch?.upstream?.name ?? 'a remote'}</span
+					<code-icon icon="cloud-upload" slot="prefix"></code-icon>发布分支<span slot="tooltip"
+						>发布（推送）<strong>${this.wip?.branch?.name}</strong> 到
+						${this.wip?.branch?.upstream?.name ?? '某个远程'}</span
 					>
 				</gl-button>
 			`;
@@ -249,9 +247,9 @@ export class GlWipDetails extends GlDetailsBase {
 		const { ahead, behind } = this.branchState;
 		if (ahead === 0 && behind === 0) return undefined;
 
-		const fetchLabel = behind > 0 ? 'Pull' : ahead > 0 ? 'Push' : 'Fetch';
+		const fetchLabel = behind > 0 ? '拉取' : ahead > 0 ? '推送' : '抓取';
 		const fetchIcon = behind > 0 ? 'repo-pull' : ahead > 0 ? 'repo-push' : 'repo-fetch';
-		const fetchTooltip = behind > 0 ? 'Pull from' : ahead > 0 ? 'Push to' : 'Fetch from';
+		const fetchTooltip = behind > 0 ? '从以下位置拉取' : ahead > 0 ? '推送到' : '从以下位置抓取';
 
 		return html`
 			<gl-button
@@ -284,7 +282,7 @@ export class GlWipDetails extends GlDetailsBase {
 			<gl-tree>
 				<gl-tree-item branch .expanded=${true} .level=${0}>
 					<code-icon slot="icon" icon="gl-code-suggestion"></code-icon>
-					Code Suggestions
+					代码建议
 				</gl-tree-item>
 				${repeat(
 					this.codeSuggestions,
@@ -298,7 +296,7 @@ export class GlWipDetails extends GlDetailsBase {
 							<gk-avatar
 								class="author-icon"
 								src="${draft.author.avatarUri}"
-								title="${draft.author.name} (author)"
+								title="${draft.author.name} (作者)"
 							></gk-avatar>
 							${draft.title}
 							<span slot="description"
@@ -321,20 +319,20 @@ export class GlWipDetails extends GlDetailsBase {
 				?expanded=${this.preferences?.pullRequestExpanded ?? true}
 				data-region="pullrequest-pane"
 			>
-				<span slot="title">Pull Request #${this.wip?.pullRequest?.id}</span>
+				<span slot="title">拉取请求 #${this.wip?.pullRequest?.id}</span>
 				<action-nav slot="actions">
 					<action-item
-						label="Open Pull Request Changes"
+						label="打开拉取请求更改"
 						icon="diff-multiple"
 						@click=${() => this.onDataActionClick('open-pr-changes')}
 					></action-item>
 					<action-item
-						label="Compare Pull Request"
+						label="比较拉取请求"
 						icon="compare-changes"
 						@click=${() => this.onDataActionClick('open-pr-compare')}
 					></action-item>
 					<action-item
-						label="Open Pull Request on Remote"
+						label="在远程上打开拉取请求"
 						icon="globe"
 						@click=${() => this.onDataActionClick('open-pr-remote')}
 					></action-item>
@@ -410,13 +408,13 @@ export class GlWipDetails extends GlDetailsBase {
 	override getFileActions(file: File, _options?: Partial<TreeItemBase>): TreeItemAction[] {
 		const openFile = {
 			icon: 'go-to-file',
-			label: 'Open file',
+			label: '打开文件',
 			action: 'file-open',
 		};
 		if (file.staged === true) {
-			return [openFile, { icon: 'remove', label: 'Unstage changes', action: 'file-unstage' }];
+			return [openFile, { icon: 'remove', label: '取消暂存更改', action: 'file-unstage' }];
 		}
-		return [openFile, { icon: 'plus', label: 'Stage changes', action: 'file-stage' }];
+		return [openFile, { icon: 'plus', label: '暂存更改', action: 'file-stage' }];
 	}
 
 	override getFileContextData(file: File): string | undefined {

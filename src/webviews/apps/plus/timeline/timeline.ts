@@ -121,8 +121,8 @@ export class GlTimelineApp extends GlAppHost<State> {
 						>可视化历史</a
 					>
 					<gl-feature-badge></gl-feature-badge>
-					&mdash;
-					可视化仓库、分支、文件夹或文件的演进过程，识别最具影响力的变更发生在何时、由谁完成。按分支切片时，可快速查看文件或文件夹中的未合并变更。
+					&mdash; 可视化仓库、分支、文件夹或文件的演变，并识别最具影响力的更改是在何时由谁完成的。
+					按分支切片时，可快速查看文件或文件夹中尚未合并的更改。
 				</p></gl-feature-gate
 			>`;
 		}
@@ -137,8 +137,8 @@ export class GlTimelineApp extends GlAppHost<State> {
 					>可视化文件历史</a
 				>
 				<gl-feature-badge></gl-feature-badge>
-				&mdash;
-				可视化文件演进过程，快速识别最具影响力的变更发生在何时、由谁完成。按分支切片时，可快速查看文件或文件夹中的未合并变更。
+				&mdash; 可视化文件演变，快速识别何时、由谁做出了最具影响力的更改。
+				按分支切片时，可快速查看文件或文件夹中尚未合并的更改。
 			</p></gl-feature-gate
 		>`;
 	}
@@ -329,7 +329,7 @@ export class GlTimelineApp extends GlAppHost<State> {
 	private renderChart() {
 		if (!this.scope && this.placement === 'view') {
 			return html`<div class="timeline__empty">
-				<p>当前没有可提供文件历史信息的已打开编辑器。</p>
+				<p>当前没有可提供文件历史的已打开编辑器。</p>
 			</div>`;
 		}
 
@@ -350,9 +350,9 @@ export class GlTimelineApp extends GlAppHost<State> {
 		>
 			<div slot="empty">
 				${this.scope == null
-					? html`<p>出现了一些问题</p>
-							<p>请关闭此标签页后重试</p>`
-					: html`<p>在指定时间范围内未找到提交</p>
+					? html`<p>发生了错误。</p>
+							<p>请关闭此标签页后重试。</p>`
+					: html`<p>在所选时间范围内未找到提交。</p>
 							${this.renderPeriodSelect(this.state.config.period)}`}
 			</div>
 		</gl-timeline-chart>`;
@@ -364,11 +364,11 @@ export class GlTimelineApp extends GlAppHost<State> {
 		} = this;
 
 		return html`<gl-popover class="config" placement="bottom" trigger="hover focus click" hoist>
-			<gl-button slot="anchor" appearance="toolbar">
+			<gl-button slot="anchor" appearance="toolbar" tooltip="查看选项" aria-label="查看选项">
 				<code-icon icon="settings"></code-icon>
 			</gl-button>
 			<div slot="content" class="config__content">
-				<menu-label>视图选项</menu-label>
+				<menu-label>查看选项</menu-label>
 				${this.renderConfigHead()} ${this.renderConfigBase()} ${this.renderConfigShowAllBranches()}
 				${this.renderPeriodSelect(period)} ${this.renderConfigSliceBy()}
 			</div>
@@ -457,7 +457,7 @@ export class GlTimelineApp extends GlAppHost<State> {
 						changes: { showAllBranches: (e.target as Checkbox).checked },
 					});
 				}}
-				>查看所有分支</gl-checkbox
+				>显示所有分支</gl-checkbox
 			>
 		</section>`;
 	}
@@ -475,7 +475,7 @@ export class GlTimelineApp extends GlAppHost<State> {
 					<option value="1|Y" ?selected=${period === '1|Y'}>1 年</option>
 					<option value="2|Y" ?selected=${period === '2|Y'}>2 年</option>
 					<option value="4|Y" ?selected=${period === '4|Y'}>4 年</option>
-					<option value="all" ?selected=${period === 'all'}>完整历史</option>
+					<option value="all" ?selected=${period === 'all'}>全部历史</option>
 				</select>
 			</span>
 		</section>`;

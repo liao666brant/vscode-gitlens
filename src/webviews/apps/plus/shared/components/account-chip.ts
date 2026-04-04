@@ -18,7 +18,6 @@ import {
 	isSubscriptionTrialOrPaidFromState,
 } from '../../../../../plus/gk/utils/subscription.utils.js';
 import { createCommandLink } from '../../../../../system/commands.js';
-import { pluralize } from '../../../../../system/string.js';
 import type { State } from '../../../../home/protocol.js';
 import { stateContext } from '../../../home/context.js';
 import type { GlPopover } from '../../../shared/components/overlays/popover.js';
@@ -295,6 +294,18 @@ export class GlAccountChip extends LitElement {
 		return getSubscriptionPlanName(this.planId);
 	}
 
+	private get planTierLabel() {
+		if (isSubscriptionTrial(this.subscription)) {
+			return this.subscription.plan.effective.id === 'student' ? '学生试用' : 'Pro 试用';
+		}
+
+		return this.planTier;
+	}
+
+	private get isStudentTrialPlan() {
+		return isSubscriptionTrial(this.subscription) && this.subscription.plan.effective.id === 'student';
+	}
+
 	@consume({ context: promosContext })
 	private promos!: PromosContext;
 
@@ -318,11 +329,11 @@ export class GlAccountChip extends LitElement {
 
 	override render(): unknown {
 		return html`<gl-popover placement="bottom" trigger="hover focus click" hoist>
-				<span id="chip" slot="anchor" class="chip" tabindex="0">
+				<span id="chip" slot="anchor" class="chip" tabindex="0" aria-label="打开账户菜单">
 					${this.accountAvatar
 						? html`<img class="chip__media" src=${this.accountAvatar} />`
 						: html`<code-icon class="chip__media" icon="gl-gitlens" size="16"></code-icon>`}
-					<span>${this.planTier}</span>
+					<span>${this.planTierLabel}</span>
 				</span>
 				<div slot="content" class="content" tabindex="-1">
 					<div class="header">
@@ -334,8 +345,8 @@ export class GlAccountChip extends LitElement {
 											href="${createCommandLink<Source>('gitlens.plus.validate', {
 												source: 'account',
 											})}"
-											tooltip="Synchronize Status"
-											aria-label="Synchronize Status"
+											tooltip="同步状态"
+											aria-label="同步状态"
 											><code-icon icon="sync"></code-icon
 										></gl-button>
 										<gl-button
@@ -343,8 +354,8 @@ export class GlAccountChip extends LitElement {
 											href="${createCommandLink<Source>('gitlens.plus.manage', {
 												source: 'account',
 											})}"
-											tooltip="Manage Account"
-											aria-label="Manage Account"
+											tooltip="管理账户"
+											aria-label="管理账户"
 											><code-icon icon="gear"></code-icon
 										></gl-button>
 										<gl-button
@@ -352,8 +363,8 @@ export class GlAccountChip extends LitElement {
 											href="${createCommandLink<Source>('gitlens.plus.logout', {
 												source: 'account',
 											})}"
-											tooltip="Sign Out"
-											aria-label="Sign Out"
+											tooltip="退出登录"
+											aria-label="退出登录"
 											><code-icon icon="sign-out"></code-icon
 										></gl-button>`
 								: nothing}
@@ -401,16 +412,13 @@ export class GlAccountChip extends LitElement {
 										organization: this._state.subscription?.activeOrganization?.id,
 									},
 								})}"
-								aria-label="Switch Active Organization"
+								aria-label="切换当前组织"
 								><span class="org__badge">+${this._state.organizationsCount! - 1}</span
 								><code-icon icon="arrow-swap"></code-icon
 								><span slot="tooltip"
-									>Switch Active Organization
+									>切换当前组织
 									<hr />
-									You are in
-									${pluralize('organization', this._state.organizationsCount! - 1, {
-										infix: ' other ',
-									})}</span
+									你当前还位于 ${this._state.organizationsCount! - 1} 个其他组织中</span
 								></gl-button
 							>
 						</div>`,
@@ -424,9 +432,9 @@ export class GlAccountChip extends LitElement {
 						<span class="details"
 							><p class="details__title">
 								${isSubscriptionTrial(this.subscription)
-									? html`${getSubscriptionPlanName(this.effectivePlanId)} plan
-											<span class="details__subtitle">(trial)</span>`
-									: html`${getSubscriptionPlanName(this.planId)} plan`}
+									? html`${getSubscriptionPlanName(this.effectivePlanId)} 计划
+											<span class="details__subtitle">（试用）</span>`
+									: html`${getSubscriptionPlanName(this.planId)} 计划`}
 							</p></span
 						>
 						${isSubscriptionPaid(this.subscription) && compareSubscriptionPlans(this.planId, 'advanced') < 0
@@ -445,15 +453,14 @@ export class GlAccountChip extends LitElement {
 												},
 											},
 										)}"
-										aria-label="Upgrade to Advanced"
-										><span class="upgrade-button">Upgrade</span>${this.renderPromo(
+										aria-label="升级到 Advanced"
+										><span class="upgrade-button">升级</span>${this.renderPromo(
 											'advanced',
 											'icon',
 											'suffix',
 										)}
 										<span slot="tooltip"
-											>Upgrade to the Advanced plan for access to self-hosted integrations,
-											advanced AI features @ 1M tokens/week, and more
+											>升级到 Advanced 计划，以使用自托管集成、高级 AI 功能（每周 1M tokens）等
 											${this.renderPromo('advanced', 'info')}
 										</span>
 									</gl-button>
@@ -473,14 +480,14 @@ export class GlAccountChip extends LitElement {
 
 			case SubscriptionState.VerificationRequired:
 				return html`<div class="account-status">
-					<p>You must verify your email before you can access Pro features.</p>
+					<p>访问 Pro 功能前，你必须先验证邮箱。</p>
 					<button-container layout="editor">
 						<gl-button
 							full
 							href="${createCommandLink<Source>('gitlens.plus.resendVerification', {
 								source: 'account',
 							})}"
-							>Resend Email</gl-button
+							>重新发送邮件</gl-button
 						>
 						<gl-button
 							appearance="secondary"
@@ -499,16 +506,14 @@ export class GlAccountChip extends LitElement {
 					${this.isReactivatedTrial
 						? html`<p>
 								<code-icon icon="megaphone"></code-icon>
-								See
-								<a href="${urls.releaseNotes}">what's new</a>
-								in GitLens.
+								查看 GitLens
+								<a href="${urls.releaseNotes}">新功能</a>
 							</p>`
 						: nothing}
 					<p>
-						You have
-						<strong>${days < 1 ? '<1 day' : pluralize('day', days, { infix: ' more ' })} left</strong>
-						in your ${this.planTier === 'Student' ? 'Student' : 'Pro'} trial. Once your trial ends, you will
-						only be able to use Pro features on publicly-hosted repos.
+						你的 ${this.isStudentTrialPlan ? '学生版' : 'Pro'} 试用还剩
+						<strong>${days < 1 ? '少于 1 天' : `${days} 天`}</strong
+						>。试用结束后，你将只能在公开托管的仓库中使用 Pro 功能。
 					</p>
 					<button-container layout="editor">
 						<gl-button
@@ -522,7 +527,7 @@ export class GlAccountChip extends LitElement {
 									plan: 'pro',
 								},
 							})}"
-							>Upgrade to Pro</gl-button
+							>升级到 Pro</gl-button
 						>
 					</button-container>
 					${this.renderPromo('pro')} ${this.renderIncludesDevEx()} ${this.renderReferFriend()}
@@ -531,8 +536,8 @@ export class GlAccountChip extends LitElement {
 
 			case SubscriptionState.TrialExpired:
 				return html`<div class="account-status">
-					<p>Thank you for trying <a href="${urls.communityVsPro}">GitLens Pro</a>.</p>
-					<p>Continue leveraging Pro features and workflows for privately hosted repos by upgrading today.</p>
+					<p>感谢你试用 <a href="${urls.communityVsPro}">GitLens Pro</a>。</p>
+					<p>立即升级，以继续在私有托管仓库中使用 Pro 功能和工作流。</p>
 					<button-container layout="editor">
 						<gl-button
 							full
@@ -545,7 +550,7 @@ export class GlAccountChip extends LitElement {
 									plan: 'pro',
 								},
 							})}"
-							>Upgrade to Pro</gl-button
+							>升级到 Pro</gl-button
 						>
 					</button-container>
 					${this.renderPromo('pro')} ${this.renderIncludesDevEx()} ${this.renderReferFriend()}
@@ -554,8 +559,8 @@ export class GlAccountChip extends LitElement {
 			case SubscriptionState.TrialReactivationEligible:
 				return html`<div class="account-status">
 					<p>
-						Reactivate your GitLens Pro trial and experience all the new Pro features — free for another
-						${pluralize('day', proTrialLengthInDays)}.
+						重新激活你的 GitLens Pro 试用，再次免费体验所有新 Pro 功能，额外获得 ${proTrialLengthInDays}
+						天。
 					</p>
 					<button-container layout="editor">
 						<gl-button
@@ -563,8 +568,8 @@ export class GlAccountChip extends LitElement {
 							href="${createCommandLink<Source>('gitlens.plus.reactivateProTrial', {
 								source: 'account',
 							})}"
-							tooltip="Reactivate your Pro trial for another ${pluralize('day', proTrialLengthInDays)}"
-							>Reactivate GitLens Pro Trial</gl-button
+							tooltip="再次激活你的 Pro 试用，额外获得 ${proTrialLengthInDays} 天"
+							>重新激活 GitLens Pro 试用</gl-button
 						>
 					</button-container>
 					${this.renderReferFriend()}
@@ -573,9 +578,8 @@ export class GlAccountChip extends LitElement {
 			default:
 				return html`<div class="account-status">
 					<p>
-						Unlock advanced features and workflows for private repos, accelerate reviews, and streamline
-						collaboration with
-						<a href="${urls.communityVsPro}">GitLens Pro</a>.
+						解锁私有仓库的高级功能和工作流，加速评审并简化协作，
+						<a href="${urls.communityVsPro}">GitLens Pro</a>。
 					</p>
 					<button-container layout="editor">
 						<gl-button
@@ -583,25 +587,25 @@ export class GlAccountChip extends LitElement {
 							href="${createCommandLink<Source>('gitlens.plus.signUp', {
 								source: 'account',
 							})}"
-							>Try GitLens Pro</gl-button
+							>试用 GitLens Pro</gl-button
 						>
 						<span class="button-suffix"
-							>or
+							>或
 							<a
 								href="${createCommandLink<Source>('gitlens.plus.login', {
 									source: 'account',
 								})}"
-								>sign in</a
+								>登录</a
 							></span
 						>
 					</button-container>
-					<p>Get ${proTrialLengthInDays} days of GitLens Pro for free — no credit card required.</p>
+					<p>免费体验 ${proTrialLengthInDays} 天 GitLens Pro —— 无需信用卡。</p>
 				</div>`;
 		}
 	}
 
 	private renderIncludesDevEx() {
-		return html`<p>Includes access to <a href="${urls.platform}">GitKraken's DevEx platform</a></p>`;
+		return html`<p>包含对 <a href="${urls.platform}">GitKraken DevEx 平台</a> 的访问权限</p>`;
 	}
 
 	private renderReferFriend() {
@@ -612,9 +616,9 @@ export class GlAccountChip extends LitElement {
 				href="${createCommandLink<Source>('gitlens.plus.referFriend', {
 					source: 'account',
 				})}"
-				>Refer a friend</a
+				>推荐好友</a
 			>
-			&mdash; give 50% off and get up to $20
+			&mdash; 送出 5 折优惠，并获得最高 $20 奖励
 		</p>`;
 	}
 
@@ -627,12 +631,12 @@ export class GlAccountChip extends LitElement {
 		this.showUpgrade = true;
 
 		return html`<gl-popover placement="bottom" trigger="hover focus click" hoist>
-			<span slot="anchor" class="chip chip--outlined" tabindex="0">
-				<span>Upgrade</span>
+			<span slot="anchor" class="chip chip--outlined" tabindex="0" aria-label="打开升级选项">
+				<span>升级</span>
 			</span>
 			<div slot="content" class="content" tabindex="-1">
 				<div class="header">
-					<span class="header__title">Advantages of GitLens Pro</span>
+					<span class="header__title">GitLens Pro 的优势</span>
 				</div>
 				<div class="upgrade">
 					<button-container layout="editor">
@@ -647,18 +651,16 @@ export class GlAccountChip extends LitElement {
 									plan: 'pro',
 								},
 							})}"
-							>Upgrade to Pro</gl-button
+							>升级到 Pro</gl-button
 						>
 					</button-container>
 					${this.renderPromo('pro')}
 
 					<ul>
-						<li>Unlimited cloud integrations</li>
-						<li>Smart AI features &mdash; 250K tokens/week</li>
-						<li>
-							Powerful tools &mdash; Commit Graph, Visual History, &amp; Git Worktrees for private repos
-						</li>
-						<li>Streamlined workflows &mdash; start work from issues, pull request reviews</li>
+						<li>无限云集成</li>
+						<li>智能 AI 功能 &mdash; 每周 250K tokens</li>
+						<li>强大工具 &mdash; 私有仓库可用的提交图、可视化历史和 Git 工作树</li>
+						<li>精简工作流 &mdash; 从问题开始工作、处理拉取请求评审</li>
 					</ul>
 
 					<br />
@@ -674,14 +676,14 @@ export class GlAccountChip extends LitElement {
 									plan: 'advanced',
 								},
 							})}"
-							>Upgrade to Advanced</gl-button
+							>升级到 Advanced</gl-button
 						>
 					</button-container>
 					${this.renderPromo('advanced')}
 
 					<ul>
-						<li>Self-hosted integrations</li>
-						<li>Advanced AI features &mdash; 1M tokens/week</li>
+						<li>自托管集成</li>
+						<li>高级 AI 功能 &mdash; 每周 1M tokens</li>
 					</ul>
 				</div>
 			</div>

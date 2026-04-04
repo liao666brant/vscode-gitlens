@@ -37,21 +37,20 @@ export class GlGraphGate extends SignalWatcher(LitElement) {
 			)}
 			appearance="alert"
 			featureRestriction="private-repos"
-			featureWithArticleIfNeeded="the Commit Graph"
+			featureWithArticleIfNeeded="提交图"
 			?hidden=${this.graphState.allowed !== false}
 			.source=${{ source: 'graph', detail: 'gate' } as const}
 			.state=${this.graphState.subscription?.state}
 			.webroot=${this.graphState.webroot}
 		>
 			<p slot="feature">
-				<a href="https://help.gitkraken.com/gitlens/gitlens-features/#commit-graph-pro">Commit Graph</a>
+				<a href="https://help.gitkraken.com/gitlens/gitlens-features/#commit-graph-pro">提交图</a>
 				<gl-feature-badge
 					.source=${{ source: 'graph', detail: 'badge' } as const}
 					subscription="{subscription}"
 				></gl-feature-badge>
-				&mdash; easily visualize your repository and keep track of all work in progress. Use the rich commit
-				search to find a specific commit, message, author, a changed file or files, or even a specific code
-				change.
+				&mdash;
+				轻松可视化你的仓库，并跟踪所有进行中的工作。使用强大的提交搜索来查找特定提交、提交消息、作者、已更改文件，甚至某一处具体代码变更。
 			</p>
 		</gl-feature-gate>`;
 	}

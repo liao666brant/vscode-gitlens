@@ -5,7 +5,7 @@ import type { ChartInternal, ChartWithInternal } from '../../../../../@types/bb.
 import { debug } from '../../../../../system/decorators/log.js';
 import { debounce } from '../../../../../system/function/debounce.js';
 import { first, flatMap, groupByMap, map, union } from '../../../../../system/iterable.js';
-import { capitalize, pluralize } from '../../../../../system/string.js';
+import { capitalize } from '../../../../../system/string.js';
 import { GlElement, observe } from '../../../shared/components/element.js';
 import { formatDate, formatNumeric, fromNow } from '../../../shared/date.js';
 import '../../../shared/components/overlays/tooltip.js';
@@ -954,26 +954,18 @@ export class GlGraphMinimap extends GlElement {
 						let linesChanged;
 						let resultsCount;
 						if (stat?.commits) {
-							commits = pluralize('commit', stat.commits, { format: c => formatNumeric(c) });
+							commits = `${formatNumeric(stat.commits)} 个提交`;
 							if (results?.count) {
-								resultsCount = pluralize('matching commit', results.count);
+								resultsCount = `${formatNumeric(results.count)} 条匹配提交`;
 							}
 
 							if (this.dataType === 'lines') {
-								linesChanged = `${pluralize('file', stat?.files ?? 0, {
-									format: c => formatNumeric(c),
-									zero: 'No',
-								})}, ${pluralize(
-									'line',
+								linesChanged = `${formatNumeric(stat?.files ?? 0)} 个文件，${formatNumeric(
 									(stat?.activity?.additions ?? 0) + (stat?.activity?.deletions ?? 0),
-									{
-										format: c => formatNumeric(c),
-										zero: 'No',
-									},
-								)} changed`;
+								)} 行已更改`;
 							}
 						} else {
-							commits = 'No commits';
+							commits = '无提交';
 						}
 
 						return /*html*/ `<div class="bb-tooltip">
@@ -988,13 +980,7 @@ export class GlGraphMinimap extends GlElement {
 						${
 							groups != null
 								? /*html*/ `
-						<div class="refs">${
-							stashesCount
-								? /*html*/ `<span class="stash">${pluralize('stash', stashesCount, {
-										plural: 'stashes',
-									})}</span>`
-								: ''
-						}${
+						<div class="refs">${stashesCount ? /*html*/ `<span class="stash">${formatNumeric(stashesCount)} 个储藏</span>` : ''}${
 							groups
 								?.get('branch')
 								?.sort((a, b) => (a.current ? -1 : 1) - (b.current ? -1 : 1))
@@ -1005,9 +991,7 @@ export class GlGraphMinimap extends GlElement {
 						}</div>
 						<div class="refs">${
 							pullRequestsCount
-								? /*html*/ `<span class="pull-request">${pluralize('pull request', pullRequestsCount, {
-										plural: 'pull requests',
-									})}</span>`
+								? /*html*/ `<span class="pull-request">${formatNumeric(pullRequestsCount)} 个拉取请求</span>`
 								: ''
 						}${
 							groups
@@ -1092,9 +1076,7 @@ export class GlGraphMinimap extends GlElement {
 				<div class="legend">
 					<code-icon icon="${this.dataType === 'lines' ? 'request-changes' : 'git-commit'}"></code-icon>
 				</div>
-				<div slot="content">
-					${this.dataType === 'lines' ? 'Showing lines changed per day' : 'Showing commits per day'}
-				</div>
+				<div slot="content">${this.dataType === 'lines' ? '显示每天更改的行数' : '显示每天的提交数'}</div>
 			</gl-tooltip>
 		`;
 	}

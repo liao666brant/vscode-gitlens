@@ -158,9 +158,7 @@ export class GlCommitDetails extends GlDetailsBase {
 			<div class="section">
 				<div class="alert alert--warning">
 					<code-icon icon="warning"></code-icon>
-					<p class="alert__content">
-						This ${this.isStash ? 'stash' : 'commit'} is not currently visible in the Commit Graph.
-					</p>
+					<p class="alert__content">此${this.isStash ? '存储' : '提交'}当前未显示在提交图中。</p>
 				</div>
 			</div>
 		`;
@@ -169,29 +167,29 @@ export class GlCommitDetails extends GlDetailsBase {
 	private renderEmptyContent() {
 		return html`
 			<div class="section section--empty" id="empty">
-				<p>Rich details for commits and stashes are shown as you navigate:</p>
+				<p>在你浏览时，将显示提交和存储的详细信息：</p>
 
 				<ul class="bulleted">
-					<li>lines in the text editor</li>
+					<li>文本编辑器中的代码行</li>
 					<li>
-						commits in the <a href="command:gitlens.showGraph">Commit Graph</a>,
-						<a href="command:gitlens.showTimelineView">Visual File History</a>, or
-						<a href="command:gitlens.showCommitsView">Commits view</a>
+						<a href="command:gitlens.showGraph">提交图</a>、
+						<a href="command:gitlens.showTimelineView">可视化文件历史</a> 或
+						<a href="command:gitlens.showCommitsView">提交视图</a>中的提交
 					</li>
-					<li>stashes in the <a href="command:gitlens.showStashesView">Stashes view</a></li>
+					<li><a href="command:gitlens.showStashesView">存储视图</a>中的存储</li>
 				</ul>
 
-				<p>Alternatively, show your work-in-progress, or search for or choose a commit</p>
+				<p>或者，显示你的进行中工作，或搜索/选择一个提交</p>
 
 				<p class="button-container">
 					<span class="button-group button-group--single">
-						<gl-button full data-action="wip">Overview</gl-button>
+						<gl-button full data-action="wip">概览</gl-button>
 					</span>
 				</p>
 				<p class="button-container">
 					<span class="button-group button-group--single">
-						<gl-button full data-action="pick-commit">Choose Commit...</gl-button>
-						<gl-button density="compact" data-action="search-commit" tooltip="Search for Commit"
+						<gl-button full data-action="pick-commit">选择提交...</gl-button>
+						<gl-button density="compact" data-action="search-commit" tooltip="搜索提交"
 							><code-icon icon="search"></code-icon
 						></gl-button>
 					</span>
@@ -205,16 +203,14 @@ export class GlCommitDetails extends GlDetailsBase {
 
 		return html`
 			<gl-action-chip
-				label=${this.isUncommitted
-					? 'Explain Working Changes'
-					: `Explain Changes in this ${this.isStash ? 'Stash' : 'Commit'}`}
+				label=${this.isUncommitted ? '解释工作区更改' : `解释此${this.isStash ? '存储' : '提交'}中的更改`}
 				icon="sparkle"
 				data-action="explain-commit"
 				aria-busy="${this.explainBusy ? 'true' : nothing}"
 				?disabled="${this.explainBusy ? true : nothing}"
 				@click=${this.onExplainChanges}
 				@keydown=${this.onExplainChanges}
-				><span>explain</span></gl-action-chip
+				><span>解释</span></gl-action-chip
 			>
 		`;
 	}
@@ -272,7 +268,7 @@ export class GlCommitDetails extends GlDetailsBase {
 									.date=${details.author.date}
 									.dateFormat="${this.preferences?.dateFormat ?? 'absolute'}"
 									.dateStyle="${this.preferences?.dateStyle ?? 'relative'}"
-									.actionLabel="${details.sha === uncommittedSha ? 'Modified' : 'Committed'}"
+									.actionLabel="${details.sha === uncommittedSha ? '已修改' : '已提交'}"
 								></gl-commit-date>
 							`,
 						)}
@@ -354,17 +350,16 @@ export class GlCommitDetails extends GlDetailsBase {
 	}
 
 	private renderLearnAboutAutolinks(compact = false) {
-		const chipLabel = compact ? nothing : html`<span class="mq-hide-sm">Learn about autolinks</span>`;
+		const chipLabel = compact ? nothing : html`<span class="mq-hide-sm">了解自动链接</span>`;
 
 		const autolinkSettingsLink = createCommandLink('gitlens.showSettingsPage!autolinks', {
 			showOptions: { preserveFocus: true },
 		});
 
 		const hasIntegrationsConnected = this.state?.hasIntegrationsConnected ?? false;
-		let label =
-			'Configure autolinks to linkify external references, like Jira or Zendesk tickets, in commit messages.';
+		let label = '配置自动链接，将 Jira 或 Zendesk 工单等外部引用自动链接到提交消息中。';
 		if (!hasIntegrationsConnected) {
-			label = `<a href="${autolinkSettingsLink}">Configure autolinks</a> to linkify external references, like Jira or Zendesk tickets, in commit messages.`;
+			label = `<a href="${autolinkSettingsLink}">配置自动链接</a>，将 Jira 或 Zendesk 工单等外部引用自动链接到提交消息中。`;
 			label += `\n\n<a href="${createCommandLink<ConnectCloudIntegrationsCommandArgs>(
 				'gitlens.plus.cloudIntegrations.connect',
 				{
@@ -375,13 +370,13 @@ export class GlCommitDetails extends GlDetailsBase {
 						},
 					},
 				},
-			)}">Connect an Integration</a> &mdash;`;
+			)}">连接一个集成</a> &mdash;`;
 
 			if (!this.state?.hasAccount) {
-				label += ' sign up and';
+				label += ' 注册并';
 			}
 
-			label += ' to get access to automatic rich autolinks for services like Jira, GitHub, and more.';
+			label += ' 以获得 Jira、GitHub 等服务的自动富自动链接能力。';
 		}
 
 		return html`<gl-action-chip
@@ -410,7 +405,7 @@ export class GlCommitDetails extends GlDetailsBase {
 				autolinks.map(autolink => {
 					let name = autolink.description ?? autolink.title;
 					if (name === undefined) {
-						name = `Custom Autolink ${autolink.prefix}${autolink.id}`;
+						name = `自定义自动链接 ${autolink.prefix}${autolink.id}`;
 					}
 					return html`<gl-autolink-chip
 						type="autolink"
@@ -457,8 +452,8 @@ export class GlCommitDetails extends GlDetailsBase {
 		if (this.isUncommitted) return nothing;
 
 		if (this.reachabilityState === 'loading') {
-			return html`<gl-action-chip icon="loading" label="Loading branches and tags which contain this commit"
-				>Loading...</gl-action-chip
+			return html`<gl-action-chip icon="loading" label="正在加载包含此提交的分支和标签"
+				>加载中...</gl-action-chip
 			>`;
 		}
 
@@ -466,20 +461,20 @@ export class GlCommitDetails extends GlDetailsBase {
 			return html`<gl-action-chip
 				class="error"
 				icon="error"
-				label="Failed to load branches and tags. Click to retry."
+				label="加载分支和标签失败。点击重试。"
 				overlay="tooltip"
 				@click=${() => this.dispatchEvent(new CustomEvent('refresh-reachability'))}
-				><span class="mq-hide-sm">Failed to load</span></gl-action-chip
+				><span class="mq-hide-sm">加载失败</span></gl-action-chip
 			>`;
 		}
 
 		if (this.reachabilityState === 'idle') {
 			return html`<gl-action-chip
 				icon="git-branch"
-				label="Show which branches and tags contain this commit"
+				label="显示哪些分支和标签包含此提交"
 				overlay="tooltip"
 				@click=${() => this.dispatchEvent(new CustomEvent('load-reachability'))}
-				><span class="mq-hide-sm">Show Branches &amp; Tags</span></gl-action-chip
+				><span class="mq-hide-sm">显示分支和标签</span></gl-action-chip
 			>`;
 		}
 
@@ -490,9 +485,9 @@ export class GlCommitDetails extends GlDetailsBase {
 			return html`<gl-action-chip
 				class="warning"
 				icon="git-branch"
-				label="Commit is not on any branch or tag"
+				label="此提交不在任何分支或标签上"
 				overlay="tooltip"
-				><span class="mq-hide-sm">Not on any branch or tag</span></gl-action-chip
+				><span class="mq-hide-sm">不在任何分支或标签上</span></gl-action-chip
 			>`;
 		}
 
@@ -513,10 +508,10 @@ export class GlCommitDetails extends GlDetailsBase {
 
 		// Single ref - just show it
 		if (count === 1) {
-			const refTypeLabel = first.refType === 'branch' ? (first.remote ? 'remote branch' : 'branch') : 'tag';
+			const refTypeLabel = first.refType === 'branch' ? (first.remote ? '远程分支' : '分支') : '标签';
 			return html`<gl-action-chip
 				icon="${icon}"
-				label="Commit on 1 ${refTypeLabel}: ${first.name}"
+				label="此提交位于 1 个${refTypeLabel}上：${first.name}"
 				overlay="tooltip"
 				class="reachability-range-chip reachability-range-chip--${first.refType === 'branch'
 					? first.remote
@@ -546,7 +541,7 @@ export class GlCommitDetails extends GlDetailsBase {
 			>
 			<div slot="content" class="reachability-popover">
 				<div class="reachability-popover__header">
-					Commit is on ${count} ${type === 'branch' ? 'branches' : 'tags'}
+					此提交位于 ${count} 个${type === 'branch' ? '分支' : '标签'}上
 				</div>
 				<div class="reachability-popover__list scrollable">
 					${refs.map(
@@ -604,7 +599,7 @@ export class GlCommitDetails extends GlDetailsBase {
 		const actions = [
 			{
 				icon: 'go-to-file',
-				label: 'Open File',
+				label: '打开文件',
 				action: 'file-open',
 			},
 		];
@@ -615,14 +610,14 @@ export class GlCommitDetails extends GlDetailsBase {
 
 		actions.push({
 			icon: 'git-compare',
-			label: 'Open Changes with Working File',
+			label: '打开与工作文件的更改',
 			action: 'file-compare-working',
 		});
 
 		if (!this.isStash && file.submodule == null) {
 			actions.push({
 				icon: 'globe',
-				label: 'Open on Remote',
+				label: '在远程上打开',
 				action: 'file-open-on-remote',
 			});
 		}

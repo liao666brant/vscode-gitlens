@@ -395,9 +395,9 @@ export async function* showCommitOrStashFilesStep<
 		items: [
 			new CommitFilesQuickPickItem(state.reference, {
 				picked: state.fileName == null,
-				hint: `Click to see ${isStash(state.reference) ? 'stash' : 'commit'} actions`,
+				hint: `点击查看${isStash(state.reference) ? '存储' : '提交'}操作`,
 			}),
-			createQuickPickSeparator('Files'),
+			createQuickPickSeparator('文件'),
 			...(state.reference.anyFiles?.map(
 				fs => new CommitFileQuickPickItem(state.reference, fs, options?.picked === fs.path),
 			) ?? []),
@@ -501,8 +501,8 @@ async function getShowCommitOrStashStepItems<
 
 	if (isStash(state.reference)) {
 		items.push(
-			createQuickPickSeparator('Actions'),
-			new GitWizardQuickPickItem('Apply Stash...', {
+			createQuickPickSeparator('操作'),
+			new GitWizardQuickPickItem('应用存储...', {
 				command: 'stash',
 				state: {
 					subcommand: 'apply',
@@ -510,7 +510,7 @@ async function getShowCommitOrStashStepItems<
 					reference: state.reference,
 				},
 			}),
-			new GitWizardQuickPickItem('Rename Stash...', {
+			new GitWizardQuickPickItem('重命名存储...', {
 				command: 'stash',
 				state: {
 					subcommand: 'rename',
@@ -518,7 +518,7 @@ async function getShowCommitOrStashStepItems<
 					reference: state.reference,
 				},
 			}),
-			new GitWizardQuickPickItem('Drop Stash...', {
+			new GitWizardQuickPickItem('丢弃存储...', {
 				command: 'stash',
 				state: {
 					subcommand: 'drop',
@@ -536,7 +536,7 @@ async function getShowCommitOrStashStepItems<
 		const remotes = await state.repo.git.remotes.getRemotesWithProviders({ sort: true });
 		if (remotes?.length) {
 			items.push(
-				createQuickPickSeparator(getHighlanderProviderName(remotes) ?? 'Remote'),
+				createQuickPickSeparator(getHighlanderProviderName(remotes) ?? '远程'),
 				new OpenRemoteResourceCommandQuickPickItem(remotes, {
 					type: RemoteResourceType.Commit,
 					sha: state.reference.sha,
@@ -548,7 +548,7 @@ async function getShowCommitOrStashStepItems<
 			);
 		}
 
-		items.push(createQuickPickSeparator('Actions'));
+		items.push(createQuickPickSeparator('操作'));
 
 		const branch = await state.repo.git.branches.getBranch();
 		const [branches, published] = await Promise.all([
@@ -567,7 +567,7 @@ async function getShowCommitOrStashStepItems<
 				// TODO@eamodio Add Undo commit, if HEAD & unpushed
 
 				items.push(
-					new GitWizardQuickPickItem('Push to Commit...', {
+					new GitWizardQuickPickItem('推送到此提交...', {
 						command: 'push',
 						state: {
 							repos: state.repo,
@@ -578,21 +578,21 @@ async function getShowCommitOrStashStepItems<
 			}
 
 			items.push(
-				new GitWizardQuickPickItem('Revert Commit...', {
+				new GitWizardQuickPickItem('还原提交...', {
 					command: 'revert',
 					state: {
 						repo: state.repo,
 						references: [state.reference],
 					},
 				}),
-				new GitWizardQuickPickItem(`Reset ${branch?.name ?? 'Current Branch'} to Commit...`, {
+				new GitWizardQuickPickItem(`将 ${branch?.name ?? '当前分支'} 重置到此提交...`, {
 					command: 'reset',
 					state: {
 						repo: state.repo,
 						reference: state.reference,
 					},
 				}),
-				new GitWizardQuickPickItem(`Reset ${branch?.name ?? 'Current Branch'} to Previous Commit...`, {
+				new GitWizardQuickPickItem(`将 ${branch?.name ?? '当前分支'} 重置到上一个提交...`, {
 					command: 'reset',
 					state: {
 						repo: state.repo,
@@ -606,7 +606,7 @@ async function getShowCommitOrStashStepItems<
 			);
 		} else {
 			items.push(
-				new GitWizardQuickPickItem('Cherry Pick Commit...', {
+				new GitWizardQuickPickItem('拣选提交...', {
 					command: 'cherry-pick',
 					state: {
 						repo: state.repo,
@@ -617,14 +617,14 @@ async function getShowCommitOrStashStepItems<
 		}
 
 		items.push(
-			new GitWizardQuickPickItem(`Rebase ${branch?.name ?? 'Current Branch'} onto Commit...`, {
+			new GitWizardQuickPickItem(`将 ${branch?.name ?? '当前分支'} 变基到此提交...`, {
 				command: 'rebase',
 				state: {
 					repo: state.repo,
 					destination: state.reference,
 				},
 			}),
-			new GitWizardQuickPickItem('Switch to Commit...', {
+			new GitWizardQuickPickItem('切换到提交...', {
 				command: 'switch',
 				state: {
 					repos: [state.repo],
@@ -633,7 +633,7 @@ async function getShowCommitOrStashStepItems<
 			}),
 
 			createQuickPickSeparator(),
-			new GitWizardQuickPickItem('Create Branch at Commit...', {
+			new GitWizardQuickPickItem('在此提交创建分支...', {
 				command: 'branch',
 				state: {
 					subcommand: 'create',
@@ -641,7 +641,7 @@ async function getShowCommitOrStashStepItems<
 					reference: state.reference,
 				},
 			}),
-			new GitWizardQuickPickItem('Create Tag at Commit...', {
+			new GitWizardQuickPickItem('在此提交创建标签...', {
 				command: 'tag',
 				state: {
 					subcommand: 'create',
@@ -650,14 +650,14 @@ async function getShowCommitOrStashStepItems<
 				},
 			}),
 
-			createQuickPickSeparator('Copy'),
+			createQuickPickSeparator('复制'),
 			new CommitCopyIdQuickPickItem(state.reference),
 			new CommitCopyMessageQuickPickItem(state.reference),
 		);
 	}
 
 	items.push(
-		createQuickPickSeparator('Open'),
+		createQuickPickSeparator('打开'),
 		new CommitOpenAllChangesCommandQuickPickItem(state.reference),
 		new CommitOpenAllChangesWithWorkingCommandQuickPickItem(state.reference),
 		new CommitOpenAllChangesWithDiffToolCommandQuickPickItem(state.reference),
@@ -667,7 +667,7 @@ async function getShowCommitOrStashStepItems<
 	);
 
 	items.push(
-		createQuickPickSeparator('Compare'),
+		createQuickPickSeparator('比较'),
 		new CommitCompareWithHEADCommandQuickPickItem(state.reference),
 		new CommitCompareWithWorkingCommandQuickPickItem(state.reference),
 	);
@@ -679,7 +679,7 @@ async function getShowCommitOrStashStepItems<
 	);
 
 	items.push(
-		createQuickPickSeparator('Browse'),
+		createQuickPickSeparator('浏览'),
 		new CommitBrowseRepositoryFromHereCommandQuickPickItem(state.reference, { openInNewWindow: false }),
 		new CommitBrowseRepositoryFromHereCommandQuickPickItem(state.reference, {
 			before: true,
@@ -695,7 +695,7 @@ async function getShowCommitOrStashStepItems<
 	items.unshift(
 		new CommitFilesQuickPickItem(state.reference, {
 			unpublished: unpublished,
-			hint: 'Click to see all changed files',
+			hint: '点击查看所有已更改文件',
 		}),
 	);
 	return items as CommandQuickPickItem[];
@@ -720,7 +720,7 @@ async function getShowCommitOrStashFileStepItems<
 		items.push(
 			createQuickPickSeparator(),
 			new CommitCopyMessageQuickPickItem(state.reference),
-			createQuickPickSeparator('Actions'),
+			createQuickPickSeparator('操作'),
 			new CommitApplyFileChangesCommandQuickPickItem(state.reference, file),
 			new CommitRestoreFileChangesCommandQuickPickItem(state.reference, file),
 			createQuickPickSeparator(),
@@ -732,7 +732,7 @@ async function getShowCommitOrStashFileStepItems<
 		const remotes = await state.repo.git.remotes.getRemotesWithProviders({ sort: true });
 		if (remotes?.length) {
 			items.push(
-				createQuickPickSeparator(getHighlanderProviderName(remotes) ?? 'Remote'),
+				createQuickPickSeparator(getHighlanderProviderName(remotes) ?? '远程'),
 				new OpenRemoteResourceCommandQuickPickItem(remotes, {
 					type: RemoteResourceType.Revision,
 					fileName: state.fileName,
@@ -756,17 +756,17 @@ async function getShowCommitOrStashFileStepItems<
 		}
 
 		items.push(
-			createQuickPickSeparator('Actions'),
+			createQuickPickSeparator('操作'),
 			new CommitApplyFileChangesCommandQuickPickItem(state.reference, file),
 			new CommitRestoreFileChangesCommandQuickPickItem(state.reference, file),
-			createQuickPickSeparator('Copy'),
+			createQuickPickSeparator('复制'),
 			new CommitCopyIdQuickPickItem(state.reference),
 			new CommitCopyMessageQuickPickItem(state.reference),
 		);
 	}
 
 	items.push(
-		createQuickPickSeparator('Open'),
+		createQuickPickSeparator('打开'),
 		new CommitOpenChangesCommandQuickPickItem(state.reference, state.fileName),
 		new CommitOpenChangesWithWorkingCommandQuickPickItem(state.reference, state.fileName),
 		new CommitOpenChangesWithDiffToolCommandQuickPickItem(state.reference, state.fileName),
@@ -779,13 +779,13 @@ async function getShowCommitOrStashFileStepItems<
 	items.push(new CommitOpenRevisionCommandQuickPickItem(state.reference, file));
 
 	items.push(
-		createQuickPickSeparator('Compare'),
+		createQuickPickSeparator('比较'),
 		new CommitCompareWithHEADCommandQuickPickItem(state.reference),
 		new CommitCompareWithWorkingCommandQuickPickItem(state.reference),
 	);
 
 	items.push(
-		createQuickPickSeparator('Browse'),
+		createQuickPickSeparator('浏览'),
 		new CommitBrowseRepositoryFromHereCommandQuickPickItem(state.reference, { openInNewWindow: false }),
 		new CommitBrowseRepositoryFromHereCommandQuickPickItem(state.reference, {
 			before: true,
@@ -798,8 +798,6 @@ async function getShowCommitOrStashFileStepItems<
 		}),
 	);
 
-	items.unshift(
-		new CommitFilesQuickPickItem(state.reference, { file: file, hint: 'Click to see all changed files' }),
-	);
+	items.unshift(new CommitFilesQuickPickItem(state.reference, { file: file, hint: '点击查看所有已更改文件' }));
 	return items as CommandQuickPickItem[];
 }

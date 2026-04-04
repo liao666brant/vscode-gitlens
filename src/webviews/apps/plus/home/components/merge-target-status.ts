@@ -3,7 +3,6 @@ import { css, html, LitElement, nothing } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
 import type { SubscriptionState } from '../../../../../constants.subscription.js';
-import { pluralize } from '../../../../../system/string.js';
 import type { BranchAndTargetRefs, BranchRef, GetOverviewBranch } from '../../../../home/protocol.js';
 import { renderBranchName } from '../../../shared/components/branch-name.js';
 import { elementBase, linkBase, scrollableBase } from '../../../shared/components/styles/lit/base.css.js';
@@ -210,6 +209,18 @@ const mergeTargetStyles = css`
 	}
 `;
 
+function formatCommitCount(count: number) {
+	return `${count} 个提交`;
+}
+
+function formatFileCount(count: number) {
+	return `${count} 个文件`;
+}
+
+function getBranchOrWorktreeLabel(isWorktree: boolean) {
+	return isWorktree ? '工作树' : '分支';
+}
+
 @customElement('gl-merge-target-status')
 export class GlMergeTargetStatus extends LitElement {
 	static override shadowRootOptions: ShadowRootInit = {
@@ -312,7 +323,7 @@ export class GlMergeTargetStatus extends LitElement {
 		}
 
 		return html`<gl-popover placement="bottom" trigger="hover click focus" hoist>
-			<span slot="anchor" class="chip status--${status}" tabindex="0"
+			<span slot="anchor" class="chip status--${status}" tabindex="0" aria-label="合并目标状态"
 				><code-icon class="icon" icon="gl-merge-target" size="18"></code-icon
 				><code-icon class="status-indicator icon--${status}" icon="${icon}" size="12"></code-icon>
 			</span>
@@ -343,16 +354,14 @@ export class GlMergeTargetStatus extends LitElement {
 		if (this.mergedStatus?.merged) {
 			if (this.mergedStatus.localBranchOnly) {
 				return html`${this.renderHeader(
-						`Branch ${
-							this.mergedStatus.confidence !== 'highest' ? 'Likely ' : ''
-						}Merged Locally into Merge Target`,
+						`${this.mergedStatus.confidence !== 'highest' ? '分支可能已' : '分支已'}在本地合并到合并目标`,
 						'git-merge',
 					)}
 					<div class="body">
 						<p>
-							Your current branch ${renderBranchName(this.branch.name)} has
-							${this.mergedStatus.confidence !== 'highest' ? 'likely ' : ''}been merged into its merge
-							target's local branch ${renderBranchName(this.mergedStatus.localBranchOnly.name)}.
+							你当前的分支 ${renderBranchName(this.branch.name)} 已
+							${this.mergedStatus.confidence !== 'highest' ? '可能' : ''}合并到其合并目标的本地分支
+							${renderBranchName(this.mergedStatus.localBranchOnly.name)}。
 						</p>
 						<div class="button-container">
 							<gl-button
@@ -362,7 +371,7 @@ export class GlMergeTargetStatus extends LitElement {
 									mergeTargetRef,
 								)}"
 								><span
-									>Push ${renderBranchName(this.mergedStatus.localBranchOnly.name)}</span
+									>推送 ${renderBranchName(this.mergedStatus.localBranchOnly.name)}</span
 								></gl-button
 							>
 							<gl-button
@@ -373,10 +382,10 @@ export class GlMergeTargetStatus extends LitElement {
 									[this.branchRef!, mergeTargetRef!],
 								)}"
 								><span
-									>Delete
-									${this.branch.worktree != null && !this.branch.worktree.isDefault
-										? 'Worktree'
-										: 'Branch'}
+									>删除
+									${getBranchOrWorktreeLabel(
+										this.branch.worktree != null && !this.branch.worktree.isDefault,
+									)}
 									${renderBranchName(this.branch.name, this.branch.worktree != null)}</span
 								></gl-button
 							>
@@ -385,14 +394,14 @@ export class GlMergeTargetStatus extends LitElement {
 			}
 
 			return html`${this.renderHeader(
-					`Branch ${this.mergedStatus.confidence !== 'highest' ? 'Likely ' : ''}Merged into Merge Target`,
+					`${this.mergedStatus.confidence !== 'highest' ? '分支可能已' : '分支已'}合并到合并目标`,
 					'git-merge',
 				)}
 				<div class="body">
 					<p>
-						Your current branch ${renderBranchName(this.branch.name)} has
-						${this.mergedStatus.confidence !== 'highest' ? 'likely ' : ''}been merged into its merge target
-						${this.renderInlineTargetEdit(this.target)}.
+						你当前的分支 ${renderBranchName(this.branch.name)} 已
+						${this.mergedStatus.confidence !== 'highest' ? '可能' : ''}合并到其合并目标
+						${this.renderInlineTargetEdit(this.target)}。
 					</p>
 					<div class="button-container">
 						<gl-button
@@ -402,10 +411,10 @@ export class GlMergeTargetStatus extends LitElement {
 								[this.branchRef!, mergeTargetRef!],
 							)}"
 							><span
-								>Delete
-								${this.branch.worktree != null && !this.branch.worktree.isDefault
-									? 'Worktree'
-									: 'Branch'}
+								>删除
+								${getBranchOrWorktreeLabel(
+									this.branch.worktree != null && !this.branch.worktree.isDefault,
+								)}
 								${renderBranchName(this.branch.name, this.branch.worktree != null)}</span
 							></gl-button
 						>
@@ -414,13 +423,12 @@ export class GlMergeTargetStatus extends LitElement {
 		}
 
 		if (this.conflicts) {
-			return html`${this.renderHeader('Potential Conflicts with Merge Target', 'warning', 'warning')}
+			return html`${this.renderHeader('与合并目标的潜在冲突', 'warning', 'warning')}
 				<div class="body">
 					${this.status
 						? html`<p>
-								Your current branch ${renderBranchName(this.branch.name)} is
-								${pluralize('commit', this.status.behind)} behind its merge target
-								${this.renderInlineTargetEdit(this.target)}.
+								你当前的分支 ${renderBranchName(this.branch.name)} 落后于其合并目标
+								${this.renderInlineTargetEdit(this.target)} ${formatCommitCount(this.status.behind)}。
 							</p>`
 						: nothing}
 					<div class="button-container">
@@ -430,7 +438,7 @@ export class GlMergeTargetStatus extends LitElement {
 								'gitlens.rebaseCurrentOnto:',
 								this.targetBranchRef,
 							)}"
-							><span>Rebase ${renderBranchName(this.conflicts.branch)} onto ${target}</span></gl-button
+							><span>将 ${renderBranchName(this.conflicts.branch)} 变基到 ${target}</span></gl-button
 						>
 						<gl-button
 							full
@@ -439,12 +447,12 @@ export class GlMergeTargetStatus extends LitElement {
 								'gitlens.mergeIntoCurrent:',
 								this.targetBranchRef,
 							)}"
-							><span>Merge ${target} into ${renderBranchName(this.conflicts.branch)}</span></gl-button
+							><span>将 ${target} 合并到 ${renderBranchName(this.conflicts.branch)}</span></gl-button
 						>
 					</div>
 					<p class="status--merge-conflict">
-						<code-icon icon="warning"></code-icon> Merging will cause conflicts in
-						${pluralize('file', this.conflicts.files.length)} that will need to be resolved.
+						<code-icon icon="warning"></code-icon> 合并将导致
+						${formatFileCount(this.conflicts.files.length)}出现冲突，需要你手动解决。
 					</p>
 					${this.renderFiles(this.conflicts.files)}
 				</div>`;
@@ -453,15 +461,14 @@ export class GlMergeTargetStatus extends LitElement {
 		if (this.status != null) {
 			if (this.status.behind > 0) {
 				return html`${this.renderHeader(
-						`${pluralize('Commit', this.status.behind)} Behind Merge Target`,
+						`落后合并目标 ${formatCommitCount(this.status.behind)}`,
 						'arrow-down',
 						'warning',
 					)}
 					<div class="body">
 						<p>
-							Your current branch ${renderBranchName(this.branch.name)} is
-							${pluralize('commit', this.status.behind)} behind its merge target
-							${this.renderInlineTargetEdit(this.target)}.
+							你当前的分支 ${renderBranchName(this.branch.name)} 落后于其合并目标
+							${this.renderInlineTargetEdit(this.target)} ${formatCommitCount(this.status.behind)}。
 						</p>
 						<div class="button-container">
 							<gl-button
@@ -470,7 +477,7 @@ export class GlMergeTargetStatus extends LitElement {
 									'gitlens.rebaseCurrentOnto:',
 									this.targetBranchRef,
 								)}"
-								><span>Rebase ${renderBranchName(this.branch.name)} onto ${target}</span></gl-button
+								><span>将 ${renderBranchName(this.branch.name)} 变基到 ${target}</span></gl-button
 							>
 							<gl-button
 								full
@@ -479,24 +486,24 @@ export class GlMergeTargetStatus extends LitElement {
 									'gitlens.mergeIntoCurrent:',
 									this.targetBranchRef,
 								)}"
-								><span>Merge ${target} into ${renderBranchName(this.branch.name)}</span></gl-button
+								><span>将 ${target} 合并到 ${renderBranchName(this.branch.name)}</span></gl-button
 							>
 						</div>
 						${this.conflictError
 							? html`<p class="status--merge-unknown">
-									<code-icon icon="error"></code-icon> Unable to detect conflicts.
+									<code-icon icon="error"></code-icon> 无法检测冲突。
 								</p>`
 							: html`<p class="status--merge-clean">
-									<code-icon icon="check"></code-icon> Merging will not cause conflicts.
+									<code-icon icon="check"></code-icon> 合并不会产生冲突。
 								</p>`}
 					</div>`;
 			}
 
-			return html`${this.renderHeader('Up to Date with Merge Target', 'check')}
+			return html`${this.renderHeader('与合并目标保持同步', 'check')}
 				<div class="body">
 					<p>
-						Your current branch ${renderBranchName(this.branch.name)} is up to date with its merge target
-						${this.renderInlineTargetEdit(this.target)}.
+						你当前的分支 ${renderBranchName(this.branch.name)} 已与其合并目标
+						${this.renderInlineTargetEdit(this.target)} 保持同步。
 					</p>
 				</div>`;
 		}
@@ -516,10 +523,7 @@ export class GlMergeTargetStatus extends LitElement {
 				</span>
 				<span slot="content"
 					>${title}
-					<p>
-						The "merge target" is the branch that ${renderBranchName(this.branch.name)} is most likely to be
-						merged into.
-					</p>
+					<p>“合并目标”是 ${renderBranchName(this.branch.name)} 最有可能合并到的分支。</p>
 				</span>
 			</gl-tooltip>
 			${this.renderHeaderActions()}
@@ -542,9 +546,10 @@ export class GlMergeTargetStatus extends LitElement {
 								},
 							)}"
 							appearance="toolbar"
+							aria-label="更改合并目标"
 							><code-icon icon="pencil"></code-icon
 							><span slot="tooltip"
-								>Change Merge Target<br />${renderBranchName(this.target?.name)}</span
+								>更改合并目标<br />${renderBranchName(this.target?.name)}</span
 							></gl-button
 						><gl-button
 							href="${this._webview.createCommandLink<BranchAndTargetRefs>(
@@ -556,9 +561,10 @@ export class GlMergeTargetStatus extends LitElement {
 								},
 							)}"
 							appearance="toolbar"
+							aria-label="比较分支与合并目标"
 							><code-icon icon="git-compare"></code-icon>
 							<span slot="tooltip"
-								>Compare Branch with Merge Target<br />${renderBranchName(this.branch.name)}
+								>比较分支与合并目标<br />${renderBranchName(this.branch.name)}
 								<code-icon icon="arrow-both" size="12"></code-icon> ${renderBranchName(
 									this.target?.name,
 								)}</span
@@ -567,8 +573,9 @@ export class GlMergeTargetStatus extends LitElement {
 				: nothing}<gl-button
 				href="${this._webview.createCommandLink<BranchRef>('gitlens.fetch:', this.targetBranchRef)}"
 				appearance="toolbar"
+				aria-label="抓取合并目标"
 				><code-icon icon="repo-fetch"></code-icon>
-				<span slot="tooltip">Fetch Merge Target<br />${renderBranchName(this.target?.name)}</span>
+				<span slot="tooltip">抓取合并目标<br />${renderBranchName(this.target?.name)}</span>
 			</gl-button></span
 		>`;
 	}
@@ -578,7 +585,7 @@ export class GlMergeTargetStatus extends LitElement {
 			class="target-edit"
 			appearance="toolbar"
 			density="compact"
-			tooltip="Change Merge Target"
+			tooltip="更改合并目标"
 			href="${this._webview.createCommandLink<BranchAndTargetRefs>('gitlens.git.branch.setMergeTarget:', {
 				...this.branchRef!,
 				mergeTargetId: this.targetBranchRef!.branchId,
@@ -593,7 +600,7 @@ export class GlMergeTargetStatus extends LitElement {
 			<details>
 				<summary>
 					<code-icon icon="chevron-right"></code-icon>
-					Show ${files.length} conflicting files
+					显示 ${files.length} 个冲突文件
 				</summary>
 				<div class="files scrollable">${files.map(file => this.renderFile(file.path))}</div>
 			</details>
@@ -639,7 +646,7 @@ export class GlMergeTargetUpgrade extends LitElement {
 		const status = 'upgrade';
 
 		return html`<gl-popover placement="bottom" trigger="hover click focus" hoist>
-			<span slot="anchor" class="chip status--${status}" tabindex="0"
+			<span slot="anchor" class="chip status--${status}" tabindex="0" aria-label="合并目标状态（需要升级）"
 				><code-icon class="icon" icon="gl-merge-target" size="18"></code-icon
 				><code-icon class="status-indicator icon--${status}" icon="${icon}" size="12"></code-icon>
 			</span>
@@ -651,12 +658,9 @@ export class GlMergeTargetUpgrade extends LitElement {
 				.state=${this.state}
 			>
 				<div slot="feature">
-					<span class="header__title">Detect potential merge conflicts</span>
+					<span class="header__title">检测潜在合并冲突</span>
 
-					<p>
-						See when your current branch has potential conflicts with its merge target branch and take
-						action to resolve them.
-					</p>
+					<p>查看当前分支与其合并目标分支何时存在潜在冲突，并及时采取操作解决它们。</p>
 				</div>
 			</gl-feature-gate-plus-state>
 		</gl-popover>`;

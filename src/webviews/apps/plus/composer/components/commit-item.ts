@@ -150,10 +150,10 @@ export class CommitItem extends LitElement {
 				<div class="composer-item__commit"></div>
 				<div class="composer-item__content">
 					<div class="composer-item__header${isPlaceholder ? ' is-placeholder' : ''}">
-						${isPlaceholder ? 'Draft commit (add a commit message)' : this.message}
+						${isPlaceholder ? '草稿提交（添加提交消息）' : this.message}
 					</div>
 					<div class="composer-item__body change-stats">
-						<div class="file-count">${this.fileCount} ${this.fileCount === 1 ? 'file' : 'files'}</div>
+						<div class="file-count">${this.fileCount} 个文件</div>
 						<div class="diff-stats">
 							<span class="diff-stats__additions">+${this.additions}</span>
 							<span class="diff-stats__deletions">-${this.deletions}</span>

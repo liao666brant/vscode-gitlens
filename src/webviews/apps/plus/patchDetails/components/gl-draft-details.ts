@@ -167,7 +167,7 @@ export class GlDraftDetails extends GlTreeBase {
 		return html`
 			<div class="section section--empty" id="empty">
 				<button-container>
-					<gl-button full href="command:gitlens.openPatch">Open Patch...</gl-button>
+					<gl-button full href="command:gitlens.openPatch">打开补丁...</gl-button>
 				</button-container>
 			</div>
 		`;
@@ -198,17 +198,13 @@ export class GlDraftDetails extends GlTreeBase {
 		// TODO: add loading and response states
 		return html`
 			<webview-pane collapsable data-region="explain-pane">
-				<span slot="title">Explain (AI)</span>
+				<span slot="title">解释（AI）</span>
 				<action-nav slot="actions">
-					<action-item
-						data-action="switch-ai"
-						label="Switch AI Provider/Model"
-						icon="arrow-swap"
-					></action-item>
+					<action-item data-action="switch-ai" label="切换 AI 提供商/模型" icon="arrow-swap"></action-item>
 				</action-nav>
 
 				<div class="section">
-					<p>Let AI assist in understanding the changes made with this patch.</p>
+					<p>让 AI 帮助理解此补丁所包含的更改。</p>
 					<p class="button-container">
 						<span class="button-group button-group--single">
 							<gl-button
@@ -218,8 +214,7 @@ export class GlDraftDetails extends GlTreeBase {
 								aria-busy="${ifDefined(this.explainBusy ? 'true' : undefined)}"
 								@click=${this.onExplainChanges}
 								@keydown=${this.onExplainChanges}
-								><code-icon icon="loading" modifier="spin" slot="prefix"></code-icon>Explain
-								Changes</gl-button
+								><code-icon icon="loading" modifier="spin" slot="prefix"></code-icon>解释更改</gl-button
 							>
 						</span>
 					</p>
@@ -233,7 +228,7 @@ export class GlDraftDetails extends GlTreeBase {
 						: this.explain?.error
 							? html`<div class="ai-content has-error" data-region="commit-explanation">
 									<p class="ai-content__summary scrollable">
-										${this.explain.error.message ?? 'Error retrieving content'}
+										${this.explain.error.message ?? '获取内容时出错'}
 									</p>
 								</div>`
 							: undefined}
@@ -264,7 +259,7 @@ export class GlDraftDetails extends GlTreeBase {
 
 		return html`
 			<webview-pane collapsable expanded>
-				<span slot="title">Files changed </span>
+				<span slot="title">已更改文件</span>
 				<!-- <span slot="subtitle" data-region="stats">\${this.renderCommitStats()}</span> -->
 				<action-nav slot="actions">${this.renderLayoutAction(layout)}</action-nav>
 
@@ -321,11 +316,11 @@ export class GlDraftDetails extends GlTreeBase {
 
 		const selectionRole = userSelection.pendingRole ?? userSelection.user!.role;
 		const options = new Map<string, string>([
-			['owner', 'owner'],
-			['admin', 'admin'],
-			['editor', 'can edit'],
-			['viewer', 'can view'],
-			['remove', 'un-invite'],
+			['owner', '所有者'],
+			['admin', '管理员'],
+			['editor', '可编辑'],
+			['viewer', '可查看'],
+			['remove', '取消邀请'],
 		]);
 		const roleLabel = options.get(selectionRole);
 		return html`
@@ -335,7 +330,7 @@ export class GlDraftDetails extends GlTreeBase {
 				</div>
 				<div class="user-selection__info">
 					<div class="user-selection__name">
-						${userSelection.member?.name ?? userSelection.member?.username ?? 'Unknown'}
+						${userSelection.member?.name ?? userSelection.member?.username ?? '未知'}
 					</div>
 				</div>
 				<div class="user-selection__actions">
@@ -431,13 +426,13 @@ export class GlDraftDetails extends GlTreeBase {
 									@change=${this.onVisibilityChange}
 								>
 									<option value="public" ?selected=${draft.visibility === 'public'}>
-										Anyone with the link
+										拥有链接的任何人
 									</option>
 									<option value="private" ?selected=${draft.visibility === 'private'}>
-										Members of my Org with the link
+										我组织中拥有链接的成员
 									</option>
 									<option value="invite_only" ?selected=${draft.visibility === 'invite_only'}>
-										Collaborators only
+										仅协作者
 									</option>
 								</select>
 								<span class="message-input__select-caret"
@@ -445,7 +440,7 @@ export class GlDraftDetails extends GlTreeBase {
 								></span>
 							</div>
 							<gl-button appearance="secondary" @click=${this.onInviteUsers}
-								><code-icon icon="person-add" slot="prefix"></code-icon> Invite</gl-button
+								><code-icon icon="person-add" slot="prefix"></code-icon> 邀请</gl-button
 							>
 						</div>`,
 				)}
@@ -455,9 +450,7 @@ export class GlDraftDetails extends GlTreeBase {
 					() => html`
 						<p class="button-container">
 							<span class="button-group button-group--single">
-								<gl-button appearance="secondary" full @click=${this.onUpdatePatch}
-									>Update Patch</gl-button
-								>
+								<gl-button appearance="secondary" full @click=${this.onUpdatePatch}>更新补丁</gl-button>
 							</span>
 						</p>
 					`,
@@ -473,15 +466,15 @@ export class GlDraftDetails extends GlTreeBase {
 						<div class="message-input__control message-input__control--text">
 							${when(
 								draft.visibility === 'public',
-								() => html`<code-icon icon="globe"></code-icon> Anyone with the link`,
+								() => html`<code-icon icon="globe"></code-icon> 拥有链接的任何人`,
 							)}
 							${when(
 								draft.visibility === 'private',
-								() => html`<code-icon icon="organization"></code-icon> Members of my Org with the link`,
+								() => html`<code-icon icon="organization"></code-icon> 我组织中拥有链接的成员`,
 							)}
 							${when(
 								draft.visibility === 'invite_only',
-								() => html`<code-icon icon="lock"></code-icon> Collaborators only`,
+								() => html`<code-icon icon="lock"></code-icon> 仅协作者`,
 							)}
 						</div>
 					</div>`,
@@ -504,10 +497,10 @@ export class GlDraftDetails extends GlTreeBase {
 			<p class="button-container">
 				<span class="button-group button-group--single">
 					<gl-button appearance="secondary" full @click=${() => this.onArchiveDraft('accepted')}
-						>Accept</gl-button
+						>接受</gl-button
 					>
 					<gl-button appearance="secondary" full @click=${() => this.onArchiveDraft('rejected')}
-						>Reject</gl-button
+						>拒绝</gl-button
 					>
 				</span>
 			</p>
@@ -568,17 +561,17 @@ export class GlDraftDetails extends GlTreeBase {
 				${this.renderPatchPermissions()}
 				<p class="button-container">
 					<span class="button-group button-group--single">
-						<gl-button full @click=${this.onApplyPatch}>Apply Patch</gl-button>
+						<gl-button full @click=${this.onApplyPatch}>应用补丁</gl-button>
 						<gk-popover placement="top">
 							<gl-button
 								slot="trigger"
 								density="compact"
-								aria-label="Apply Patch Options..."
-								title="Apply Patch Options..."
+								aria-label="应用补丁选项..."
+								title="应用补丁选项..."
 								><code-icon icon="chevron-down"></code-icon
 							></gl-button>
 							<gk-menu class="mine-menu" @select=${this.onSelectApplyOption}>
-								<gk-menu-item data-value="branch">Apply to a Branch</gk-menu-item>
+								<gk-menu-item data-value="branch">应用到分支</gk-menu-item>
 								<!-- <gk-menu-item data-value="worktree">Apply to new worktree</gk-menu-item> -->
 							</gk-menu>
 						</gk-popover>
@@ -601,10 +594,10 @@ export class GlDraftDetails extends GlTreeBase {
 						<a
 							class="commit-action"
 							href="#"
-							aria-label="Share Patch"
-							title="Share Patch"
+							aria-label="分享补丁"
+							title="分享补丁"
 							@click=${this.onShareLocalPatch}
-							>Share</a
+							>分享</a
 						>
 					</div>
 				</div>
@@ -617,12 +610,17 @@ export class GlDraftDetails extends GlTreeBase {
 				<div class="top-details__actionbar-group">
 					<a class="commit-action" href="#" @click=${this.onCopyCloudLink}>
 						<code-icon icon="${this._copiedLink ? 'check' : 'link'}"></code-icon>
-						<span class="top-details__sha">Copy Link</span></a
+						<span class="top-details__sha">复制链接</span></a
 					>
 					${when(
 						this.cloudDraft?.gkDevLink != null,
 						() => html`
-							<a class="commit-action" href=${this.cloudDraft!.gkDevLink} title="Open on gitkraken.dev">
+							<a
+								class="commit-action"
+								href=${this.cloudDraft!.gkDevLink}
+								title="在 gitkraken.dev 上打开"
+								aria-label="在 gitkraken.dev 上打开"
+							>
 								<code-icon icon="globe"></code-icon>
 							</a>
 						`,
@@ -637,7 +635,7 @@ export class GlDraftDetails extends GlTreeBase {
 
 		let badge = undefined;
 		if (this.cloudDraft?.isArchived) {
-			const label = this.cloudDraft.archivedReason ?? 'archived';
+			const label = this.cloudDraft.archivedReason ?? '已归档';
 			badge = html`<gl-badge class="title__badge">${label}</gl-badge>`;
 		}
 
@@ -797,7 +795,7 @@ export class GlDraftDetails extends GlTreeBase {
 
 	private onApplyPatch(_e?: MouseEvent | KeyboardEvent, target: 'current' | 'branch' | 'worktree' = 'current') {
 		if (this.canSubmit === false) {
-			this.validityMessage = 'Please select changes to apply';
+			this.validityMessage = '请选择要应用的更改';
 			return;
 		}
 
@@ -816,7 +814,7 @@ export class GlDraftDetails extends GlTreeBase {
 
 	private onSelectApplyOption(e: CustomEvent<{ target: MenuItem }>) {
 		if (this.canSubmit === false) {
-			this.validityMessage = 'Please select changes to apply';
+			this.validityMessage = '请选择要应用的更改';
 			return;
 		}
 
@@ -929,12 +927,12 @@ export class GlDraftDetails extends GlTreeBase {
 		return [
 			{
 				icon: 'go-to-file',
-				label: 'Open file',
+				label: '打开文件',
 				action: 'file-open',
 			},
 			{
 				icon: 'git-compare',
-				label: 'Open Changes with Working File',
+				label: '打开与工作区文件的更改对比',
 				action: 'file-compare-working',
 			},
 		];

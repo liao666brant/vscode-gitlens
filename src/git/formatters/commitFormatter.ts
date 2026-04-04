@@ -476,7 +476,7 @@ export class CommitFormatter extends Formatter<GitCommit, CommitFormatOptions> {
 					this._item.sha,
 					this._item.repoPath,
 					editorHoverSource,
-				)} "Inspect Commit Details")`;
+				)} "检查提交详情")`;
 
 				commands += ` &nbsp;[$(compare-changes)](${DiffWithCommand.createMarkdownCommandLink({
 					lhs: { sha: diffUris.previous.sha ?? '', uri: diffUris.previous.documentUri },
@@ -484,14 +484,14 @@ export class CommitFormatter extends Formatter<GitCommit, CommitFormatOptions> {
 					repoPath: this._item.repoPath,
 					range: editorLineToDiffRange(this._options.editor?.line),
 					source: editorHoverSource,
-				})} "Open Changes with Previous Revision")`;
+				})} "打开与上一个版本的更改")`;
 
 				commands += ` &nbsp;[$(versions)](${OpenFileAtRevisionCommand.createMarkdownCommandLink(
 					Container.instance.git.getRevisionUriFromGitUri(diffUris.previous),
 					'blame',
 					editorLineToDiffRange(this._options.editor?.line),
 					editorHoverSource,
-				)} "Open Blame Prior to this Change")`;
+				)} "打开此更改之前的 Blame")`;
 			} else {
 				commands = `[\`${this._padOrTruncate(
 					shortenRevision(this._item.isUncommittedStaged ? uncommittedStaged : uncommitted),
@@ -500,7 +500,7 @@ export class CommitFormatter extends Formatter<GitCommit, CommitFormatOptions> {
 					this._item.sha,
 					this._item.repoPath,
 					editorHoverSource,
-				)} "Inspect Commit Details")`;
+				)} "检查提交详情")`;
 			}
 
 			if (this._options.ai?.enabled && this._options.ai?.allowed) {
@@ -508,7 +508,7 @@ export class CommitFormatter extends Formatter<GitCommit, CommitFormatOptions> {
 					repoPath: this._item.repoPath,
 					staged: undefined,
 					source: { source: this._options.source.source, context: { type: 'wip' } },
-				})} "Explain Changes")`;
+				})} "解释更改")`;
 			}
 
 			return commands;
@@ -518,18 +518,18 @@ export class CommitFormatter extends Formatter<GitCommit, CommitFormatOptions> {
 			this._item.sha,
 			this._item.repoPath,
 			editorHoverSource,
-		)} "Inspect Commit Details")`;
+		)} "检查提交详情")`;
 
 		commands += ` &nbsp;[$(copy)](${CopyShaToClipboardCommand.createMarkdownCommandLink(
 			this._item.sha,
 			editorHoverSource,
-		)} "Copy SHA")`;
+		)} "复制 SHA")`;
 
 		commands += ` &nbsp;[$(compare-changes)](${DiffWithCommand.createMarkdownCommandLink(
 			this._item,
 			editorLineToDiffRange(this._options.editor?.line),
 			editorHoverSource,
-		)} "Open Changes with Previous Revision")`;
+		)} "打开与上一个版本的更改")`;
 
 		if (this._item.file != null && this._item.unresolvedPreviousSha != null) {
 			const uri = Container.instance.git
@@ -543,20 +543,20 @@ export class CommitFormatter extends Formatter<GitCommit, CommitFormatOptions> {
 				'blame',
 				editorLineToDiffRange(this._options.editor?.line),
 				editorHoverSource,
-			)} "Open Blame Prior to this Change")`;
+			)} "打开此更改之前的 Blame")`;
 		}
 
 		commands += `${separator}[$(search)](${createMarkdownCommandLink<ShowQuickCommitCommandArgs>(
 			'gitlens.revealCommitInView',
 			{ repoPath: this._item.repoPath, sha: this._item.sha, revealInView: true, source: editorHoverSource },
-		)} "Reveal in Side Bar")`;
+		)} "在侧边栏中显示")`;
 
 		if (arePlusFeaturesEnabled()) {
 			commands += ` &nbsp;[$(gitlens-graph)](${createMarkdownCommandLink<ShowInCommitGraphCommandArgs>(
 				'gitlens.showInCommitGraph',
 				// Avoid including the message here, it just bloats the command url
 				{ ref: getReferenceFromRevision(this._item, { excludeMessage: true }), source: editorHoverSource },
-			)} "Open in Commit Graph")`;
+			)} "在提交图中打开")`;
 		}
 
 		const { pullRequest: pr, remotes } = this._options;
@@ -567,7 +567,7 @@ export class CommitFormatter extends Formatter<GitCommit, CommitFormatOptions> {
 			commands += ` &nbsp;[$(globe)](${OpenCommitOnRemoteCommand.createMarkdownCommandLink(
 				this._item.sha,
 				editorHoverSource,
-			)} "Open Commit on ${providers?.length ? providers[0].name : 'Remote'}")`;
+			)} "在${providers?.length ? providers[0].name : '远程'}上打开提交")`;
 		}
 
 		if (this._options.ai?.enabled && this._options.ai?.allowed) {
@@ -575,7 +575,7 @@ export class CommitFormatter extends Formatter<GitCommit, CommitFormatOptions> {
 				repoPath: this._item.repoPath,
 				rev: this._item.sha,
 				source: { source: 'editor:hover', context: { type: isStash(this._item) ? 'stash' : 'commit' } },
-			})} "Explain Changes")`;
+			})} "解释更改")`;
 		}
 
 		if (pr != null) {
@@ -587,8 +587,8 @@ export class CommitFormatter extends Formatter<GitCommit, CommitFormatOptions> {
 					provider: { id: pr.provider.id, name: pr.provider.name, domain: pr.provider.domain },
 					pullRequest: { id: pr.id, url: pr.url },
 					source: editorHoverSource,
-				})} "Open Pull Request \\#${pr.id}${
-					Container.instance.actionRunners.count('openPullRequest') === 1 ? ` on ${pr.provider.name}` : '...'
+				})} "打开拉取请求 \\#${pr.id}${
+					Container.instance.actionRunners.count('openPullRequest') === 1 ? `（${pr.provider.name}）` : '...'
 				}\n${GlyphChars.Dash.repeat(2)}\n${escapeMarkdown(pr.title).replace(quoteRegex, '\\"')}\n${
 					pr.state
 				}, ${pr.formatDateFromNow()}")`;
@@ -596,7 +596,7 @@ export class CommitFormatter extends Formatter<GitCommit, CommitFormatOptions> {
 				commands += `${separator}[$(git-pull-request) PR $(loading~spin)](${createMarkdownCommandLink(
 					'gitlens.refreshHover',
 					editorHoverSource,
-				)} "Searching for a Pull Request (if any) that introduced this commit...")`;
+				)} "正在搜索引入此提交的拉取请求（如果有）...")`;
 			}
 		} else if (remotes != null) {
 			const [remote] = remotes;
@@ -605,11 +605,11 @@ export class CommitFormatter extends Formatter<GitCommit, CommitFormatOptions> {
 				!remote.maybeIntegrationConnected &&
 				configuration.get('integrations.enabled')
 			) {
-				commands += `${separator}[$(plug) Connect to ${remote?.provider.name}${
+				commands += `${separator}[$(plug) 连接到 ${remote?.provider.name}${
 					GlyphChars.Ellipsis
-				}](${ConnectRemoteProviderCommand.createMarkdownCommandLink(remote, editorHoverSource)} "Connect to ${
+				}](${ConnectRemoteProviderCommand.createMarkdownCommandLink(remote, editorHoverSource)} "连接到 ${
 					remote.provider.name
-				} to enable the display of the Pull Request (if any) that introduced this commit")`;
+				} 以显示引入此提交的拉取请求（如果有）")`;
 			}
 		}
 
@@ -630,7 +630,7 @@ export class CommitFormatter extends Formatter<GitCommit, CommitFormatOptions> {
 							: undefined,
 					source: editorHoverSource,
 				},
-			)} "Show Team Actions")`;
+			)} "显示团队操作")`;
 		}
 
 		const gitUri = this._item.getGitUri();
@@ -641,7 +641,7 @@ export class CommitFormatter extends Formatter<GitCommit, CommitFormatOptions> {
 						source: editorHoverSource,
 					}
 				: { commit: this._item, source: editorHoverSource },
-		)} "Show More Actions")`;
+		)} "显示更多操作")`;
 
 		return this._padOrTruncate(commands, this._options.tokenOptions.commands);
 	}
@@ -732,13 +732,13 @@ export class CommitFormatter extends Formatter<GitCommit, CommitFormatOptions> {
 		if (isStash(this._item)) {
 			icon = 'archive';
 			label = this._padOrTruncate(
-				`Stash${this._item.stashNumber ? ` #${this._item.stashNumber}` : ''}`,
+				`存储${this._item.stashNumber ? ` #${this._item.stashNumber}` : ''}`,
 				this._options.tokenOptions.link,
 			);
 		} else {
 			icon = this._item.sha != null && !this._item.isUncommitted ? 'git-commit' : '';
 			label = this._padOrTruncate(
-				shortenRevision(this._item.sha ?? '', { strings: { working: 'Working Tree' } }),
+				shortenRevision(this._item.sha ?? '', { strings: { working: '工作树' } }),
 				this._options.tokenOptions.id,
 			);
 		}
@@ -750,14 +750,14 @@ export class CommitFormatter extends Formatter<GitCommit, CommitFormatOptions> {
 				link = `[\`${icon}${label}\`](${InspectCommand.createMarkdownCommandLink({
 					ref: getReferenceFromRevision(this._item),
 					source: this._options.source,
-				})} "Inspect Commit Details")`;
+				})} "检查提交详情")`;
 				break;
 			case 'html':
 				icon = icon ? `<span class="codicon codicon-${icon}"></span>` : '';
 				link = /*html*/ `<a href="${InspectCommand.createMarkdownCommandLink({
 					ref: getReferenceFromRevision(this._item),
 					source: this._options.source,
-				})}" title="Inspect Commit Details"${
+				})}" title="检查提交详情"${
 					this._options.htmlFormat?.classes?.link ? ` class="${this._options.htmlFormat.classes.link}"` : ''
 				}>${icon}${label}</a>`;
 				break;
@@ -778,7 +778,7 @@ export class CommitFormatter extends Formatter<GitCommit, CommitFormatOptions> {
 				this._item.isUncommittedStaged ||
 				(this._options.previousLineComparisonUris?.current?.isUncommittedStaged ?? false);
 
-			let message = `${conflicted ? 'Merge' : staged ? 'Staged' : 'Uncommitted'} changes`;
+			let message = `${conflicted ? '合并' : staged ? '已暂存' : '未提交'}更改`;
 			switch (outputFormat) {
 				case 'html':
 					message = /*html*/ `<span ${
@@ -857,8 +857,8 @@ export class CommitFormatter extends Formatter<GitCommit, CommitFormatOptions> {
 					provider: { id: pr.provider.id, name: pr.provider.name, domain: pr.provider.domain },
 					pullRequest: { id: pr.id, url: pr.url },
 					source: this._options.source,
-				})} "Open Pull Request \\#${pr.id}${
-					Container.instance.actionRunners.count('openPullRequest') === 1 ? ` on ${pr.provider.name}` : '...'
+				})} "打开拉取请求 \\#${pr.id}${
+					Container.instance.actionRunners.count('openPullRequest') === 1 ? `（${pr.provider.name}）` : '...'
 				}\n${GlyphChars.Dash.repeat(2)}\n${escapeMarkdown(pr.title).replace(quoteRegex, '\\"')}\n${
 					pr.state
 				}, ${pr.formatDateFromNow()}")`;
@@ -878,9 +878,9 @@ export class CommitFormatter extends Formatter<GitCommit, CommitFormatOptions> {
 					);
 					this._options.footnotes.set(
 						index,
-						`${getIssueOrPullRequestMarkdownIcon(pr)} [**${prTitle}**](${prCommandLink} "Open Pull Request \\#${
+						`${getIssueOrPullRequestMarkdownIcon(pr)} [**${prTitle}**](${prCommandLink} "打开拉取请求 \\#${
 							pr.id
-						} on ${pr.provider.name}")\\\n${GlyphChars.Space.repeat(4)} #${pr.id} ${
+						}（${pr.provider.name}）")\\\n${GlyphChars.Space.repeat(4)} #${pr.id} ${
 							pr.state
 						} ${pr.formatDateFromNow()}`,
 					);
@@ -899,7 +899,7 @@ export class CommitFormatter extends Formatter<GitCommit, CommitFormatOptions> {
 		} else if (isPromise(pr)) {
 			text =
 				this._options.outputFormat === 'markdown'
-					? `[PR $(loading~spin)](${createMarkdownCommandLink('gitlens.refreshHover', this._options.source)} "Searching for a Pull Request (if any) that introduced this commit...")`
+					? `[PR $(loading~spin)](${createMarkdownCommandLink('gitlens.refreshHover', this._options.source)} "正在搜索引入此提交的拉取请求（如果有）...")`
 					: (this._options?.pullRequestPendingMessage ?? '');
 		} else {
 			return this._padOrTruncate('', this._options.tokenOptions.pullRequest);
@@ -938,7 +938,7 @@ export class CommitFormatter extends Formatter<GitCommit, CommitFormatOptions> {
 			return this._padOrTruncate('', this._options.tokenOptions.signature);
 		}
 
-		const tooltip = 'Signed\nClick to verify signature in Commit Details';
+		const tooltip = '已签名\n点击在提交详情中验证签名';
 
 		return this._padOrTruncate(
 			this._options.outputFormat === 'markdown'

@@ -1226,10 +1226,10 @@ export class ComposerApp extends LitElement {
 
 	private get aiDisabledReason(): string | null {
 		if (this.state?.aiEnabled?.org !== true) {
-			return 'AI features are disabled by your GitKraken admin';
+			return 'AI 功能已被你的 GitKraken 管理员禁用';
 		}
 		if (this.state?.aiEnabled?.config !== true) {
-			return 'AI features are disabled in your settings';
+			return 'AI 功能已在你的设置中禁用';
 		}
 		return null;
 	}
@@ -1351,18 +1351,14 @@ export class ComposerApp extends LitElement {
 	private renderLoadingDialogs() {
 		// Generate Commits loading dialog
 		if (this.state.generatingCommits) {
-			return this.renderLoadingDialog(
-				'Generating Commits',
-				'Commits are being generated.',
-				this.handleCancelGenerateCommits,
-			);
+			return this.renderLoadingDialog('正在生成提交', '正在生成提交。', this.handleCancelGenerateCommits);
 		}
 
 		// Generate Commit Message loading dialog
 		if (this.state.generatingCommitMessage != null) {
 			return this.renderLoadingDialog(
-				'Generating Commit Message',
-				'A commit message is being generated.',
+				'正在生成提交消息',
+				'正在生成提交消息。',
 				this.handleCancelGenerateCommitMessage,
 			);
 		}
@@ -1370,10 +1366,7 @@ export class ComposerApp extends LitElement {
 		// Create Commits loading dialog
 		if (this.state.committing) {
 			const commitCount = this.state.commits.filter(c => c.message.content.trim() !== '').length;
-			return this.renderLoadingDialog(
-				'Creating Commits',
-				`Committing ${commitCount} commit${commitCount === 1 ? '' : 's'}.`,
-			);
+			return this.renderLoadingDialog('正在创建提交', `正在提交 ${commitCount} 个提交。`);
 		}
 
 		return '';
@@ -1392,7 +1385,7 @@ export class ComposerApp extends LitElement {
 						onCancel,
 						() =>
 							html`<nav class="generic-dialog__actions">
-								<gl-button appearance="secondary" @click=${onCancel}>Cancel</gl-button>
+								<gl-button appearance="secondary" @click=${onCancel}>取消</gl-button>
 							</nav>`,
 					)}
 				</div>
@@ -1616,7 +1609,7 @@ export class ComposerApp extends LitElement {
 		// Create new combined commit
 		const combinedCommit: ComposerCommit = {
 			id: `commit-${Date.now()}`,
-			message: { content: combinedMessage || 'Combined commit', isGenerated: isGenerated },
+			message: { content: combinedMessage || '合并后的提交', isGenerated: isGenerated },
 			hunkIndices: combinedHunkIndices,
 			aiExplanation: combinedExplanation || undefined,
 		};
@@ -1645,7 +1638,7 @@ export class ComposerApp extends LitElement {
 	override render() {
 		// Check if state is ready
 		if (!this.state?.commits || !this.state?.hunks) {
-			return html`<div class="loading">Loading...</div>`;
+			return html`<div class="loading">加载中...</div>`;
 		}
 
 		// Include both single selected commit and multi-selected commits
@@ -1666,13 +1659,14 @@ export class ComposerApp extends LitElement {
 			<header class="header">
 				<div class="header__group">
 					<h1>
-						Commit Composer
-						<small>${this.state?.mode === 'experimental' ? 'Experimental' : 'Preview'}</small>
+						组合提交
+						<small>${this.state?.mode === 'experimental' ? '实验' : '预览'}</small>
 						<gl-button
 							class="header-feedback"
 							appearance="toolbar"
 							href=${composerFeedbackUrl}
-							tooltip="Commit Composer Feedback"
+							tooltip="组合提交反馈"
+							aria-label="组合提交反馈"
 							><code-icon icon="feedback"></code-icon
 						></gl-button>
 					</h1>
@@ -1783,16 +1777,15 @@ export class ComposerApp extends LitElement {
 					<div class="generic-dialog__container">
 						<h2>
 							<code-icon icon="warning"></code-icon>
-							Repository State Changed
+							仓库状态已更改
 						</h2>
 						<p class="generic-dialog__message is-error">${replaceLineBreaks(this.state.safetyError)}</p>
 						<p class="generic-dialog__secondary">
-							The repository state has changed since Commit Composer was opened. Please reload to update
-							with new changes.
+							自启动组合提交后，仓库状态已发生变化。请重新加载以同步最新更改。
 						</p>
 						<nav class="generic-dialog__actions">
-							<gl-button appearance="secondary" @click=${this.handleCloseSafetyError}>Close</gl-button>
-							<gl-button @click=${this.handleReloadComposer}>Reload</gl-button>
+							<gl-button appearance="secondary" @click=${this.handleCloseSafetyError}>关闭</gl-button>
+							<gl-button @click=${this.handleReloadComposer}>重新加载</gl-button>
 						</nav>
 					</div>
 				</gl-dialog>
@@ -1802,11 +1795,11 @@ export class ComposerApp extends LitElement {
 					<div class="generic-dialog__container">
 						<h2>
 							<code-icon icon="warning"></code-icon>
-							Loading Error
+							加载错误
 						</h2>
 						<p class="generic-dialog__message is-error">${replaceLineBreaks(this.state.loadingError)}</p>
 						<nav class="generic-dialog__actions">
-							<gl-button appearance="secondary" @click=${this.handleCloseLoadingError}>Close</gl-button>
+							<gl-button appearance="secondary" @click=${this.handleCloseLoadingError}>关闭</gl-button>
 						</nav>
 					</div>
 				</gl-dialog>
@@ -1816,24 +1809,28 @@ export class ComposerApp extends LitElement {
 					<div class="generic-dialog__container">
 						<h2>
 							<code-icon icon="warning"></code-icon>
-							Operation Failed
+							操作失败
 						</h2>
 						<p class="generic-dialog__message is-error">
 							${replaceLineBreaks(
-								`Failed to ${this.state.aiOperationError?.operation ?? 'perform operation'}${this.state.aiOperationError?.error ? `: ${this.state.aiOperationError.error}` : ''}`,
+								`执行 ${this.state.aiOperationError?.operation ?? '操作'} 失败${
+									this.state.aiOperationError?.error ? `：${this.state.aiOperationError.error}` : ''
+								}`,
 							)}
 						</p>
 						<nav class="generic-dialog__actions">
-							<gl-button appearance="secondary" @click=${this.handleCloseAIOperationError}>OK</gl-button>
+							<gl-button appearance="secondary" @click=${this.handleCloseAIOperationError}
+								>确定</gl-button
+							>
 						</nav>
 					</div>
 				</gl-dialog>
 			</main>
 
 			<gl-dialog ?open=${this.showCommitsGeneratedModal} modal class="modal">
-				<h2>Commits Generated</h2>
-				<p>${this.state.commits.length} commits have been generated successfully!</p>
-				<gl-button @click=${this.closeModal}>Exit Composer</gl-button>
+				<h2>提交生成完毕</h2>
+				<p>${this.state.commits.length} 个提交已成功生成！</p>
+				<gl-button @click=${this.closeModal}>退出组合提交</gl-button>
 			</gl-dialog>
 		`;
 	}
@@ -1853,13 +1850,13 @@ export class ComposerApp extends LitElement {
 		let isError: boolean;
 
 		if (indexHasChanged) {
-			warningText = 'Index has changed. You must reload to commit.';
+			warningText = '索引已更改。请重新加载后再提交。';
 			isError = true;
 		} else if (workingDirectoryHasChanged && hasAssignedUnstagedHunks) {
-			warningText = 'Working directory has changed. You must reload to commit.';
+			warningText = '工作区已更改。请重新加载后再提交。';
 			isError = true;
 		} else if (workingDirectoryHasChanged) {
-			warningText = 'Working directory has changed';
+			warningText = '工作区已更改';
 			isError = false;
 		} else {
 			return nothing;
@@ -1868,7 +1865,7 @@ export class ComposerApp extends LitElement {
 		return html`
 			<div class="working-directory-warning ${isError ? 'working-directory-warning--error' : ''}">
 				<span class="working-directory-warning__text">${warningText}</span>
-				<gl-button @click=${this.handleReloadComposer}>Reload</gl-button>
+				<gl-button @click=${this.handleReloadComposer}>重新加载</gl-button>
 			</div>
 		`;
 	}
@@ -1879,13 +1876,13 @@ export class ComposerApp extends LitElement {
 		const showRedo = false; // Hide redo button for now, as it's not implemented
 
 		return html`
-			<nav class="header-actions" aria-label="Composer actions">
+			<nav class="header-actions" aria-label="组合提交操作">
 				<gl-button
 					?disabled=${!this.canUndo()}
 					@click=${() => this.undo()}
-					tooltip="Undo last action"
+					tooltip="撤销上一个操作"
 					appearance="secondary"
-					><code-icon icon="discard" slot="prefix"></code-icon>Undo</gl-button
+					><code-icon icon="discard" slot="prefix"></code-icon>撤销</gl-button
 				>
 				${when(
 					showRedo,
@@ -1894,13 +1891,13 @@ export class ComposerApp extends LitElement {
 							hidden
 							?disabled=${!this.canRedo()}
 							@click=${() => this.redo()}
-							tooltip="Redo last undone action"
+							tooltip="重做上一个撤销的操作"
 							appearance="secondary"
-							><code-icon icon="discard" flip="inline" slot="prefix"></code-icon>Redo</gl-button
+							><code-icon icon="discard" flip="inline" slot="prefix"></code-icon>重做</gl-button
 						>`,
 				)}
-				<gl-button @click=${() => this.reset()} tooltip="Reset to initial state" appearance="secondary"
-					><code-icon icon="trash" slot="prefix"></code-icon>Reset</gl-button
+				<gl-button @click=${() => this.reset()} tooltip="重置为初始状态" appearance="secondary"
+					><code-icon icon="trash" slot="prefix"></code-icon>重置</gl-button
 				>
 			</nav>
 		`;
@@ -1916,34 +1913,34 @@ export class ComposerApp extends LitElement {
 		{
 			key: `${onboardingKey}-welcome`,
 			popover: {
-				title: 'Welcome to Commit Composer',
-				description: `Compose your changes into organized, meaningful commits before committing them. Use AI to automatically structure your work into draft commits with clear messages and descriptions, or commit manually. <br><br> <a href="${composerFeedbackUrl}">Learn More</a>`,
+				title: '欢迎使用组合提交',
+				description: `在提交前先将更改整理成结构清晰的提交。可让 AI 自动生成具备清晰标题与描述的草稿提交，也可以手动编辑。<br><br> <a href="${composerFeedbackUrl}">了解更多</a>`,
 			},
 		},
 		{
 			key: `${onboardingKey}-compose`,
 			element: () => this.commitsPanel.autoComposeSection!,
 			popover: {
-				title: 'Auto Compose Commits with AI',
+				title: '使用 AI 自动生成提交',
 				description:
-					'Allow AI to organize your working changes into well-formed commits with clear messages and descriptions that help reviewers. <br><br> You can change which model to use and add custom instructions.',
+					'让 AI 将工作副本的更改整理成结构良好的提交，便于审阅者理解。你可以随时更改所用模型并添加自定义指令。',
 			},
 		},
 		{
 			key: `${onboardingKey}-changes`,
 			element: () => this.commitsPanel.changesSection,
 			popover: {
-				title: 'Review and Compose Working Changes',
+				title: '审查并整理工作区更改',
 				description:
-					"Draft Commits represent what will be committed when you're finished. You can inspect changes to add commit messages and review diffs. <br><br> Coming soon: add draft commits and easily move hunks and lines between them.",
+					'草稿提交代表完成后将提交的内容。你可以检查更改、补充提交信息，并审阅差异。<br><br> 即将推出：添加草稿提交，轻松移动 diff 片段与行。',
 			},
 		},
 		{
 			key: `${onboardingKey}-finish`,
 			element: () => this.commitsPanel.finishSection,
 			popover: {
-				title: 'Finish & Commit',
-				description: "Draft commits and messages will be committed when you're finished.",
+				title: '完成并提交',
+				description: '完成后会提交草稿提交及其信息。',
 			},
 		},
 	];

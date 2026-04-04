@@ -591,12 +591,22 @@ export class DetailsPanel extends LitElement {
 	private renderFilesChangedHeader(fileCount: number | string) {
 		return html`
 			<div class="files-headline">
-				<h3 class="files-headline__title">Files Changed (${fileCount})</h3>
+				<h3 class="files-headline__title">已更改文件 (${fileCount})</h3>
 				<div class="files-headline__actions">
-					<gl-button appearance="toolbar" @click=${this.handleExpandAllFiles} tooltip="Expand All">
+					<gl-button
+						appearance="toolbar"
+						@click=${this.handleExpandAllFiles}
+						tooltip="全部展开"
+						aria-label="全部展开文件"
+					>
 						<code-icon icon="expand-all"></code-icon>
 					</gl-button>
-					<gl-button appearance="toolbar" @click=${this.handleCollapseAllFiles} tooltip="Collapse All">
+					<gl-button
+						appearance="toolbar"
+						@click=${this.handleCollapseAllFiles}
+						tooltip="全部折叠"
+						aria-label="全部折叠文件"
+					>
 						<code-icon icon="collapse-all"></code-icon>
 					</gl-button>
 				</div>
@@ -755,13 +765,13 @@ export class DetailsPanel extends LitElement {
 	private getSectionTitle(section: 'staged' | 'unstaged' | 'unassigned'): string {
 		switch (section) {
 			case 'staged':
-				return 'Staged Changes';
+				return '已暂存更改';
 			case 'unstaged':
-				return 'Unstaged Changes';
+				return '未暂存更改';
 			case 'unassigned':
-				return 'Unassigned Changes';
+				return '未分配更改';
 			default:
-				return 'Changes';
+				return '更改';
 		}
 	}
 
@@ -817,18 +827,16 @@ export class DetailsPanel extends LitElement {
 	private renderNoChangesState() {
 		return html`
 			<div class="no-changes-state">
-				<h2 class="no-changes-title">Commit Composer Needs Something to Compose</h2>
+				<h2 class="no-changes-title">需要先产生一些更改</h2>
 				<p class="no-changes-description">
-					Commit Composer helps you organize changes into meaningful commits before committing them and can
-					leverage AI to do this automatically.
+					组合提交可以先帮你整理更改，生成结构清晰的提交，也可以通过 AI 自动完成此过程。
 				</p>
 				<p class="no-changes-description">
-					Make some working directory changes and Reload or come back to this view to see how it works.
+					在工作区里产生一些更改后，点击“重新加载”或稍后返回本视图以继续使用。
 				</p>
-				<!-- <nav class="no-changes-actions"> -->
 				<button-container layout="editor" grouping="gap-wide">
-					<gl-button full appearance="secondary" @click=${this.handleClose}>Close</gl-button>
-					<gl-button full @click=${this.handleReload}>Reload</gl-button>
+					<gl-button full appearance="secondary" @click=${this.handleClose}>关闭</gl-button>
+					<gl-button full @click=${this.handleReload}>重新加载</gl-button>
 				</button-container>
 			</div>
 		`;
@@ -862,7 +870,7 @@ export class DetailsPanel extends LitElement {
 		if (this.selectedCommits.length === 0) {
 			return html`<p class="empty-state">
 				<code-icon class="empty-state__icon" icon="list-unordered"></code-icon><br />
-				Select a commit or unassigned changes to view details
+				请选择一个提交或未分配的更改以查看详情
 			</p>`;
 		}
 

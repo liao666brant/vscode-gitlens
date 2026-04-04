@@ -2,7 +2,6 @@ import { consume } from '@lit/context';
 import { css, html, LitElement, nothing } from 'lit';
 import { customElement, property } from 'lit/decorators.js';
 import { fromNow } from '../../../../../system/date.js';
-import { pluralize } from '../../../../../system/string.js';
 import type { BranchState, State } from '../../../../plus/graph/protocol.js';
 import { inlineCode } from '../../../shared/components/styles/lit/base.css.js';
 import type { WebviewContext } from '../../../shared/contexts/webview.js';
@@ -11,6 +10,10 @@ import { ruleStyles } from '../../shared/components/vscode.css.js';
 import { actionButton, linkBase } from '../styles/graph.css.js';
 import '../../../shared/components/code-icon.js';
 import '../../../shared/components/overlays/tooltip.js';
+
+function formatCommitCount(count: number | undefined) {
+	return `${count ?? 0} 个提交`;
+}
 
 @customElement('gl-git-actions-buttons')
 export class GitActionsButtons extends LitElement {
@@ -81,7 +84,7 @@ export class GlFetchButton extends LitElement {
 	private get upstream() {
 		return this.branchState?.upstream
 			? html`<span class="inline-code">${this.branchState.upstream}</span>`
-			: 'remote';
+			: '远程';
 	}
 
 	override render() {
@@ -89,16 +92,16 @@ export class GlFetchButton extends LitElement {
 			<gl-tooltip placement="bottom">
 				<a href=${this._webview.createCommandLink('gitlens.fetch:')} class="action-button">
 					<code-icon class="action-button__icon" icon="repo-fetch"></code-icon>
-					Fetch
+					抓取
 					${this.fetchedText ? html`<span class="action-button__small">(${this.fetchedText})</span>` : ''}
 				</a>
 				<span slot="content">
-					Fetch from ${this.upstream}
-					${this.branchState?.provider?.name ? html` on ${this.branchState.provider.name}` : ''}
+					从 ${this.upstream} 抓取
+					${this.branchState?.provider?.name ? html`（${this.branchState.provider.name}）` : ''}
 					${this.fetchedText
 						? html`
 								<hr />
-								Last fetched ${this.fetchedText}
+								上次抓取 ${this.fetchedText}
 							`
 						: nothing}
 				</span>
@@ -163,43 +166,43 @@ export class PushPullButton extends LitElement {
 	private get upstream() {
 		return this.branchState?.upstream
 			? html`<span class="inline-code">${this.branchState.upstream}</span>`
-			: 'remote';
+			: '远程';
 	}
 
 	private renderBranchPrefix() {
-		return html`<span class="inline-code">${this.branchName}</span> is`;
+		return html`当前分支 <span class="inline-code">${this.branchName}</span>`;
 	}
 
 	private renderTooltipContent(action: 'pull' | 'push') {
 		if (!this.branchState) return nothing;
 
-		const providerSuffix = this.branchState.provider?.name ? html` on ${this.branchState.provider.name}` : '';
+		const providerSuffix = this.branchState.provider?.name ? html`（${this.branchState.provider.name}）` : '';
 
 		if (action === 'pull') {
-			const mainContent = html`Pull ${pluralize('commit', this.branchState.behind)} from
+			const mainContent = html`拉取 ${formatCommitCount(this.branchState.behind)} 自
 			${this.upstream}${providerSuffix}`;
 
 			if (this.isAhead) {
 				return html`
 					${mainContent}
 					<hr />
-					${this.renderBranchPrefix()} ${pluralize('commit', this.branchState.behind)} behind and
-					${pluralize('commit', this.branchState.ahead)} ahead of ${this.upstream}${providerSuffix}
+					${this.renderBranchPrefix()} 落后 ${formatCommitCount(this.branchState.behind)} 且领先
+					${formatCommitCount(this.branchState.ahead)} 于 ${this.upstream}${providerSuffix}
 				`;
 			}
 
 			return html`
 				${mainContent}
 				<hr />
-				${this.renderBranchPrefix()} ${pluralize('commit', this.branchState.behind)} behind
+				${this.renderBranchPrefix()} 落后 ${formatCommitCount(this.branchState.behind)} 于
 				${this.upstream}${providerSuffix}
 			`;
 		}
 
 		return html`
-			Push ${pluralize('commit', this.branchState.ahead)} to ${this.upstream}${providerSuffix}
+			推送 ${formatCommitCount(this.branchState.ahead)} 到 ${this.upstream}${providerSuffix}
 			<hr />
-			${this.renderBranchPrefix()} ${pluralize('commit', this.branchState.ahead)} ahead of ${this.upstream}
+			${this.renderBranchPrefix()} 领先 ${formatCommitCount(this.branchState.ahead)} 于 ${this.upstream}
 		`;
 	}
 
@@ -210,7 +213,7 @@ export class PushPullButton extends LitElement {
 
 		const action = this.isBehind ? 'pull' : 'push';
 		const icon = this.isBehind ? 'repo-pull' : 'repo-push';
-		const label = this.isBehind ? 'Pull' : 'Push';
+		const label = this.isBehind ? '拉取' : '推送';
 
 		return html`
 			<gl-tooltip placement="bottom">
@@ -245,7 +248,7 @@ export class PushPullButton extends LitElement {
 					${this.renderTooltipContent(action)}
 					${this.fetchedText
 						? html`<hr />
-								Last fetched ${this.fetchedText}`
+								上次抓取于 ${this.fetchedText}`
 						: ''}
 				</div>
 			</gl-tooltip>
@@ -255,13 +258,13 @@ export class PushPullButton extends LitElement {
 							<a
 								href=${this._webview.createCommandLink('gitlens.graph.pushWithForce')}
 								class="action-button"
-								aria-label="Force Push"
+								aria-label="强制推送"
 							>
 								<code-icon icon="repo-force-push" aria-hidden="true"></code-icon>
 							</a>
 							<span slot="content">
-								Force Push ${pluralize('commit', this.branchState?.ahead)} to ${this.upstream}
-								${this.branchState?.provider?.name ? html` on ${this.branchState.provider.name}` : ''}
+								强制推送 ${formatCommitCount(this.branchState?.ahead)} 到 ${this.upstream}
+								${this.branchState?.provider?.name ? html`（${this.branchState.provider.name}）` : ''}
 							</span>
 						</gl-tooltip>
 					`

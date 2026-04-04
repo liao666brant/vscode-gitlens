@@ -60,5 +60,5 @@ export const genericFilePathTemplate = `<span class="d2h-file-name-wrapper">
 </span>
 <label class="d2h-file-collapse" hidden>
     <input class="d2h-file-collapse-input" type="checkbox" name="viewed" value="viewed">
-    Viewed
+    已查看
 </label>`;

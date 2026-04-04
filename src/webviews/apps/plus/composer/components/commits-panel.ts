@@ -422,14 +422,12 @@ export class CommitsPanel extends LitElement {
 
 	private get finishHeaderText(): string {
 		return this.recompose?.enabled && this.recompose.branchName
-			? `Recompose ${this.recompose.branchName}`
-			: 'Finish & Commit';
+			? `重新组合 ${this.recompose.branchName}`
+			: '完成并提交';
 	}
 
 	private get finishDescriptionText(): string {
-		return this.recompose?.enabled
-			? 'The branch will be updated with the new commit structure.'
-			: 'New commits will be added to your current branch.';
+		return this.recompose?.enabled ? '分支将更新为新的提交结构。' : '新的提交将添加到你当前的分支。';
 	}
 
 	private commitsSortable?: Sortable;
@@ -835,9 +833,9 @@ export class CommitsPanel extends LitElement {
 
 	private get aiModelDisplayName(): string {
 		if (!this.aiModel) {
-			return 'Choose AI Model';
+			return '选择 AI 模型';
 		}
-		return this.aiModel.name || 'Unknown Model';
+		return this.aiModel.name || '未知模型';
 	}
 
 	private handleHunkDragEnd() {
@@ -1100,13 +1098,13 @@ export class CommitsPanel extends LitElement {
 	private getIncludeButtonText(sectionKey: string): string {
 		switch (sectionKey) {
 			case 'unstaged':
-				return 'Include Unstaged Changes';
+				return '包含未暂存更改';
 			case 'staged':
-				return 'Include Staged Changes';
+				return '包含已暂存更改';
 			case 'commits':
-				return 'Include Unassigned Changes';
+				return '包含未分配更改';
 			default:
-				return 'Include Changes';
+				return '包含更改';
 		}
 	}
 
@@ -1120,7 +1118,7 @@ export class CommitsPanel extends LitElement {
 			const changes = getFileChanges(unassignedHunks.unstaged);
 			sections.push({
 				key: 'unstaged',
-				title: 'Unincluded changes (unstaged)',
+				title: '未纳入的更改（未暂存）',
 				fileCount: fileCount,
 				changes: changes,
 			});
@@ -1162,9 +1160,7 @@ export class CommitsPanel extends LitElement {
 							${section.title}
 						</div>
 						<div class="composer-item__body">
-							<span class="file-count"
-								>${section.fileCount} ${section.fileCount === 1 ? 'file' : 'files'}</span
-							>
+							<span class="file-count">${section.fileCount} 个文件</span>
 							<span class="diff-stats">
 								<span class="diff-stats__additions">+${section.changes.additions}</span>
 								<span class="diff-stats__deletions">-${section.changes.deletions}</span>
@@ -1199,7 +1195,7 @@ export class CommitsPanel extends LitElement {
 	private renderCompositionSummarySection() {
 		return html`
 			<div class="composition-summary">
-				<h3 class="composition-summary__header">Composition Summary</h3>
+				<h3 class="composition-summary__header">组合摘要</h3>
 				<div
 					class="composer-item is-summary${this._compositionSummarySelected ? ' is-selected' : ''}"
 					tabindex="0"
@@ -1209,14 +1205,14 @@ export class CommitsPanel extends LitElement {
 					<div class="composer-item__content">
 						<div class="composer-item__header">
 							<code-icon icon="note"></code-icon>
-							<span>Auto-composition Summary</span>
+							<span>自动组合摘要</span>
 						</div>
 					</div>
 				</div>
 
 				<!-- Feedback row -->
 				<div class="composition-summary__feedback">
-					<p class="composition-summary__feedback-label">Was this composition helpful?</p>
+					<p class="composition-summary__feedback-label">这次组合结果是否对你有帮助？</p>
 					<nav class="composition-summary__feedback-actions">
 						<code-icon
 							tabindex="0"
@@ -1238,9 +1234,7 @@ export class CommitsPanel extends LitElement {
 				</div>
 
 				<!-- Instructions -->
-				<p class="composition-summary__instructions">
-					Review the auto-generated draft commits below to inspect diffs and modify commit messages.
-				</p>
+				<p class="composition-summary__instructions">请检查下方自动生成的草稿提交，审阅差异并完善提交信息。</p>
 			</div>
 		`;
 	}
@@ -1256,20 +1250,18 @@ export class CommitsPanel extends LitElement {
 				${when(
 					!this.hasUsedAutoCompose && !this.isRecomposeLocked,
 					() => html`
-						<h4 class="auto-compose__header">Auto-Compose Commits with AI (Preview)</h4>
+						<h4 class="auto-compose__header">使用 AI 自动组合提交（预览）</h4>
 						<p class="auto-compose__description">
-							Let AI organize your changes into well-formed commits with clear messages and descriptions
-							that help reviewers.
+							让 AI 将更改整理为逻辑清晰的提交，并生成便于审阅的标题与描述。
 						</p>
 					`,
 				)}
 				${when(
 					this.isRecomposeLocked,
 					() => html`
-						<h4 class="auto-compose__header">Recompose Commits with AI (Preview)</h4>
+						<h4 class="auto-compose__header">使用 AI 重新组合提交（预览）</h4>
 						<p class="auto-compose__description">
-							Let AI reorganize work into logical commits with clear messages and descriptions that help
-							reviewers.
+							让 AI 重新安排工作为逻辑紧凑的提交，并在标题与描述中突出关键内容。
 						</p>
 					`,
 				)}
@@ -1278,7 +1270,7 @@ export class CommitsPanel extends LitElement {
 				<gl-button
 					class="auto-compose__model-picker"
 					appearance="toolbar"
-					tooltip="Select AI Model"
+					tooltip="选择 AI 模型"
 					@click=${this.handleAIModelPickerClick}
 					?disabled=${disabled}
 				>
@@ -1290,28 +1282,28 @@ export class CommitsPanel extends LitElement {
 				<div class="auto-compose__instructions">
 					<textarea
 						class="auto-compose__instructions-input"
-						placeholder="Include additional instructions"
+						placeholder="添加额外的指令"
+						aria-label="附加指令"
 						.value=${this.customInstructions}
 						rows="1"
 						@input=${this.handleCustomInstructionsChange}
 						?disabled=${disabled}
 					></textarea>
 					<gl-popover placement="bottom" trigger="click focus" class="auto-compose__instructions-info">
-						<gl-button slot="anchor" appearance="toolbar">
+						<gl-button slot="anchor" appearance="toolbar" tooltip="关于附加指令" aria-label="关于附加指令">
 							<code-icon icon="info"></code-icon>
 						</gl-button>
 						<div slot="content">
-							Providing additional instructions can help steer the AI composition for this session.
+							添加附加指令有助于引导本次 AI 组合的风格与重点。
 							<br /><br />
-							Potential instructions include:
+							常见指令示例：
 							<ul class="instructions-list">
-								<li>conventional commits format</li>
-								<li>size of commits</li>
-								<li>focus on certain changes</li>
+								<li>采用规范提交格式</li>
+								<li>控制提交大小</li>
+								<li>着重指定某些改动</li>
 							</ul>
 							<hr />
-							You can also specify custom instructions that apply to all composer sessions with the
-							following setting:
+							你也可以通过以下设置为所有组合提交会话指定自定义指令：
 							<a
 								href=${`command:workbench.action.openSettings?%22@id:gitlens.ai.generateCommits.customInstructions%22`}
 								><code class="inline-code"
@@ -1340,31 +1332,30 @@ export class CommitsPanel extends LitElement {
 									slot="prefix"
 								></code-icon>
 								${this.generating
-									? 'Generating Commits...'
+									? '正在生成提交...'
 									: this.hasUsedAutoCompose || this.recompose?.enabled
 										? recomposeCount
-											? html`Recompose ${recomposeCount}
-												${recomposeCount === 1 ? 'Commit' : 'Commits'}`
-											: 'Recompose Commits'
-										: 'Auto-Compose Commits'}
+											? html`重新组合 ${recomposeCount} 个提交`
+											: '重新组合提交'
+										: '自动组合提交'}
 							</gl-button>
 						`,
 						() => html`
 							<gl-button
 								full
 								appearance="secondary"
-								tooltip=${this.aiDisabledReason || 'Auto-Compose Commits is disabled'}
+								tooltip=${this.aiDisabledReason || '自动组合提交当前不可用'}
 								?disabled=${disabled}
 							>
 								<code-icon icon="sparkle" slot="prefix"></code-icon>
-								Auto-Compose Commits
+								自动组合提交
 							</gl-button>
 						`,
 					)}
 				</button-container>
 
 				<!-- Review text (always visible) -->
-				<p class="auto-compose__footer">You will be able to review before committing</p>
+				<p class="auto-compose__footer">组合完成后你可以先行审核再提交</p>
 			</div>
 		`;
 	}
@@ -1376,10 +1367,10 @@ export class CommitsPanel extends LitElement {
 					<h3 class="finish-commit__header">${this.finishHeaderText}</h3>
 					<p class="finish-commit__description">${this.finishDescriptionText}</p>
 					<button-container layout="editor">
-						<gl-button full appearance="secondary" disabled>Create Commits</gl-button>
+						<gl-button full appearance="secondary" disabled>创建提交</gl-button>
 					</button-container>
 					<button-container layout="editor" class="cancel-button-container">
-						<gl-button full appearance="secondary" disabled>Cancel</gl-button>
+						<gl-button full appearance="secondary" disabled>取消</gl-button>
 					</button-container>
 				</div>
 			`;
@@ -1390,7 +1381,7 @@ export class CommitsPanel extends LitElement {
 			return html`
 				<div class="finish-commit">
 					<button-container layout="editor" class="cancel-button-container">
-						<gl-button full appearance="secondary" @click=${this.handleCancel}>Cancel</gl-button>
+						<gl-button full appearance="secondary" @click=${this.handleCancel}>取消</gl-button>
 					</button-container>
 				</div>
 			`;
@@ -1404,9 +1395,7 @@ export class CommitsPanel extends LitElement {
 					() => html`
 						<h3 class="finish-commit__header">${this.finishHeaderText}</h3>
 						<p class="finish-commit__description">
-							${this.recompose?.enabled
-								? 'The branch will be updated with the new commit structure.'
-								: 'New commits will be added to your current branch.'}
+							${this.recompose?.enabled ? '分支将更新为新的提交结构。' : '新的提交将添加到你当前的分支。'}
 						</p>
 						<button-container layout="editor">
 							<gl-button
@@ -1415,19 +1404,19 @@ export class CommitsPanel extends LitElement {
 								?disabled=${this.generating || this.committing}
 								@click=${this.dispatchCombineCommits}
 							>
-								Combine ${this._selectedCommitIds.size} Commits
+								合并 ${this._selectedCommitIds.size} 个提交
 							</gl-button>
 						</button-container>
 
 						<!-- Cancel button -->
 						<button-container layout="editor" class="cancel-button-container">
-							<gl-button full appearance="secondary" @click=${this.handleCancel}>Cancel</gl-button>
+							<gl-button full appearance="secondary" @click=${this.handleCancel}>取消</gl-button>
 						</button-container>
 					`,
 					() => html`
 						<h3 class="finish-commit__header">${this.finishHeaderText}</h3>
 						<p class="finish-commit__description">
-							${this.isReadyToCommit ? this.finishDescriptionText : 'Commit the changes in this draft.'}
+							${this.isReadyToCommit ? this.finishDescriptionText : '提交此草稿中的更改。'}
 						</p>
 
 						<!-- Single Create Commits button -->
@@ -1442,15 +1431,13 @@ export class CommitsPanel extends LitElement {
 									this.committing,
 									() => html`<code-icon modifier="spin" icon="loading" slot="prefix"></code-icon>`,
 								)}
-								${this.committing
-									? 'Committing...'
-									: `Create ${this.commits.length} ${this.commits.length === 1 ? 'Commit' : 'Commits'}`}
+								${this.committing ? '正在提交...' : `创建 ${this.commits.length} 个提交`}
 							</gl-button>
 						</button-container>
 
 						<!-- Cancel button (always shown) -->
 						<button-container layout="editor" class="cancel-button-container">
-							<gl-button full appearance="secondary" @click=${this.handleCancel}> Cancel </gl-button>
+							<gl-button full appearance="secondary" @click=${this.handleCancel}>取消</gl-button>
 						</button-container>
 					`,
 				)}
@@ -1466,12 +1453,12 @@ export class CommitsPanel extends LitElement {
 					<div class="working-section">
 						${this.renderAutoComposeContainer(true)}
 						<div class="commits-list">
-							<h3 class="commits-header">Draft Commits</h3>
+							<h3 class="commits-header">草稿提交</h3>
 							<div class="composer-item">
 								<div class="composer-item__commit"></div>
 								<div class="composer-item__content">
 									<div class="composer-item__header is-empty-state">
-										When working directory changes are present, draft commits will appear here.
+										当前工作区有改动时，草稿提交会显示在这里。
 									</div>
 								</div>
 							</div>
@@ -1483,10 +1470,10 @@ export class CommitsPanel extends LitElement {
 									<div
 										class="composer-item__header${this.baseCommit == null ? ' is-placeholder' : ''}"
 									>
-										${this.baseCommit?.message || 'No commits yet'}
+										${this.baseCommit?.message || '尚无提交'}
 									</div>
 									<div class="composer-item__body">
-										<span class="repo-name">${this.repoName || 'Repository'}</span>
+										<span class="repo-name">${this.repoName || '仓库'}</span>
 										${this.baseCommit?.branchName
 											? html`<span>/</span
 													><span class="branch-name">${this.baseCommit.branchName}</span>`
@@ -1515,7 +1502,7 @@ export class CommitsPanel extends LitElement {
 								? this.renderUnassignedSection()
 								: ''}
 
-						<h3 class="commits-header">${this.isRecomposeLocked ? 'Commits' : 'Draft Commits'}</h3>
+						<h3 class="commits-header">${this.isRecomposeLocked ? '提交' : '草稿提交'}</h3>
 
 						<!-- Drop zone for creating new commits (only visible when dragging hunks in interactive mode) -->
 						${when(
@@ -1524,7 +1511,7 @@ export class CommitsPanel extends LitElement {
 								<div class="new-commit-drop-zone">
 									<div class="drop-zone-content">
 										<code-icon icon="plus"></code-icon>
-										<span>Drop hunks here to create new commit</span>
+										<span>将 hunk 拖到这里以创建新提交</span>
 									</div>
 								</div>
 							`,
@@ -1565,10 +1552,10 @@ export class CommitsPanel extends LitElement {
 							<div class="composer-item__commit${this.baseCommit ? '' : ' is-empty'}"></div>
 							<div class="composer-item__content">
 								<div class="composer-item__header${this.baseCommit == null ? ' is-placeholder' : ''}">
-									${this.baseCommit?.message || 'No commits yet'}
+									${this.baseCommit?.message || '尚无提交'}
 								</div>
 								<div class="composer-item__body">
-									<span class="repo-name">${this.repoName || 'Repository'}</span>
+									<span class="repo-name">${this.repoName || '仓库'}</span>
 									${this.baseCommit?.branchName
 										? html`<span>/ </span
 												><span class="branch-name">${this.baseCommit.branchName}</span>`
@@ -1584,7 +1571,7 @@ export class CommitsPanel extends LitElement {
 								<div class="unassign-drop-zone">
 									<div class="drop-zone-content">
 										<code-icon icon="trash"></code-icon>
-										<span>Drop hunks here to unassign</span>
+										<span>将 hunk 拖到这里以取消关联</span>
 									</div>
 								</div>
 							`,

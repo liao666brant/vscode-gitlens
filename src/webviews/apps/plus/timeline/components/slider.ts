@@ -74,11 +74,12 @@ export class GlChartSlider extends GlElement {
 		return html`<div class="slider-container">
 			<sl-range
 				id="slider"
+				aria-label="提交时间线滑块"
 				.min=${this._min}
 				.max=${this._max}
 				.value=${this._value}
 				.tooltip="top"
-				.tooltipFormatter=${(_: number) => `Hold shift to compare with working tree`}
+				.tooltipFormatter=${(_: number) => `按住 Shift 以与工作树比较`}
 				@sl-change=${this.handleSliderInput}
 				@sl-input=${this.handleSliderInput}
 				@click=${this.handleSliderInput}

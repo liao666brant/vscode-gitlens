@@ -201,14 +201,14 @@ export class GlIntegrationsChip extends LitElement {
 		const statusFilter = createStatusIconFilter(this.integrations);
 
 		return html`<gl-popover placement="bottom" trigger="hover click focus" hoist>
-			<span slot="anchor" class="chip" tabindex="0"
-				>${!anyConnected ? html`<span class="chip__label">Connect</span>` : ''}${this.integrations
+			<span slot="anchor" class="chip" tabindex="0" aria-label="打开集成菜单"
+				>${!anyConnected ? html`<span class="chip__label">连接</span>` : ''}${this.integrations
 					.filter(statusFilter)
 					.map(i => this.renderIntegrationStatus(i))}${this.renderAIStatus()}</span
 			>
 			<div slot="content" class="content">
 				<div class="header">
-					<span class="header__title">Integrations</span>
+					<span class="header__title">集成</span>
 					<span class="header__actions"></span>
 						<gl-button
 							appearance="toolbar"
@@ -216,8 +216,8 @@ export class GlIntegrationsChip extends LitElement {
 								source: 'home',
 								detail: 'integrations',
 							})}"
-							tooltip="Synchronize Status"
-							aria-label="Synchronize Status"
+							tooltip="同步状态"
+							aria-label="同步状态"
 							><code-icon icon="sync"></code-icon
 						></gl-button>
 						<gl-button
@@ -225,17 +225,17 @@ export class GlIntegrationsChip extends LitElement {
 							href="${createCommandLink<ManageCloudIntegrationsCommandArgs>('gitlens.plus.cloudIntegrations.manage', {
 								source: { source: 'home' },
 							})}"
-							tooltip="Manage Integrations"
-							aria-label="Manage Integrations"
+							tooltip="管理集成"
+							aria-label="管理集成"
 							><code-icon icon="gear"></code-icon></gl-button
 					></span>
 				</div>
 				<div class="integrations">${
 					!anyConnected
 						? html`<p>
-									Connect hosting services like <strong>GitHub</strong> and issue trackers like
-									<strong>Jira</strong> to track progress and take action on PRs and issues related to
-									your branches.
+									连接像 <strong>GitHub</strong> 这样的代码托管服务和像
+									<strong>Jira</strong> 这样的问题跟踪服务，以跟踪进度并对与你分支相关的 PR
+									和问题采取行动。
 								</p>
 								<button-container>
 									<gl-button
@@ -247,7 +247,7 @@ export class GlIntegrationsChip extends LitElement {
 												source: { source: 'home', detail: 'integrations' },
 											},
 										)}"
-										>Connect Integrations</gl-button
+										>连接集成</gl-button
 									>
 								</button-container>`
 						: this.integrations.map(i => this.renderIntegrationRow(i))
@@ -303,15 +303,15 @@ export class GlIntegrationsChip extends LitElement {
 								source: 'home',
 								detail: 'integrations',
 							})}"
-							tooltip="Unlock ${integration.name} features with GitLens Pro"
-							aria-label="Unlock ${integration.name} features with GitLens Pro"
+							tooltip="使用 GitLens Pro 解锁 ${integration.name} 功能"
+							aria-label="使用 GitLens Pro 解锁 ${integration.name} 功能"
 							><code-icon class="status-indicator" icon="lock"></code-icon
 						></gl-button>`
 					: integration.connected
 						? html`<gl-tooltip
 								class="status-indicator status--connected"
 								placement="bottom"
-								content="Connected"
+								content="已连接"
 								><code-icon class="status-indicator" icon="check"></code-icon
 							></gl-tooltip>`
 						: html`<gl-button
@@ -323,8 +323,8 @@ export class GlIntegrationsChip extends LitElement {
 										source: { source: 'home', detail: 'integrations' },
 									},
 								)}"
-								tooltip="Connect ${integration.name}"
-								aria-label="Connect ${integration.name}"
+								tooltip="连接 ${integration.name}"
+								aria-label="连接 ${integration.name}"
 								><code-icon icon="plug"></code-icon
 							></gl-button>`}
 			</span>
@@ -367,7 +367,7 @@ export class GlIntegrationsChip extends LitElement {
 												></gl-feature-badge>`
 											: nothing}
 									</span>`
-								: html`<span class="integration_details">Select AI model to enable AI features</span>`}
+								: html`<span class="integration_details">选择 AI 模型以启用 AI 功能</span>`}
 							${model?.name ? html`<span class="integration__details">${model.name}</span>` : nothing}
 						</span>
 						<span class="integration__actions">
@@ -377,15 +377,15 @@ export class GlIntegrationsChip extends LitElement {
 									source: 'home',
 									detail: 'integrations',
 								})}"
-								tooltip="Switch AI Provider/Model"
-								aria-label="Switch AI Provider/Model"
+								tooltip="切换 AI 提供商/模型"
+								aria-label="切换 AI 提供商/模型"
 								><code-icon icon="arrow-swap"></code-icon
 							></gl-button>
 						</span>`
 				: html`<span class="integration__content">
 							<span class="integration_details"
-								>GitLens AI features have been
-								disabled${!this.aiSettingEnabled ? ' via settings' : ' by your GitKraken admin'}</span
+								>GitLens AI 功能已
+								禁用${!this.aiSettingEnabled ? '（通过设置）' : '（由你的 GitKraken 管理员禁用）'}</span
 							>
 						</span>
 						${!this.aiSettingEnabled
@@ -396,8 +396,8 @@ export class GlIntegrationsChip extends LitElement {
 											source: 'home',
 											detail: 'integrations',
 										})}"
-										tooltip="Re-enable AI Features"
-										aria-label="Re-enable AI Features"
+										tooltip="重新启用 AI 功能"
+										aria-label="重新启用 AI 功能"
 										><code-icon icon="unlock"></code-icon
 									></gl-button>
 								</span>`
@@ -407,18 +407,18 @@ export class GlIntegrationsChip extends LitElement {
 }
 
 const featureMap = new Map<IntegrationFeatures, string>([
-	['prs', 'pull requests'],
-	['issues', 'issues'],
+	['prs', '拉取请求'],
+	['issues', '问题'],
 ]);
 
 function getIntegrationDetails(integration: IntegrationState): string {
 	const features = integration.supports.map(feature => featureMap.get(feature)!);
 
 	if (features.length === 0) return '';
-	if (features.length === 1) return `Supports ${features[0]}`;
+	if (features.length === 1) return `支持 ${features[0]}`;
 
 	const last = features.pop();
-	return `Supports ${features.join(', ')}, and ${last}`;
+	return `支持 ${features.join('、')}，以及 ${last}`;
 }
 
 function createStatusIconFilter(integrations: IntegrationState[]) {
