@@ -10,7 +10,6 @@ import { isSha } from '../../../git/utils/revision.utils.js';
 import type { DirectiveQuickPickItem } from '../../../quickpicks/items/directive.js';
 import { createDirectiveQuickPickItem, Directive } from '../../../quickpicks/items/directive.js';
 import { Logger } from '../../../system/logger.js';
-import { pluralize } from '../../../system/string.js';
 import type {
 	AsyncStepResultGenerator,
 	PartialStepState,
@@ -64,8 +63,8 @@ export interface WorktreeCopyChangesGitCommandArgs {
 
 export class WorktreeCopyChangesGitCommand extends QuickCommand<State> {
 	constructor(container: Container, args?: WorktreeCopyChangesGitCommandArgs) {
-		super(container, 'worktree-copy-changes', 'copy-changes', 'Copy Changes to Worktree', {
-			description: 'copies changes to another worktree',
+		super(container, 'worktree-copy-changes', 'copy-changes', '复制更改到工作树', {
+			description: '将更改复制到另一个工作树',
 		});
 
 		this.initialState = {
@@ -136,20 +135,14 @@ export class WorktreeCopyChangesGitCommand extends QuickCommand<State> {
 				switch (state.changes.type) {
 					case 'index':
 						context.title =
-							state.overrides?.title ??
-							`Copy Staged${state.source?.name ? ' Worktree' : ''} Changes to Worktree`;
-						placeholder = `Choose a worktree to copy your staged${
-							state.source?.name ? ' Worktree' : ''
-						} changes to`;
+							state.overrides?.title ?? `复制已暂存${state.source?.name ? '工作树' : ''}更改到工作树`;
+						placeholder = `选择要复制已暂存${state.source?.name ? '工作树' : ''}更改到的工作树`;
 						break;
 					case 'working-tree':
 					default:
 						context.title =
-							state.overrides?.title ??
-							`Copy Working${state.source?.name ? ' Worktree' : ''} Changes to Worktree`;
-						placeholder = `Choose a worktree to copy your working${
-							state.source?.name ? ' worktree' : ''
-						} changes to`;
+							state.overrides?.title ?? `复制工作区${state.source?.name ? '工作树' : ''}更改到工作树`;
+						placeholder = `选择要复制工作区${state.source?.name ? '工作树' : ''}更改到的工作树`;
 						break;
 				}
 
@@ -211,14 +204,14 @@ export class WorktreeCopyChangesGitCommand extends QuickCommand<State> {
 
 					const changesType = state.changes.type === 'index' ? 'staged' : 'working';
 					const noChangesStep: QuickPickStep<DirectiveQuickPickItem> = this.createConfirmStep(
-						`Confirm ${context.title}`,
+						`确认 ${context.title}`,
 						[],
 						createDirectiveQuickPickItem(Directive.Cancel, true, {
-							label: 'OK',
-							detail: `There are no ${changesType} changes to copy`,
+							label: '确定',
+							detail: `没有可复制的${changesType === 'staged' ? '已暂存' : '工作区'}更改`,
 						}),
 						{
-							placeholder: `Nothing to copy; no ${changesType} changes found`,
+							placeholder: `没有可复制内容；未发现${changesType === 'staged' ? '已暂存' : '工作区'}更改`,
 						},
 					);
 					const selection: StepSelection<typeof noChangesStep> = yield noChangesStep;
@@ -261,21 +254,19 @@ export class WorktreeCopyChangesGitCommand extends QuickCommand<State> {
 
 				const targetSvc = this.container.git.getRepositoryService(state.target.uri);
 				await targetSvc.patch?.applyUnreachableCommitForPatch(commit.sha, { stash: false });
-				void window.showInformationMessage(`Changes copied successfully`);
+				void window.showInformationMessage('更改复制成功');
 			} catch (ex) {
 				if (ex instanceof CancellationError) return;
 
 				if (ApplyPatchCommitError.is(ex, 'appliedWithConflicts')) {
-					void window.showWarningMessage('Changes copied with conflicts');
+					void window.showWarningMessage('更改已复制，但存在冲突');
 				} else {
 					if (ApplyPatchCommitError.is(ex, 'wouldOverwriteChanges')) {
-						void window.showErrorMessage(
-							'Unable to copy changes as some local changes would be overwritten',
-						);
+						void window.showErrorMessage('无法复制更改，因为部分本地更改会被覆盖');
 						return;
 					}
 
-					void window.showErrorMessage(`Unable to copy changes: ${ex.message}`);
+					void window.showErrorMessage(`无法复制更改：${ex.message}`);
 					return;
 				}
 			}
@@ -311,24 +302,24 @@ export class WorktreeCopyChangesGitCommand extends QuickCommand<State> {
 		switch (state.changes.type) {
 			case 'index':
 				confirmations.push({
-					label: 'Copy Staged Changes to Worktree',
-					detail: `Will copy the staged changes${count > 0 ? ` (${pluralize('file', count)})` : ''}${
-						state.source ? ` from worktree '${state.source.name}'` : ''
-					} to worktree '${state.target.name}'`,
+					label: '将已暂存更改复制到工作树',
+					detail: `将复制已暂存更改${count > 0 ? `（${count} 个文件）` : ''}${
+						state.source ? `（来源工作树：'${state.source.name}'）` : ''
+					}到工作树 '${state.target.name}'`,
 				});
 				break;
 			case 'working-tree':
 			default:
 				confirmations.push({
-					label: 'Copy Working Changes to Worktree',
-					detail: `Will copy the working changes${count > 0 ? ` (${pluralize('file', count)})` : ''}${
-						state.source ? ` from worktree '${state.source.name}'` : ''
-					} to worktree '${state.target.name}'`,
+					label: '将工作区更改复制到工作树',
+					detail: `将复制工作区更改${count > 0 ? `（${count} 个文件）` : ''}${
+						state.source ? `（来源工作树：'${state.source.name}'）` : ''
+					}到工作树 '${state.target.name}'`,
 				});
 				break;
 		}
 
-		const step = createConfirmStep(`Confirm ${context.title} \u2022 ${state.target.name}`, confirmations, context);
+		const step = createConfirmStep(`确认 ${context.title} \u2022 ${state.target.name}`, confirmations, context);
 
 		const selection: StepSelection<typeof step> = yield step;
 		return canPickStepContinue(step, state, selection) ? undefined : StepResultBreak;

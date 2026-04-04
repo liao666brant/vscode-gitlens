@@ -57,7 +57,7 @@ export class GenerateCommitMessageCommand extends ActiveEditorCommand {
 
 			const gitUri = uri != null ? await GitUri.fromUri(uri) : undefined;
 
-			repo = await getBestRepositoryOrShowPicker(this.container, gitUri, editor, 'Generate Commit Message');
+			repo = await getBestRepositoryOrShowPicker(this.container, gitUri, editor, '生成提交信息');
 		}
 		if (repo == null) return;
 
@@ -71,7 +71,7 @@ export class GenerateCommitMessageCommand extends ActiveEditorCommand {
 				{ source: args?.source ?? 'commandPalette' },
 				{
 					context: currentMessage,
-					progress: { location: ProgressLocation.Notification, title: 'Generating commit message...' },
+					progress: { location: ProgressLocation.Notification, title: '正在生成提交信息...' },
 				},
 			);
 			if (result == null || result === 'cancelled') return;

@@ -8,12 +8,12 @@ export async function confirmDraftStorage(container: Container): Promise<boolean
 	if (container.storage.get('confirm:draft:storage', false)) return true;
 
 	while (true) {
-		const accept: MessageItem = { title: 'Continue' };
-		const decline: MessageItem = { title: 'Cancel', isCloseAffordance: true };
-		const moreInfo: MessageItem = { title: 'Learn More' };
-		const security: MessageItem = { title: 'Security' };
+		const accept: MessageItem = { title: '继续' };
+		const decline: MessageItem = { title: '取消', isCloseAffordance: true };
+		const moreInfo: MessageItem = { title: '了解更多' };
+		const security: MessageItem = { title: '安全' };
 		const result = await window.showInformationMessage(
-			`Cloud Patches are securely stored by GitKraken and can be accessed by anyone with the link and a GitKraken account.`,
+			`Cloud Patches 由 GitKraken 安全存储，任何拥有链接和 GitKraken 账号的人都可访问。`,
 			{ modal: true },
 			accept,
 			moreInfo,

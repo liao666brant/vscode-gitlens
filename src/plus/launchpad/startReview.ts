@@ -86,8 +86,8 @@ const Steps = {
 type StepNames = (typeof Steps)[keyof typeof Steps];
 
 const connectMoreIntegrationsItem: ConnectMoreIntegrationsItem = {
-	label: 'Connect an Additional Integration...',
-	detail: 'Connect additional integrations to view their pull requests',
+	label: '连接更多集成...',
+	detail: '连接更多集成以查看其拉取请求',
 	item: undefined,
 };
 
@@ -144,8 +144,8 @@ export class StartReviewCommand extends QuickCommand<StartReviewState> {
 	private readonly telemetryEventKey = 'startReview';
 
 	constructor(container: Container, args?: StartReviewCommandArgs) {
-		super(container, 'startReview', 'startReview', `Start Review\u00a0\u00a0${proBadge}`, {
-			description: 'Start a review for a pull request',
+		super(container, 'startReview', 'startReview', `开始评审\u00a0\u00a0${proBadge}`, {
+			description: '开始评审一个拉取请求',
 		});
 
 		this.source = args?.source ?? { source: 'commandPalette' };
@@ -261,7 +261,7 @@ export class StartReviewCommand extends QuickCommand<StartReviewState> {
 						try {
 							const launchpadItem = await this.lookupLaunchpadItem(state.prUrl);
 							if (launchpadItem == null) {
-								throw new Error(`No PR found matching '${state.prUrl}'`);
+								throw new Error(`未找到匹配的 PR：'${state.prUrl}'`);
 							}
 
 							const reviewResult = await startReviewFromLaunchpadItem(
@@ -277,7 +277,7 @@ export class StartReviewCommand extends QuickCommand<StartReviewState> {
 						} catch (ex) {
 							state.result?.cancel(ex instanceof Error ? ex : new Error(String(ex)));
 							void window.showErrorMessage(
-								`Failed to start review: ${ex instanceof Error ? ex.message : String(ex)}`,
+								`开始评审失败：${ex instanceof Error ? ex.message : String(ex)}`,
 							);
 							return StepResultBreak;
 						}
@@ -320,9 +320,7 @@ export class StartReviewCommand extends QuickCommand<StartReviewState> {
 					state.result?.fulfill(reviewResult);
 				} catch (ex) {
 					state.result?.cancel(ex instanceof Error ? ex : new Error(String(ex)));
-					void window.showErrorMessage(
-						`Failed to start review: ${ex instanceof Error ? ex.message : String(ex)}`,
-					);
+					void window.showErrorMessage(`开始评审失败：${ex instanceof Error ? ex.message : String(ex)}`);
 					return StepResultBreak;
 				}
 
@@ -330,7 +328,7 @@ export class StartReviewCommand extends QuickCommand<StartReviewState> {
 			}
 		} finally {
 			if (state.result?.pending) {
-				state.result.cancel(new Error('Start Review cancelled'));
+				state.result.cancel(new Error('开始评审已取消'));
 			}
 		}
 
@@ -352,7 +350,7 @@ export class StartReviewCommand extends QuickCommand<StartReviewState> {
 	private async lookupLaunchpadItem(prUrl: string): Promise<LaunchpadItem | undefined> {
 		const result = await this.container.launchpad.getCategorizedItems({ search: prUrl });
 		if (result.error != null) {
-			throw new Error(`Error fetching PR: ${result.error.message}`);
+			throw new Error(`获取 PR 时出错：${result.error.message}`);
 		}
 
 		return result.items?.[0];
@@ -374,8 +372,8 @@ export class StartReviewCommand extends QuickCommand<StartReviewState> {
 					confirmations.push(
 						createQuickPickItemOfT(
 							{
-								label: 'Connect to GitHub...',
-								detail: 'Will connect to GitHub to provide access to your pull requests',
+								label: '连接到 GitHub...',
+								detail: '将连接到 GitHub 以访问你的拉取请求',
 							},
 							integration,
 						),
@@ -387,11 +385,11 @@ export class StartReviewCommand extends QuickCommand<StartReviewState> {
 		}
 
 		const step = this.createConfirmStep(
-			`${this.title} \u00a0\u2022\u00a0 Connect an Integration`,
+			`${this.title} \u00a0\u2022\u00a0 连接一个集成`,
 			confirmations,
-			createDirectiveQuickPickItem(Directive.Cancel, false, { label: 'Cancel' }),
+			createDirectiveQuickPickItem(Directive.Cancel, false, { label: '取消' }),
 			{
-				placeholder: 'Connect an integration to view pull requests for review',
+				placeholder: '连接一个集成以查看待评审的拉取请求',
 				buttons: [],
 				ignoreFocusOut: false,
 			},
@@ -419,24 +417,24 @@ export class StartReviewCommand extends QuickCommand<StartReviewState> {
 		let selection;
 		if (overrideStep == null) {
 			step = this.createConfirmStep(
-				`${this.title} \u00a0\u2022\u00a0 Connect an ${hasConnectedIntegration ? 'Additional ' : ''}Integration`,
+				`${this.title} \u00a0\u2022\u00a0 连接${hasConnectedIntegration ? '更多' : ''}集成`,
 				[
 					createQuickPickItemOfT(
 						{
-							label: `Connect an ${hasConnectedIntegration ? 'Additional ' : ''}Integration...`,
+							label: `连接${hasConnectedIntegration ? '更多' : ''}集成...`,
 							detail: hasConnectedIntegration
-								? 'Connect additional integrations to view their pull requests'
-								: 'Connect an integration to start reviewing pull requests',
+								? '连接更多集成以查看其拉取请求'
+								: '连接一个集成以开始评审拉取请求',
 							picked: true,
 						},
 						true,
 					),
 				],
-				createDirectiveQuickPickItem(Directive.Cancel, false, { label: 'Cancel' }),
+				createDirectiveQuickPickItem(Directive.Cancel, false, { label: '取消' }),
 				{
 					placeholder: hasConnectedIntegration
-						? 'Connect additional integrations to Start Review'
-						: 'Connect an integration to get started with Start Review',
+						? '为“开始评审”连接更多集成'
+						: '连接一个集成以开始使用“开始评审”',
 					buttons: [],
 					ignoreFocusOut: true,
 				},
@@ -452,7 +450,7 @@ export class StartReviewCommand extends QuickCommand<StartReviewState> {
 			let previousPlaceholder: string | undefined;
 			if (step.quickpick) {
 				previousPlaceholder = step.quickpick.placeholder;
-				step.quickpick.placeholder = 'Connecting integrations...';
+				step.quickpick.placeholder = '正在连接集成...';
 			}
 			const resume = step.freeze?.();
 			const connected = await this.container.integrations.connectCloudIntegrations(
@@ -484,7 +482,7 @@ export class StartReviewCommand extends QuickCommand<StartReviewState> {
 						? `${i.launchpadItem.title.substring(0, 60)}...`
 						: i.launchpadItem.title,
 				description: `\u00a0 ${i.launchpadItem.repository.owner.login}/${i.launchpadItem.repository.name}#${i.launchpadItem.id} \u00a0`,
-				detail: `      ${fromNow(i.launchpadItem.updatedDate)} by @${i.launchpadItem.author?.username ?? 'unknown'}`,
+				detail: `      ${fromNow(i.launchpadItem.updatedDate)}，由 @${i.launchpadItem.author?.username ?? '未知'}`,
 				iconPath:
 					i.launchpadItem.author?.avatarUrl != null ? Uri.parse(i.launchpadItem.author.avatarUrl) : undefined,
 				alwaysShow: alwaysShow,
@@ -513,8 +511,8 @@ export class StartReviewCommand extends QuickCommand<StartReviewState> {
 			if (!result?.items.length) {
 				return {
 					placeholder: context.inSearch
-						? 'No pull requests found matching your search'
-						: 'No pull requests found. Paste a PR URL or connect more integrations.',
+						? '未找到与搜索匹配的拉取请求'
+						: '未找到拉取请求。请粘贴 PR URL 或连接更多集成。',
 					items: [
 						hasDisconnectedIntegrations ? connectMoreIntegrationsItem : manageIntegrationsItem,
 						createDirectiveQuickPickItem(Directive.Cancel),
@@ -523,7 +521,7 @@ export class StartReviewCommand extends QuickCommand<StartReviewState> {
 			}
 
 			return {
-				placeholder: 'Choose a pull request to review or paste a PR URL',
+				placeholder: '选择一个要评审的拉取请求，或粘贴 PR URL',
 				items: [...getItems(result, isFiltering), createDirectiveQuickPickItem(Directive.Cancel)],
 			};
 		}
@@ -536,7 +534,7 @@ export class StartReviewCommand extends QuickCommand<StartReviewState> {
 				quickpick.placeholder = placeholder;
 				quickpick.items = items;
 			} catch {
-				quickpick.placeholder = 'Error retrieving pull requests';
+				quickpick.placeholder = '获取拉取请求时出错';
 				quickpick.items = [createDirectiveQuickPickItem(Directive.Cancel)];
 			} finally {
 				quickpick.busy = false;
@@ -545,7 +543,7 @@ export class StartReviewCommand extends QuickCommand<StartReviewState> {
 
 		const step = createPickStep<QuickPickItemOfT<StartReviewItem>>({
 			title: context.title,
-			placeholder: 'Loading...',
+			placeholder: '加载中...',
 			matchOnDescription: true,
 			matchOnDetail: true,
 			items: [],

@@ -20,8 +20,8 @@ export interface SearchCompletionValue {
 }
 
 export const naturalLanguageSearchAutocompleteCommand: CompletionItem<SearchCompletionCommand> = {
-	label: 'Search using natural language',
-	detail: "Describe what you're looking for and let AI build the query",
+	label: '使用自然语言搜索',
+	detail: '描述你想查找的内容，让 AI 帮你构建查询',
 	icon: 'sparkle',
 	item: { command: 'toggle-natural-language-mode' },
 	score: 0,
@@ -29,8 +29,8 @@ export const naturalLanguageSearchAutocompleteCommand: CompletionItem<SearchComp
 };
 
 export const structuredSearchAutocompleteCommand: CompletionItem<SearchCompletionCommand> = {
-	label: 'Search using filters',
-	detail: 'Combine filters to build powerful searches, e.g. @me after:1.week.ago file:*.ts.',
+	label: '使用筛选器搜索',
+	detail: '组合筛选条件进行强力搜索，例如 @me after:1.week.ago file:*.ts。',
 	icon: 'search',
 	item: { command: 'toggle-natural-language-mode' },
 	score: 0,
@@ -69,66 +69,65 @@ export interface SearchCompletionOperator {
 export const searchCompletionOperators: SearchCompletionOperator[] = [
 	{
 		operator: 'message:',
-		description: 'Search commit messages to quickly find specific changes or features',
+		description: '搜索提交信息，快速定位特定变更或功能',
 		icon: 'comment',
 		aliases: ['=:'],
-		example: html`Use quotes to search for phrases, e.g. <code>message:"Updates dependencies"</code> or
-			<code>=:"bug fix"</code>`,
+		example: html`使用引号搜索短语，例如 <code>message:"Updates dependencies"</code> 或 <code>=:"bug fix"</code>`,
 	},
 	{
 		operator: 'author:',
-		description: 'Filter by author to see contributions from specific team members',
+		description: '按作者筛选，查看特定团队成员的贡献',
 		icon: 'person',
 		aliases: ['@:'],
-		example: html`Use a name or email, e.g. <code>author:eamodio</code>, <code>@:john</code>, or
-			<code>@me</code> for your own commits`,
+		example: html`使用姓名或邮箱，例如 <code>author:eamodio</code>、<code>@:john</code>，或使用
+			<code>@me</code> 表示你自己的提交`,
 		values: [
 			{
 				value: '@me',
 				label: '@me',
-				description: 'Filter to only show your own commits',
+				description: '仅显示你自己的提交',
 				icon: 'person',
 			},
 			{
 				value: { command: 'pick-author', multi: true },
-				label: 'Choose authors\u2026',
-				description: 'Select one or more contributors to filter by',
+				label: '选择作者\u2026',
+				description: '选择一个或多个贡献者进行筛选',
 				icon: 'organization',
 			},
 		],
 	},
 	{
 		operator: 'commit:',
-		description: 'Jump to a specific commit using its SHA',
+		description: '使用 SHA 跳转到指定提交',
 		icon: 'git-commit',
 		aliases: ['#:'],
-		example: html`Use a full or short commit SHA, e.g. <code>commit:4ce3a</code> or <code>#:4ce3a</code>`,
+		example: html`使用完整或简写提交 SHA，例如 <code>commit:4ce3a</code> 或 <code>#:4ce3a</code>`,
 	},
 	{
 		operator: 'ref:',
-		description: 'Filter to a specific branch or tag (solo), or compare ranges to see unique commits',
+		description: '筛选到指定分支或标签（单独），或通过范围比较查看独有提交',
 		icon: 'git-branch',
 		aliases: ['^:'],
-		example: html`Use a reference to filter, e.g. <code>ref:main</code> or <code>^:v1.0.0</code>, or a range to
-			compare, e.g. <code>ref:main..feature</code> (commits in feature but not in main)`,
+		example: html`使用引用进行筛选，例如 <code>ref:main</code> 或 <code>^:v1.0.0</code>；也可使用范围比较，例如
+			<code>ref:main..feature</code>（feature 中有而 main 中没有的提交）`,
 		values: [
 			{
 				value: { command: 'pick-ref' },
-				label: 'Choose a branch or tag\u2026',
-				description: 'Select a branch or tag to filter by',
+				label: '选择分支或标签\u2026',
+				description: '选择一个分支或标签进行筛选',
 				icon: 'git-branch',
 			},
 			{
 				value: { command: 'pick-comparison' },
-				label: 'Choose a comparison range\u2026',
-				description: 'Select two refs to compare (e.g. main..feature)',
+				label: '选择比较范围\u2026',
+				description: '选择两个引用进行比较（例如 main..feature）',
 				icon: 'git-compare',
 			},
 		],
 	},
 	{
 		operator: 'type:',
-		description: 'Filter by commit type — view only stashes or branch & tag tips',
+		description: '按提交类型筛选，仅查看储藏或分支/标签尖端提交',
 		icon: 'symbol-misc',
 		aliases: ['is:'],
 		// example: html`Use <code>is:stash</code> for stashes or <code>is:tip</code> for branch & tag tips`,
@@ -136,61 +135,60 @@ export const searchCompletionOperators: SearchCompletionOperator[] = [
 			{
 				value: 'stash',
 				label: 'stash',
-				description: 'Filter commits to only show stashes',
+				description: '筛选提交，仅显示储藏',
 				icon: 'archive',
 			},
 			{
 				value: 'tip',
 				label: 'tip',
-				description: 'Filter commits to only show commits pointed to by branches or tags',
+				description: '筛选提交，仅显示被分支或标签指向的提交',
 				icon: 'git-branch',
 			},
 		],
 	},
 	{
 		operator: 'file:',
-		description: 'Track file changes across history (supports glob patterns)',
+		description: '跨历史追踪文件变更（支持 glob 模式）',
 		icon: 'file',
 		aliases: ['?:'],
-		example: html`Use a path or filename, e.g. <code>file:package.json</code>, or a glob, e.g.
+		example: html`使用路径或文件名，例如 <code>file:package.json</code>；也可使用 glob，例如
 			<code>?:src/**/*.ts</code>`,
 		values: [
 			{
 				value: { command: 'pick-file', multi: true },
-				label: 'Choose files\u2026',
-				description: 'Select one or more files to filter by',
+				label: '选择文件\u2026',
+				description: '选择一个或多个文件进行筛选',
 				icon: 'file',
 			},
 			{
 				value: { command: 'pick-folder' },
-				label: 'Choose a folder\u2026',
-				description: 'Select a folder to filter by',
+				label: '选择文件夹\u2026',
+				description: '选择一个文件夹进行筛选',
 				icon: 'folder',
 			},
 		],
 	},
 	{
 		operator: 'change:',
-		description: 'Search code changes to find when specific functions or patterns were modified',
+		description: '搜索代码变更，定位特定函数或模式被修改的时间',
 		icon: 'diff',
 		aliases: ['~:'],
-		example: html`Use a code snippet or regex, e.g. <code>change:"function login"</code> or
-			<code>~:"import.*React"</code>`,
+		example: html`使用代码片段或正则，例如 <code>change:"function login"</code> 或 <code>~:"import.*React"</code>`,
 	},
 	{
 		operator: 'after:',
-		description: 'Filter by date range using absolute dates or relative times',
+		description: '按日期范围筛选，支持绝对日期或相对时间',
 		icon: 'calendar',
 		aliases: ['since:', '>:'],
-		example: html`Use a date string, e.g. <code>after:2022-01-01</code>, or a relative date, e.g.
-			<code>since:3.weeks.ago</code> or <code>&gt;:1.month.ago</code>`,
+		example: html`使用日期字符串，例如 <code>after:2022-01-01</code>；或相对日期，例如
+			<code>since:3.weeks.ago</code> 或 <code>&gt;:1.month.ago</code>`,
 	},
 	{
 		operator: 'before:',
-		description: 'Filter by date range using absolute dates or relative times',
+		description: '按日期范围筛选，支持绝对日期或相对时间',
 		icon: 'calendar',
 		aliases: ['until:', '<:'],
-		example: html`Use a date string, e.g. <code>before:2022-01-01</code>, or a relative date, e.g.
-			<code>until:3.weeks.ago</code> or <code>&lt;:1.month.ago</code>`,
+		example: html`使用日期字符串，例如 <code>before:2022-01-01</code>；或相对日期，例如
+			<code>until:3.weeks.ago</code> 或 <code>&lt;:1.month.ago</code>`,
 	},
 ];

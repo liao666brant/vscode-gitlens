@@ -13,11 +13,11 @@ export async function ensureAccount(container: Container, title: string, source:
 	while (true) {
 		const subscription = await container.subscription.getSubscription();
 		if (subscription.account?.verified === false) {
-			const resend = { title: 'Resend Email' };
-			const cancel = { title: 'Cancel', isCloseAffordance: true };
+			const resend = { title: '重新发送邮件' };
+			const cancel = { title: '取消', isCloseAffordance: true };
 			const result = await window.showWarningMessage(
 				title,
-				{ modal: true, detail: 'You must verify your email before you can continue.' },
+				{ modal: true, detail: '继续之前，您必须先验证邮箱。' },
 				resend,
 				cancel,
 			);
@@ -33,14 +33,14 @@ export async function ensureAccount(container: Container, title: string, source:
 
 		if (subscription.account != null) break;
 
-		const signUp = { title: 'Try GitLens Pro' };
-		const signIn = { title: 'Sign In' };
-		const cancel = { title: 'Cancel', isCloseAffordance: true };
+		const signUp = { title: '试用 GitLens Pro' };
+		const signIn = { title: '登录' };
+		const cancel = { title: '取消', isCloseAffordance: true };
 		const result = await window.showWarningMessage(
 			title,
 			{
 				modal: true,
-				detail: `Start your free ${proTrialLengthInDays}-day Pro trial for full access to all GitLens Pro features, or sign in.`,
+				detail: `立即开启 ${proTrialLengthInDays} 天免费 Pro 试用，完整访问所有 GitLens Pro 功能，或直接登录。`,
 			},
 			signUp,
 			signIn,
@@ -77,14 +77,14 @@ export async function ensureAccountQuickPick(
 
 		const directives: DirectiveQuickPickItem[] = [descriptionItem];
 
-		let placeholder = 'Requires an account to continue';
+		let placeholder = '继续需要账号';
 		if (account?.verified === false) {
 			directives.push(
 				createDirectiveQuickPickItem(Directive.RequiresVerification, true),
 				createQuickPickSeparator(),
 				createDirectiveQuickPickItem(Directive.Cancel),
 			);
-			placeholder = 'You must verify your email before you can continue';
+			placeholder = '继续之前，您必须先验证邮箱';
 		} else {
 			directives.push(
 				createDirectiveQuickPickItem(Directive.StartProTrial, true),
@@ -143,28 +143,28 @@ export async function ensureFeatureAccess(
 		const promo = await container.productConfig.getApplicablePromo(access.subscription.current.state, plan, 'gate');
 		const promoDetail = promo?.content?.modal?.detail;
 
-		const cancel = { title: 'Cancel', isCloseAffordance: true };
+		const cancel = { title: '取消', isCloseAffordance: true };
 		let upgrade: MessageItem;
 		let result: MessageItem | undefined;
 
 		if (isAdvanced) {
-			upgrade = { title: 'Upgrade to Advanced' };
+			upgrade = { title: '升级到 Advanced' };
 			result = await window.showWarningMessage(
 				title,
 				{
 					modal: true,
-					detail: `Please upgrade to GitLens Advanced to continue.${promoDetail ? `\n${promoDetail}` : ''}`,
+					detail: `请升级到 GitLens Advanced 以继续。${promoDetail ? `\n${promoDetail}` : ''}`,
 				},
 				upgrade,
 				cancel,
 			);
 		} else {
-			upgrade = { title: 'Upgrade to Pro' };
+			upgrade = { title: '升级到 Pro' };
 			result = await window.showWarningMessage(
 				title,
 				{
 					modal: true,
-					detail: `Please upgrade to GitLens Pro to continue.${promoDetail ? `\n${promoDetail}` : ''}`,
+					detail: `请升级到 GitLens Pro 以继续。${promoDetail ? `\n${promoDetail}` : ''}`,
 				},
 				upgrade,
 				cancel,

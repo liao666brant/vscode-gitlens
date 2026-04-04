@@ -60,7 +60,6 @@ import { Logger } from '../../system/logger.js';
 import { getScopedLogger } from '../../system/logger.scope.js';
 import { flatten } from '../../system/object.js';
 import { pauseOnCancelOrTimeout } from '../../system/promise.js';
-import { pluralize } from '../../system/string.js';
 import { createDisposable } from '../../system/unifiedDisposable.js';
 import { isWalkthroughSupported } from '../../telemetry/walkthroughStateProvider.js';
 import { LoginUriPathPrefix } from './authenticationConnection.js';
@@ -386,7 +385,7 @@ export class SubscriptionService implements Disposable {
 
 		if (status === 'expired') {
 			void window.showInformationMessage(
-				`Your ${proFeaturePreviewUsages}-day preview of the ${getFeaturePreviewLabel(feature)} has expired.`,
+				`您对 ${getFeaturePreviewLabel(feature)} 的 ${proFeaturePreviewUsages} 天预览已过期。`,
 			);
 			return;
 		}
@@ -520,9 +519,7 @@ export class SubscriptionService implements Disposable {
 			}
 		} else {
 			const upgrade: MessageItem = { title: '升级到 Pro' };
-			const learn: MessageItem | undefined = isWalkthroughSupported()
-				? { title: 'Community 对比 Pro' }
-				: undefined;
+			const learn: MessageItem | undefined = isWalkthroughSupported() ? { title: '社区版对比 Pro' } : undefined;
 			const confirm: MessageItem = { title: '继续', isCloseAffordance: true };
 			const result = await window.showInformationMessage(
 				`您现在使用的是 ${actual.name} 计划。`,
@@ -675,31 +672,25 @@ export class SubscriptionService implements Disposable {
 			if (!rsp.ok) {
 				if (rsp.status === 409) {
 					void window.showErrorMessage(
-						'You are not eligible to reactivate your Pro trial. If you feel that is an error, please contact support.',
-						'OK',
+						'您目前不符合重新激活 Pro 试用的条件。如果您认为这是错误，请联系支持团队。',
+						'确定',
 					);
 					return;
 				}
 
 				void window.showErrorMessage(
-					`Unable to reactivate trial: (${rsp.status}) ${rsp.statusText}. Please try again. If this issue persists, please contact support.`,
-					'OK',
+					`无法重新激活试用：(${rsp.status}) ${rsp.statusText}。请重试。若问题持续，请联系支持团队。`,
+					'确定',
 				);
 				return;
 			}
 		} catch (ex) {
 			if (ex instanceof RequestsAreBlockedTemporarilyError) {
-				void window.showErrorMessage(
-					'Unable to reactivate trial: Too many failed requests. Please reload the window and try again.',
-					'OK',
-				);
+				void window.showErrorMessage('无法重新激活试用：失败请求过多。请重新加载窗口后重试。', '确定');
 				return;
 			}
 
-			void window.showErrorMessage(
-				`Unable to reactivate trial. Please try again. If this issue persists, please contact support.`,
-				'OK',
-			);
+			void window.showErrorMessage(`无法重新激活试用。请重试。若问题持续，请联系支持团队。`, '确定');
 			scope?.error(ex);
 			return;
 		}
@@ -710,13 +701,10 @@ export class SubscriptionService implements Disposable {
 			if (isSubscriptionTrial(this._subscription)) {
 				const remaining = getSubscriptionTimeRemaining(this._subscription, 'days');
 
-				const confirm: MessageItem = { title: 'OK', isCloseAffordance: true };
-				const learn: MessageItem = { title: "See What's New" };
+				const confirm: MessageItem = { title: '确定', isCloseAffordance: true };
+				const learn: MessageItem = { title: '查看新功能' };
 				const result = await window.showInformationMessage(
-					`Your GitLens Pro trial has been reactivated! Experience all the new Pro features for another ${pluralize(
-						'day',
-						remaining ?? 0,
-					)}.`,
+					`您的 GitLens Pro 试用已重新激活！再体验 ${(remaining ?? 0).toString()} 天全部新 Pro 功能。`,
 					{ modal: true },
 					confirm,
 					learn,
@@ -774,18 +762,14 @@ export class SubscriptionService implements Disposable {
 					`Unable to resend verification email; status=(${rsp.status}): ${rsp.statusText}`,
 				);
 
-				void window.showErrorMessage(`Unable to resend verification email; Status: ${rsp.statusText}`, 'OK');
+				void window.showErrorMessage(`无法重新发送验证邮件；状态：${rsp.statusText}`, '确定');
 
 				return false;
 			}
 
-			const confirm = { title: 'Recheck' };
-			const cancel = { title: 'Cancel' };
-			const result = await window.showInformationMessage(
-				"Once you have verified your email address, click 'Recheck'.",
-				confirm,
-				cancel,
-			);
+			const confirm = { title: '重新检查' };
+			const cancel = { title: '取消' };
+			const result = await window.showInformationMessage('完成邮箱验证后，请点击“重新检查”。', confirm, cancel);
 
 			if (result === confirm) {
 				await this.validate({ force: true }, source);
@@ -795,7 +779,7 @@ export class SubscriptionService implements Disposable {
 			scope?.error(ex);
 			debugger;
 
-			void window.showErrorMessage('Unable to resend verification email', 'OK');
+			void window.showErrorMessage('无法重新发送验证邮件', '确定');
 		}
 
 		return false;
@@ -1004,7 +988,7 @@ export class SubscriptionService implements Disposable {
 		const result = await pauseOnCancelOrTimeout(validating, undefined, 3000);
 		if (result.paused) {
 			return window.withProgress(
-				{ location: ProgressLocation.Notification, title: 'Validating your account...' },
+				{ location: ProgressLocation.Notification, title: '正在验证您的账号...' },
 				() => result.value,
 			);
 		}
@@ -1279,9 +1263,9 @@ export class SubscriptionService implements Disposable {
 					if (createIfNeeded) {
 						const unauthorized = ex.statusCode === 401;
 						queueMicrotask(async () => {
-							const confirm: MessageItem = { title: 'Retry Sign In' };
+							const confirm: MessageItem = { title: '重试登录' };
 							const result = await window.showErrorMessage(
-								`Unable to sign in to your (${name}) account. Please try again. If this issue persists, please contact support.${
+								`无法登录您的（${name}）账号。请重试。若问题持续，请联系支持团队。${
 									unauthorized ? '' : ` Error=${ex.message}`
 								}`,
 								confirm,
@@ -1534,23 +1518,19 @@ export class SubscriptionService implements Disposable {
 			);
 			this._statusBarSubscription.tooltip = new MarkdownString(
 				trial
-					? `**GitLens Pro — verify your email**\n\nYou must verify your email before you can start your **${effective.name}** trial.`
-					: `**GitLens Pro — verify your email**\n\nYou must verify your email before you can unlock Pro features.`,
+					? `**GitLens Pro — 验证邮箱**\n\n开始 **${effective.name}** 试用前，您必须先验证邮箱。`
+					: `**GitLens Pro — 验证邮箱**\n\n解锁 Pro 功能前，您必须先验证邮箱。`,
 				true,
 			);
 		} else {
 			let tooltip;
 			if (trialEligible) {
-				tooltip = `**GitLens Pro — reactivate your Pro trial**\n\nExperience full access to all the [new Pro features](${
+				tooltip = `**GitLens Pro — 重新激活 Pro 试用**\n\n再次免费体验 ${proTrialLengthInDays} 天全量 [新 Pro 功能](${
 					urls.releaseNotes
-				}) — free for another ${pluralize('day', proTrialLengthInDays)}.`;
+				})。`;
 			} else if (trial) {
 				const remaining = getSubscriptionTimeRemaining(this._subscription, 'days') ?? 0;
-				tooltip = `**GitLens Pro — trial**\n\nYou now have full access to all GitLens Pro features for ${pluralize(
-					'day',
-					remaining,
-					{ infix: ' more ' },
-				)}.`;
+				tooltip = `**GitLens Pro — 试用中**\n\n您当前可完整访问所有 GitLens Pro 功能，剩余 ${remaining} 天。`;
 			}
 
 			this._statusBarSubscription.tooltip = new MarkdownString(tooltip, true);
@@ -1582,8 +1562,8 @@ export class SubscriptionService implements Disposable {
 		}));
 
 		const pick = await window.showQuickPick(picks, {
-			title: 'Switch Organization',
-			placeHolder: 'Choose an active organization for your account',
+			title: '切换组织',
+			placeHolder: '为您的账号选择一个当前活跃组织',
 		});
 
 		const currentActiveOrganization = this._subscription?.activeOrganization;
@@ -1630,18 +1610,18 @@ export class SubscriptionService implements Disposable {
 		const code = queryParams.get('code');
 		const state = queryParams.get('state');
 		const context = queryParams.get('context');
-		let contextMessage = 'sign in to GitKraken';
+		let contextMessage = '登录 GitKraken';
 
 		switch (context) {
 			case 'start_trial':
-				contextMessage = 'start a Pro trial';
+				contextMessage = '开始 Pro 试用';
 				break;
 		}
 
 		if (code == null) {
 			scope?.error(undefined, `No code provided. Link: ${uri.toString(true)}`);
 			void window.showErrorMessage(
-				`Unable to ${contextMessage} with that link. Please try clicking the link again. If this issue persists, please contact support.`,
+				`无法通过该链接${contextMessage}。请重试点击该链接。若问题持续，请联系支持团队。`,
 			);
 			return;
 		}

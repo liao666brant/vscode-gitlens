@@ -34,13 +34,13 @@ export class SetupSigningWizardCommand extends GlCommandBase {
 		}
 
 		if (repository == null) {
-			void window.showErrorMessage('Unable to find a repository to configure signing for');
+			void window.showErrorMessage('未找到可用于配置签名的仓库');
 			return;
 		}
 
 		// Check if the git provider supports getSigningConfig
 		if (repository.git.config.getSigningConfig == null) {
-			void window.showErrorMessage('Commit signing is not supported by the current git provider.');
+			void window.showErrorMessage('当前 Git 提供程序不支持提交签名。');
 			return;
 		}
 
@@ -54,17 +54,19 @@ export class SetupSigningWizardCommand extends GlCommandBase {
 		});
 
 		if (alreadyConfigured) {
+			const reconfigure = '重新配置';
+			const testSigning = '测试签名';
 			const result = await window.showInformationMessage(
-				`Commit signing is already configured using ${signingConfig?.format?.toUpperCase() ?? 'GPG'}.`,
+				`已使用 ${signingConfig?.format?.toUpperCase() ?? 'GPG'} 配置提交签名。`,
 				{ modal: false },
-				'Reconfigure',
-				'Test Signing',
+				reconfigure,
+				testSigning,
 			);
 
-			if (result === 'Test Signing') {
+			if (result === testSigning) {
 				await this.testSigning(repository);
 				return;
-			} else if (result !== 'Reconfigure') {
+			} else if (result !== reconfigure) {
 				return;
 			}
 		}
@@ -78,7 +80,7 @@ export class SetupSigningWizardCommand extends GlCommandBase {
 
 		// Check if the git provider supports setSigningConfig
 		if (repository.git.config.setSigningConfig == null) {
-			void window.showErrorMessage('Commit signing is not supported by the current git provider.');
+			void window.showErrorMessage('当前 Git 提供程序不支持提交签名。');
 			return;
 		}
 
@@ -97,8 +99,8 @@ export class SetupSigningWizardCommand extends GlCommandBase {
 		}> = [
 			{
 				label: '$(key) GPG',
-				description: 'Sign commits with GPG',
-				detail: 'Uses GPG (GNU Privacy Guard) for signing commits',
+				description: '使用 GPG 对提交进行签名',
+				detail: '使用 GPG (GNU Privacy Guard) 对提交进行签名',
 				value: 'gpg',
 			},
 		];
@@ -106,8 +108,8 @@ export class SetupSigningWizardCommand extends GlCommandBase {
 		if (supportsSSH) {
 			options.push({
 				label: '$(key) SSH',
-				description: 'Sign commits with SSH',
-				detail: 'Uses SSH keys for signing commits (requires Git 2.34+)',
+				description: '使用 SSH 对提交进行签名',
+				detail: '使用 SSH 密钥对提交进行签名（需要 Git 2.34+）',
 				value: 'ssh',
 			});
 		}
@@ -115,25 +117,25 @@ export class SetupSigningWizardCommand extends GlCommandBase {
 		if (supportsX509) {
 			options.push({
 				label: '$(key) X.509',
-				description: 'Sign commits with X.509',
-				detail: 'Uses X.509 certificates for signing commits (requires Git 2.19+)',
+				description: '使用 X.509 对提交进行签名',
+				detail: '使用 X.509 证书对提交进行签名（需要 Git 2.19+）',
 				value: 'x509',
 			});
 		}
 
 		const format = await window.showQuickPick(options, {
-			title: 'Commit Signing Setup',
-			placeHolder: 'Choose a signing format',
+			title: '提交签名设置',
+			placeHolder: '选择签名格式',
 			ignoreFocusOut: true,
 		});
 
 		if (format == null) return;
 
 		// Get signing key
-		const placeholder = format.value === 'ssh' ? '~/.ssh/id_ed25519.pub' : 'Your key ID';
+		const placeholder = format.value === 'ssh' ? '~/.ssh/id_ed25519.pub' : '您的密钥 ID';
 		let signingKey = await window.showInputBox({
-			title: 'Commit Signing Setup',
-			prompt: `Enter your ${format.value.toUpperCase()} signing key ${format.value === 'ssh' ? '(file path)' : '(key ID)'}`,
+			title: '提交签名设置',
+			prompt: `输入您的 ${format.value.toUpperCase()} 签名密钥${format.value === 'ssh' ? '（文件路径）' : '（密钥 ID）'}`,
 			placeHolder: placeholder,
 			ignoreFocusOut: true,
 		});
@@ -155,12 +157,12 @@ export class SetupSigningWizardCommand extends GlCommandBase {
 			);
 
 			const result = await window.showInformationMessage(
-				`Commit signing has been configured globally using ${format.value.toUpperCase()}.`,
+				`已全局配置提交签名，使用 ${format.value.toUpperCase()}。`,
 				{ modal: false },
-				'Test Signing',
+				'测试签名',
 			);
 
-			if (result === 'Test Signing') {
+			if (result === '测试签名') {
 				await this.testSigning(repository);
 			}
 
@@ -170,9 +172,7 @@ export class SetupSigningWizardCommand extends GlCommandBase {
 				keyGenerated: false, // We don't support key generation yet
 			});
 		} catch (ex) {
-			void window.showErrorMessage(
-				`Failed to configure commit signing: ${ex instanceof Error ? ex.message : String(ex)}`,
-			);
+			void window.showErrorMessage(`配置提交签名失败：${ex instanceof Error ? ex.message : String(ex)}`);
 		}
 	}
 
@@ -181,7 +181,7 @@ export class SetupSigningWizardCommand extends GlCommandBase {
 
 		// Check if the git provider supports validateSigningSetup
 		if (repository.git.config.validateSigningSetup == null) {
-			void window.showErrorMessage('Commit signing is not supported by the current git provider.');
+			void window.showErrorMessage('当前 Git 提供程序不支持提交签名。');
 			return;
 		}
 
@@ -189,9 +189,9 @@ export class SetupSigningWizardCommand extends GlCommandBase {
 		const validation = await repository.git.config.validateSigningSetup();
 
 		if (validation?.valid) {
-			void window.showInformationMessage('✓ Commit signing is configured correctly and ready to use.');
+			void window.showInformationMessage('✓ 提交签名已正确配置，可立即使用。');
 		} else {
-			void window.showWarningMessage(`Commit signing validation failed: ${validation?.error ?? 'Unknown error'}`);
+			void window.showWarningMessage(`提交签名验证失败：${validation?.error ?? '未知错误'}`);
 		}
 	}
 }

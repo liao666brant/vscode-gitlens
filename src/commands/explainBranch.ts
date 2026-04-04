@@ -20,8 +20,8 @@ export interface ExplainBranchCommandArgs extends ExplainBaseArgs {
 
 @command()
 export class ExplainBranchCommand extends ExplainCommandBase {
-	pickerTitle = 'Explain Branch Changes';
-	repoPickerPlaceholder = 'Choose which repository to explain a branch from';
+	pickerTitle = '解释分支变更';
+	repoPickerPlaceholder = '选择要解释分支的仓库';
 
 	constructor(container: Container) {
 		super(container, ['gitlens.ai.explainBranch', 'gitlens.ai.explainBranch:views']);
@@ -43,7 +43,7 @@ export class ExplainBranchCommand extends ExplainCommandBase {
 
 		const svc = await this.getRepositoryService(editor, uri, args);
 		if (svc == null) {
-			void showGenericErrorMessage('Unable to find a repository');
+			void showGenericErrorMessage('无法找到仓库');
 			return;
 		}
 
@@ -51,7 +51,7 @@ export class ExplainBranchCommand extends ExplainCommandBase {
 			// Clarifying the head branch
 			if (args.ref == null) {
 				// If no ref is provided, show a picker to select a branch
-				const result = await showReferencePicker2(svc.path, this.pickerTitle, 'Choose a branch to explain', {
+				const result = await showReferencePicker2(svc.path, this.pickerTitle, '选择要解释的分支', {
 					include: ['branches'],
 					sort: { branches: { current: true } },
 				});
@@ -62,7 +62,7 @@ export class ExplainBranchCommand extends ExplainCommandBase {
 			// Get the branch
 			const branch = await svc.branches.getBranch(args.ref);
 			if (branch == null) {
-				void showGenericErrorMessage('Unable to find the specified branch');
+				void showGenericErrorMessage('无法找到指定分支');
 				return;
 			}
 
@@ -72,7 +72,7 @@ export class ExplainBranchCommand extends ExplainCommandBase {
 				// Use the provided base branch
 				baseBranch = await svc.branches.getBranch(args.baseBranch);
 				if (!baseBranch) {
-					void showGenericErrorMessage(`Unable to find the specified base branch: ${args.baseBranch}`);
+					void showGenericErrorMessage(`无法找到指定的基准分支：${args.baseBranch}`);
 					return;
 				}
 			} else {
@@ -83,16 +83,16 @@ export class ExplainBranchCommand extends ExplainCommandBase {
 				}
 
 				if (!baseBranch) {
-					void showGenericErrorMessage(`Unable to find the base branch for branch ${branch.name}.`);
+					void showGenericErrorMessage(`无法找到分支 ${branch.name} 的基准分支。`);
 					return;
 				}
 			}
 
 			// Get the diff between the branch and its upstream or base
 			const compareData = await prepareCompareDataForAIRequest(svc, branch.ref, baseBranch.ref, {
-				reportNoDiffService: () => void showGenericErrorMessage('Unable to get diff service'),
-				reportNoCommitsService: () => void showGenericErrorMessage('Unable to get commits service'),
-				reportNoChanges: () => void showGenericErrorMessage('No changes found to explain'),
+				reportNoDiffService: () => void showGenericErrorMessage('无法获取差异服务'),
+				reportNoCommitsService: () => void showGenericErrorMessage('无法获取提交服务'),
+				reportNoChanges: () => void showGenericErrorMessage('未找到可解释的变更'),
 			});
 
 			if (compareData == null) {
@@ -120,29 +120,29 @@ export class ExplainBranchCommand extends ExplainCommandBase {
 					context: { type: 'branch' },
 				},
 				{
-					progress: { location: ProgressLocation.Notification, title: 'Explaining branch changes...' },
+					progress: { location: ProgressLocation.Notification, title: '正在解释分支变更...' },
 				},
 			);
 
 			if (result === 'cancelled') return;
 
 			if (result == null) {
-				void showGenericErrorMessage(`Unable to explain branch ${branch.name}`);
+				void showGenericErrorMessage(`无法解释分支 ${branch.name}`);
 				return;
 			}
 
 			const { promise, model } = result;
 			this.openDocument(promise, `/explain/branch/${branch.ref}/${model.id}`, model, 'explain-branch', {
-				header: { title: 'Branch Summary', subtitle: branch.name },
+				header: { title: '分支摘要', subtitle: branch.name },
 				command: {
-					label: 'Explain Branch Changes',
+					label: '解释分支变更',
 					name: 'gitlens.ai.explainBranch',
 					args: { repoPath: svc.path, ref: branch.ref, source: args.source },
 				},
 			});
 		} catch (ex) {
 			Logger.error(ex, 'ExplainBranchCommand', 'execute');
-			void showGenericErrorMessage('Unable to explain branch');
+			void showGenericErrorMessage('无法解释分支');
 		}
 	}
 }

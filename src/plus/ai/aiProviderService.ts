@@ -817,9 +817,9 @@ export class AIProviderService implements AIService, Disposable {
 										? 'teams'
 										: 'advanced';
 
-								const upgrade = { title: `Upgrade to ${getSubscriptionPlanName(plan)}` };
+								const upgrade = { title: `升级到 ${getSubscriptionPlanName(plan)}` };
 								const result = await window.showErrorMessage(
-									"This AI feature isn't included in your current plan. Please upgrade and try again.",
+									'当前套餐不包含此 AI 功能。请升级后重试。',
 									upgrade,
 								);
 
@@ -828,9 +828,9 @@ export class AIProviderService implements AIService, Disposable {
 								}
 							} else {
 								// Users without accounts would never get here since they would have been blocked by `ensureFeatureAccess`
-								const upgrade = { title: 'Upgrade to Pro' };
+								const upgrade = { title: '升级到 Pro' };
 								const result = await window.showErrorMessage(
-									'Please upgrade to GitLens Pro to access this AI feature and try again.',
+									'请升级到 GitLens Pro 后再访问此 AI 功能并重试。',
 									upgrade,
 								);
 
@@ -842,9 +842,9 @@ export class AIProviderService implements AIService, Disposable {
 							return undefined;
 						}
 						case AIErrorReason.RequestTooLarge: {
-							const switchModel: MessageItem = { title: 'Switch Model' };
+							const switchModel: MessageItem = { title: '切换模型' };
 							const result = await window.showErrorMessage(
-								'Your request is too large. Please reduce the size of your request or switch to a different model, and then try again.',
+								'请求内容过大。请缩小请求内容或切换到其他模型后重试。',
 								switchModel,
 							);
 							if (result === switchModel) {
@@ -853,9 +853,9 @@ export class AIProviderService implements AIService, Disposable {
 							return undefined;
 						}
 						case AIErrorReason.UserQuotaExceeded: {
-							const increaseLimit: MessageItem = { title: 'Increase Limit' };
+							const increaseLimit: MessageItem = { title: '提升额度' };
 							const result = await window.showErrorMessage(
-								"Your request could not be completed because you've reached the weekly AI usage limit for your current plan. Upgrade to unlock more AI-powered actions.",
+								'由于您已达到当前套餐的每周 AI 使用上限，请求无法完成。升级以解锁更多 AI 功能。',
 								increaseLimit,
 							);
 
@@ -866,9 +866,9 @@ export class AIProviderService implements AIService, Disposable {
 							return undefined;
 						}
 						case AIErrorReason.RateLimitExceeded: {
-							const switchModel: MessageItem = { title: 'Switch Model' };
+							const switchModel: MessageItem = { title: '切换模型' };
 							const result = await window.showErrorMessage(
-								'Rate limit exceeded. Please wait a few moments or switch to a different model, and then try again.',
+								'已超过速率限制。请稍后再试，或切换到其他模型后重试。',
 								switchModel,
 							);
 							if (result === switchModel) {
@@ -878,9 +878,9 @@ export class AIProviderService implements AIService, Disposable {
 							return undefined;
 						}
 						case AIErrorReason.RateLimitOrFundsExceeded: {
-							const switchModel: MessageItem = { title: 'Switch Model' };
+							const switchModel: MessageItem = { title: '切换模型' };
 							const result = await window.showErrorMessage(
-								'Rate limit exceeded, or your account is out of funds. Please wait a few moments, check your account balance, or switch to a different model, and then try again.',
+								'已超过速率限制，或您的账户余额不足。请稍后再试、检查账户余额，或切换到其他模型后重试。',
 								switchModel,
 							);
 							if (result === switchModel) {
@@ -890,15 +890,15 @@ export class AIProviderService implements AIService, Disposable {
 						}
 						case AIErrorReason.ServiceCapacityExceeded: {
 							void window.showErrorMessage(
-								'GitKraken AI is temporarily unable to process your request due to high volume. Please wait a few moments and try again. If this issue persists, please contact support.',
-								'OK',
+								'由于请求量过高，GitKraken AI 暂时无法处理您的请求。请稍后重试。若问题持续，请联系支持团队。',
+								'确定',
 							);
 							return undefined;
 						}
 						case AIErrorReason.ModelNotSupported: {
-							const switchModel: MessageItem = { title: 'Switch Model' };
+							const switchModel: MessageItem = { title: '切换模型' };
 							const result = await window.showErrorMessage(
-								'The selected model is not supported for this request. Please select a different model and try again.',
+								'所选模型不支持此请求。请选择其他模型后重试。',
 								switchModel,
 							);
 							if (result === switchModel) {
@@ -907,9 +907,9 @@ export class AIProviderService implements AIService, Disposable {
 							return undefined;
 						}
 						case AIErrorReason.Unauthorized: {
-							const switchModel: MessageItem = { title: 'Switch Model' };
+							const switchModel: MessageItem = { title: '切换模型' };
 							const result = await window.showErrorMessage(
-								'You do not have access to the selected model. Please select a different model and try again.',
+								'您无权访问所选模型。请选择其他模型后重试。',
 								switchModel,
 							);
 							if (result === switchModel) {
@@ -918,9 +918,9 @@ export class AIProviderService implements AIService, Disposable {
 							return undefined;
 						}
 						case AIErrorReason.DeniedByUser: {
-							const switchModel: MessageItem = { title: 'Switch Model' };
+							const switchModel: MessageItem = { title: '切换模型' };
 							const result = await window.showErrorMessage(
-								'You have denied access to the selected model. Please provide access or select a different model, and then try again.',
+								'您已拒绝访问所选模型。请授予访问权限或选择其他模型后重试。',
 								switchModel,
 							);
 							if (result === switchModel) {
@@ -1205,23 +1205,23 @@ export class AIProviderService implements AIService, Disposable {
 			provider = this._provider;
 		}
 
-		const resetCurrent: MessageItem = { title: `Reset Current` };
-		const resetAll: MessageItem = { title: 'Reset All' };
-		const cancel: MessageItem = { title: 'Cancel', isCloseAffordance: true };
+		const resetCurrent: MessageItem = { title: `重置当前` };
+		const resetAll: MessageItem = { title: '全部重置' };
+		const cancel: MessageItem = { title: '取消', isCloseAffordance: true };
 
 		let result;
 		if (all) {
 			result = resetAll;
 		} else if (provider == null) {
 			result = await window.showInformationMessage(
-				`Do you want to reset all of the stored AI keys?`,
+				`是否重置所有已存储的 AI 密钥？`,
 				{ modal: true },
 				resetAll,
 				cancel,
 			);
 		} else {
 			result = await window.showInformationMessage(
-				`Do you want to reset the stored key for the current provider (${provider.name}) or reset all of the stored AI keys?`,
+				`是否重置当前提供程序（${provider.name}）的已存储密钥，或重置所有已存储的 AI 密钥？`,
 				{ modal: true },
 				resetCurrent,
 				resetAll,
@@ -1243,9 +1243,7 @@ export class AIProviderService implements AIService, Disposable {
 			this.resetConfirmations();
 
 			void env.clipboard.writeText(keys.join('\n'));
-			void window.showInformationMessage(
-				`All stored AI keys have been reset. The configured keys were copied to your clipboard.`,
-			);
+			void window.showInformationMessage(`所有已存储的 AI 密钥均已重置。已配置的密钥已复制到剪贴板。`);
 		}
 	}
 
@@ -1260,9 +1258,7 @@ export class AIProviderService implements AIService, Disposable {
 			void this.container.storage.getSecret(`gitlens.${provider}.key`).then(key => {
 				if (key) {
 					void env.clipboard.writeText(key);
-					void window.showInformationMessage(
-						`The stored AI key has been reset. The configured key was copied to your clipboard.`,
-					);
+					void window.showInformationMessage(`已重置已存储的 AI 密钥。已配置的密钥已复制到剪贴板。`);
 				}
 			});
 		}
@@ -1295,19 +1291,19 @@ export class AIProviderService implements AIService, Disposable {
 			(compareSubscriptionPlans(subscription.plan.actual.id, 'advanced') >= 0 ||
 				compareSubscriptionPlans(subscription.plan.effective.id, 'advanced') >= 0);
 
-		let body = 'All Access Week - now until July 11th!';
+		let body = '全量访问周活动进行中，截止至 7 月 11 日！';
 		const detail = hasAdvancedOrHigher
-			? 'Opt in now to get unlimited GitKraken AI until July 11th!'
-			: 'Opt in now to try all Advanced GitLens features with unlimited GitKraken AI for FREE until July 11th!';
+			? '立即加入，即可在 7 月 11 日前不限量使用 GitKraken AI！'
+			: '立即加入，即可在 7 月 11 日前免费体验全部 Advanced GitLens 功能与不限量 GitKraken AI！';
 
 		if (!usingGkProvider) {
 			body += ` ${detail}`;
 		}
 
 		const optInButton: MessageItem = usingGkProvider
-			? { title: 'Opt in for Unlimited AI' }
-			: { title: 'Opt in and Switch to GitKraken AI' };
-		const dismissButton: MessageItem = { title: 'No, Thanks', isCloseAffordance: true };
+			? { title: '加入并解锁不限量 AI' }
+			: { title: '加入并切换到 GitKraken AI' };
+		const dismissButton: MessageItem = { title: '暂不需要', isCloseAffordance: true };
 
 		// Show the notification
 		const result = await window.showInformationMessage(
@@ -1354,12 +1350,12 @@ async function showConfirmAIProviderToS(storage: Storage): Promise<boolean> {
 	const confirmed = storage.get(`confirm:ai:tos`, false) || storage.getWorkspace(`confirm:ai:tos`, false);
 	if (confirmed) return true;
 
-	const acceptAlways: MessageItem = { title: 'Accept' };
-	const acceptWorkspace: MessageItem = { title: 'Accept Only for this Workspace' };
-	const cancel: MessageItem = { title: 'Cancel', isCloseAffordance: true };
+	const acceptAlways: MessageItem = { title: '同意' };
+	const acceptWorkspace: MessageItem = { title: '仅在当前工作区同意' };
+	const cancel: MessageItem = { title: '取消', isCloseAffordance: true };
 
 	const result = await window.showInformationMessage(
-		'GitLens AI features can send code snippets, diffs, and other context to your selected AI provider for analysis.',
+		'GitLens AI 功能可能会将代码片段、diff 与其他上下文发送到您选择的 AI 提供方进行分析。',
 		{ modal: true },
 		acceptAlways,
 		acceptWorkspace,

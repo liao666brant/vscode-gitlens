@@ -17,8 +17,8 @@ export interface ExplainStashCommandArgs extends ExplainBaseArgs {
 
 @command()
 export class ExplainStashCommand extends ExplainCommandBase {
-	pickerTitle = 'Explain Stash Changes';
-	repoPickerPlaceholder = 'Choose which repository to explain a stash from';
+	pickerTitle = '解释贮藏变更';
+	repoPickerPlaceholder = '选择要解释贮藏的仓库';
 
 	constructor(container: Container) {
 		super(container, ['gitlens.ai.explainStash', 'gitlens.ai.explainStash:views']);
@@ -41,25 +41,21 @@ export class ExplainStashCommand extends ExplainCommandBase {
 
 		const svc = await this.getRepositoryService(editor, uri, args);
 		if (svc == null) {
-			void showGenericErrorMessage('Unable to find a repository');
+			void showGenericErrorMessage('无法找到仓库');
 			return;
 		}
 
 		try {
 			let commit: GitCommit | undefined;
 			if (args.rev == null) {
-				const pick = await showStashPicker(
-					svc.stash?.getStash(),
-					this.pickerTitle,
-					'Choose a stash to explain',
-				);
+				const pick = await showStashPicker(svc.stash?.getStash(), this.pickerTitle, '选择要解释的贮藏');
 				if (pick?.ref == null) return;
 				args.rev = pick.ref;
 				commit = pick;
 			} else {
 				commit = await svc.commits.getCommit(args.rev);
 				if (commit == null) {
-					void showGenericErrorMessage('Unable to find the specified stash commit');
+					void showGenericErrorMessage('无法找到指定的贮藏提交');
 					return;
 				}
 			}
@@ -72,29 +68,29 @@ export class ExplainStashCommand extends ExplainCommandBase {
 					context: { type: 'stash' },
 				},
 				{
-					progress: { location: ProgressLocation.Notification, title: 'Explaining stash...' },
+					progress: { location: ProgressLocation.Notification, title: '正在解释贮藏...' },
 				},
 			);
 
 			if (result === 'cancelled') return;
 
 			if (result == null) {
-				void showGenericErrorMessage('Unable to explain stash');
+				void showGenericErrorMessage('无法解释贮藏');
 				return;
 			}
 
 			const { promise, model } = result;
 			this.openDocument(promise, `/explain/stash/${commit.ref}/${model.id}`, model, 'explain-stash', {
-				header: { title: 'Stash Summary', subtitle: commit.message || commit.ref },
+				header: { title: '贮藏摘要', subtitle: commit.message || commit.ref },
 				command: {
-					label: 'Explain Stash Changes',
+					label: '解释贮藏变更',
 					name: 'gitlens.ai.explainStash',
 					args: { repoPath: svc.path, ref: commit.ref, source: args.source },
 				},
 			});
 		} catch (ex) {
 			Logger.error(ex, 'ExplainStashCommand', 'execute');
-			void showGenericErrorMessage('Unable to explain stash');
+			void showGenericErrorMessage('无法解释贮藏');
 		}
 	}
 }

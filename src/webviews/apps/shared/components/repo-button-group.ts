@@ -115,7 +115,7 @@ export class GlRepoButtonGroup extends GlElement {
 	}
 
 	private get displayName(): string {
-		return this.repository?.name ?? 'none selected';
+		return this.repository?.name ?? '未选择';
 	}
 
 	override render() {
@@ -167,7 +167,7 @@ export class GlRepoButtonGroup extends GlElement {
 					part="provider-icon"
 					appearance="toolbar"
 					href=${ifDefined(provider.url)}
-					aria-label=${`Open Repository on ${provider.name}`}
+					aria-label=${`在 ${provider.name} 上打开仓库`}
 					@click=${(e: MouseEvent) =>
 						this.emit('gl-click', {
 							event: e,
@@ -182,14 +182,14 @@ export class GlRepoButtonGroup extends GlElement {
 					${when(connectedIntegration, () => html`<gl-indicator class="indicator-dot"></gl-indicator>`)}
 				</gl-button>
 				<span slot="content">
-					Open Repository on ${provider.name}
+					在 ${provider.name} 上打开仓库
 					<hr />
 					${when(
 						connectedIntegration,
 						() => html`
 							<span>
 								<code-icon style="margin-top: -3px" icon="check" aria-hidden="true"></code-icon>
-								Connected to ${provider.name}
+								已连接到 ${provider.name}
 							</span>
 						`,
 						() => {
@@ -203,9 +203,9 @@ export class GlRepoButtonGroup extends GlElement {
 										{ repoPath: repo.path, remote: provider.bestRemoteName },
 									)}
 								>
-									Connect to ${repo.provider!.name}
+									连接到 ${repo.provider!.name}
 								</a>
-								<span>&mdash; not connected</span>
+								<span>&mdash; 未连接</span>
 							`;
 						},
 					)}
@@ -234,9 +234,9 @@ export class GlRepoButtonGroup extends GlElement {
 			>
 				<code-icon icon="plug" style="color: var(--titlebar-fg)"></code-icon>
 				<span slot="tooltip">
-					Connect to ${provider.name}
+					连接到 ${provider.name}
 					<hr />
-					View pull requests and issues in Home, Commit Graph, Launchpad, autolinks, and more
+					在 Home、Commit Graph、Launchpad、自动链接等位置查看拉取请求和 Issue
 				</span>
 			</gl-button>
 		`;

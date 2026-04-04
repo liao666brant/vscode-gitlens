@@ -93,7 +93,7 @@ export class WorkspacesService implements Disposable {
 		if (subscription?.account == null) {
 			return {
 				cloudWorkspaces: undefined,
-				cloudWorkspaceInfo: 'Please sign in to use cloud workspaces.',
+				cloudWorkspaceInfo: '请先登录后再使用云工作区。',
 			};
 		}
 
@@ -108,7 +108,7 @@ export class WorkspacesService implements Disposable {
 		} catch {
 			return {
 				cloudWorkspaces: undefined,
-				cloudWorkspaceInfo: 'Failed to load cloud workspaces.',
+				cloudWorkspaceInfo: '加载云工作区失败。',
 			};
 		}
 
@@ -157,7 +157,7 @@ export class WorkspacesService implements Disposable {
 			cloudWorkspaces: cloudWorkspaces,
 			cloudWorkspaceInfo:
 				filteredSharedWorkspaceCount > 0
-					? `${filteredSharedWorkspaceCount} shared workspaces hidden - upgrade to GitLens Pro to access.`
+					? `${filteredSharedWorkspaceCount} 个共享工作区已隐藏，升级到 GitLens Pro 后可访问。`
 					: undefined,
 		};
 	}
@@ -176,7 +176,7 @@ export class WorkspacesService implements Disposable {
 					workspace.name,
 					workspace.repositories?.map(repositoryPath => ({
 						localPath: repositoryPath.localPath,
-						name: repositoryPath.localPath.split(/[\\/]/).pop() ?? 'unknown',
+						name: repositoryPath.localPath.split(/[\\/]/).pop() ?? '未知',
 						workspaceId: workspace.localId,
 					})) ?? [],
 					this._currentWorkspaceId != null && this._currentWorkspaceId === workspace.localId,
@@ -308,17 +308,17 @@ export class WorkspacesService implements Disposable {
 		const repositoriesToAdd = repositories.filter(r => !currentWorkspaceRepositoryIdMap.has(r.id));
 		if (repositoriesToAdd.length === 0) {
 			if (options?.force) {
-				void window.showInformationMessage('No new repositories found to add.', { modal: true });
+				void window.showInformationMessage('没有可添加的新仓库。', { modal: true });
 			}
 			return;
 		}
 		let chosenRepoPaths: string[] = [];
 		if (!options?.force && this._currentWorkspaceAutoAddSetting === 'prompt') {
-			const add = { title: 'Add...' };
-			const change = { title: 'Change Auto-Add Behavior...' };
-			const cancel = { title: 'Cancel', isCloseAffordance: true };
+			const add = { title: '添加...' };
+			const change = { title: '更改自动添加行为...' };
+			const cancel = { title: '取消', isCloseAffordance: true };
 			const addChoice = await window.showInformationMessage(
-				'New repositories found in the linked Cloud workspace. Would you like to add them to the current VS Code workspace?',
+				'在关联的云工作区中发现了新仓库。是否将它们添加到当前 VS Code 工作区？',
 				add,
 				change,
 				cancel,
@@ -334,8 +334,8 @@ export class WorkspacesService implements Disposable {
 		if (options?.force || this._currentWorkspaceAutoAddSetting === 'prompt') {
 			const pick = await showRepositoriesPicker(
 				this.container,
-				'Add Repositories to Workspace',
-				'Choose which repositories to add to the current workspace',
+				'添加仓库到工作区',
+				'选择要添加到当前工作区的仓库',
 				repositoriesToAdd,
 				{ excludeWorktrees: true },
 			);
@@ -350,7 +350,7 @@ export class WorkspacesService implements Disposable {
 		void window.withProgress(
 			{
 				location: ProgressLocation.Notification,
-				title: `Adding new repositories from linked cloud workspace...`,
+				title: `正在从关联的云工作区添加新仓库...`,
 				cancellable: false,
 			},
 			() => {
@@ -385,7 +385,7 @@ export class WorkspacesService implements Disposable {
 	private async getRepositoriesInParentFolder(cancellation?: CancellationToken): Promise<Repository[] | undefined> {
 		const parentUri = (
 			await window.showOpenDialog({
-				title: `Choose a folder containing repositories for this workspace`,
+				title: `选择一个包含此工作区仓库的文件夹`,
 				canSelectFiles: false,
 				canSelectFolders: true,
 				canSelectMany: false,
@@ -454,7 +454,7 @@ export class WorkspacesService implements Disposable {
 			let repoLocatedUri = uriOrRepository;
 			repoLocatedUri ??= (
 				await window.showOpenDialog({
-					title: `Choose a location for ${descriptor.name}`,
+					title: `为 ${descriptor.name} 选择位置`,
 					canSelectFiles: false,
 					canSelectFolders: true,
 					canSelectMany: false,
@@ -512,9 +512,9 @@ export class WorkspacesService implements Disposable {
 	@debug({ args: false })
 	async createCloudWorkspace(options?: { repos?: Repository[] }): Promise<void> {
 		const input = window.createInputBox();
-		input.title = 'Create Cloud Workspace';
+		input.title = '创建云工作区';
 		const quickpick = window.createQuickPick();
-		quickpick.title = 'Create Cloud Workspace';
+		quickpick.title = '创建云工作区';
 		const quickpickLabelToProviderType: Record<string, CloudWorkspaceProviderInputType> = {
 			GitHub: CloudWorkspaceProviderInputType.GitHub,
 			'GitHub Enterprise': CloudWorkspaceProviderInputType.GitHubEnterprise,
@@ -541,10 +541,9 @@ export class WorkspacesService implements Disposable {
 			for (const repo of options.repos) {
 				const repoRemotes = await repo.git.remotes.getRemotes({ filter: r => r.domain === 'github.com' });
 				if (repoRemotes.length === 0) {
-					await window.showErrorMessage(
-						`Only GitHub is supported for this operation. Please ensure all open repositories are hosted on GitHub.`,
-						{ modal: true },
-					);
+					await window.showErrorMessage(`此操作仅支持 GitHub。请确保所有已打开仓库均托管在 GitHub 上。`, {
+						modal: true,
+					});
 					return;
 				}
 			}
@@ -559,7 +558,7 @@ export class WorkspacesService implements Disposable {
 					input.onDidAccept(() => {
 						const value = input.value.trim();
 						if (!value) {
-							input.validationMessage = 'Please enter a non-empty name for the workspace';
+							input.validationMessage = '请输入非空的工作区名称';
 							return;
 						}
 
@@ -567,8 +566,8 @@ export class WorkspacesService implements Disposable {
 					}),
 				);
 
-				input.placeholder = 'Please enter a name for the new workspace';
-				input.prompt = 'Enter your workspace name';
+				input.placeholder = '请输入新工作区名称';
+				input.prompt = '输入工作区名称';
 				input.show();
 			});
 
@@ -580,7 +579,7 @@ export class WorkspacesService implements Disposable {
 					input.onDidAccept(() => {
 						const value = input.value.trim();
 						if (!value) {
-							input.validationMessage = 'Please enter a non-empty description for the workspace';
+							input.validationMessage = '请输入非空的工作区描述';
 							return;
 						}
 
@@ -589,9 +588,9 @@ export class WorkspacesService implements Disposable {
 				);
 
 				input.value = '';
-				input.title = 'Create Workspace';
-				input.placeholder = 'Please enter a description for the new workspace';
-				input.prompt = 'Enter your workspace description';
+				input.title = '创建工作区';
+				input.placeholder = '请输入新工作区描述';
+				input.prompt = '输入工作区描述';
 				input.show();
 			});
 
@@ -607,7 +606,7 @@ export class WorkspacesService implements Disposable {
 					}),
 				);
 
-				quickpick.placeholder = 'Please select a provider for the new workspace';
+				quickpick.placeholder = '请选择新工作区的提供方';
 				quickpick.items = Object.keys(quickpickLabelToProviderType).map(label => ({ label: label }));
 				quickpick.canSelectMany = false;
 				quickpick.show();
@@ -625,7 +624,7 @@ export class WorkspacesService implements Disposable {
 						input.onDidAccept(() => {
 							const value = input.value.trim();
 							if (!value) {
-								input.validationMessage = 'Please enter a non-empty host URL for the workspace';
+								input.validationMessage = '请输入非空的工作区主机 URL';
 								return;
 							}
 
@@ -634,8 +633,8 @@ export class WorkspacesService implements Disposable {
 					);
 
 					input.value = '';
-					input.placeholder = 'Please enter a host URL for the new workspace';
-					input.prompt = 'Enter your workspace host URL';
+					input.placeholder = '请输入新工作区主机 URL';
+					input.prompt = '输入工作区主机 URL';
 					input.show();
 				});
 
@@ -649,8 +648,7 @@ export class WorkspacesService implements Disposable {
 						input.onDidAccept(() => {
 							const value = input.value.trim();
 							if (!value) {
-								input.validationMessage =
-									'Please enter a non-empty organization name for the workspace';
+								input.validationMessage = '请输入非空的工作区组织名称';
 								return;
 							}
 
@@ -659,8 +657,8 @@ export class WorkspacesService implements Disposable {
 					);
 
 					input.value = '';
-					input.placeholder = 'Please enter an organization name for the new workspace';
-					input.prompt = 'Enter your workspace organization name';
+					input.placeholder = '请输入新工作区组织名称';
+					input.prompt = '输入工作区组织名称';
 					input.show();
 				});
 
@@ -672,7 +670,7 @@ export class WorkspacesService implements Disposable {
 						input.onDidAccept(() => {
 							const value = input.value.trim();
 							if (!value) {
-								input.validationMessage = 'Please enter a non-empty project name for the workspace';
+								input.validationMessage = '请输入非空的工作区项目名称';
 								return;
 							}
 
@@ -681,8 +679,8 @@ export class WorkspacesService implements Disposable {
 					);
 
 					input.value = '';
-					input.placeholder = 'Please enter a project name for the new workspace';
-					input.prompt = 'Enter your workspace project name';
+					input.placeholder = '请输入新工作区项目名称';
+					input.prompt = '输入工作区项目名称';
 					input.show();
 				});
 
@@ -752,12 +750,12 @@ export class WorkspacesService implements Disposable {
 	@debug()
 	async deleteCloudWorkspace(workspaceId: string): Promise<void> {
 		const confirmation = await window.showWarningMessage(
-			`Are you sure you want to delete this workspace? This cannot be undone.`,
+			`确定要删除此工作区吗？此操作无法撤销。`,
 			{ modal: true },
-			{ title: 'Confirm' },
-			{ title: 'Cancel', isCloseAffordance: true },
+			{ title: '确认' },
+			{ title: '取消', isCloseAffordance: true },
 		);
-		if (confirmation == null || confirmation.title === 'Cancel') return;
+		if (confirmation == null || confirmation.title === '取消') return;
 		try {
 			const response = await this._api.deleteWorkspace(workspaceId);
 			if (response?.data?.delete_project?.id === workspaceId) {
@@ -816,7 +814,7 @@ export class WorkspacesService implements Disposable {
 				picked?: boolean;
 			}[] = [
 				{
-					label: 'Choose repositories from a folder',
+					label: '从文件夹中选择仓库',
 					description: undefined,
 					choice: 'parentFolder',
 				},
@@ -824,7 +822,7 @@ export class WorkspacesService implements Disposable {
 
 			if (validRepos.length > 0) {
 				choices.unshift({
-					label: 'Choose repositories from the current window',
+					label: '从当前窗口中选择仓库',
 					description: undefined,
 					choice: 'currentWindow',
 				});
@@ -833,7 +831,7 @@ export class WorkspacesService implements Disposable {
 			choices[0].picked = true;
 
 			const repoChoice = await window.showQuickPick(choices, {
-				placeHolder: 'Choose repositories from the current window or a folder',
+				placeHolder: '从当前窗口或某个文件夹中选择仓库',
 				ignoreFocusOut: true,
 			});
 
@@ -843,7 +841,7 @@ export class WorkspacesService implements Disposable {
 				await window.withProgress(
 					{
 						location: ProgressLocation.Notification,
-						title: `Finding repositories to add to the workspace...`,
+						title: `正在查找可添加到工作区的仓库...`,
 						cancellable: true,
 					},
 					async (_progress, token) => {
@@ -851,7 +849,7 @@ export class WorkspacesService implements Disposable {
 						if (foundRepos == null) return;
 						if (foundRepos.length === 0) {
 							if (!options?.suppressNotifications) {
-								void window.showInformationMessage(`No repositories found in the chosen folder.`, {
+								void window.showInformationMessage(`在所选文件夹中未找到仓库。`, {
 									modal: true,
 								});
 							}
@@ -863,7 +861,7 @@ export class WorkspacesService implements Disposable {
 						if (validRepos.length === 0) {
 							if (!options?.suppressNotifications) {
 								void window.showInformationMessage(
-									`No matching repositories found for provider ${workspace.provider}.`,
+									`未找到与提供方 ${workspace.provider} 匹配的仓库。`,
 									{
 										modal: true,
 									},
@@ -876,12 +874,9 @@ export class WorkspacesService implements Disposable {
 						validRepos = await this.filterReposForCloudWorkspace(validRepos, workspaceId);
 						if (validRepos.length === 0) {
 							if (!options?.suppressNotifications) {
-								void window.showInformationMessage(
-									`All possible repositories are already in this workspace.`,
-									{
-										modal: true,
-									},
-								);
+								void window.showInformationMessage(`所有可用仓库都已在此工作区中。`, {
+									modal: true,
+								});
 							}
 						}
 					},
@@ -890,8 +885,8 @@ export class WorkspacesService implements Disposable {
 
 			const pick = await showRepositoriesPicker(
 				this.container,
-				'Add Repositories to Workspace',
-				'Choose which repositories to add to the workspace',
+				'添加仓库到工作区',
+				'选择要添加到工作区的仓库',
 				validRepos,
 				{ excludeWorktrees: true },
 			);
@@ -925,7 +920,7 @@ export class WorkspacesService implements Disposable {
 		await window.withProgress(
 			{
 				location: ProgressLocation.Notification,
-				title: `Adding repositories to workspace ${workspace.name}...`,
+				title: `正在将仓库添加到工作区 ${workspace.name}...`,
 				cancellable: false,
 			},
 			async () => {
@@ -974,12 +969,12 @@ export class WorkspacesService implements Disposable {
 		if (workspace == null) return;
 
 		const confirmation = await window.showWarningMessage(
-			`Are you sure you want to remove ${descriptor.name} from this workspace? This cannot be undone.`,
+			`确定要从此工作区移除 ${descriptor.name} 吗？此操作无法撤销。`,
 			{ modal: true },
-			{ title: 'Confirm' },
-			{ title: 'Cancel', isCloseAffordance: true },
+			{ title: '确认' },
+			{ title: '取消', isCloseAffordance: true },
 		);
-		if (confirmation == null || confirmation.title === 'Cancel') return;
+		if (confirmation == null || confirmation.title === '取消') return;
 		try {
 			const response = await this._api.removeReposFromWorkspace(workspaceId, [
 				{ owner: descriptor.provider_organization_id, repoName: descriptor.name },
@@ -1123,10 +1118,7 @@ export class WorkspacesService implements Disposable {
 		const workspaceRepositoriesByName = await workspace.getRepositoriesByName();
 
 		if (workspaceRepositoriesByName.size === 0) {
-			void window.showErrorMessage(
-				'No repositories in this workspace could be found locally. Please locate at least one repository.',
-				{ modal: true },
-			);
+			void window.showErrorMessage('在本地找不到此工作区中的任何仓库。请至少定位一个仓库。', { modal: true });
 			return;
 		}
 
@@ -1140,21 +1132,21 @@ export class WorkspacesService implements Disposable {
 
 		if (workspaceFolderPaths.length < repoDescriptors.length) {
 			const confirmation = await window.showWarningMessage(
-				`Some repositories in this workspace could not be located locally. Do you want to continue?`,
+				`此工作区中的部分仓库无法在本地定位。是否继续？`,
 				{ modal: true },
-				{ title: 'Continue' },
-				{ title: 'Cancel', isCloseAffordance: true },
+				{ title: '继续' },
+				{ title: '取消', isCloseAffordance: true },
 			);
-			if (confirmation == null || confirmation.title === 'Cancel') return;
+			if (confirmation == null || confirmation.title === '取消') return;
 		}
 
 		// Have the user choose a name and location for the new workspace file
 		const newWorkspaceUri = await window.showSaveDialog({
 			defaultUri: Uri.file(`${workspace.name}.code-workspace`),
 			filters: {
-				'Code Workspace': ['code-workspace'],
+				代码工作区: ['code-workspace'],
 			},
-			title: 'Choose a location for the new code workspace file',
+			title: '为新的代码工作区文件选择位置',
 		});
 
 		if (newWorkspaceUri == null) return;
@@ -1171,7 +1163,7 @@ export class WorkspacesService implements Disposable {
 		);
 
 		if (!created) {
-			void window.showErrorMessage('Could not create the new workspace file. Check logs for details');
+			void window.showErrorMessage('无法创建新的工作区文件。请查看日志了解详情');
 			return;
 		}
 
@@ -1179,11 +1171,11 @@ export class WorkspacesService implements Disposable {
 
 		type LocationMessageItem = MessageItem & { location?: OpenWorkspaceLocation };
 
-		const openNewWindow: LocationMessageItem = { title: 'Open in New Window', location: 'newWindow' };
-		const openCurrent: LocationMessageItem = { title: 'Open in Current Window', location: 'currentWindow' };
-		const cancel: LocationMessageItem = { title: 'Cancel', isCloseAffordance: true } as const;
+		const openNewWindow: LocationMessageItem = { title: '在新窗口中打开', location: 'newWindow' };
+		const openCurrent: LocationMessageItem = { title: '在当前窗口中打开', location: 'currentWindow' };
+		const cancel: LocationMessageItem = { title: '取消', isCloseAffordance: true } as const;
 		const result = await window.showInformationMessage(
-			`Workspace file created for ${workspace.name}. Would you like to open it now?`,
+			`已为 ${workspace.name} 创建工作区文件。是否立即打开？`,
 			{ modal: true },
 			openNewWindow,
 			openCurrent,
@@ -1212,26 +1204,25 @@ export class WorkspacesService implements Disposable {
 
 		const autoAddOptions: QuickPickItemWithOption[] = [
 			{
-				label: 'Add on Workspace (Window) Open',
-				description: this._currentWorkspaceAutoAddSetting === 'enabled' ? 'current' : undefined,
+				label: '打开工作区（窗口）时自动添加',
+				description: this._currentWorkspaceAutoAddSetting === 'enabled' ? '当前' : undefined,
 				option: 'enabled',
 			},
 			{
-				label: 'Prompt on Workspace (Window) Open',
-				description: this._currentWorkspaceAutoAddSetting === 'prompt' ? 'current' : undefined,
+				label: '打开工作区（窗口）时询问',
+				description: this._currentWorkspaceAutoAddSetting === 'prompt' ? '当前' : undefined,
 				option: 'prompt',
 			},
 			{
-				label: 'Never',
-				description: this._currentWorkspaceAutoAddSetting === 'disabled' ? 'current' : undefined,
+				label: '从不',
+				description: this._currentWorkspaceAutoAddSetting === 'disabled' ? '当前' : undefined,
 				option: 'disabled',
 			},
 		];
 
 		const newWorkspaceAutoAddOption = await window.showQuickPick<QuickPickItemWithOption>(autoAddOptions, {
-			placeHolder:
-				'Choose the behavior of automatically adding missing repositories to the current VS Code workspace',
-			title: 'Linked Workspace: Automatically Add Repositories',
+			placeHolder: '选择将缺失仓库自动添加到当前 VS Code 工作区的行为',
+			title: '关联工作区：自动添加仓库',
 		});
 		if (newWorkspaceAutoAddOption?.option == null) return defaultOption;
 
@@ -1254,27 +1245,27 @@ export class WorkspacesService implements Disposable {
 		if (workspace == null) return;
 		if (workspace.localPath == null) {
 			const create = await window.showInformationMessage(
-				`The workspace file for ${workspace.name} has not been created. Would you like to create it now?`,
+				`${workspace.name} 的工作区文件尚未创建。是否现在创建？`,
 				{ modal: true },
-				{ title: 'Create' },
-				{ title: 'Cancel', isCloseAffordance: true },
+				{ title: '创建' },
+				{ title: '取消', isCloseAffordance: true },
 			);
 
-			if (create == null || create.title === 'Cancel') return;
+			if (create == null || create.title === '取消') return;
 			return void this.saveAsCodeWorkspaceFile(workspaceId);
 		}
 
 		let openLocation: OpenWorkspaceLocation = options?.location === 'currentWindow' ? 'currentWindow' : 'newWindow';
 		if (!options?.location) {
 			const openLocationChoice = await window.showInformationMessage(
-				`How would you like to open the workspace file for ${workspace.name}?`,
+				`您希望如何打开 ${workspace.name} 的工作区文件？`,
 				{ modal: true },
-				{ title: 'Open in New Window', location: 'newWindow' as const },
-				{ title: 'Open in Current Window', location: 'currentWindow' as const },
-				{ title: 'Cancel', isCloseAffordance: true },
+				{ title: '在新窗口中打开', location: 'newWindow' as const },
+				{ title: '在当前窗口中打开', location: 'currentWindow' as const },
+				{ title: '取消', isCloseAffordance: true },
 			);
 
-			if (openLocationChoice == null || openLocationChoice.title === 'Cancel') return;
+			if (openLocationChoice == null || openLocationChoice.title === '取消') return;
 			openLocation = openLocationChoice.location ?? 'newWindow';
 		}
 
@@ -1282,13 +1273,13 @@ export class WorkspacesService implements Disposable {
 			await this._sharedStorage?.removeCloudWorkspaceCodeWorkspaceFile(workspace.id);
 			workspace.setLocalPath(undefined);
 			const locateChoice = await window.showInformationMessage(
-				`The workspace file for ${workspace.name} could not be found. Would you like to locate it now?`,
+				`找不到 ${workspace.name} 的工作区文件。是否现在定位？`,
 				{ modal: true },
-				{ title: 'Locate' },
-				{ title: 'Cancel', isCloseAffordance: true },
+				{ title: '定位' },
+				{ title: '取消', isCloseAffordance: true },
 			);
 
-			if (locateChoice?.title !== 'Locate') return;
+			if (locateChoice?.title !== '定位') return;
 			const newPath = (
 				await window.showOpenDialog({
 					defaultUri: Uri.file(workspace.localPath),
@@ -1296,9 +1287,9 @@ export class WorkspacesService implements Disposable {
 					canSelectFolders: false,
 					canSelectMany: false,
 					filters: {
-						'Code Workspace': ['code-workspace'],
+						代码工作区: ['code-workspace'],
 					},
-					title: 'Locate the workspace file',
+					title: '定位工作区文件',
 				})
 			)?.[0]?.fsPath;
 

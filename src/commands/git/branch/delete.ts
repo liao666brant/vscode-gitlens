@@ -76,9 +76,9 @@ export class BranchDeleteGitCommand extends QuickCommand<State> {
 			container,
 			prune ? 'branch-prune' : 'branch-delete',
 			prune ? 'prune' : 'delete',
-			prune ? 'Prune Branches' : 'Delete Branches',
+			prune ? '清理分支' : '删除分支',
 			{
-				description: prune ? 'deletes local branches with missing upstreams' : 'deletes the specified branches',
+				description: prune ? '删除上游缺失的本地分支' : '删除指定分支',
 			},
 		);
 
@@ -144,10 +144,8 @@ export class BranchDeleteGitCommand extends QuickCommand<State> {
 						? b => !b.current && Boolean(b.upstream?.missing) && !worktreesByBranch.get(b.id)?.isDefault
 						: b => !b.current && !worktreesByBranch.get(b.id)?.isDefault,
 					picked: state.references?.map(r => r.ref),
-					placeholder: prune
-						? 'Choose branches with missing upstreams to delete'
-						: 'Choose branches to delete',
-					emptyPlaceholder: prune ? `No branches with missing upstreams in ${state.repo.name}` : undefined,
+					placeholder: prune ? '选择要删除的上游缺失分支' : '选择要删除的分支',
+					emptyPlaceholder: prune ? `${state.repo.name} 中没有上游缺失的分支` : undefined,
 					sort: { current: false, missingUpstream: true },
 				});
 				if (result === StepResultBreak) {
@@ -175,9 +173,9 @@ export class BranchDeleteGitCommand extends QuickCommand<State> {
 							uris: worktrees.map(wt => wt.uri),
 							startingFromBranchDelete: true,
 							overrides: {
-								title: `Delete ${worktrees.length === 1 ? 'Worktree' : 'Worktrees'} for ${
-									worktrees.length === 1 ? 'Branch' : 'Branches'
-								}`,
+								title: `删除${worktrees.length === 1 ? '工作树' : '工作树'}（${
+									worktrees.length === 1 ? '分支' : '分支'
+								}）`,
 							},
 						},
 					},
@@ -222,10 +220,10 @@ export class BranchDeleteGitCommand extends QuickCommand<State> {
 					}
 				} catch (ex) {
 					if (BranchError.is(ex, 'notFullyMerged')) {
-						const confirm = { title: 'Delete Branch' };
-						const cancel = { title: 'Cancel', isCloseAffordance: true };
+						const confirm = { title: '删除分支' };
+						const cancel = { title: '取消', isCloseAffordance: true };
 						const result = await window.showWarningMessage(
-							`Unable to delete branch '${name}' as it is not fully merged. Do you want to delete it anyway?`,
+							`无法删除分支“${name}”，因为它尚未完全合并。仍要删除吗？`,
 							{ modal: true },
 							confirm,
 							cancel,
@@ -236,10 +234,7 @@ export class BranchDeleteGitCommand extends QuickCommand<State> {
 								await state.repo.git.branches.deleteLocalBranch?.(name, { force: true });
 							} catch (ex) {
 								Logger.error(ex, context.title);
-								void showGitErrorMessage(
-									ex,
-									BranchError.is(ex) ? undefined : 'Unable to force delete branch',
-								);
+								void showGitErrorMessage(ex, BranchError.is(ex) ? undefined : '无法强制删除分支');
 							}
 						}
 
@@ -247,7 +242,7 @@ export class BranchDeleteGitCommand extends QuickCommand<State> {
 					}
 
 					Logger.error(ex, context.title);
-					void showGitErrorMessage(ex, BranchError.is(ex) ? undefined : 'Unable to delete branch');
+					void showGitErrorMessage(ex, BranchError.is(ex) ? undefined : '无法删除分支');
 				}
 			}
 		}
@@ -278,15 +273,15 @@ export class BranchDeleteGitCommand extends QuickCommand<State> {
 		const confirmations: FlagsQuickPickItem<Flags>[] = [
 			createFlagsQuickPickItem<Flags>(state.flags, [], {
 				label: context.title,
-				detail: `Will delete ${getReferenceLabel(state.references)}`,
+				detail: `将删除 ${getReferenceLabel(state.references)}`,
 			}),
 		];
 		if (!state.references.every(b => b.remote)) {
 			confirmations.push(
 				createFlagsQuickPickItem<Flags>(state.flags, ['--force'], {
-					label: `Force ${context.title}`,
+					label: `强制${context.title}`,
 					description: '--force',
-					detail: `Will forcibly delete ${getReferenceLabel(state.references)}`,
+					detail: `将强制删除 ${getReferenceLabel(state.references)}`,
 				}),
 			);
 
@@ -294,23 +289,21 @@ export class BranchDeleteGitCommand extends QuickCommand<State> {
 				confirmations.push(
 					createQuickPickSeparator(),
 					createFlagsQuickPickItem<Flags>(state.flags, ['--remotes'], {
-						label: 'Delete Local & Remote Branches',
+						label: '删除本地和远程分支',
 						description: '--remotes',
-						detail: `Will delete ${getReferenceLabel(state.references)} and any upstream tracking branches`,
+						detail: `将删除 ${getReferenceLabel(state.references)} 及其上游跟踪分支`,
 					}),
 					createFlagsQuickPickItem<Flags>(state.flags, ['--force', '--remotes'], {
-						label: 'Force Delete Local & Remote Branches',
+						label: '强制删除本地和远程分支',
 						description: '--force --remotes',
-						detail: `Will forcibly delete ${getReferenceLabel(
-							state.references,
-						)} and any upstream tracking branches`,
+						detail: `将强制删除 ${getReferenceLabel(state.references)} 及其上游跟踪分支`,
 					}),
 				);
 			}
 		}
 
 		const step: QuickPickStep<FlagsQuickPickItem<Flags>> = createConfirmStep(
-			appendReposToTitle(`Confirm ${context.title}`, state, context),
+			appendReposToTitle(`确认${context.title}`, state, context),
 			confirmations,
 			context,
 		);

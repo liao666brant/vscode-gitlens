@@ -34,55 +34,55 @@ export class ResetCommand extends GlCommandBase {
 
 		const items: ResetQuickPickItem[] = [
 			{
-				label: 'AI Keys...',
-				detail: 'Clears any locally stored AI keys',
+				label: 'AI 密钥...',
+				detail: '清除本地存储的 AI 密钥',
 				item: 'ai',
 			},
 			{
-				label: 'AI Confirmations...',
-				detail: 'Clears any accepted AI confirmations',
+				label: 'AI 确认项...',
+				detail: '清除已接受的 AI 确认项',
 				item: 'ai:confirmations',
 			},
 			{
-				label: 'Avatars...',
-				detail: 'Clears the stored avatar cache',
+				label: '头像缓存...',
+				detail: '清除已存储的头像缓存',
 				item: 'avatars',
 			},
 			{
-				label: 'Banners...',
-				detail: 'Resets dismissed banners/notices',
+				label: '横幅通知...',
+				detail: '重置已关闭的横幅/通知',
 				item: 'banners',
 			},
 			{
-				label: 'Integrations (Authentication)...',
-				detail: 'Clears any locally stored authentication for integrations',
+				label: '集成（认证）...',
+				detail: '清除本地存储的集成认证信息',
 				item: 'integrations',
 			},
 			{
-				label: 'Repository Access...',
-				detail: 'Clears the stored repository access cache',
+				label: '仓库访问...',
+				detail: '清除已存储的仓库访问缓存',
 				item: 'repositoryAccess',
 			},
 			{
-				label: 'Suppressed Warnings...',
-				detail: 'Clears any suppressed warnings, e.g. messages with "Don\'t Show Again" options',
+				label: '已抑制警告...',
+				detail: '清除已抑制的警告，例如带有“不要再显示”选项的消息',
 				item: 'suppressedWarnings',
 			},
 			{
-				label: 'Usage Tracking...',
-				detail: 'Clears any locally tracked usage, typically used for first time experience',
+				label: '使用跟踪...',
+				detail: '清除本地记录的使用情况（通常用于首次体验）',
 				item: 'usageTracking',
 			},
 			{
-				label: 'Workspace Storage...',
-				detail: 'Clears stored data associated with the current workspace',
+				label: '工作区存储...',
+				detail: '清除与当前工作区关联的已存储数据',
 				item: 'workspace',
 			},
 			createQuickPickSeparator(),
 			{
-				label: 'Everything...',
-				description: ' — \u00a0be very careful with this!',
-				detail: 'Clears ALL locally stored data; ALL GitLens state will be LOST',
+				label: '全部...',
+				description: ' — \u00a0请务必谨慎操作！',
+				detail: '清除所有本地存储数据；所有 GitLens 状态都将丢失',
 				item: 'all',
 			},
 		];
@@ -91,18 +91,18 @@ export class ResetCommand extends GlCommandBase {
 			items.push(
 				createQuickPickSeparator('DEBUG'),
 				{
-					label: 'Reset Subscription...',
-					detail: 'Resets the stored subscription',
+					label: '重置订阅...',
+					detail: '重置已存储的订阅信息',
 					item: 'subscription',
 				},
 				{
-					label: 'Reset Feature Previews...',
-					detail: 'Resets the stored state for feature previews',
+					label: '重置功能预览...',
+					detail: '重置功能预览的已存储状态',
 					item: 'previews',
 				},
 				{
-					label: 'Promo Opt-Ins...',
-					detail: 'Clears any locally stored promo opt-ins',
+					label: '促销订阅意向...',
+					detail: '清除本地存储的促销订阅意向',
 					item: 'promoOptIns',
 				},
 			);
@@ -110,68 +110,68 @@ export class ResetCommand extends GlCommandBase {
 
 		// create a quick pick with options to clear all the different resets that GitLens supports
 		const pick = await window.showQuickPick<ResetQuickPickItem>(items, {
-			title: 'Reset Stored Data',
-			placeHolder: 'Choose which data to reset, will be prompted to confirm',
+			title: '重置已存储数据',
+			placeHolder: '选择要重置的数据，随后将提示确认',
 		});
 
 		if (pick?.item == null) return;
 
-		const confirm: MessageItem = { title: 'Reset' };
-		const cancel: MessageItem = { title: 'Cancel', isCloseAffordance: true };
+		const confirm: MessageItem = { title: '重置' };
+		const cancel: MessageItem = { title: '取消', isCloseAffordance: true };
 
 		let confirmationMessage: string | undefined;
 		switch (pick?.item) {
 			case 'all':
-				confirmationMessage = 'Are you sure you want to reset EVERYTHING?';
-				confirm.title = 'Reset Everything';
+				confirmationMessage = '您确定要重置全部数据吗？';
+				confirm.title = '重置全部';
 				break;
 			case 'ai':
-				confirmationMessage = 'Are you sure you want to reset all of the stored AI keys?';
-				confirm.title = 'Reset AI Keys';
+				confirmationMessage = '您确定要重置所有已存储的 AI 密钥吗？';
+				confirm.title = '重置 AI 密钥';
 				break;
 			case 'ai:confirmations':
-				confirmationMessage = 'Are you sure you want to reset all AI confirmations?';
-				confirm.title = 'Reset AI Confirmations';
+				confirmationMessage = '您确定要重置所有 AI 确认项吗？';
+				confirm.title = '重置 AI 确认项';
 				break;
 			case 'avatars':
-				confirmationMessage = 'Are you sure you want to reset the avatar cache?';
-				confirm.title = 'Reset Avatars';
+				confirmationMessage = '您确定要重置头像缓存吗？';
+				confirm.title = '重置头像缓存';
 				break;
 			case 'banners':
-				confirmationMessage = 'Are you sure you want to reset all dismissed banners/notices?';
-				confirm.title = 'Reset Banners';
+				confirmationMessage = '您确定要重置所有已关闭的横幅/通知吗？';
+				confirm.title = '重置横幅通知';
 				break;
 			case 'integrations':
-				confirmationMessage = 'Are you sure you want to reset all of the stored integrations?';
-				confirm.title = 'Reset Integrations';
+				confirmationMessage = '您确定要重置所有已存储的集成信息吗？';
+				confirm.title = '重置集成';
 				break;
 			case 'previews':
-				confirmationMessage = 'Are you sure you want to reset the stored state for feature previews?';
-				confirm.title = 'Reset Feature Previews';
+				confirmationMessage = '您确定要重置功能预览的已存储状态吗？';
+				confirm.title = '重置功能预览';
 				break;
 			case 'promoOptIns':
-				confirmationMessage = 'Are you sure you want to reset all of the locally stored promo opt-ins?';
-				confirm.title = 'Reset Promo Opt-Ins';
+				confirmationMessage = '您确定要重置所有本地存储的促销订阅意向吗？';
+				confirm.title = '重置促销订阅意向';
 				break;
 			case 'repositoryAccess':
-				confirmationMessage = 'Are you sure you want to reset the repository access cache?';
-				confirm.title = 'Reset Repository Access';
+				confirmationMessage = '您确定要重置仓库访问缓存吗？';
+				confirm.title = '重置仓库访问';
 				break;
 			case 'subscription':
-				confirmationMessage = 'Are you sure you want to reset the stored subscription?';
-				confirm.title = 'Reset Subscription';
+				confirmationMessage = '您确定要重置已存储的订阅信息吗？';
+				confirm.title = '重置订阅';
 				break;
 			case 'suppressedWarnings':
-				confirmationMessage = 'Are you sure you want to reset all of the suppressed warnings?';
-				confirm.title = 'Reset Suppressed Warnings';
+				confirmationMessage = '您确定要重置所有已抑制警告吗？';
+				confirm.title = '重置已抑制警告';
 				break;
 			case 'usageTracking':
-				confirmationMessage = 'Are you sure you want to reset all of the usage tracking?';
-				confirm.title = 'Reset Usage Tracking';
+				confirmationMessage = '您确定要重置所有使用跟踪数据吗？';
+				confirm.title = '重置使用跟踪';
 				break;
 			case 'workspace':
-				confirmationMessage = 'Are you sure you want to reset the stored data for the current workspace?';
-				confirm.title = 'Reset Workspace Storage';
+				confirmationMessage = '您确定要重置当前工作区的已存储数据吗？';
+				confirm.title = '重置工作区存储';
 				break;
 			default: {
 				const _exhaustiveCheck: never = pick.item;
@@ -181,7 +181,7 @@ export class ResetCommand extends GlCommandBase {
 
 		if (confirmationMessage != null) {
 			const result = await window.showWarningMessage(
-				`This is IRREVERSIBLE!\n${confirmationMessage}`,
+				`此操作不可逆！\n${confirmationMessage}`,
 				{ modal: true },
 				confirm,
 				cancel,

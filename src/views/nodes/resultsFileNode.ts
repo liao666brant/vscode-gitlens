@@ -73,7 +73,7 @@ export class ResultsFileNode extends ViewRefFileNode<'results-file', View, State
 
 		item.checkboxState = {
 			state: this.getState('checked') ?? TreeItemCheckboxState.Unchecked,
-			tooltip: 'Mark as Reviewed',
+			tooltip: '标记为已审阅',
 		};
 
 		return item;
@@ -144,7 +144,7 @@ export class ResultsFileNode extends ViewRefFileNode<'results-file', View, State
 			rhsUri = this.uri;
 		}
 
-		return createCommand<[DiffWithCommandArgs]>('gitlens.diffWith', 'Open Changes', {
+		return createCommand<[DiffWithCommandArgs]>('gitlens.diffWith', '打开更改', {
 			lhs: { sha: this.ref1, uri: lhsUri },
 			rhs: { sha: this.ref2, uri: rhsUri },
 			repoPath: this.uri.repoPath!,

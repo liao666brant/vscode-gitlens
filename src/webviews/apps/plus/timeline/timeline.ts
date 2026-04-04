@@ -118,12 +118,11 @@ export class GlTimelineApp extends GlAppHost<State> {
 				.state=${this.subscription?.state}
 				><p slot="feature">
 					<a href="https://help.gitkraken.com/gitlens/gitlens-features/#visual-file-history-pro"
-						>Visual History</a
+						>可视化历史</a
 					>
 					<gl-feature-badge></gl-feature-badge>
-					&mdash; visualize the evolution of a repository, branch, folder, or file and identify when the most
-					impactful changes were made and by whom. Quickly see unmerged changes in files or folders, when
-					slicing by branch.
+					&mdash;
+					可视化仓库、分支、文件夹或文件的演进过程，识别最具影响力的变更发生在何时、由谁完成。按分支切片时，可快速查看文件或文件夹中的未合并变更。
 				</p></gl-feature-gate
 			>`;
 		}
@@ -135,11 +134,11 @@ export class GlTimelineApp extends GlAppHost<State> {
 			.state=${this.subscription?.state}
 			><p slot="feature">
 				<a href="https://help.gitkraken.com/gitlens/gitlens-features/#visual-file-history-pro"
-					>Visual File History</a
+					>可视化文件历史</a
 				>
 				<gl-feature-badge></gl-feature-badge>
-				&mdash; visualize the evolution of a file and quickly identify when the most impactful changes were made
-				and by whom. Quickly see unmerged changes in files or folders, when slicing by branch.
+				&mdash;
+				可视化文件演进过程，快速识别最具影响力的变更发生在何时、由谁完成。按分支切片时，可快速查看文件或文件夹中的未合并变更。
 			</p></gl-feature-gate
 		>`;
 	}
@@ -155,8 +154,8 @@ export class GlTimelineApp extends GlAppHost<State> {
 							? html`<gl-button
 									appearance="toolbar"
 									href="command:gitlens.views.timeline.openInTab"
-									tooltip="Open in Editor"
-									aria-label="Open in Editor"
+									tooltip="在编辑器中打开"
+									aria-label="在编辑器中打开"
 								>
 									<code-icon icon="link-external"></code-icon>
 								</gl-button>`
@@ -184,9 +183,9 @@ export class GlTimelineApp extends GlAppHost<State> {
 						appearance="toolbar"
 						density="compact"
 						@click=${this.onChoosePath}
-						tooltip="Choose File or Folder to Visualize..."
-						aria-label="Choose File or Folder to Visualize..."
-						><code-icon slot="prefix" icon="folder-opened"></code-icon>Choose File / Folder...</gl-button
+						tooltip="选择要可视化的文件或文件夹..."
+						aria-label="选择要可视化的文件或文件夹..."
+						><code-icon slot="prefix" icon="folder-opened"></code-icon>选择文件 / 文件夹...</gl-button
 					>`
 				: nothing}
 		</gl-breadcrumbs>`;
@@ -203,7 +202,7 @@ export class GlTimelineApp extends GlAppHost<State> {
 			type="repo"
 		>
 			<gl-repo-button-group
-				aria-label="Visualize Repository History"
+				aria-label="可视化仓库历史"
 				.connectIcon=${false}
 				.hasMultipleRepositories=${this.state.repositories.openCount > 1}
 				.icon=${false}
@@ -211,7 +210,7 @@ export class GlTimelineApp extends GlAppHost<State> {
 				.source=${{ source: 'timeline' } as const}
 				@gl-click=${this.onChangeScope}
 				><span slot="tooltip">
-					Visualize Repository History
+					可视化仓库历史
 					<hr />
 					${repo.name}
 				</span></gl-repo-button-group
@@ -232,13 +231,11 @@ export class GlTimelineApp extends GlAppHost<State> {
 			type="ref"
 		>
 			<gl-ref-button .ref=${showAllBranches ? undefined : head} @click=${this.onChooseHeadRef}
-				><span slot="empty">All Branches</span
+				><span slot="empty">所有分支</span
 				><span slot="tooltip"
-					>Change Reference...
+					>更改引用...
 					<hr />
-					${showAllBranches
-						? 'Showing All Branches'
-						: html`<gl-ref-name icon .ref=${head}></gl-ref-name>`}</span
+					${showAllBranches ? '显示所有分支' : html`<gl-ref-name icon .ref=${head}></gl-ref-name>`}</span
 				></gl-ref-button
 			>
 		</gl-breadcrumb-item>`;
@@ -269,9 +266,9 @@ export class GlTimelineApp extends GlAppHost<State> {
 					<gl-button
 						appearance="toolbar"
 						@click=${this.onChangeScope}
-						aria-label="Visualize folder history of ${rootPart}"
+						aria-label="可视化 ${rootPart} 的文件夹历史"
 						>${rootPart}<span slot="tooltip"
-							>Visualize Folder History
+							>可视化文件夹历史
 							<hr />
 							${rootPart}</span
 						></gl-button
@@ -288,9 +285,9 @@ export class GlTimelineApp extends GlAppHost<State> {
 										<gl-button
 											appearance="toolbar"
 											@click=${this.onChangeScope}
-											aria-label="Visualize folder history of ${fullPath}"
+											aria-label="可视化 ${fullPath} 的文件夹历史"
 											>${part}<span slot="tooltip"
-												>Visualize Folder History
+												>可视化文件夹历史
 												<hr />
 												${fullPath}</span
 											></gl-button
@@ -317,7 +314,7 @@ export class GlTimelineApp extends GlAppHost<State> {
 			>
 				<gl-copy-container
 					tabindex="0"
-					copyLabel="Copy Path&#10;&#10;${path}"
+					copyLabel="复制路径&#10;&#10;${path}"
 					.content=${path}
 					placement="bottom"
 				>
@@ -332,7 +329,7 @@ export class GlTimelineApp extends GlAppHost<State> {
 	private renderChart() {
 		if (!this.scope && this.placement === 'view') {
 			return html`<div class="timeline__empty">
-				<p>There are no editors open that can provide file history information.</p>
+				<p>当前没有可提供文件历史信息的已打开编辑器。</p>
 			</div>`;
 		}
 
@@ -353,9 +350,9 @@ export class GlTimelineApp extends GlAppHost<State> {
 		>
 			<div slot="empty">
 				${this.scope == null
-					? html`<p>Something went wrong</p>
-							<p>Please close this tab and try again</p>`
-					: html`<p>No commits found for the specified time period</p>
+					? html`<p>出现了一些问题</p>
+							<p>请关闭此标签页后重试</p>`
+					: html`<p>在指定时间范围内未找到提交</p>
 							${this.renderPeriodSelect(this.state.config.period)}`}
 			</div>
 		</gl-timeline-chart>`;
@@ -371,7 +368,7 @@ export class GlTimelineApp extends GlAppHost<State> {
 				<code-icon icon="settings"></code-icon>
 			</gl-button>
 			<div slot="content" class="config__content">
-				<menu-label>View Options</menu-label>
+				<menu-label>视图选项</menu-label>
 				${this.renderConfigHead()} ${this.renderConfigBase()} ${this.renderConfigShowAllBranches()}
 				${this.renderPeriodSelect(period)} ${this.renderConfigSliceBy()}
 			</div>
@@ -383,7 +380,7 @@ export class GlTimelineApp extends GlAppHost<State> {
 		const disabled = this.config.showAllBranches && this.sliceBy !== 'branch';
 
 		return html`<section>
-			<label for="head" ?disabled=${disabled}>Branch</label>
+			<label for="head" ?disabled=${disabled}>分支</label>
 			<gl-ref-button
 				name="head"
 				?disabled=${disabled}
@@ -392,10 +389,10 @@ export class GlTimelineApp extends GlAppHost<State> {
 				location="config"
 				@click=${this.onChooseHeadRef}
 				><span slot="tooltip"
-					>Change Reference...
+					>更改引用...
 					<hr />
 					${this.config.showAllBranches
-						? 'Showing All Branches'
+						? '显示所有分支'
 						: html`<gl-ref-name icon .ref=${head}></gl-ref-name>`}</span
 				></gl-ref-button
 			>
@@ -460,7 +457,7 @@ export class GlTimelineApp extends GlAppHost<State> {
 						changes: { showAllBranches: (e.target as Checkbox).checked },
 					});
 				}}
-				>View All Branches</gl-checkbox
+				>查看所有分支</gl-checkbox
 			>
 		</section>`;
 	}
@@ -468,17 +465,17 @@ export class GlTimelineApp extends GlAppHost<State> {
 	private renderPeriodSelect(period: TimelinePeriod) {
 		return html`<section>
 			<span class="select-container">
-				<label for="periods">Timeframe</label>
+				<label for="periods">时间范围</label>
 				<select class="select" name="periods" position="below" .value=${period} @change=${this.onPeriodChanged}>
-					<option value="7|D" ?selected=${period === '7|D'}>1 week</option>
-					<option value="1|M" ?selected=${period === '1|M'}>1 month</option>
-					<option value="3|M" ?selected=${period === '3|M'}>3 months</option>
-					<option value="6|M" ?selected=${period === '6|M'}>6 months</option>
-					<option value="9|M" ?selected=${period === '9|M'}>9 months</option>
-					<option value="1|Y" ?selected=${period === '1|Y'}>1 year</option>
-					<option value="2|Y" ?selected=${period === '2|Y'}>2 years</option>
-					<option value="4|Y" ?selected=${period === '4|Y'}>4 years</option>
-					<option value="all" ?selected=${period === 'all'}>Full history</option>
+					<option value="7|D" ?selected=${period === '7|D'}>1 周</option>
+					<option value="1|M" ?selected=${period === '1|M'}>1 个月</option>
+					<option value="3|M" ?selected=${period === '3|M'}>3 个月</option>
+					<option value="6|M" ?selected=${period === '6|M'}>6 个月</option>
+					<option value="9|M" ?selected=${period === '9|M'}>9 个月</option>
+					<option value="1|Y" ?selected=${period === '1|Y'}>1 年</option>
+					<option value="2|Y" ?selected=${period === '2|Y'}>2 年</option>
+					<option value="4|Y" ?selected=${period === '4|Y'}>4 年</option>
+					<option value="all" ?selected=${period === 'all'}>完整历史</option>
 				</select>
 			</span>
 		</section>`;
@@ -491,7 +488,7 @@ export class GlTimelineApp extends GlAppHost<State> {
 
 		return html`<section>
 			<span class="select-container"
-				><label for="sliceBy">Slice By</label>
+				><label for="sliceBy">切片方式</label>
 				<select
 					class="select"
 					name="sliceBy"
@@ -499,8 +496,8 @@ export class GlTimelineApp extends GlAppHost<State> {
 					.value=${sliceBy}
 					@change=${this.onSliceByChanged}
 				>
-					<option value="author" ?selected=${sliceBy === 'author'}>Author</option>
-					<option value="branch" ?selected=${sliceBy === 'branch'}>Branch</option>
+					<option value="author" ?selected=${sliceBy === 'author'}>作者</option>
+					<option value="branch" ?selected=${sliceBy === 'branch'}>分支</option>
 				</select></span
 			>
 		</section>`;
@@ -510,31 +507,31 @@ export class GlTimelineApp extends GlAppHost<State> {
 		let label;
 		switch (this.config.period) {
 			case '7|D':
-				label = 'Up to 1wk ago';
+				label = '最近 1 周';
 				break;
 			case '1|M':
-				label = 'Up to 1mo ago';
+				label = '最近 1 个月';
 				break;
 			case '3|M':
-				label = 'Up to 3mo ago';
+				label = '最近 3 个月';
 				break;
 			case '6|M':
-				label = 'Up to 6mo ago';
+				label = '最近 6 个月';
 				break;
 			case '9|M':
-				label = 'Up to 9mo ago';
+				label = '最近 9 个月';
 				break;
 			case '1|Y':
-				label = 'Up to 1yr ago';
+				label = '最近 1 年';
 				break;
 			case '2|Y':
-				label = 'Up to 2yr ago';
+				label = '最近 2 年';
 				break;
 			case '4|Y':
-				label = 'Up to 4yr ago';
+				label = '最近 4 年';
 				break;
 			case 'all':
-				label = 'All time';
+				label = '全部时间';
 				break;
 			default:
 				return nothing;
@@ -592,7 +589,7 @@ export class GlTimelineApp extends GlAppHost<State> {
 		const result = await this._ipc.sendRequest(ChoosePathRequest, {
 			repoUri: this.repository.uri,
 			ref: this.head,
-			title: 'Select a File or Folder to Visualize',
+			title: '选择要可视化的文件或文件夹',
 			initialPath: this.scope.type === 'file' ? dirname(this.scope.relativePath) : this.scope.relativePath,
 		});
 		if (result?.picked == null) return;

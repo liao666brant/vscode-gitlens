@@ -125,10 +125,10 @@ export class RepositoryIdentityService implements Disposable {
 		}
 
 		if (foundRepo == null && options?.prompt) {
-			const locate = { title: 'Locate Repository' };
-			const cancel = { title: 'Cancel', isCloseAffordance: true };
+			const locate = { title: '定位仓库' };
+			const cancel = { title: '取消', isCloseAffordance: true };
 			const decision = await window.showInformationMessage(
-				`Unable to find a repository for '${identity.name}'.\nWould you like to locate it?`,
+				`无法找到 '${identity.name}' 对应的仓库。\n是否现在定位？`,
 				{ modal: true },
 				locate,
 				cancel,
@@ -138,7 +138,7 @@ export class RepositoryIdentityService implements Disposable {
 
 			const repoLocatedUri = (
 				await window.showOpenDialog({
-					title: `Choose a location for ${identity.name}`,
+					title: `为 ${identity.name} 选择位置`,
 					canSelectFiles: false,
 					canSelectFolders: true,
 					canSelectMany: false,

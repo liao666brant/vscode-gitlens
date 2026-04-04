@@ -27,31 +27,26 @@ const walkthroughSteps: WalkthroughStep[] = [
 	{
 		id: 'get-started-community',
 		walkthroughKey: 'gettingStarted',
-		title: 'Welcome to GitLens',
+		title: '欢迎使用 GitLens',
 		body: html`
 			<p>
-				The GitLens Community edition lets you track code changes and see who made them with inline blame
-				annotations, hovers, and more—completely free.
+				GitLens 社区版可让你跟踪代码变更，并通过行内 blame 注释、悬停提示等功能查看是谁做了这些更改，完全免费。
 			</p>
 			<p>
-				With <strong>GitLens Pro</strong> (Free 14-Day Trial), you’ll get full access to advanced visualization,
-				collaboration, and built-in AI:
+				使用 <strong>GitLens Pro</strong>（14 天免费试用），你将获得高级可视化、协作和内置 AI 的完整访问权限：
 			</p>
 			<ul>
-				<li><strong>Commit Graph:</strong> visualize every branch and commit relationship</li>
-				<li>
-					<strong>Visual File History:</strong> see how a file has evolved with a graph of what changed and
-					when
-				</li>
-				<li><strong>Launchpad & Worktrees:</strong> manage PRs and branches in one hub</li>
-				<li><strong>GitKraken AI:</strong> writes commits, PRs & changelogs for you.</li>
+				<li><strong>Commit Graph：</strong>可视化每个分支与提交之间的关系</li>
+				<li><strong>Visual File History：</strong>通过图谱查看文件如何演进，以及何时发生了哪些变化</li>
+				<li><strong>Launchpad 与 Worktrees：</strong>在一个中心管理 PR 和分支</li>
+				<li><strong>GitKraken AI：</strong>为你撰写提交、PR 和变更日志。</li>
 			</ul>
 			<div class="card-part--centered">
 				<gl-button class="start-trial-button" href="command:gitlens.welcome.plus.signUp"
-					>Get Started with GitLens Pro</gl-button
+					>开始使用 GitLens Pro</gl-button
 				>
 			</div>
-			<p>or <a href="command:gitlens.welcome.plus.login">sign in</a></p>
+			<p>或 <a href="command:gitlens.welcome.plus.login">登录</a></p>
 		`,
 		condition: state => !state.plusState || state.plusState < SubscriptionState.Trial,
 	},
@@ -59,21 +54,18 @@ const walkthroughSteps: WalkthroughStep[] = [
 	{
 		id: 'welcome-in-trial',
 		walkthroughKey: 'gettingStarted',
-		title: 'Welcome to GitLens Pro',
+		title: '欢迎使用 GitLens Pro',
 		body: html`
-			<p>Thanks for starting your <strong>GitLens Pro</strong> trial.</p>
+			<p>感谢你开启 <strong>GitLens Pro</strong> 试用。</p>
+			<p>完成此引导，体验增强的 PR 评审工具、更深入的代码历史可视化，以及更流畅的协作，从而提升生产力。</p>
+			<a href="#continue-walkthrough">继续引导</a>
 			<p>
-				Complete this walkthrough to experience enhanced PR review tools, deeper code history visualizations,
-				and streamlined collaboration to help boost your productivity.
-			</p>
-			<a href="#continue-walkthrough">Continue the Walkthrough</a>
-			<p>
-				Once your trial ends, you'll return to <strong>GitLens Community</strong> — where you can still leverage
-				features like in-editor blame annotations, hovers, CodeLens, and more.
+				试用结束后，你将回到 <strong>GitLens 社区版</strong>，依然可以使用编辑器内 blame
+				注释、悬停提示、CodeLens 等功能。
 			</p>
 			<div class="card-part--centered">
 				<gl-button class="start-trial-button" href="command:gitlens.welcome.plus.upgrade"
-					>Upgrade to GitLens Pro</gl-button
+					>升级到 GitLens Pro</gl-button
 				>
 			</div>
 		`,
@@ -83,26 +75,26 @@ const walkthroughSteps: WalkthroughStep[] = [
 	{
 		id: 'welcome-in-trial-expired',
 		walkthroughKey: 'gettingStarted',
-		title: 'Get the most out of GitLens',
+		title: '充分发挥 GitLens 的价值',
 		body: html`
-			<p>Thanks for installing GitLens and trying out GitLens Pro.</p>
+			<p>感谢你安装 GitLens 并体验 GitLens Pro。</p>
 			<p>
-				You're now on the <strong>GitLens Community</strong> edition. Track code changes and see who made them
-				with features like in-editor blame annotations, hovers, CodeLens, and more—completely free.
+				你当前使用的是 <strong>GitLens 社区版</strong>。可通过编辑器内 blame 注释、悬停提示、CodeLens
+				等功能免费跟踪代码变更并查看是谁做了这些修改。
 			</p>
 			<p>
-				Learn more about the
-				<a href="command:gitlens.welcome.openCommunityVsPro">difference between GitLens Community vs. Pro</a>.
+				了解
+				<a href="command:gitlens.welcome.openCommunityVsPro">GitLens 社区版与 Pro 版的区别</a>。
 			</p>
-			<p><strong>Unlock more powerful tools with GitLens Pro</strong></p>
+			<p><strong>使用 GitLens Pro 解锁更强大的工具</strong></p>
 			<div class="card-part--centered">
 				<gl-button class="start-trial-button" href="command:gitlens.welcome.plus.upgrade"
-					>Upgrade to GitLens Pro</gl-button
+					>升级到 GitLens Pro</gl-button
 				>
 			</div>
 			<p>
-				With GitLens Pro, you can accelerate PR reviews, visualize code history in-depth, and enhance
-				collaboration across your team. It's the perfect upgrade to streamline your VS Code workflow.
+				借助 GitLens Pro，你可以加速 PR 评审、深入可视化代码历史，并增强团队协作。这是精简 VS Code
+				工作流的理想升级。
 			</p>
 		`,
 		condition: state => state.plusState === SubscriptionState.TrialExpired,
@@ -111,22 +103,22 @@ const walkthroughSteps: WalkthroughStep[] = [
 	{
 		id: 'welcome-in-trial-expired-eligible',
 		walkthroughKey: 'gettingStarted',
-		title: 'Get the most out of GitLens',
+		title: '充分发挥 GitLens 的价值',
 		body: html`
-			<p>Thanks for installing GitLens and trying out GitLens Pro.</p>
+			<p>感谢你安装 GitLens 并体验 GitLens Pro。</p>
 			<p>
-				You're using <strong>GitLens Community</strong> edition. Track code changes and see who made them with
-				features like in-editor blame annotations, hovers, CodeLens, and more—completely free.
+				你当前使用的是 <strong>GitLens 社区版</strong>。可通过编辑器内 blame 注释、悬停提示、CodeLens
+				等功能免费跟踪代码变更并查看是谁做了这些修改。
 			</p>
-			<p><strong>Unlock more powerful tools — Try GitLens Pro again</strong> free for another 14 days.</p>
+			<p><strong>解锁更强大的工具，重新体验 GitLens Pro</strong>，再享 14 天免费试用。</p>
 			<div class="card-part--centered">
 				<gl-button class="start-trial-button" href="command:gitlens.welcome.plus.reactivate"
-					>Reactivate GitLens Pro Trial</gl-button
+					>重新激活 GitLens Pro 试用</gl-button
 				>
 			</div>
 			<p>
-				With GitLens Pro, you can accelerate PR reviews, visualize code history in-depth, and enhance
-				collaboration across your team. It's the perfect upgrade to streamline your VS Code workflow.
+				借助 GitLens Pro，你可以加速 PR 评审、深入可视化代码历史，并增强团队协作。这是精简 VS Code
+				工作流的理想升级。
 			</p>
 		`,
 		condition: state => state.plusState === SubscriptionState.TrialReactivationEligible,
@@ -135,20 +127,18 @@ const walkthroughSteps: WalkthroughStep[] = [
 	{
 		id: 'welcome-paid',
 		walkthroughKey: 'gettingStarted',
-		title: 'Discover the Benefits of GitLens Pro',
+		title: '探索 GitLens Pro 的优势',
 		body: html`
 			<p>
-				As a GitLens Pro user, you have access to powerful tools that accelerate PR reviews, provide deeper code
-				history visualizations, and streamline collaboration across your team.
+				作为 GitLens Pro 用户，你可以使用强大的工具来加速 PR 评审、提供更深入的代码历史可视化，并简化团队协作。
 			</p>
 			<div class="card-part--centered">
-				<gl-button href="#continue-walkthrough">Continue the Walkthrough</gl-button>
+				<gl-button href="#continue-walkthrough">继续引导</gl-button>
 			</div>
 			<p class="card-part--tip">
-				<em>Tip:</em> To get the most out of your GitLens Pro experience, complete the walkthrough and visit our
-				Help Center for in-depth guides.
+				<em>提示：</em>为充分发挥 GitLens Pro 的价值，建议完成引导并访问帮助中心查看深入指南。
 			</p>
-			<a href="command:gitlens.welcome.openHelpCenter">Learn more in the Help Center</a>
+			<a href="command:gitlens.welcome.openHelpCenter">在帮助中心了解更多</a>
 		`,
 		condition: state => state.plusState === SubscriptionState.Paid,
 	},
@@ -156,14 +146,11 @@ const walkthroughSteps: WalkthroughStep[] = [
 	{
 		id: 'home-view',
 		walkthroughKey: 'homeView',
-		title: 'Streamline Workflow with the Home View',
+		title: '使用 Home 视图简化工作流',
 		body: html`
-			<p>
-				Streamline your workflow — effortlessly track, manage, and collaborate on your branches and pull
-				requests, all in one intuitive hub.
-			</p>
+			<p>简化你的工作流，在一个直观的中心轻松跟踪、管理并协作处理分支和拉取请求。</p>
 			<div class="card-part--centered">
-				<gl-button href="command:gitlens.welcome.showHomeView">Open Home View</gl-button>
+				<gl-button href="command:gitlens.welcome.showHomeView">打开 Home 视图</gl-button>
 			</div>
 		`,
 	},
@@ -171,18 +158,12 @@ const walkthroughSteps: WalkthroughStep[] = [
 	{
 		id: 'visualize-code-history',
 		walkthroughKey: 'visualizeCodeHistory',
-		title: "Commit Graph: See Your Code's Story",
+		title: '提交图谱：查看代码演进脉络',
 		body: html`
-			<p>
-				Navigate complex repositories with a searchable, color-coded commit timeline. Instantly understand
-				branch relationships, authorship patterns, and commit sequences.
-			</p>
-			<p>
-				Select multiple commits to batch operations like cherry-picking or generate AI changelogs with a single
-				command.
-			</p>
+			<p>借助可搜索、颜色编码的提交时间线，轻松浏览复杂仓库，快速理解分支关系、作者模式和提交序列。</p>
+			<p>可选择多个提交批量执行 cherry-pick 等操作，或用一条命令生成 AI 变更日志。</p>
 			<div class="card-part--centered">
-				<gl-button href="command:gitlens.welcome.showGraph">Discover your Commit Graph</gl-button>
+				<gl-button href="command:gitlens.welcome.showGraph">探索你的提交图谱</gl-button>
 			</div>
 		`,
 	},
@@ -190,30 +171,24 @@ const walkthroughSteps: WalkthroughStep[] = [
 	{
 		id: 'ai-features',
 		walkthroughKey: 'aiFeatures',
-		title: 'Commit smarter, not harder',
+		title: '更智能地提交，而不是更费力',
 		body: html`
 			<p>
-				Let AI handle the heavy lifting - from turning your changes into clear, logical commits to getting
-				context on others' work. GitLens’s AI features make reviews efficient and keep your history clean.
+				让 AI 承担繁重工作，从把你的改动整理成清晰、逻辑明确的提交，到快速理解他人的工作上下文。GitLens 的 AI
+				功能让评审更高效，提交历史更整洁。
 			</p>
 			<ul>
-				<li>
-					<strong>Auto-Compose Commits:</strong> instantly generate a sequence of commits with descriptive
-					summaries in an interactive editor
-				</li>
-				<li>
-					<strong>Explain Commits and Branches:</strong> understand changes without wasting time diving into
-					the diffs
-				</li>
-				<li><strong>Create PR Titles & Descriptions:</strong> save reviewers 10+ minutes per review</li>
+				<li><strong>自动编排提交：</strong>在交互式编辑器中即时生成带描述性摘要的一组提交</li>
+				<li><strong>解释提交和分支：</strong>无需耗时深挖 diff 也能理解改动</li>
+				<li><strong>生成 PR 标题与描述：</strong>每次评审可为审阅者节省 10+ 分钟</li>
 			</ul>
 			<p>
-				Stay in control. Review and edit AI suggestions before finalizing, and
-				<a href="command:gitlens.ai.switchProvider">configure your preferred AI provider</a>
-				and model to fit your needs.
+				始终保持掌控。可在最终提交前审阅并编辑 AI 建议，同时
+				<a href="command:gitlens.ai.switchProvider">配置你偏好的 AI 提供商</a>
+				和模型以满足需求。
 			</p>
 			<div class="card-part--centered">
-				<gl-button href="command:gitlens.welcome.showComposer">Compose Commits with AI</gl-button>
+				<gl-button href="command:gitlens.welcome.showComposer">使用 AI 编排提交</gl-button>
 			</div>
 		`,
 	},
@@ -221,18 +196,18 @@ const walkthroughSteps: WalkthroughStep[] = [
 	{
 		id: 'git-blame',
 		walkthroughKey: 'gitBlame',
-		title: 'Learn the why behind every code Line',
+		title: '了解每一行代码背后的原因',
 		body: html`
-			<p>See who changed a line, when and why — without leaving your editor.</p>
-			<p>Hover over blame annotations to:</p>
+			<p>无需离开编辑器，即可查看某行由谁、何时、为何修改。</p>
+			<p>悬停在 blame 注释上可：</p>
 			<ul>
-				<li>View previous file revisions</li>
-				<li>Open related PRs</li>
-				<li>Jump to commits in the Graph</li>
-				<li>Compare with previous versions</li>
+				<li>查看文件历史版本</li>
+				<li>打开相关 PR</li>
+				<li>跳转到提交图谱中的提交</li>
+				<li>与之前版本对比</li>
 			</ul>
 			<div class="card-part--centered">
-				<gl-button href="command:gitlens.showSettingsPage!current-line">Configure Inline Blame</gl-button>
+				<gl-button href="command:gitlens.showSettingsPage!current-line">配置行内 Blame</gl-button>
 			</div>
 		`,
 	},
@@ -240,19 +215,17 @@ const walkthroughSteps: WalkthroughStep[] = [
 	{
 		id: 'accelerate-pr-reviews',
 		walkthroughKey: 'prReviews',
-		title: 'Manage all your work in one place',
+		title: '在一个地方管理全部工作',
 		body: html`
-			<p>Keep everything at your fingertips with Launchpad & Worktrees.</p>
+			<p>借助 Launchpad 与 Worktrees，让所有工作触手可及。</p>
 			<ul>
-				<li><strong>Launchpad:</strong> view and manage all your PRs and branches from one hub</li>
-				<li><strong>Worktrees:</strong> code, test, and review on multiple branches in parallel</li>
-				<li>
-					<strong>Integrations:</strong> connect PRs and issues from GitHub, GitLab, Jira, Azure DevOps & more
-				</li>
+				<li><strong>Launchpad：</strong>在一个中心查看并管理你的全部 PR 与分支</li>
+				<li><strong>Worktrees：</strong>在多个分支并行开发、测试与评审</li>
+				<li><strong>集成：</strong>连接来自 GitHub、GitLab、Jira、Azure DevOps 等平台的 PR 和 Issue</li>
 			</ul>
-			<p>Stay in flow, ship faster, and never lose track of what matters.</p>
+			<p>保持专注，更快交付，且不遗漏真正重要的事项。</p>
 			<div class="card-part--centered">
-				<gl-button href="command:gitlens.welcome.showLaunchpad">Open Launchpad</gl-button>
+				<gl-button href="command:gitlens.welcome.showLaunchpad">打开 Launchpad</gl-button>
 			</div>
 		`,
 	},
@@ -262,11 +235,8 @@ const walkthroughSteps: WalkthroughStep[] = [
 		walkthroughKey: 'mcpFeatures',
 		title: 'GitKraken MCP',
 		body: html`
-			<p>
-				GitKraken MCP is active in your AI chat, leveraging Git and your integrations to provide context and
-				perform actions.
-			</p>
-			<p><a href="${urls.helpCenterMCP}">Learn more in the Help Center</a></p>
+			<p>GitKraken MCP 已在你的 AI 聊天中启用，可利用 Git 与你的集成提供上下文并执行操作。</p>
+			<p><a href="${urls.helpCenterMCP}">在帮助中心了解更多</a></p>
 		`,
 		condition: state => state.mcpNeedsInstall === false && !state.mcpShowCleanupNotice,
 	},
@@ -275,15 +245,12 @@ const walkthroughSteps: WalkthroughStep[] = [
 		walkthroughKey: 'mcpFeatures',
 		title: 'GitKraken MCP',
 		body: html`
+			<p>GitKraken MCP 已在你的 AI 聊天中启用，可利用 Git 与你的集成提供上下文并执行操作。</p>
 			<p>
-				GitKraken MCP is active in your AI chat, leveraging Git and your integrations to provide context and
-				perform actions.
+				<strong>注意：</strong>你的 Cursor <code>mcp.json</code> 中可能有此前安装留下的重复项。删除
+				<code>mcpServers.GitKraken</code> 即可清理。
 			</p>
-			<p>
-				<strong>Note:</strong> You may have a duplicate entry in your Cursor <code>mcp.json</code> from a
-				previous install. Remove <code>mcpServers.GitKraken</code> to clean it up.
-			</p>
-			<p><a href="${urls.helpCenterMCP}">Learn more in the Help Center</a></p>
+			<p><a href="${urls.helpCenterMCP}">在帮助中心了解更多</a></p>
 		`,
 		condition: state => state.mcpNeedsInstall === false && state.mcpShowCleanupNotice,
 	},
@@ -291,17 +258,15 @@ const walkthroughSteps: WalkthroughStep[] = [
 	{
 		id: 'mcp-install',
 		walkthroughKey: 'mcpFeatures',
-		title: 'Install GitKraken MCP for GitLens',
+		title: '安装适用于 GitLens 的 GitKraken MCP',
 		body: html`
-			<p>
-				Leverage Git and your integrations (issues, PRs, etc) to provide context and perform actions in AI chat.
-			</p>
+			<p>利用 Git 与你的集成（Issue、PR 等），在 AI 聊天中提供上下文并执行操作。</p>
 			<div class="card-part--centered">
 				<gl-button href="${createCommandLink('gitlens.ai.mcp.install', { source: 'welcome' })}"
-					>Install GitKraken MCP</gl-button
+					>安装 GitKraken MCP</gl-button
 				>
 			</div>
-			<p><a href="${urls.helpCenterMCP}">Learn more</a></p>
+			<p><a href="${urls.helpCenterMCP}">了解更多</a></p>
 		`,
 		condition: state => state.mcpNeedsInstall === true,
 	},
@@ -374,11 +339,8 @@ export class GlWelcomePage extends LitElement {
 		return html`
 			<div part="page" class="welcome scrollable">
 				<div class="section header">
-					<h1><gitlens-logo-circle></gitlens-logo-circle><span>Get Started with GitLens</span></h1>
-					<p>
-						Supercharge Git and unlock untapped knowledge within your repo to better understand, write, and
-						review code.
-					</p>
+					<h1><gitlens-logo-circle></gitlens-logo-circle><span>开始使用 GitLens</span></h1>
+					<p>增强 Git 能力，挖掘仓库中尚未利用的知识，更好地理解、编写和评审代码。</p>
 				</div>
 				<gl-walkthrough-progress
 					class="section"
@@ -404,10 +366,9 @@ export class GlWelcomePage extends LitElement {
 				</gl-walkthrough>
 				<div class="section section--centered">
 					<p>
-						You also have access to the
-						<a href="https://gitkraken.dev/tools" target="_blank">GitKraken DevEx platform</a>, unleashing
-						powerful Git visualization & productivity capabilities everywhere you work: IDE, desktop,
-						browser, and terminal.
+						你还可访问
+						<a href="https://gitkraken.dev/tools" target="_blank">GitKraken DevEx 平台</a>，在
+						IDE、桌面端、浏览器和终端等工作场景中释放强大的 Git 可视化与生产力能力。
 					</p>
 				</div>
 			</div>

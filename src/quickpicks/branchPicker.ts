@@ -71,7 +71,7 @@ export async function showNewBranchPicker(
 				input.onDidAccept(() => {
 					const value = input.value.trim();
 					if (value == null) {
-						input.validationMessage = 'Please enter a valid branch name';
+						input.validationMessage = '请输入有效的分支名称';
 						return;
 					}
 
@@ -81,7 +81,7 @@ export async function showNewBranchPicker(
 
 			input.title = title;
 			input.placeholder = placeholder;
-			input.prompt = 'Enter a name for the new branch';
+			input.prompt = '输入新分支名称';
 
 			input.show();
 		});
@@ -103,13 +103,12 @@ export async function showNewOrSelectBranchPicker(
 
 	// TODO: needs updating
 	const createNewBranch = {
-		label: 'Create New Branch',
-		description:
-			'Creates a branch to apply the Cloud Patch to. (Typing an existing branch name will use that branch.)',
+		label: '创建新分支',
+		description: '创建一个分支以应用 Cloud Patch。（输入已有分支名将直接使用该分支。）',
 	};
 	const selectExistingBranch = {
-		label: 'Select Existing Branch',
-		description: 'Selects an existing branch to apply the Cloud Patch to.',
+		label: '选择现有分支',
+		description: '选择一个现有分支以应用 Cloud Patch。',
 	};
 
 	const items: QuickPickItem[] = [createNewBranch, selectExistingBranch];
@@ -131,7 +130,7 @@ export async function showNewOrSelectBranchPicker(
 			);
 
 			quickpick.title = title;
-			quickpick.placeholder = 'Choose a branch option';
+			quickpick.placeholder = '选择分支操作';
 			quickpick.matchOnDescription = true;
 			quickpick.matchOnDetail = true;
 			quickpick.items = items;
@@ -140,9 +139,9 @@ export async function showNewOrSelectBranchPicker(
 		});
 
 		if (pick === createNewBranch) {
-			return await showNewBranchPicker(title, 'Enter a name for the new branch', repository);
+			return await showNewBranchPicker(title, '输入新分支名称', repository);
 		} else if (pick === selectExistingBranch) {
-			return await showBranchPicker(title, 'Choose an existing branch', repository);
+			return await showBranchPicker(title, '选择一个现有分支', repository);
 		}
 
 		return undefined;

@@ -72,8 +72,8 @@ export interface WorktreeOpenGitCommandArgs {
 
 export class WorktreeOpenGitCommand extends QuickCommand<State> {
 	constructor(container: Container, args?: WorktreeOpenGitCommandArgs) {
-		super(container, 'worktree-open', 'open', 'Open Worktree', {
-			description: 'opens an existing worktree',
+		super(container, 'worktree-open', 'open', '打开工作树', {
+			description: '打开现有工作树',
 		});
 
 		this.initialState = { confirm: args?.confirm, flags: [], ...args?.state };
@@ -143,7 +143,7 @@ export class WorktreeOpenGitCommand extends QuickCommand<State> {
 					excludeOpened: true,
 					includeStatus: true,
 					picked: state.worktree?.uri?.toString(),
-					placeholder: 'Choose worktree to open',
+					placeholder: '选择要打开的工作树',
 				});
 				if (result === StepResultBreak) {
 					state.worktree = undefined!;
@@ -203,13 +203,13 @@ export class WorktreeOpenGitCommand extends QuickCommand<State> {
 		type StepType = FlagsQuickPickItem<Flags>;
 
 		const newWindowItem = createFlagsQuickPickItem<Flags>(state.flags, ['--new-window'], {
-			label: `Open Worktree in a New Window`,
-			detail: 'Will open the worktree in a new window',
+			label: '在新窗口中打开工作树',
+			detail: '将在新窗口中打开该工作树',
 		});
 
 		const currentWindowItem = createFlagsQuickPickItem<Flags>(state.flags, [], {
-			label: 'Open Worktree',
-			detail: 'Will open the worktree in the current window',
+			label: '打开工作树',
+			detail: '将在当前窗口中打开该工作树',
 		});
 
 		if (state.worktreeDefaultOpen === 'new') {
@@ -224,8 +224,8 @@ export class WorktreeOpenGitCommand extends QuickCommand<State> {
 			currentWindowItem,
 			newWindowItem,
 			createFlagsQuickPickItem<Flags>(state.flags, ['--add-to-workspace'], {
-				label: `Add Worktree to Workspace`,
-				detail: 'Will add the worktree into the current workspace',
+				label: '将工作树添加到工作区',
+				detail: '将把该工作树添加到当前工作区',
 			}),
 		];
 
@@ -233,21 +233,21 @@ export class WorktreeOpenGitCommand extends QuickCommand<State> {
 			confirmations.push(
 				createQuickPickSeparator(),
 				createFlagsQuickPickItem<Flags>(state.flags, ['--reveal-explorer'], {
-					label: `Reveal in File Explorer`,
+					label: '在文件资源管理器中显示',
 					description: `$(folder) ${truncateLeft(getWorkspaceFriendlyPath(state.worktree.uri), 40)}`,
-					detail: 'Will open the worktree in the File Explorer',
+					detail: '将在文件资源管理器中打开该工作树',
 				}),
 			);
 		}
 
 		const step = createConfirmStep(
-			appendReposToTitle(state.overrides?.confirmation?.title ?? `Confirm ${context.title}`, state, context),
+			appendReposToTitle(state.overrides?.confirmation?.title ?? `确认 ${context.title}`, state, context),
 			confirmations,
 			context,
 			undefined,
 			{
 				canGoBack: state.overrides?.canGoBack,
-				placeholder: state.overrides?.confirmation?.placeholder ?? 'Confirm Open Worktree',
+				placeholder: state.overrides?.confirmation?.placeholder ?? '确认打开工作树',
 			},
 		);
 

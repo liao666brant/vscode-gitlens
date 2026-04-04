@@ -52,8 +52,8 @@ export interface TagDeleteGitCommandArgs {
 
 export class TagDeleteGitCommand extends QuickCommand<State> {
 	constructor(container: Container, args?: TagDeleteGitCommandArgs) {
-		super(container, 'tag-delete', 'delete', 'Delete Tags', {
-			description: 'deletes the specified tags',
+		super(container, 'tag-delete', 'delete', '删除标签', {
+			description: '删除指定标签',
 		});
 
 		this.initialState = { confirm: args?.confirm, ...args?.state };
@@ -107,7 +107,7 @@ export class TagDeleteGitCommand extends QuickCommand<State> {
 
 				const result = yield* pickTagsStep(state, context, {
 					picked: state.references?.map(r => r.ref),
-					placeholder: 'Choose tags to delete',
+					placeholder: '选择要删除的标签',
 				});
 				if (result === StepResultBreak) {
 					state.references = undefined!;
@@ -137,7 +137,7 @@ export class TagDeleteGitCommand extends QuickCommand<State> {
 					await state.repo.git.tags.deleteTag?.(ref);
 				} catch (ex) {
 					Logger.error(ex, context.title);
-					void showGitErrorMessage(ex, TagError.is(ex) ? undefined : 'Unable to delete tag');
+					void showGitErrorMessage(ex, TagError.is(ex) ? undefined : '无法删除标签');
 				}
 			}
 		}
@@ -147,8 +147,8 @@ export class TagDeleteGitCommand extends QuickCommand<State> {
 
 	private *confirmStep(state: StepState<State<Repository>>, context: TagContext): StepResultGenerator<void> {
 		const step: QuickPickStep = createConfirmStep(
-			appendReposToTitle(`Confirm ${context.title}`, state, context),
-			[{ label: context.title, detail: `Will delete ${getReferenceLabel(state.references)}` }],
+			appendReposToTitle(`确认${context.title}`, state, context),
+			[{ label: context.title, detail: `将删除 ${getReferenceLabel(state.references)}` }],
 			context,
 		);
 		const selection: StepSelection<typeof step> = yield step;

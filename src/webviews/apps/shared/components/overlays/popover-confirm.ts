@@ -117,7 +117,7 @@ export class GlPopoverConfirm extends LitElement {
 
 	/** The text for the confirm button */
 	@property()
-	confirm = 'Confirm';
+	confirm = '确认';
 
 	/** The appearance for the confirm button */
 	@property({ attribute: 'confirm-appearance' })
@@ -129,7 +129,7 @@ export class GlPopoverConfirm extends LitElement {
 
 	/** The text for the cancel button */
 	@property()
-	cancel = 'Cancel';
+	cancel = '取消';
 
 	/** Which button to focus initially: 'confirm' or 'cancel' */
 	@property({ attribute: 'initial-focus' })

@@ -9,10 +9,10 @@ type ShowCreateOrOpen = ShowCreateDraft | ShowViewDraft;
 
 export async function showPatchesView(createOrOpen: ShowCreateOrOpen, options?: WebviewViewShowOptions): Promise<void> {
 	if (!configuration.get('cloudPatches.enabled')) {
-		const confirm: MessageItem = { title: 'Enable' };
-		const cancel: MessageItem = { title: 'Cancel', isCloseAffordance: true };
+		const confirm: MessageItem = { title: '启用' };
+		const cancel: MessageItem = { title: '取消', isCloseAffordance: true };
 		const result = await window.showInformationMessage(
-			'Cloud Patches are currently disabled. Would you like to enable them?',
+			'Cloud Patches 当前已禁用。是否启用？',
 			{ modal: true },
 			confirm,
 			cancel,

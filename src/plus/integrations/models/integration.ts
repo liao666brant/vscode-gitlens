@@ -163,14 +163,14 @@ export abstract class IntegrationBase<
 		let signOut = !options?.currentSessionOnly;
 
 		if (connected && !options?.currentSessionOnly && !options?.silent) {
-			const disable = { title: 'Disable' };
-			const disableAndSignOut = { title: 'Disable & Sign Out' };
-			const cancel = { title: 'Cancel', isCloseAffordance: true };
+			const disable = { title: '禁用' };
+			const disableAndSignOut = { title: '禁用并退出登录' };
+			const cancel = { title: '取消', isCloseAffordance: true };
 
 			let result: MessageItem | undefined;
 			if (this.authenticationService.supports(this.authProvider.id)) {
 				result = await window.showWarningMessage(
-					`Are you sure you want to disable the rich integration with ${this.name}?\n\nNote: signing out clears the saved authentication.`,
+					`确定要禁用与 ${this.name} 的深度集成吗？\n\n注意：退出登录会清除已保存的认证信息。`,
 					{ modal: true },
 					disable,
 					disableAndSignOut,
@@ -178,7 +178,7 @@ export abstract class IntegrationBase<
 				);
 			} else {
 				result = await window.showWarningMessage(
-					`Are you sure you want to disable the rich integration with ${this.name}?`,
+					`确定要禁用与 ${this.name} 的深度集成吗？`,
 					{ modal: true },
 					disable,
 					cancel,

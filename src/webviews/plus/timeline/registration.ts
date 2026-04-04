@@ -20,7 +20,7 @@ export function registerTimelineWebviewPanel(
 			id: 'gitlens.timeline',
 			fileName: 'timeline.html',
 			iconPath: 'images/gitlens-icon.png',
-			title: 'Visual History',
+			title: '可视化历史',
 			contextKeyPrefix: `gitlens:webview:timeline`,
 			trackingFeature: 'timelineWebview',
 			type: 'timeline',
@@ -45,7 +45,7 @@ export function registerTimelineWebviewView(
 		{
 			id: 'gitlens.views.timeline',
 			fileName: 'timeline.html',
-			title: 'Visual File History',
+			title: '可视化文件历史',
 			contextKeyPrefix: `gitlens:webviewView:timeline`,
 			trackingFeature: 'timelineView',
 			type: 'timeline',

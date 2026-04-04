@@ -36,8 +36,8 @@ async function openFileOreRevisionFromRemote(container: Container, type: 'file' 
 	}
 
 	const url = await window.showInputBox({
-		prompt: 'Enter a remote file url to open',
-		placeHolder: 'Remote file url',
+		prompt: '输入要打开的远程文件 URL',
+		placeHolder: '远程文件 URL',
 		value: clipboard,
 		ignoreFocusOut: true,
 	});
@@ -45,7 +45,7 @@ async function openFileOreRevisionFromRemote(container: Container, type: 'file' 
 
 	const local = await container.git.getLocalInfoFromRemoteUri(Uri.parse(url));
 	if (local == null) {
-		void window.showWarningMessage('Unable to parse the provided remote url.');
+		void window.showWarningMessage('无法解析提供的远程 URL。');
 		return;
 	}
 
@@ -70,7 +70,7 @@ async function openFileOreRevisionFromRemote(container: Container, type: 'file' 
 		await openTextEditor(uri, { selection: selection, throwOnError: true });
 	} catch {
 		const uris = await window.showOpenDialog({
-			title: 'Open local file',
+			title: '打开本地文件',
 			defaultUri: uri,
 			canSelectMany: false,
 			canSelectFolders: false,

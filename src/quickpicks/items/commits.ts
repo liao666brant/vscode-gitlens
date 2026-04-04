@@ -198,9 +198,7 @@ export class CommitCopyMessageQuickPickItem extends CommandQuickPickItem {
 
 	override async onDidPressKey(key: Keys): Promise<void> {
 		await super.onDidPressKey(key);
-		void window.showInformationMessage(
-			`${this.commit.stashName ? '存储' : '提交'}消息已复制到剪贴板`,
-		);
+		void window.showInformationMessage(`${this.commit.stashName ? '存储' : '提交'}消息已复制到剪贴板`);
 	}
 }
 

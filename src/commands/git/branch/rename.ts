@@ -57,8 +57,8 @@ export interface BranchRenameGitCommandArgs {
 
 export class BranchRenameGitCommand extends QuickCommand<State> {
 	constructor(container: Container, args?: BranchRenameGitCommandArgs) {
-		super(container, 'branch-rename', 'rename', 'Rename Branch', {
-			description: 'renames the specified branch',
+		super(container, 'branch-rename', 'rename', '重命名分支', {
+			description: '重命名指定分支',
 		});
 
 		this.initialState = { confirm: args?.confirm, ...args?.state };
@@ -114,7 +114,7 @@ export class BranchRenameGitCommand extends QuickCommand<State> {
 				const result = yield* pickBranchStep(state, context, {
 					filter: b => !b.remote,
 					picked: state.reference?.ref,
-					placeholder: 'Choose a branch to rename',
+					placeholder: '选择要重命名的分支',
 				});
 				if (result === StepResultBreak) {
 					state.reference = undefined!;
@@ -129,7 +129,7 @@ export class BranchRenameGitCommand extends QuickCommand<State> {
 				using step = steps.enterStep(Steps.InputName);
 
 				const result = yield* inputBranchNameStep(state, context, {
-					prompt: 'Please provide a new name for the branch',
+					prompt: '请为分支输入新名称',
 					title: `${context.title} ${getReferenceLabel(state.reference, false)}`,
 					value: state.name ?? state.reference.name,
 				});
@@ -163,7 +163,7 @@ export class BranchRenameGitCommand extends QuickCommand<State> {
 				await state.repo.git.branches.renameBranch?.(state.reference.ref, state.name);
 			} catch (ex) {
 				Logger.error(ex, context.title);
-				void showGitErrorMessage(ex, BranchError.is(ex) ? undefined : 'Unable to rename branch');
+				void showGitErrorMessage(ex, BranchError.is(ex) ? undefined : '无法重命名分支');
 				return undefined;
 			}
 		}
@@ -173,11 +173,11 @@ export class BranchRenameGitCommand extends QuickCommand<State> {
 
 	private *confirmStep(state: StepState<State<Repository>>, context: Context): StepResultGenerator<Flags[]> {
 		const step: QuickPickStep<FlagsQuickPickItem<Flags>> = createConfirmStep(
-			appendReposToTitle(`Confirm ${context.title}`, state, context),
+			appendReposToTitle(`确认${context.title}`, state, context),
 			[
 				createFlagsQuickPickItem<Flags>(state.flags, ['-m'], {
 					label: context.title,
-					detail: `Will rename ${getReferenceLabel(state.reference)} to ${state.name}`,
+					detail: `将把 ${getReferenceLabel(state.reference)} 重命名为 ${state.name}`,
 				}),
 			],
 			context,

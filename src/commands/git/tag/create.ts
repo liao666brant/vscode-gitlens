@@ -70,8 +70,8 @@ export interface TagCreateGitCommandArgs {
 
 export class TagCreateGitCommand extends QuickCommand<State> {
 	constructor(container: Container, args?: TagCreateGitCommandArgs) {
-		super(container, 'tag-create', 'create', 'Create Tag', {
-			description: 'creates a new tag',
+		super(container, 'tag-create', 'create', '创建标签', {
+			description: '创建新标签',
 		});
 
 		this.initialState = { confirm: args?.confirm, ...args?.state };
@@ -121,9 +121,9 @@ export class TagCreateGitCommand extends QuickCommand<State> {
 				using step = steps.enterStep(Steps.PickRef);
 
 				const result = yield* pickBranchOrTagStep(state, context, {
-					placeholder: ctx => `Choose a branch${ctx.showTags ? ' or tag' : ''} to create the new tag from`,
+					placeholder: ctx => `选择一个${ctx.showTags ? '分支或标签' : '分支'}作为新标签的来源`,
 					picked: state.reference?.ref ?? (await state.repo.git.branches.getBranch())?.ref,
-					title: `${context.title} from`,
+					title: `${context.title}，来源`,
 					value: isRevisionReference(state.reference) ? state.reference.ref : undefined,
 				});
 				if (result === StepResultBreak) {
@@ -139,8 +139,8 @@ export class TagCreateGitCommand extends QuickCommand<State> {
 				using step = steps.enterStep(Steps.InputName);
 
 				const result = yield* inputTagNameStep(state, context, {
-					prompt: 'Please provide a name for the new tag',
-					title: `${context.title} at ${getReferenceLabel(state.reference, {
+					prompt: '请为新标签输入名称',
+					title: `${context.title} 于 ${getReferenceLabel(state.reference, {
 						capitalize: true,
 						icon: false,
 					})}`,
@@ -196,18 +196,16 @@ export class TagCreateGitCommand extends QuickCommand<State> {
 				Logger.error(ex, context.title);
 
 				if (TagError.is(ex, 'alreadyExists')) {
-					void window.showWarningMessage(
-						`Unable to create tag '${state.name}'. A tag with that name already exists.`,
-					);
+					void window.showWarningMessage(`无法创建标签“${state.name}”。同名标签已存在。`);
 					return;
 				}
 
 				if (TagError.is(ex, 'invalidName')) {
-					void window.showWarningMessage(`Unable to create tag '${state.name}'. The tag name is invalid.`);
+					void window.showWarningMessage(`无法创建标签“${state.name}”。标签名称无效。`);
 					return;
 				}
 
-				void showGitErrorMessage(ex, TagError.is(ex) ? undefined : 'Unable to create tag');
+				void showGitErrorMessage(ex, TagError.is(ex) ? undefined : '无法创建标签');
 			}
 		}
 
@@ -220,13 +218,13 @@ export class TagCreateGitCommand extends QuickCommand<State> {
 	): AsyncStepResultGenerator<string> {
 		const step = createInputStep({
 			title: appendReposToTitle(
-				`${context.title} at ${getReferenceLabel(state.reference, { capitalize: true, icon: false })}`,
+				`${context.title} 于 ${getReferenceLabel(state.reference, { capitalize: true, icon: false })}`,
 				state,
 				context,
 			),
-			placeholder: 'Please provide an optional message to annotate the tag',
+			placeholder: '可选：输入用于注解标签的消息',
 			value: state.message,
-			prompt: 'Enter optional message',
+			prompt: '输入可选消息',
 		});
 
 		const value: StepSelection<typeof step> = yield step;
@@ -240,22 +238,20 @@ export class TagCreateGitCommand extends QuickCommand<State> {
 
 	private *confirmStep(state: StepState<State<Repository>>, context: TagContext): StepResultGenerator<Flags[]> {
 		const step: QuickPickStep<FlagsQuickPickItem<Flags>> = createConfirmStep(
-			appendReposToTitle(`Confirm ${context.title}`, state, context),
+			appendReposToTitle(`确认${context.title}`, state, context),
 			[
 				createFlagsQuickPickItem<Flags>(state.flags, state.message.length !== 0 ? ['-m'] : [], {
 					label: context.title,
 					description: state.message.length !== 0 ? '-m' : '',
-					detail: `Will create a new tag named ${state.name} at ${getReferenceLabel(state.reference)}`,
+					detail: `将在 ${getReferenceLabel(state.reference)} 创建名为 ${state.name} 的新标签`,
 				}),
 				createFlagsQuickPickItem<Flags>(
 					state.flags,
 					state.message.length !== 0 ? ['--force', '-m'] : ['--force'],
 					{
-						label: `Force ${context.title}`,
+						label: `强制${context.title}`,
 						description: `--force${state.message.length !== 0 ? ' -m' : ''}`,
-						detail: `Will forcibly create a new tag named ${state.name} at ${getReferenceLabel(
-							state.reference,
-						)}`,
+						detail: `将强制在 ${getReferenceLabel(state.reference)} 创建名为 ${state.name} 的新标签`,
 					},
 				),
 			],

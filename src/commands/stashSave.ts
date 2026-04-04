@@ -129,10 +129,10 @@ async function getStashSaveArgsForScmStates(
 	args.repoPath = repo?.path;
 
 	if (!(await repo?.git?.supports('git:stash:push:pathspecs'))) {
-		const confirm = { title: 'Stash All' };
-		const cancel = { title: 'Cancel', isCloseAffordance: true };
+		const confirm = { title: '暂存全部' };
+		const cancel = { title: '取消', isCloseAffordance: true };
 		const result = await window.showWarningMessage(
-			"Your Git version doesn't support stashing individual files. Stash all changes instead?",
+			'当前 Git 版本不支持暂存单个文件。是否改为暂存全部更改？',
 			{ modal: true },
 			confirm,
 			cancel,
@@ -161,10 +161,10 @@ async function getStashSaveArgsForScmStates(
 
 	if (!selectedWorking && !selectedUntracked && (hasWorking || hasUntracked)) {
 		if (!(await repo?.git?.supports('git:stash:push:staged'))) {
-			const confirm = { title: 'Stash All' };
-			const cancel = { title: 'Cancel', isCloseAffordance: true };
+			const confirm = { title: '暂存全部' };
+			const cancel = { title: '取消', isCloseAffordance: true };
 			const result = await window.showWarningMessage(
-				"Your Git version doesn't support stashing only staged changes. Stash all changes instead?",
+				'当前 Git 版本不支持仅暂存已暂存更改。是否改为暂存全部更改？',
 				{ modal: true },
 				confirm,
 				cancel,
@@ -232,10 +232,10 @@ async function getStashSaveArgsForStagedScmGroup(
 	}
 
 	if (!hasStaged) {
-		const confirm = { title: 'Stash All' };
-		const cancel = { title: 'Cancel', isCloseAffordance: true };
+		const confirm = { title: '暂存全部' };
+		const cancel = { title: '取消', isCloseAffordance: true };
 		const result = await window.showWarningMessage(
-			'There are no staged changes to stash. Stash all changes instead?',
+			'没有可暂存的已暂存更改。是否改为暂存全部更改？',
 			{ modal: true },
 			confirm,
 			cancel,
@@ -250,10 +250,10 @@ async function getStashSaveArgsForStagedScmGroup(
 		if (await repo?.git?.supports('git:stash:push:staged')) {
 			args.onlyStaged = true;
 		} else {
-			const confirm = { title: 'Stash All' };
-			const cancel = { title: 'Cancel', isCloseAffordance: true };
+			const confirm = { title: '暂存全部' };
+			const cancel = { title: '取消', isCloseAffordance: true };
 			const result = await window.showWarningMessage(
-				"Your Git version doesn't support stashing only staged changes. Stash all changes instead?",
+				'当前 Git 版本不支持仅暂存已暂存更改。是否改为暂存全部更改？',
 				{ modal: true },
 				confirm,
 				cancel,
@@ -290,10 +290,10 @@ async function getStashSaveArgsForUnstagedScmGroup(
 	}
 
 	if (!hasWorking && !hasUntracked) {
-		const confirm = { title: 'Stash All' };
-		const cancel = { title: 'Cancel', isCloseAffordance: true };
+		const confirm = { title: '暂存全部' };
+		const cancel = { title: '取消', isCloseAffordance: true };
 		const result = await window.showWarningMessage(
-			'There are no unstaged changes to stash. Stash all changes instead?',
+			'没有可暂存的未暂存更改。是否改为暂存全部更改？',
 			{ modal: true },
 			confirm,
 			cancel,

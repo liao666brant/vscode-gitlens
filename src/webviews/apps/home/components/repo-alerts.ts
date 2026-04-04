@@ -82,21 +82,18 @@ export class GlRepoAlerts extends GlElement {
 				this.alertVisibility.noRepo,
 				() => html`
 					<div id="no-repo-alert" class="alert alert--info mb-0">
-						<h1 class="alert__title">No repository detected</h1>
+						<h1 class="alert__title">未检测到仓库</h1>
 						<div class="alert__description">
-							<p>
-								To use GitLens, open a folder containing a git repository or clone from a URL from the
-								Explorer.
-							</p>
+							<p>要使用 GitLens，请打开包含 Git 仓库的文件夹，或在资源管理器中通过 URL 克隆仓库。</p>
 							<p class="centered">
 								<gl-button class="is-basic" href="command:workbench.view.scm"
-									>Open a Folder or Repository</gl-button
+									>打开文件夹或仓库</gl-button
 								>
 							</p>
 							<p class="mb-0">
-								If you have opened a folder with a repository, please let us know by
+								如果你已打开包含仓库的文件夹，请通过
 								<a class="one-line" href="https://github.com/gitkraken/vscode-gitlens/issues/new/choose"
-									>creating an Issue</a
+									>创建 Issue</a
 								>.
 							</p>
 						</div>
@@ -107,15 +104,12 @@ export class GlRepoAlerts extends GlElement {
 				this.alertVisibility.unsafeRepo,
 				() => html`
 					<div id="unsafe-repo-alert" class="alert alert--info mb-0">
-						<h1 class="alert__title">Unsafe repository</h1>
+						<h1 class="alert__title">不安全的仓库</h1>
 						<div class="alert__description">
-							<p>
-								Unable to open any repositories as Git blocked them as potentially unsafe, due to the
-								folder(s) not being owned by the current user.
-							</p>
+							<p>由于文件夹不属于当前用户，Git 将其阻止为潜在不安全，因此无法打开任何仓库。</p>
 							<p class="centered">
 								<gl-button class="is-basic" href="command:workbench.view.scm"
-									>Manage in Source Control</gl-button
+									>在源代码管理中管理</gl-button
 								>
 							</p>
 						</div>
@@ -126,12 +120,12 @@ export class GlRepoAlerts extends GlElement {
 				this.alertVisibility.untrusted,
 				() => html`
 					<div id="untrusted-alert" class="alert alert--info mb-0" aria-hidden="true">
-						<h1 class="alert__title">Untrusted workspace</h1>
+						<h1 class="alert__title">未受信任的工作区</h1>
 						<div class="alert__description">
-							<p>Unable to open repositories in Restricted Mode.</p>
+							<p>在受限模式下无法打开仓库。</p>
 							<p class="centered">
 								<gl-button class="is-basic" href="command:workbench.trust.manage"
-									>Manage Workspace Trust</gl-button
+									>管理工作区信任</gl-button
 								>
 							</p>
 						</div>

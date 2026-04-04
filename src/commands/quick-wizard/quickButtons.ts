@@ -255,8 +255,8 @@ export const WillConfirmToggleQuickInputButton = class extends ToggleQuickInputB
 				},
 				off: {
 					tooltip: isConfirmationStep
-						? "对于将来的操作，在执行操作之前不会显示确认步骤\n点击切换"
-						: "在执行操作之前不会显示确认步骤\n点击切换",
+						? '对于将来的操作，在执行操作之前不会显示确认步骤\n点击切换'
+						: '在执行操作之前不会显示确认步骤\n点击切换',
 					icon: new ThemeIcon('gitlens-confirm-unchecked'),
 				},
 			}),

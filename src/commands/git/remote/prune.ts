@@ -47,8 +47,8 @@ export interface RemotePruneGitCommandArgs {
 
 export class RemotePruneGitCommand extends QuickCommand<State> {
 	constructor(container: Container, args?: RemotePruneGitCommandArgs) {
-		super(container, 'remote-prune', 'prune', 'Prune Remote', {
-			description: 'prunes remote branches on the specified remote',
+		super(container, 'remote-prune', 'prune', '清理远程', {
+			description: '清理指定远程上的远程分支',
 		});
 
 		this.initialState = { confirm: args?.confirm, ...args?.state };
@@ -109,7 +109,7 @@ export class RemotePruneGitCommand extends QuickCommand<State> {
 				const picked: string | undefined = typeof state.remote === 'string' ? state.remote : state.remote?.name;
 				const result: GitRemote | typeof StepResultBreak = yield* pickRemoteStep(state, context, {
 					picked: picked,
-					placeholder: 'Choose a remote to prune',
+					placeholder: '选择要清理的远程',
 				});
 				if (result === StepResultBreak) {
 					state.remote = undefined!;
@@ -146,8 +146,8 @@ export class RemotePruneGitCommand extends QuickCommand<State> {
 		context: Context,
 	): StepResultGenerator<void> {
 		const step: QuickPickStep = createConfirmStep(
-			appendReposToTitle(`Confirm ${context.title}`, state, context),
-			[{ label: context.title, detail: `Will prune remote '${state.remote.name}'` }],
+			appendReposToTitle(`确认${context.title}`, state, context),
+			[{ label: context.title, detail: `将清理远程“${state.remote.name}”` }],
 			context,
 		);
 		const selection: StepSelection<typeof step> = yield step;

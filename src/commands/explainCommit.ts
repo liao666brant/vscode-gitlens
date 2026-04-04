@@ -20,8 +20,8 @@ export interface ExplainCommitCommandArgs extends ExplainBaseArgs {
 
 @command()
 export class ExplainCommitCommand extends ExplainCommandBase {
-	pickerTitle = 'Explain Commit Changes';
-	repoPickerPlaceholder = 'Choose which repository to explain a commit from';
+	pickerTitle = '解释提交变更';
+	repoPickerPlaceholder = '选择要解释提交的仓库';
 	static createMarkdownCommandLink(args: ExplainCommitCommandArgs): string {
 		return createMarkdownCommandLink<ExplainCommitCommandArgs>('gitlens.ai.explainCommit:editor', args);
 	}
@@ -54,7 +54,7 @@ export class ExplainCommitCommand extends ExplainCommandBase {
 
 		const svc = await this.getRepositoryService(editor, uri, args);
 		if (svc == null) {
-			void showGenericErrorMessage('Unable to find a repository');
+			void showGenericErrorMessage('无法找到仓库');
 			return;
 		}
 
@@ -64,7 +64,7 @@ export class ExplainCommitCommand extends ExplainCommandBase {
 			let commit: GitCommit | undefined;
 			if (args.rev == null) {
 				const log = await commitsProvider.getLog();
-				const pick = await showCommitPicker(log, this.pickerTitle, 'Choose a commit to explain');
+				const pick = await showCommitPicker(log, this.pickerTitle, '选择要解释的提交');
 				if (pick?.sha == null) return;
 				args.rev = pick.sha;
 				commit = pick;
@@ -72,7 +72,7 @@ export class ExplainCommitCommand extends ExplainCommandBase {
 				// Get the commit
 				commit = await commitsProvider.getCommit(args.rev);
 				if (commit == null) {
-					void showGenericErrorMessage('Unable to find the specified commit');
+					void showGenericErrorMessage('无法找到指定提交');
 					return;
 				}
 			}
@@ -86,22 +86,22 @@ export class ExplainCommitCommand extends ExplainCommandBase {
 					context: { type: args.source?.context?.type ?? 'commit' },
 				},
 				{
-					progress: { location: ProgressLocation.Notification, title: 'Explaining commit...' },
+					progress: { location: ProgressLocation.Notification, title: '正在解释提交...' },
 				},
 			);
 
 			if (result === 'cancelled') return;
 
 			if (result == null) {
-				void showGenericErrorMessage('Unable to explain commit');
+				void showGenericErrorMessage('无法解释提交');
 				return;
 			}
 
 			const { promise, model } = result;
 			this.openDocument(promise, `/explain/commit/${commit.ref}/${model.id}`, model, 'explain-commit', {
-				header: { title: 'Commit Summary', subtitle: `${commit.summary} (${commit.shortSha})` },
+				header: { title: '提交摘要', subtitle: `${commit.summary} (${commit.shortSha})` },
 				command: {
-					label: 'Explain Commit Summary',
+					label: '解释提交摘要',
 					name: 'gitlens.ai.explainCommit',
 					args: {
 						repoPath: svc.path,
@@ -112,7 +112,7 @@ export class ExplainCommitCommand extends ExplainCommandBase {
 			});
 		} catch (ex) {
 			Logger.error(ex, 'ExplainCommitCommand', 'execute');
-			void showGenericErrorMessage('Unable to explain commit');
+			void showGenericErrorMessage('无法解释提交');
 		}
 	}
 }

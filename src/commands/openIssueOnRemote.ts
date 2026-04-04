@@ -28,7 +28,7 @@ export class OpenIssueOnRemoteCommand extends GlCommandBase {
 
 	async execute(args?: OpenIssueOnRemoteCommandArgs): Promise<void> {
 		if (args?.issue == null) {
-			void window.showInformationMessage('No issue provided');
+			void window.showInformationMessage('未提供 Issue');
 			Logger.warn(getScopedLogger(), 'No issue provided in OpenIssueOnRemoteCommand', args);
 			return;
 		}

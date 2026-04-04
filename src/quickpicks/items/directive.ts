@@ -1,6 +1,5 @@
 import type { QuickPick, QuickPickItem, ThemeIcon, Uri } from 'vscode';
 import { proTrialLengthInDays } from '../../constants.subscription.js';
-import { pluralize } from '../../system/string.js';
 
 export enum Directive {
 	Back,
@@ -47,56 +46,53 @@ export function createDirectiveQuickPickItem(
 	if (label == null) {
 		switch (directive) {
 			case Directive.Back:
-				label = 'Back';
+				label = '返回';
 				break;
 			case Directive.Cancel:
-				label = 'Cancel';
+				label = '取消';
 				break;
 			case Directive.LoadMore:
-				label = 'Load more';
+				label = '加载更多';
 				break;
 			case Directive.Noop:
-				label = 'Try again';
+				label = '重试';
 				break;
 			case Directive.Reset:
-				label = 'Reset';
+				label = '重置';
 				break;
 
 			case Directive.SignIn:
-				label = 'Sign In';
+				label = '登录';
 				break;
 			case Directive.StartProTrial:
-				label = 'Try GitLens Pro';
-				detail = `Get ${pluralize(
-					'day',
-					proTrialLengthInDays,
-				)} of GitLens Pro for free — no credit card required.`;
+				label = '试用 GitLens Pro';
+				detail = `免费试用 GitLens Pro ${proTrialLengthInDays} 天，无需信用卡。`;
 				break;
 
 			case Directive.RequiresVerification:
-				label = 'Resend Email';
-				detail = 'You must verify your email before you can continue';
+				label = '重新发送邮件';
+				detail = '继续之前，您必须先验证邮箱';
 				break;
 			case Directive.RequiresPaidSubscription:
-				label = 'Upgrade to Pro';
+				label = '升级到 Pro';
 				if (detail != null) {
-					description ??= ' \u2014\u00a0\u00a0 GitLens Pro is required to use this feature';
+					description ??= ' \u2014\u00a0\u00a0 使用此功能需要 GitLens Pro';
 				} else {
-					detail = 'Upgrading to GitLens Pro is required to use this feature';
+					detail = '使用此功能需要升级到 GitLens Pro';
 				}
 				break;
 
 			case Directive.RefsAllBranches:
-				label = 'All Branches';
+				label = '所有分支';
 				break;
 
 			case Directive.ReposAll:
-				label = 'All Repositories';
+				label = '所有仓库';
 				break;
 
 			case Directive.ReposAllExceptWorktrees:
-				label = 'All Repositories';
-				description = ' excluding worktrees / submodules';
+				label = '所有仓库';
+				description = ' 不包含工作树 / 子模块';
 				break;
 		}
 	}

@@ -73,7 +73,7 @@ export class DiffWithWorkingCommand extends ActiveEditorCommand {
 					'DiffWithWorkingCommand',
 					`getPreviousDiffUris(${gitUri.repoPath}, ${gitUri.fsPath}, ${gitUri.sha})`,
 				);
-				void showGenericErrorMessage('Unable to open compare');
+				void showGenericErrorMessage('无法打开比较');
 
 				return;
 			}
@@ -81,12 +81,12 @@ export class DiffWithWorkingCommand extends ActiveEditorCommand {
 
 		// If the sha is missing, just let the user know the file matches
 		if (gitUri.sha == null) {
-			void window.showInformationMessage('File matches the working tree');
+			void window.showInformationMessage('文件与工作树一致');
 
 			return;
 		}
 		if (gitUri.sha === deletedOrMissing) {
-			void window.showWarningMessage('Unable to open compare. File has been deleted from the working tree');
+			void window.showWarningMessage('无法打开比较。该文件已从工作树中删除');
 
 			return;
 		}
@@ -114,8 +114,8 @@ export class DiffWithWorkingCommand extends ActiveEditorCommand {
 			const picked = await showRevisionFilesPicker(this.container, createReference('HEAD', gitUri.repoPath!), {
 				ignoreFocusOut: true,
 				initialPath: gitUri.relativePath,
-				title: `Open File \u2022 Unable to open '${gitUri.relativePath}'`,
-				placeholder: 'Choose another working file to open',
+				title: `打开文件 \u2022 无法打开“${gitUri.relativePath}”`,
+				placeholder: '选择另一个要打开的工作文件',
 				keyboard: {
 					keys: ['right', 'alt+right', 'ctrl+right'],
 					onDidPressKey: async (_key, uri) => {

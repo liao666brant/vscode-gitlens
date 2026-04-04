@@ -76,7 +76,7 @@ export async function showRevisionFilesPicker(
 		}
 
 		quickpick.title = options.title;
-		quickpick.placeholder = options?.placeholder ?? 'Search files by name';
+		quickpick.placeholder = options?.placeholder ?? '按名称搜索文件';
 		quickpick.matchOnDescription = true;
 
 		quickpick.value = value;
@@ -84,7 +84,7 @@ export async function showRevisionFilesPicker(
 		quickpick.show();
 
 		const allowFolders = options?.allowFolders ?? false;
-		const pickFolder: QuickInputButton = { iconPath: new ThemeIcon('folder-opened'), tooltip: 'Choose Folder' };
+		const pickFolder: QuickInputButton = { iconPath: new ThemeIcon('folder-opened'), tooltip: '选择文件夹' };
 
 		const tree = await container.git.getRepositoryService(repoPath).revision.getTreeForRevision(ref);
 		const items: RevisionQuickPickItem[] = [

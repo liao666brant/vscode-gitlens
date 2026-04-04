@@ -352,7 +352,7 @@ export class GlSearchInput extends GlElement {
 	}
 
 	private get label() {
-		return this.filter ? 'Filter' : 'Search';
+		return this.filter ? '筛选' : '搜索';
 	}
 
 	get matchCaseOverride(): boolean {
@@ -368,9 +368,9 @@ export class GlSearchInput extends GlElement {
 
 	private get placeholder() {
 		if (this.naturalLanguage) {
-			return `${this.label} commits using natural language (↑↓ for history), e.g. my commits from last week`;
+			return `${this.label}提交（自然语言，↑↓ 查看历史），例如 上周我的提交`;
 		}
-		return `${this.label} commits (press Enter to search, ↑↓ for history), e.g. @me after:1.week.ago file:*.ts`;
+		return `${this.label}提交（按 Enter 搜索，↑↓ 查看历史），例如 @me after:1.week.ago file:*.ts`;
 	}
 
 	private repoPath: string | undefined;
@@ -771,8 +771,8 @@ export class GlSearchInput extends GlElement {
 			switch (command.command) {
 				case 'pick-author': {
 					const result = await this._ipc.sendRequest(ChooseAuthorRequest, {
-						title: 'Search by Author',
-						placeholder: 'Choose contributors to include commits from',
+						title: '按作者搜索',
+						placeholder: '选择要包含其提交的贡献者',
 						picked: currentValue ? [currentValue] : undefined,
 					});
 
@@ -785,8 +785,8 @@ export class GlSearchInput extends GlElement {
 
 				case 'pick-ref': {
 					const result = await this._ipc.sendRequest(ChooseRefRequest, {
-						title: 'Search by Branch or Tag',
-						placeholder: 'Choose a branch or tag to filter by',
+						title: '按分支或标签搜索',
+						placeholder: '选择用于筛选的分支或标签',
 						allowedAdditionalInput: { range: false, rev: false },
 						include: ['branches', 'tags', 'HEAD'],
 						picked: currentValue || undefined,
@@ -801,8 +801,8 @@ export class GlSearchInput extends GlElement {
 
 				case 'pick-comparison': {
 					const result = await this._ipc.sendRequest(ChooseComparisonRequest, {
-						title: 'Search by Comparison Range',
-						placeholder: 'Choose two refs to compare',
+						title: '按比较范围搜索',
+						placeholder: '选择两个引用进行比较',
 					});
 
 					if (result?.range) {
@@ -815,9 +815,9 @@ export class GlSearchInput extends GlElement {
 				case 'pick-file':
 				case 'pick-folder': {
 					const result = await this._ipc.sendRequest(ChooseFileRequest, {
-						title: command.command === 'pick-file' ? 'Search by File' : 'Search by Folder',
+						title: command.command === 'pick-file' ? '按文件搜索' : '按文件夹搜索',
 						type: command.command === 'pick-file' ? 'file' : 'folder',
-						openLabel: 'Add to Search',
+						openLabel: '添加到搜索',
 						picked: currentValue ? [currentValue] : undefined,
 					});
 
@@ -1199,7 +1199,7 @@ export class GlSearchInput extends GlElement {
 		if (errors?.length) return errors[0];
 
 		// If no operations were parsed, the query is effectively empty
-		if (!operations.size) return 'Enter a search value';
+		if (!operations.size) return '请输入搜索内容';
 
 		return undefined;
 	}
@@ -1323,8 +1323,8 @@ export class GlSearchInput extends GlElement {
 						appearance="input"
 						role="checkbox"
 						aria-checked="${this.filter}"
-						tooltip="Filter Commits"
-						aria-label="Filter Commits"
+						tooltip="筛选提交"
+						aria-label="筛选提交"
 						@click="${this.handleFilterClick}"
 					>
 						<code-icon icon="list-filter"></code-icon>
@@ -1334,8 +1334,8 @@ export class GlSearchInput extends GlElement {
 								appearance="input"
 								role="checkbox"
 								aria-checked="${this.naturalLanguage}"
-								tooltip="Natural Language Search (AI Preview)"
-								aria-label="Natural Language Search (AI Preview)"
+								tooltip="自然语言搜索（AI 预览）"
+								aria-label="自然语言搜索（AI 预览）"
 								@click="${this.handleNaturalLanguageClick}"
 							>
 								<code-icon icon="sparkle"></code-icon>
@@ -1375,12 +1375,7 @@ export class GlSearchInput extends GlElement {
 			</div>
 			<div class="controls">
 				${this.value
-					? html`<gl-button
-							appearance="input"
-							tooltip="Clear"
-							aria-label="Clear"
-							@click="${this.handleClear}"
-						>
+					? html`<gl-button appearance="input" tooltip="清空" aria-label="清空" @click="${this.handleClear}">
 							<code-icon icon="close"></code-icon>
 						</gl-button>`
 					: nothing}
@@ -1490,8 +1485,7 @@ export class GlSearchInput extends GlElement {
 							? html`${this.cursorOperator.description}${this.renderOperatorExample(this.cursorOperator)}`
 							: this.naturalLanguage
 								? this.renderNaturalLanguageDescription()
-								: html`Combine filters to build powerful searches, e.g.
-										<code>@me after:1.week.ago file:*.ts</code>`}
+								: html`组合筛选条件进行强力搜索，例如 <code>@me after:1.week.ago file:*.ts</code>`}
 					</div>`
 				: nothing}
 		</gl-autocomplete>`;
@@ -1506,15 +1500,15 @@ export class GlSearchInput extends GlElement {
 
 	private renderNaturalLanguageDescription() {
 		if (this.searching) {
-			return html`<code-icon icon="loading" modifier="spin"></code-icon> Processing your natural language query...`;
+			return html`<code-icon icon="loading" modifier="spin"></code-icon> 正在处理你的自然语言查询...`;
 		}
 
 		if (this.processedQuery) {
-			return html`Query: <code>${this.processedQuery}</code>`;
+			return html`查询：<code>${this.processedQuery}</code>`;
 		}
 
-		return html`Describe what you're looking for and let AI build the query, e.g.
-			<code>my commits from last week</code> or <code>changes to package.json by eamodio last month</code>`;
+		return html`描述你想查找的内容，让 AI 帮你构建查询，例如 <code>上周我的提交</code> 或
+			<code>上个月 eamodio 对 package.json 的修改</code>`;
 	}
 
 	private renderSearchOptions() {
@@ -1522,7 +1516,7 @@ export class GlSearchInput extends GlElement {
 			return this.value
 				? html`<gl-copy-container
 						appearance="toolbar"
-						copyLabel="Copy Query"
+						copyLabel="复制查询"
 						.content=${this.processedQuery}
 						placement="bottom"
 						?disabled=${!this.processedQuery}
@@ -1531,7 +1525,7 @@ export class GlSearchInput extends GlElement {
 							icon="copy"
 							tabindex="0"
 							role="button"
-							aria-label="Copy Query"
+							aria-label="复制查询"
 							class="copy-icon"
 						></code-icon>
 					</gl-copy-container>`
@@ -1542,11 +1536,9 @@ export class GlSearchInput extends GlElement {
 				appearance="input"
 				role="checkbox"
 				aria-checked="${this.matchCaseOverride}"
-				tooltip="Match Case${this.matchCaseOverride && !this.matchCase
-					? ' (always on without regular expressions)'
-					: ''}"
-				aria-label="Match Case${this.matchCaseOverride && !this.matchCase
-					? ' (always on without regular expressions)'
+				tooltip="区分大小写${this.matchCaseOverride && !this.matchCase ? '（未使用正则表达式时始终开启）' : ''}"
+				aria-label="区分大小写${this.matchCaseOverride && !this.matchCase
+					? '（未使用正则表达式时始终开启）'
 					: ''}"
 				?disabled="${!this.matchRegex}"
 				@click="${this.handleMatchCase}"
@@ -1557,12 +1549,8 @@ export class GlSearchInput extends GlElement {
 				appearance="input"
 				role="checkbox"
 				aria-checked="${this.matchWholeWordOverride}"
-				tooltip="Match Whole Word${this.matchWholeWordOverride && !this.matchWholeWord
-					? ' (requires regular expressions)'
-					: ''}"
-				aria-label="Match Whole Word${this.matchWholeWordOverride && !this.matchWholeWord
-					? ' (requires regular expressions)'
-					: ''}"
+				tooltip="全词匹配${this.matchWholeWordOverride && !this.matchWholeWord ? '（需要正则表达式）' : ''}"
+				aria-label="全词匹配${this.matchWholeWordOverride && !this.matchWholeWord ? '（需要正则表达式）' : ''}"
 				?disabled="${!this.matchRegex}"
 				@click="${this.handleMatchWholeWord}"
 			>
@@ -1572,8 +1560,8 @@ export class GlSearchInput extends GlElement {
 				appearance="input"
 				role="checkbox"
 				aria-checked="${this.matchRegex}"
-				tooltip="Use Regular Expression"
-				aria-label="Use Regular Expression"
+				tooltip="使用正则表达式"
+				aria-label="使用正则表达式"
 				@click="${this.handleMatchRegex}"
 			>
 				<code-icon icon="regex"></code-icon>
@@ -1582,8 +1570,8 @@ export class GlSearchInput extends GlElement {
 				appearance="input"
 				role="checkbox"
 				aria-checked="${this.matchAll}"
-				tooltip="Match All"
-				aria-label="Match All"
+				tooltip="全部匹配"
+				aria-label="全部匹配"
 				@click="${this.handleMatchAll}"
 			>
 				<code-icon icon="check-all"></code-icon>

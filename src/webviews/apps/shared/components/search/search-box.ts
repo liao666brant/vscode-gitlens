@@ -309,7 +309,7 @@ export class GlSearchBox extends GlElement {
 			const total = `${this.total}${this.resultsHasMore ? '+' : ''}`;
 
 			if (this.resultHidden) {
-				tooltip = html`This result is hidden or unable to be shown on the Commit Graph`;
+				tooltip = html`该结果已被隐藏，或无法在提交图谱中显示`;
 			} else {
 				tooltip = `${totalFormatted} found`;
 			}
@@ -336,7 +336,7 @@ export class GlSearchBox extends GlElement {
 			return html`<gl-button
 					class="search-button"
 					appearance="toolbar"
-					tooltip="Stop Searching"
+					tooltip="停止搜索"
 					@click="${this.handleCancel}"
 				>
 					<code-icon class="search-button__spinner" icon="loading" modifier="spin"></code-icon>
@@ -357,7 +357,7 @@ export class GlSearchBox extends GlElement {
 			return html`<gl-button
 					class="search-button"
 					appearance="toolbar"
-					tooltip="Resume Search"
+					tooltip="继续搜索"
 					@click="${() => this.emit('gl-search-resume')}"
 				>
 					<code-icon icon="play-circle"></code-icon>
@@ -409,7 +409,7 @@ export class GlSearchBox extends GlElement {
 					this.emit('gl-search-pause');
 				}}"
 			></gl-search-input>
-			<div class="search-navigation" aria-label="Search navigation">
+			<div class="search-navigation" aria-label="搜索导航">
 				${this.resultsHtml}
 				<gl-tooltip hoist>
 					<button
@@ -420,10 +420,10 @@ export class GlSearchBox extends GlElement {
 					>
 						<code-icon
 							icon="arrow-up"
-							aria-label="Previous Match (Shift+Enter)&#10;First Match (Shift+Click)"
+							aria-label="上一个匹配项（Shift+Enter）&#10;第一个匹配项（Shift+点击）"
 						></code-icon>
 					</button>
-					<span slot="content">Previous Match (Shift+Enter)<br />First Match (Shift+Click)</span>
+					<span slot="content">上一个匹配项（Shift+Enter）<br />第一个匹配项（Shift+点击）</span>
 				</gl-tooltip>
 				<gl-tooltip hoist>
 					<button
@@ -434,19 +434,19 @@ export class GlSearchBox extends GlElement {
 					>
 						<code-icon
 							icon="arrow-down"
-							aria-label="Next Match (Enter)&#10;Last Match (Shift+Click)"
+							aria-label="下一个匹配项（Enter）&#10;最后一个匹配项（Shift+点击）"
 						></code-icon>
 					</button>
-					<span slot="content">Next Match (Enter)<br />Last Match (Shift+Click)</span>
+					<span slot="content">下一个匹配项（Enter）<br />最后一个匹配项（Shift+点击）</span>
 				</gl-tooltip>
-				<gl-tooltip hoist content="Show Results in Side Bar">
+				<gl-tooltip hoist content="在侧边栏显示结果">
 					<button
 						type="button"
 						class="button"
 						?disabled="${!this.hasResults}"
 						@click="${this.handleOpenInView}"
 					>
-						<code-icon icon="link-external" aria-label="Show Results in Side Bar"></code-icon>
+						<code-icon icon="link-external" aria-label="在侧边栏显示结果"></code-icon>
 					</button>
 				</gl-tooltip>
 			</div>`;

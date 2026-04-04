@@ -105,8 +105,8 @@ export class WorktreeCreateGitCommand extends QuickCommand<State> {
 	private _canSkipConfirmOverride: boolean | undefined;
 
 	constructor(container: Container, args?: WorktreeCreateGitCommandArgs) {
-		super(container, 'worktree-create', 'create', 'Create Worktree', {
-			description: 'creates a new worktree',
+		super(container, 'worktree-create', 'create', '创建工作树', {
+			description: '创建新的工作树',
 		});
 
 		this.initialState = { confirm: args?.confirm, flags: [], ...args?.state };
@@ -180,10 +180,9 @@ export class WorktreeCreateGitCommand extends QuickCommand<State> {
 					using step = steps.enterStep(Steps.PickRef);
 
 					const result = yield* pickBranchOrTagStep(state, context, {
-						placeholder: ctx =>
-							`Choose a branch${ctx.showTags ? ' or tag' : ''} to create the new worktree from`,
+						placeholder: ctx => `选择用于创建新工作树的分支${ctx.showTags ? '或标签' : ''}`,
 						picked: state.reference?.ref ?? (await state.repo.git.branches.getBranch())?.ref,
-						title: `Select Branch to Create Worktree From`,
+						title: '选择用于创建工作树的分支',
 						value: isRevisionReference(state.reference) ? state.reference.ref : undefined,
 					});
 					if (result === StepResultBreak) {
@@ -241,12 +240,12 @@ export class WorktreeCreateGitCommand extends QuickCommand<State> {
 						using step = steps.enterStep(Steps.InputBranchName);
 
 						const result = yield* inputBranchNameStep(state, context, {
-							prompt: 'Please provide a name for the new branch',
-							title: `${context.title} and New Branch from ${getReferenceLabel(state.reference, {
+							prompt: '请输入新分支名称',
+							title: `${context.title}，并从 ${getReferenceLabel(state.reference, {
 								capitalize: true,
 								icon: false,
 								label: state.reference.refType !== 'branch',
-							})}`,
+							})} 创建新分支`,
 							value: createBranchOverride,
 						});
 						if (result === StepResultBreak) {
@@ -275,8 +274,8 @@ export class WorktreeCreateGitCommand extends QuickCommand<State> {
 								using pathStep = steps.enterStep(Steps.ConfirmChoosePath);
 
 								const pathResult = yield* this.choosePathStep(state, context, {
-									title: `Choose a Different Root Folder for this Worktree`,
-									label: 'Choose Root Folder',
+									title: '为此工作树选择不同的根文件夹',
+									label: '选择根文件夹',
 									pickedUri: context.pickedRootFolder,
 									defaultUri: context.pickedRootFolder ?? context.defaultUri,
 								});
@@ -296,8 +295,8 @@ export class WorktreeCreateGitCommand extends QuickCommand<State> {
 								using pathStep = steps.enterStep(Steps.ConfirmChoosePath);
 
 								const pathResult = yield* this.choosePathStep(state, context, {
-									title: `Choose a Specific Folder for this Worktree`,
-									label: 'Choose Worktree Folder',
+									title: '为此工作树选择指定文件夹',
+									label: '选择工作树文件夹',
 									pickedUri: context.pickedRootFolder,
 									defaultUri: context.pickedSpecificFolder ?? context.defaultUri,
 								});
@@ -353,14 +352,14 @@ export class WorktreeCreateGitCommand extends QuickCommand<State> {
 					}
 				} catch (ex) {
 					if (WorktreeCreateError.is(ex, 'alreadyCheckedOut') && !state.flags.includes('--force')) {
-						const createBranch: MessageItem = { title: 'Create New Branch' };
-						const force: MessageItem = { title: 'Create Anyway' };
-						const cancel: MessageItem = { title: 'Cancel', isCloseAffordance: true };
+						const createBranch: MessageItem = { title: '创建新分支' };
+						const force: MessageItem = { title: '仍然创建' };
+						const cancel: MessageItem = { title: '取消', isCloseAffordance: true };
 						const result = await window.showWarningMessage(
-							`Unable to create the new worktree because ${getReferenceLabel(state.reference, {
+							`无法创建新工作树，因为 ${getReferenceLabel(state.reference, {
 								icon: false,
 								quoted: true,
-							})} is already checked out.\n\nWould you like to create a new branch for this worktree or forcibly create it anyway?`,
+							})} 已被检出。\n\n你希望为该工作树创建新分支，还是强制继续创建？`,
 							{ modal: true },
 							createBranch,
 							force,
@@ -381,13 +380,11 @@ export class WorktreeCreateGitCommand extends QuickCommand<State> {
 							return;
 						}
 					} else if (WorktreeCreateError.is(ex, 'alreadyExists')) {
-						const confirm: MessageItem = { title: 'OK' };
-						const openFolder: MessageItem = { title: 'Open Folder' };
+						const confirm: MessageItem = { title: '确定' };
+						const openFolder: MessageItem = { title: '打开文件夹' };
 						void window
 							.showErrorMessage(
-								`Unable to create a new worktree in '${getWorkspaceFriendlyPath(
-									uri,
-								)}' because the folder already exists and is not empty.`,
+								`无法在 '${getWorkspaceFriendlyPath(uri)}' 创建新工作树，因为该文件夹已存在且不为空。`,
 								confirm,
 								openFolder,
 							)
@@ -397,10 +394,7 @@ export class WorktreeCreateGitCommand extends QuickCommand<State> {
 								}
 							});
 					} else {
-						void showGitErrorMessage(
-							ex,
-							`Unable to create a new worktree in '${getWorkspaceFriendlyPath(uri)}.`,
-						);
+						void showGitErrorMessage(ex, `无法在 '${getWorkspaceFriendlyPath(uri)}' 创建新工作树。`);
 					}
 				}
 
@@ -542,7 +536,7 @@ export class WorktreeCreateGitCommand extends QuickCommand<State> {
 		const branchName = state.reference != null ? getReferenceNameWithoutRemote(state.reference) : undefined;
 
 		const recommendedFriendlyPath = `<root>/${truncateLeft(branchName?.replace(/\\/g, '/') ?? '', 65)}`;
-		const recommendedNewBranchFriendlyPath = `<root>/${state.createBranch || '<new-branch-name>'}`;
+		const recommendedNewBranchFriendlyPath = `<root>/${state.createBranch || '<新分支名称>'}`;
 
 		const isBranch = isBranchReference(state.reference);
 		const isRemoteBranch = isBranchReference(state.reference) && state.reference?.remote;
@@ -553,18 +547,18 @@ export class WorktreeCreateGitCommand extends QuickCommand<State> {
 			state.createBranch ? ['-b'] : [],
 			{
 				label: isRemoteBranch
-					? 'Create Worktree from New Local Branch'
+					? '从新的本地分支创建工作树'
 					: isBranch
 						? state.createBranch
-							? 'Create Worktree from New Branch'
-							: 'Create Worktree from Branch'
+							? '从新分支创建工作树'
+							: '从分支创建工作树'
 						: context.title,
 				description: state.createBranch
 					? state.createBranch
 					: getReferenceLabel(state.reference, { icon: false, label: false }),
-				detail: `Will create worktree in $(folder) ${
+				detail: `将在 $(folder) ${
 					state.createBranch ? recommendedNewBranchFriendlyPath : recommendedFriendlyPath
-				}`,
+				} 创建工作树`,
 			},
 			recommendedRootUri,
 		);
@@ -584,17 +578,14 @@ export class WorktreeCreateGitCommand extends QuickCommand<State> {
 						['--direct'],
 						{
 							label: isRemoteBranch
-								? 'Create Worktree from Local Branch'
+								? '从本地分支创建工作树'
 								: isBranch
-									? 'Create Worktree from Branch'
+									? '从分支创建工作树'
 									: context.title,
 							description: isBranch
 								? getReferenceLabel(state.reference, { icon: false, label: false })
 								: '',
-							detail: `Will create worktree directly in $(folder) ${truncateLeft(
-								pickedFriendlyPath,
-								60,
-							)}`,
+							detail: `将在 $(folder) ${truncateLeft(pickedFriendlyPath, 60)} 直接创建工作树`,
 						},
 						pickedUri,
 					),
@@ -606,11 +597,9 @@ export class WorktreeCreateGitCommand extends QuickCommand<State> {
 					state.flags,
 					['-b', '--direct'],
 					{
-						label: isRemoteBranch
-							? 'Create Worktree from New Local Branch'
-							: 'Create Worktree from New Branch',
+						label: isRemoteBranch ? '从新的本地分支创建工作树' : '从新分支创建工作树',
 						description: state.createBranch,
-						detail: `Will create worktree directly in $(folder) ${truncateLeft(pickedFriendlyPath, 60)}`,
+						detail: `将在 $(folder) ${truncateLeft(pickedFriendlyPath, 60)} 直接创建工作树`,
 					},
 					pickedUri,
 				),
@@ -619,12 +608,12 @@ export class WorktreeCreateGitCommand extends QuickCommand<State> {
 
 		if (!createDirectlyInFolder) {
 			confirmations.push(
-				createQuickPickSeparator('Change Location'),
+				createQuickPickSeparator('更改位置'),
 				createFlagsQuickPickItem<Flags, ConfirmationChoice>(
 					[],
 					[],
 					{
-						label: 'Change Root Folder...',
+						label: '更改根文件夹...',
 						description: `$(folder) ${truncateLeft(
 							context.pickedRootFolder ? pickedFriendlyPath : `${pickedFriendlyPath}/${trailer}`,
 							65,
@@ -641,8 +630,8 @@ export class WorktreeCreateGitCommand extends QuickCommand<State> {
 				[],
 				[],
 				{
-					label: 'Choose Specific Folder...',
-					description: 'Create directly in a folder you choose',
+					label: '选择指定文件夹...',
+					description: '在你选择的文件夹中直接创建',
 					picked: false,
 				},
 				'chooseFolder',
@@ -651,7 +640,7 @@ export class WorktreeCreateGitCommand extends QuickCommand<State> {
 
 		const step = createConfirmStep(
 			appendReposToTitle(
-				`Confirm ${context.title} \u2022 ${
+				`确认 ${context.title} \u2022 ${
 					state.createBranch ||
 					getReferenceLabel(state.reference, {
 						icon: false,

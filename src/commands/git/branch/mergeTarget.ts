@@ -54,8 +54,8 @@ export interface BranchMergeTargetGitCommandArgs {
 
 export class BranchMergeTargetGitCommand extends QuickCommand<State> {
 	constructor(container: Container, args?: BranchMergeTargetGitCommandArgs) {
-		super(container, 'branch-mergeTarget', 'mergeTarget', 'Change Merge Target', {
-			description: 'changes the merge target for a branch',
+		super(container, 'branch-mergeTarget', 'mergeTarget', '更改合并目标', {
+			description: '更改分支的合并目标',
 		});
 
 		this.initialState = { confirm: args?.confirm, ...args?.state };
@@ -105,7 +105,7 @@ export class BranchMergeTargetGitCommand extends QuickCommand<State> {
 				const result = yield* pickBranchStep(state, context, {
 					filter: (b: GitBranch) => !b.remote,
 					picked: typeof state.reference === 'string' ? state.reference : state.reference?.ref,
-					placeholder: 'Choose a branch to change its merge target',
+					placeholder: '选择要更改合并目标的分支',
 				});
 				if (result === StepResultBreak) {
 					state.reference = undefined!;
@@ -137,14 +137,14 @@ export class BranchMergeTargetGitCommand extends QuickCommand<State> {
 
 				const result = yield* pickOrResetBranchStep(state, context, {
 					filter: (b: GitBranch) => b.remote && b.name !== refName,
-					placeholder: 'Choose a merge target branch',
+					placeholder: '选择合并目标分支',
 					picked: suggestedMergeTarget,
 					reset:
 						userMergeTarget != null /* && detectedMergeTarget !== userMergeTarget*/
 							? {
-									label: 'Reset Merge Target',
-									detail: 'Reset the merge target branch to be automatically detected',
-									button: { icon: new ThemeIcon('discard'), tooltip: 'Reset Merge Target' },
+									label: '重置合并目标',
+									detail: '将合并目标分支重置为自动检测',
+									button: { icon: new ThemeIcon('discard'), tooltip: '重置合并目标' },
 								}
 							: undefined,
 				});
@@ -191,15 +191,15 @@ export class BranchMergeTargetGitCommand extends QuickCommand<State> {
 		let title;
 		let detail;
 		if (state.mergeTarget == null) {
-			title = 'Reset Merge Target';
-			detail = `Will reset the merge target for ${referenceLabel} to be automatically detected`;
+			title = '重置合并目标';
+			detail = `将把 ${referenceLabel} 的合并目标重置为自动检测`;
 		} else {
-			title = 'Change Merge Target';
-			detail = `Will set the merge target for ${referenceLabel} to ${mergeTargetLabel}`;
+			title = '更改合并目标';
+			detail = `将把 ${referenceLabel} 的合并目标设为 ${mergeTargetLabel}`;
 		}
 
 		const step: QuickPickStep = createConfirmStep(
-			appendReposToTitle(`Confirm ${title}`, state, context),
+			appendReposToTitle(`确认${title}`, state, context),
 			[{ label: title, detail: detail }],
 			context,
 		);

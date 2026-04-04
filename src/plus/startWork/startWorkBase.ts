@@ -80,8 +80,8 @@ const supportedStartWorkIntegrations = [
 type SupportedStartWorkIntegrationIds = (typeof supportedStartWorkIntegrations)[number];
 
 const connectMoreIntegrationsItem: ConnectMoreIntegrationsItem = {
-	label: 'Connect an Additional Integration...',
-	detail: 'Connect additional integrations to view and start work on their issues',
+	label: '连接更多集成...',
+	detail: '连接更多集成以查看并开始处理其议题',
 	item: undefined,
 };
 
@@ -142,8 +142,8 @@ export abstract class StartWorkBaseCommand extends QuickCommand<StartWorkState> 
 		args?: StartWorkBaseCommandArgs,
 		key: string = 'startWork',
 		label: string = 'startWork',
-		title: string = `Start Work\u00a0\u00a0${proBadge}`,
-		description: string = 'Start work on an issue',
+		title: string = `开始工作\u00a0\u00a0${proBadge}`,
+		description: string = '开始处理一个议题',
 		telemetryEventKey: 'startWork' | 'associateIssueWithBranch' = 'startWork',
 	) {
 		super(container, key, label, title, {
@@ -266,9 +266,7 @@ export abstract class StartWorkBaseCommand extends QuickCommand<StartWorkState> 
 
 						// If issue not found, show error and fall through to picker
 						if (preSelecteditem == null) {
-							void window.showErrorMessage(
-								`Issue not found: ${state.issueUrl}. Please select an issue manually.`,
-							);
+							void window.showErrorMessage(`未找到议题：${state.issueUrl}。请手动选择一个议题。`);
 						}
 					}
 
@@ -304,7 +302,7 @@ export abstract class StartWorkBaseCommand extends QuickCommand<StartWorkState> 
 			}
 		} finally {
 			if (state.result?.pending) {
-				state.result.cancel(new Error('Start Work cancelled'));
+				state.result.cancel(new Error('开始工作已取消'));
 			}
 		}
 
@@ -337,8 +335,8 @@ export abstract class StartWorkBaseCommand extends QuickCommand<StartWorkState> 
 					confirmations.push(
 						createQuickPickItemOfT(
 							{
-								label: 'Connect to GitHub...',
-								detail: 'Will connect to GitHub to provide access to your pull requests and issues',
+								label: '连接到 GitHub...',
+								detail: '将连接到 GitHub 以访问你的拉取请求和议题',
 							},
 							integration,
 						),
@@ -350,13 +348,12 @@ export abstract class StartWorkBaseCommand extends QuickCommand<StartWorkState> 
 		}
 
 		const step = this.createConfirmStep(
-			`${this.title} \u00a0\u2022\u00a0 Connect an Integration`,
+			`${this.title} \u00a0\u2022\u00a0 连接一个集成`,
 			confirmations,
-			createDirectiveQuickPickItem(Directive.Cancel, false, { label: 'Cancel' }),
+			createDirectiveQuickPickItem(Directive.Cancel, false, { label: '取消' }),
 			{
 				placeholder:
-					this.overrides?.placeholders?.localIntegrationConnect ??
-					'Connect an integration to view its issues in Start Work',
+					this.overrides?.placeholders?.localIntegrationConnect ?? '连接一个集成以在“开始工作”中查看其议题',
 				buttons: [],
 				ignoreFocusOut: false,
 			},
@@ -397,26 +394,26 @@ export abstract class StartWorkBaseCommand extends QuickCommand<StartWorkState> 
 		let selection;
 		if (overrideStep == null) {
 			step = this.createConfirmStep(
-				`${this.title} \u00a0\u2022\u00a0 Connect an ${hasConnectedIntegration ? 'Additional ' : ''}Integration`,
+				`${this.title} \u00a0\u2022\u00a0 连接${hasConnectedIntegration ? '更多' : ''}集成`,
 				[
 					createQuickPickItemOfT(
 						{
-							label: `Connect an ${hasConnectedIntegration ? 'Additional ' : ''}Integration...`,
+							label: `连接${hasConnectedIntegration ? '更多' : ''}集成...`,
 							detail: hasConnectedIntegration
-								? 'Connect additional integrations to view their issues'
-								: 'Connect an integration to accelerate your work',
+								? '连接更多集成以查看其议题'
+								: '连接一个集成以加速你的工作流程',
 							picked: true,
 						},
 						true,
 					),
 				],
-				createDirectiveQuickPickItem(Directive.Cancel, false, { label: 'Cancel' }),
+				createDirectiveQuickPickItem(Directive.Cancel, false, { label: '取消' }),
 				{
 					placeholder: hasConnectedIntegration
 						? (this.overrides?.placeholders?.cloudIntegrationConnectHasConnected ??
-							'Connect additional integrations to Start Work')
+							'为“开始工作”连接更多集成')
 						: (this.overrides?.placeholders?.cloudIntegrationConnectNoConnected ??
-							'Connect an integration to get started with Start Work'),
+							'连接一个集成以开始使用“开始工作”'),
 					buttons: [],
 					ignoreFocusOut: true,
 				},
@@ -432,7 +429,7 @@ export abstract class StartWorkBaseCommand extends QuickCommand<StartWorkState> 
 			let previousPlaceholder: string | undefined;
 			if (step.quickpick) {
 				previousPlaceholder = step.quickpick.placeholder;
-				step.quickpick.placeholder = 'Connecting integrations...';
+				step.quickpick.placeholder = '正在连接集成...';
 			}
 			const resume = step.freeze?.();
 			const connected = await this.container.integrations.connectCloudIntegrations(
@@ -464,7 +461,7 @@ export abstract class StartWorkBaseCommand extends QuickCommand<StartWorkState> 
 				label: i.issue.title.length > 60 ? `${i.issue.title.substring(0, 60)}...` : i.issue.title,
 				description: `\u00a0 ${i.issue.repository ? `${i.issue.repository.owner}/${i.issue.repository.repo}#` : ''}${i.issue.id} \u00a0`,
 				// The spacing here at the beginning is used to align the description with the title. Otherwise it starts under the avatar icon:
-				detail: `      ${fromNow(i.issue.updatedDate)} by @${i.issue.author.name}${hoverContent}`,
+				detail: `      ${fromNow(i.issue.updatedDate)}，由 @${i.issue.author.name}${hoverContent}`,
 				iconPath: i.issue.author?.avatarUrl != null ? Uri.parse(i.issue.author.avatarUrl) : undefined,
 				item: i,
 				picked: i.issue.id === state.item?.issue.id,
@@ -488,7 +485,7 @@ export abstract class StartWorkBaseCommand extends QuickCommand<StartWorkState> 
 		} {
 			if (!context.result?.items.length) {
 				return {
-					placeholder: 'No issues found for your open repositories.',
+					placeholder: '在你已打开的仓库中未找到议题。',
 					items: [
 						hasDisconnectedIntegrations ? connectMoreIntegrationsItem : manageIntegrationsItem,
 						createDirectiveQuickPickItem(Directive.Cancel),
@@ -497,7 +494,7 @@ export abstract class StartWorkBaseCommand extends QuickCommand<StartWorkState> 
 			}
 
 			return {
-				placeholder: placeholderOverride ?? 'Choose an issue to start working on',
+				placeholder: placeholderOverride ?? '选择一个要开始处理的议题',
 				items: [...getItems(context.result), createDirectiveQuickPickItem(Directive.Cancel)],
 			};
 		}
@@ -510,7 +507,7 @@ export abstract class StartWorkBaseCommand extends QuickCommand<StartWorkState> 
 				quickpick.placeholder = placeholder;
 				quickpick.items = items;
 			} catch {
-				quickpick.placeholder = 'Error retrieving issues';
+				quickpick.placeholder = '获取议题时出错';
 				quickpick.items = [createDirectiveQuickPickItem(Directive.Cancel)];
 			} finally {
 				quickpick.busy = false;
@@ -519,7 +516,7 @@ export abstract class StartWorkBaseCommand extends QuickCommand<StartWorkState> 
 
 		const step = createPickStep<QuickPickItemOfT<StartWorkItem>>({
 			title: context.title,
-			placeholder: 'Loading...',
+			placeholder: '加载中...',
 			matchOnDescription: true,
 			matchOnDetail: true,
 			items: [],

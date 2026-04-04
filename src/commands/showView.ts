@@ -51,10 +51,10 @@ export class ShowViewCommand extends GlCommandBase {
 		if (this.container.git.openRepositoryCount > 0) return;
 
 		const message = featureName
-			? `No repository detected. To view ${featureName}, open a folder containing a git repository or clone from a URL in Source Control.`
-			: 'No repository detected. To use GitLens, open a folder containing a git repository or clone from a URL in Source Control.';
+			? `未检测到仓库。要查看 ${featureName}，请打开包含 Git 仓库的文件夹，或在“源代码管理”中通过 URL 克隆。`
+			: '未检测到仓库。要使用 GitLens，请打开包含 Git 仓库的文件夹，或在“源代码管理”中通过 URL 克隆。';
 
-		const openRepo = { title: 'Open a Folder or Repo', isCloseAffordance: true };
+		const openRepo = { title: '打开文件夹或仓库', isCloseAffordance: true };
 		const result = await window.showInformationMessage(message, openRepo);
 		if (result === openRepo) {
 			void executeCoreCommand('workbench.view.scm');
@@ -73,7 +73,7 @@ export class ShowViewCommand extends GlCommandBase {
 				await this.waitForRepo();
 				return this.container.views.showView('branches');
 			case 'gitlens.showCommitDetailsView':
-				await this.waitForRepoOrNotify('Inspect');
+				await this.waitForRepoOrNotify('Inspect 视图');
 				return this.container.views.commitDetails.show();
 			case 'gitlens.showCommitsView':
 				await this.waitForRepo();
@@ -87,7 +87,7 @@ export class ShowViewCommand extends GlCommandBase {
 				await this.waitForRepo();
 				return this.container.views.showView('fileHistory');
 			case 'gitlens.showGraphView':
-				await this.waitForRepoOrNotify('the Commit Graph');
+				await this.waitForRepoOrNotify('提交图谱');
 				return this.container.views.graph.show(undefined, ...(args as GraphWebviewShowingArgs));
 			case 'gitlens.showHomeView':
 				return this.container.views.home.show(undefined, ...(args as HomeWebviewShowingArgs));

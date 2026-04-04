@@ -115,7 +115,7 @@ function showGitCommandInTerminal(gitCommand: GitCommandContext, error: GitComma
 		hideFromUser: false,
 		iconPath: new ThemeIcon('gitlens-gitlens'),
 		isTransient: true,
-		message: `\x1b[1mGitLens attempted to run this Git command and it failed:\x1b[0m\r\n\x1b[31m${error.message}\x1b[0m\r\n\x1b[3mYou can run it again or modify it to diagnose the issue.\x1b[0m\r\n`,
+		message: `\x1b[1mGitLens 尝试运行此 Git 命令但失败了：\x1b[0m\r\n\x1b[31m${error.message}\x1b[0m\r\n\x1b[3m您可以重新运行或修改该命令以诊断问题。\x1b[0m\r\n`,
 	});
 	const command = `git ${filterMap(gitCommand.args, a => (a != null ? escapeShellArg(a) : undefined)).join(' ')}`;
 	terminal.sendText(command, false);
@@ -132,13 +132,15 @@ export async function showGitErrorMessage(error: Error | GitCommandError<any>, m
 	const loggingEnabled = Logger.enabled('error');
 
 	const openOutputChannelOrEnableLogging: MessageItem = {
-		title: loggingEnabled ? 'Open Output Channel' : 'Enable Debug Logging',
+		title: loggingEnabled ? '打开输出频道' : '启用调试日志',
 	};
-	const openInTerminalAction: MessageItem = { title: 'Open in Terminal' };
+	const openInTerminalAction: MessageItem = { title: '在终端中打开' };
 
 	const result = await showMessage(
 		'error',
-		`${message.endsWith('.') ? message : `${message}.`} ${loggingEnabled ? 'See output channel for more details.' : 'If the error persists, please enable debug logging and try again.'}`,
+		`${message.endsWith('.') ? message : `${message}.`} ${
+			loggingEnabled ? '有关详细信息，请查看输出频道。' : '如果错误持续存在，请启用调试日志并重试。'
+		}`,
 		undefined,
 		null,
 		...(gitCommand != null
@@ -318,15 +320,15 @@ export async function showWhatsNewMessage(majorVersion: string): Promise<void> {
 
 export async function showMcpMessage(container: Container, _current: string): Promise<void> {
 	const isAutoInstallable = mcpRegistrationAllowed(container);
-	const confirm = { title: 'OK', isCloseAffordance: true };
-	const learnMore = { title: 'Learn More' };
-	const install = { title: 'Install GitKraken MCP' };
+	const confirm = { title: '确定', isCloseAffordance: true };
+	const learnMore = { title: '了解更多' };
+	const install = { title: '安装 GitKraken MCP' };
 
 	let result: MessageItem | undefined;
 	if (isAutoInstallable) {
 		result = await showMessage(
 			'info',
-			`GitLens adds the GitKraken MCP into your AI chat, leveraging Git and your integrations to provide context and perform actions.`,
+			`GitLens 会将 GitKraken MCP 添加到您的 AI 聊天中，结合 Git 与您的集成能力提供上下文并执行操作。`,
 			undefined,
 			null,
 			learnMore,
@@ -335,7 +337,7 @@ export async function showMcpMessage(container: Container, _current: string): Pr
 	} else {
 		result = await showMessage(
 			'info',
-			`Allow GitLens to add the GitKraken MCP into your AI chat, leveraging Git and your integrations (issues, PRs, etc) to provide context and perform actions. Saving you time and context switching.`,
+			`允许 GitLens 将 GitKraken MCP 添加到您的 AI 聊天中，结合 Git 与您的集成（问题、PR 等）提供上下文并执行操作，帮您节省时间并减少上下文切换。`,
 			undefined,
 			null,
 			install,
@@ -354,12 +356,12 @@ export async function showMcpMessage(container: Container, _current: string): Pr
 }
 
 export async function showCursorMcpCleanupMessage(): Promise<void> {
-	const learnMore = { title: 'Learn More' };
-	const confirm = { title: 'OK', isCloseAffordance: true };
+	const learnMore = { title: '了解更多' };
+	const confirm = { title: '确定', isCloseAffordance: true };
 
 	const result = await showMessage(
 		'info',
-		`GitLens now registers the GitKraken MCP automatically in Cursor. You may have a duplicate entry in your Cursor \`mcp.json\` — remove \`mcpServers.GitKraken\` to clean it up.`,
+		`GitLens 现在会在 Cursor 中自动注册 GitKraken MCP。您的 Cursor \`mcp.json\` 里可能有重复条目，请移除 \`mcpServers.GitKraken\` 以完成清理。`,
 		undefined,
 		null,
 		learnMore,

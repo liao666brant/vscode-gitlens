@@ -15,7 +15,7 @@ import { openSettingsEditor } from '../../../../system/-webview/vscode/editors.j
 import { formatNumeric } from '../../../../system/date.js';
 import { Logger } from '../../../../system/logger.js';
 import { getSettledValue } from '../../../../system/promise.js';
-import { getPossessiveForm, pluralize } from '../../../../system/string.js';
+import { getPossessiveForm } from '../../../../system/string.js';
 import type { OrgAIConfig, OrgAIProvider } from '../../../gk/models/organization.js';
 import { ensureAccountQuickPick } from '../../../gk/utils/-webview/acount.utils.js';
 import type { AIResponse, AIResultContext } from '../../aiProviderService.js';
@@ -25,7 +25,7 @@ export async function ensureAccount(container: Container, silent: boolean): Prom
 	const result = await ensureAccountQuickPick(
 		container,
 		createDirectiveQuickPickItem(Directive.Noop, undefined, {
-			label: 'Use AI-powered GitLens features like Generate Commit Message, Explain Commit, and more',
+			label: '使用 AI 驱动的 GitLens 功能，例如生成提交信息、解释提交等',
 			iconPath: new ThemeIcon('sparkle'),
 		}),
 		{ source: 'ai' },
@@ -42,23 +42,23 @@ export async function ensureAccount(container: Container, silent: boolean): Prom
 export function getActionName(action: AIActionType): string {
 	switch (action) {
 		case 'explain-changes':
-			return 'Explain Changes';
+			return '解释变更';
 		case 'generate-commitMessage':
-			return 'Generate Commit Message';
+			return '生成提交信息';
 		case 'generate-stashMessage':
-			return 'Generate Stash Message';
+			return '生成暂存消息';
 		case 'generate-changelog':
-			return 'Generate Changelog (Preview)';
+			return '生成变更日志（预览）';
 		case 'generate-create-cloudPatch':
-			return 'Create Cloud Patch Details';
+			return '创建 Cloud Patch 详情';
 		case 'generate-create-codeSuggestion':
-			return 'Create Code Suggestion Details';
+			return '创建代码建议详情';
 		case 'generate-create-pullRequest':
-			return 'Create Pull Request Details (Preview)';
+			return '创建拉取请求详情（预览）';
 		case 'generate-commits':
-			return 'Generate Commits (Preview)';
+			return '生成提交（预览）';
 		case 'generate-searchQuery':
-			return 'Generate Search Query (Preview)';
+			return '生成搜索查询（预览）';
 	}
 }
 
@@ -92,7 +92,7 @@ export async function getOrPromptApiKey(
 	try {
 		const infoButton: QuickInputButton = {
 			iconPath: new ThemeIcon(`link-external`),
-			tooltip: `Open the ${provider.name} API Key Page`,
+			tooltip: `打开 ${provider.name} API 密钥页面`,
 		};
 
 		apiKey = await new Promise<string | undefined>(resolve => {
@@ -100,7 +100,7 @@ export async function getOrPromptApiKey(
 				input.onDidHide(() => resolve(undefined)),
 				input.onDidChangeValue(value => {
 					if (value && !provider.validator(value)) {
-						input.validationMessage = `Please enter a valid ${provider.name} API key`;
+						input.validationMessage = `请输入有效的 ${provider.name} API 密钥`;
 						return;
 					}
 					input.validationMessage = undefined;
@@ -108,7 +108,7 @@ export async function getOrPromptApiKey(
 				input.onDidAccept(() => {
 					const value = input.value.trim();
 					if (!value || !provider.validator(value)) {
-						input.validationMessage = `Please enter a valid ${provider.name} API key`;
+						input.validationMessage = `请输入有效的 ${provider.name} API 密钥`;
 						return;
 					}
 
@@ -122,12 +122,12 @@ export async function getOrPromptApiKey(
 			);
 
 			input.password = true;
-			input.title = `Connect to ${provider.name}`;
-			input.placeholder = `Please enter your ${provider.name} API key to use this feature`;
-			input.prompt = `Enter your ${
+			input.title = `连接到 ${provider.name}`;
+			input.placeholder = `请输入您的 ${provider.name} API 密钥以使用此功能`;
+			input.prompt = `输入您的 ${
 				provider.url
-					? `[${provider.name} API Key](${provider.url} "Get your ${provider.name} API key")`
-					: `${provider.name} API Key`
+					? `[${provider.name} API 密钥](${provider.url} "获取您的 ${provider.name} API 密钥")`
+					: `${provider.name} API 密钥`
 			}`;
 			if (provider.url) {
 				input.buttons = [infoButton];
@@ -193,16 +193,13 @@ export function getReducedMaxInputTokens(maxInputTokens: number, retryCount: num
 }
 
 export async function showLargePromptWarning(estimatedTokens: number, threshold: number): Promise<boolean> {
-	const confirm = { title: 'Continue' };
-	const changeThreshold = { title: `Change Threshold` };
-	const cancel = { title: 'Cancel', isCloseAffordance: true };
+	const confirm = { title: '继续' };
+	const changeThreshold = { title: `修改阈值` };
+	const cancel = { title: '取消', isCloseAffordance: true };
 	const result = await window.showWarningMessage(
-		`This request will use approximately ${pluralize(
-			'token',
-			estimatedTokens,
-		)}, which exceeds the configured ${formatNumeric(
+		`本次请求预计将使用约 ${formatNumeric(estimatedTokens)} 个 token，已超过已配置的 ${formatNumeric(
 			threshold,
-		)} token threshold for large prompts.\n\nDo you want to continue?`,
+		)} 大提示词 token 阈值。\n\n是否继续？`,
 		{ modal: true },
 		confirm,
 		changeThreshold,
@@ -216,9 +213,7 @@ export async function showLargePromptWarning(estimatedTokens: number, threshold:
 }
 
 export function showPromptTruncationWarning(model: AIModel): void {
-	void window.showWarningMessage(
-		`The prompt was truncated to fit within the ${getPossessiveForm(model.provider.name)} limits.`,
-	);
+	void window.showWarningMessage(`提示词已被截断，以满足 ${getPossessiveForm(model.provider.name)} 的限制。`);
 }
 
 export function isAzureUrl(url: string): boolean {
@@ -263,13 +258,13 @@ export async function ensureAccess(
 
 	if (!container.ai.allowed) {
 		if (showPicker) {
-			await window.showQuickPick([{ label: 'OK' }], {
-				title: 'AI is Disabled',
-				placeHolder: 'GitLens AI features have been disabled by your GitKraken admin',
+			await window.showQuickPick([{ label: '确定' }], {
+				title: 'AI 已禁用',
+				placeHolder: 'GitLens AI 功能已被您的 GitKraken 管理员禁用',
 				canPickMany: false,
 			});
 		} else {
-			await window.showErrorMessage(`AI features have been disabled by your GitKraken admin.`);
+			await window.showErrorMessage(`AI 功能已被您的 GitKraken 管理员禁用。`);
 		}
 
 		return false;
@@ -278,22 +273,18 @@ export async function ensureAccess(
 	if (!container.ai.enabled) {
 		let reenable = false;
 		if (showPicker) {
-			const enable = { label: 'Re-enable AI Features' };
-			const pick = await window.showQuickPick([{ label: 'OK' }, enable], {
-				title: 'AI is Disabled',
-				placeHolder: 'GitLens AI features have been disabled via settings',
+			const enable = { label: '重新启用 AI 功能' };
+			const pick = await window.showQuickPick([{ label: '确定' }, enable], {
+				title: 'AI 已禁用',
+				placeHolder: 'GitLens AI 功能已在设置中被禁用',
 				canPickMany: false,
 			});
 			if (pick === enable) {
 				reenable = true;
 			}
 		} else {
-			const enable = { title: 'Re-enable AI Features' };
-			const result = await window.showErrorMessage(
-				`AI features have been disabled via GitLens settings.`,
-				{ modal: true },
-				enable,
-			);
+			const enable = { title: '重新启用 AI 功能' };
+			const result = await window.showErrorMessage(`AI 功能已在 GitLens 设置中被禁用。`, { modal: true }, enable);
 			if (result === enable) {
 				reenable = true;
 			}

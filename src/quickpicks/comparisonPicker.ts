@@ -41,8 +41,8 @@ export async function showComparisonPicker(
 
 	while (true) {
 		let { title, placeholder } = {
-			title: 'Compare',
-			placeholder: 'Choose a reference (branch, tag, etc) to compare',
+			title: '比较',
+			placeholder: '选择要比较的引用（分支、标签等）',
 			...options?.getTitleAndPlaceholder?.(1),
 		};
 
@@ -74,8 +74,8 @@ export async function showComparisonPicker(
 
 		if (base == null || force) {
 			({ title, placeholder } = {
-				title: `Compare ${getReferenceLabel(head, { label: false, icon: false })} with`,
-				placeholder: 'Choose a reference (branch, tag, etc) to compare with',
+				title: `将 ${getReferenceLabel(head, { label: false, icon: false })} 与以下引用比较`,
+				placeholder: '选择要与其比较的引用（分支、标签等）',
 				...options?.getTitleAndPlaceholder?.(2, head),
 			});
 

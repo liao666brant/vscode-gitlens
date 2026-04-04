@@ -15,10 +15,10 @@ export function arePlusFeaturesEnabled(): boolean {
 export async function ensurePlusFeaturesEnabled(): Promise<boolean> {
 	if (arePlusFeaturesEnabled()) return true;
 
-	const confirm: MessageItem = { title: 'Enable' };
-	const cancel: MessageItem = { title: 'Cancel', isCloseAffordance: true };
+	const confirm: MessageItem = { title: '启用' };
+	const cancel: MessageItem = { title: '取消', isCloseAffordance: true };
 	const result = await window.showInformationMessage(
-		'Pro features are currently disabled. Would you like to enable them?',
+		'Pro 功能当前已禁用。是否启用？',
 		{ modal: true },
 		confirm,
 		cancel,
@@ -34,10 +34,10 @@ export async function ensurePaidPlan(container: Container, title: string, source
 	while (true) {
 		const subscription = await container.subscription.getSubscription();
 		if (subscription.account?.verified === false) {
-			const resend = { title: 'Resend Email' };
-			const cancel = { title: 'Cancel', isCloseAffordance: true };
+			const resend = { title: '重新发送邮件' };
+			const cancel = { title: '取消', isCloseAffordance: true };
 			const result = await window.showWarningMessage(
-				`${title}\n\nYou must verify your email before you can continue.`,
+				`${title}\n\n继续之前，您必须先验证邮箱。`,
 				{ modal: true },
 				resend,
 				cancel,
@@ -56,11 +56,11 @@ export async function ensurePaidPlan(container: Container, title: string, source
 		if (isSubscriptionPaidPlan(plan)) break;
 
 		if (subscription.account == null) {
-			const signUp = { title: 'Try GitLens Pro' };
-			const signIn = { title: 'Sign In' };
-			const cancel = { title: 'Cancel', isCloseAffordance: true };
+			const signUp = { title: '试用 GitLens Pro' };
+			const signIn = { title: '登录' };
+			const cancel = { title: '取消', isCloseAffordance: true };
 			const result = await window.showWarningMessage(
-				`${title}\n\nDo you want to start your free ${proTrialLengthInDays}-day Pro trial for full access to all GitLens Pro features?`,
+				`${title}\n\n是否开始 ${proTrialLengthInDays} 天免费 Pro 试用，以完整访问所有 GitLens Pro 功能？`,
 				{ modal: true },
 				signUp,
 				signIn,
@@ -73,10 +73,10 @@ export async function ensurePaidPlan(container: Container, title: string, source
 				}
 			}
 		} else {
-			const upgrade = { title: 'Upgrade to Pro' };
-			const cancel = { title: 'Cancel', isCloseAffordance: true };
+			const upgrade = { title: '升级到 Pro' };
+			const cancel = { title: '取消', isCloseAffordance: true };
 			const result = await window.showWarningMessage(
-				`${title}\n\nDo you want to upgrade for full access to all GitLens Pro features?`,
+				`${title}\n\n是否升级以完整访问所有 GitLens Pro 功能？`,
 				{ modal: true },
 				upgrade,
 				cancel,

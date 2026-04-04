@@ -67,8 +67,8 @@ export interface WorktreeDeleteGitCommandArgs {
 
 export class WorktreeDeleteGitCommand extends QuickCommand<State> {
 	constructor(container: Container, args?: WorktreeDeleteGitCommandArgs) {
-		super(container, 'worktree-delete', 'delete', 'Delete Worktrees', {
-			description: 'deletes the specified worktrees',
+		super(container, 'worktree-delete', 'delete', '删除工作树', {
+			description: '删除指定的工作树',
 		});
 
 		this.initialState = { confirm: args?.confirm, flags: [], ...args?.state };
@@ -141,7 +141,7 @@ export class WorktreeDeleteGitCommand extends QuickCommand<State> {
 					filter: wt => !wt.isDefault,
 					includeStatus: true,
 					picked: state.uris?.map(uri => uri.toString()),
-					placeholder: 'Choose worktrees to delete',
+					placeholder: '选择要删除的工作树',
 				});
 				if (result === StepResultBreak) {
 					state.uris = undefined!;
@@ -188,10 +188,10 @@ export class WorktreeDeleteGitCommand extends QuickCommand<State> {
 							} catch {}
 
 							if ((hasChanges ?? false) && !skipHasChangesPrompt) {
-								const confirm: MessageItem = { title: 'Force Delete' };
-								const cancel: MessageItem = { title: 'Cancel', isCloseAffordance: true };
+								const confirm: MessageItem = { title: '强制删除' };
+								const cancel: MessageItem = { title: '取消', isCloseAffordance: true };
 								const result = await window.showWarningMessage(
-									`The worktree in '${uri.fsPath}' has uncommitted changes.\n\nDeleting it will cause those changes to be FOREVER LOST.\nThis is IRREVERSIBLE!\n\nAre you sure you still want to delete it?`,
+									`工作树 '${uri.fsPath}' 中有未提交更改。\n\n删除后这些更改将永久丢失。\n此操作不可恢复！\n\n你确定仍要删除吗？`,
 									{ modal: true },
 									confirm,
 									cancel,
@@ -208,15 +208,15 @@ export class WorktreeDeleteGitCommand extends QuickCommand<State> {
 
 						if (WorktreeDeleteError.is(ex)) {
 							if (ex.details.reason === 'defaultWorkingTree') {
-								void window.showErrorMessage('Cannot delete the default worktree.');
+								void window.showErrorMessage('无法删除默认工作树。');
 								break;
 							}
 
 							if (ex.details.reason === 'directoryNotEmpty') {
-								const openFolder: MessageItem = { title: 'Open Folder' };
-								const confirm: MessageItem = { title: 'OK', isCloseAffordance: true };
+								const openFolder: MessageItem = { title: '打开文件夹' };
+								const confirm: MessageItem = { title: '确定', isCloseAffordance: true };
 								const result = await window.showErrorMessage(
-									`Unable to fully clean up the delete worktree in '${uri.fsPath}' because the folder is not empty.`,
+									`无法完全清理要删除的工作树 '${uri.fsPath}'，因为该文件夹不为空。`,
 									{ modal: true },
 									openFolder,
 									confirm,
@@ -231,12 +231,12 @@ export class WorktreeDeleteGitCommand extends QuickCommand<State> {
 							}
 
 							if (!force) {
-								const confirm: MessageItem = { title: 'Force Delete' };
-								const cancel: MessageItem = { title: 'Cancel', isCloseAffordance: true };
+								const confirm: MessageItem = { title: '强制删除' };
+								const cancel: MessageItem = { title: '取消', isCloseAffordance: true };
 								const result = await window.showErrorMessage(
 									ex.details.reason === 'uncommittedChanges'
-										? `Unable to delete worktree because there are UNCOMMITTED changes in '${uri.fsPath}'.\n\nForcibly deleting it will cause those changes to be FOREVER LOST.\nThis is IRREVERSIBLE!\n\nWould you like to forcibly delete it?`
-										: `Unable to delete worktree in '${uri.fsPath}'.\n\nWould you like to try to forcibly delete it?`,
+										? `无法删除工作树，因为 '${uri.fsPath}' 中存在未提交更改。\n\n强制删除会导致这些更改永久丢失。\n此操作不可恢复！\n\n是否要强制删除？`
+										: `无法删除工作树 '${uri.fsPath}'。\n\n是否要尝试强制删除？`,
 									{ modal: true },
 									confirm,
 									cancel,
@@ -252,7 +252,7 @@ export class WorktreeDeleteGitCommand extends QuickCommand<State> {
 							}
 						}
 
-						void showGitErrorMessage(ex, `Unable to delete worktree in '${uri.fsPath}. ex=${String(ex)}`);
+						void showGitErrorMessage(ex, `无法删除工作树 '${uri.fsPath}'。ex=${String(ex)}`);
 					}
 
 					break;
@@ -279,49 +279,49 @@ export class WorktreeDeleteGitCommand extends QuickCommand<State> {
 	}
 
 	private *confirmStep(state: StepState<State<Repository>>, context: Context): StepResultGenerator<Flags[]> {
-		context.title = state.uris.length === 1 ? 'Delete Worktree' : 'Delete Worktrees';
+		context.title = state.uris.length === 1 ? '删除工作树' : '删除工作树';
 
-		const label = state.uris.length === 1 ? 'Delete Worktree' : 'Delete Worktrees';
-		const branchesLabel = state.uris.length === 1 ? 'Branch' : 'Branches';
+		const label = state.uris.length === 1 ? '删除工作树' : '删除工作树';
+		const branchesLabel = state.uris.length === 1 ? '分支' : '分支';
 		let selectedBranchesLabelSuffix = '';
 		if (state.startingFromBranchDelete) {
-			selectedBranchesLabelSuffix = ` for ${branchesLabel}`;
+			selectedBranchesLabelSuffix = `（${branchesLabel}）`;
 			context.title = `${context.title}${selectedBranchesLabelSuffix}`;
 		}
 
 		const description =
 			state.uris.length === 1
-				? `delete worktree in $(folder) ${getWorkspaceFriendlyPath(state.uris[0])}`
-				: `delete ${state.uris.length} worktrees`;
+				? `删除位于 $(folder) ${getWorkspaceFriendlyPath(state.uris[0])} 的工作树`
+				: `删除 ${state.uris.length} 个工作树`;
 		const descriptionWithBranchDelete =
 			state.uris.length === 1
-				? 'delete the worktree and then prompt to delete the associated branch'
-				: `delete ${state.uris.length} worktrees and then prompt to delete the associated branches`;
+				? '删除工作树后再提示删除关联分支'
+				: `删除 ${state.uris.length} 个工作树后再提示删除关联分支`;
 
 		const step: QuickPickStep<FlagsQuickPickItem<Flags>> = createConfirmStep(
-			appendReposToTitle(`Confirm ${context.title}`, state, context),
+			appendReposToTitle(`确认 ${context.title}`, state, context),
 			[
 				createFlagsQuickPickItem<Flags>(state.flags, [], {
 					label: `${label}${selectedBranchesLabelSuffix}`,
-					detail: `Will ${description}`,
+					detail: `将${description}`,
 				}),
 				createFlagsQuickPickItem<Flags>(state.flags, ['--force'], {
-					label: `Force ${label}${selectedBranchesLabelSuffix}`,
-					description: 'includes ANY UNCOMMITTED changes',
-					detail: `Will forcibly ${description}`,
+					label: `强制${label}${selectedBranchesLabelSuffix}`,
+					description: '包含所有未提交更改',
+					detail: `将强制${description}`,
 				}),
 				...(state.startingFromBranchDelete
 					? []
 					: [
 							createQuickPickSeparator<FlagsQuickPickItem<Flags>>(),
 							createFlagsQuickPickItem<Flags>(state.flags, ['--delete-branches'], {
-								label: `${label} & ${branchesLabel}`,
-								detail: `Will ${descriptionWithBranchDelete}`,
+								label: `${label}与${branchesLabel}`,
+								detail: `将${descriptionWithBranchDelete}`,
 							}),
 							createFlagsQuickPickItem<Flags>(state.flags, ['--force', '--delete-branches'], {
-								label: `Force ${label} & ${branchesLabel}`,
-								description: 'includes ANY UNCOMMITTED changes',
-								detail: `Will forcibly ${descriptionWithBranchDelete}`,
+								label: `强制${label}与${branchesLabel}`,
+								description: '包含所有未提交更改',
+								detail: `将强制${descriptionWithBranchDelete}`,
 							}),
 						]),
 			],

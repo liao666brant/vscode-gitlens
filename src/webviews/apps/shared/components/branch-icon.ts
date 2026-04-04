@@ -144,37 +144,37 @@ export class GlBranchIcon extends LitElement {
 	}
 
 	private renderTooltipContent() {
-		const branchName = this.branch ? renderBranchName(this.branch) : 'Branch';
+		const branchName = this.branch ? renderBranchName(this.branch) : '分支';
 
 		let tooltip;
-		const upstream = this.upstream ? renderBranchName(this.upstream) : 'its upstream';
+		const upstream = this.upstream ? renderBranchName(this.upstream) : '其上游分支';
 		switch (this.status) {
 			case 'diverged':
-				tooltip = html`${branchName} has diverged from ${upstream}`;
+				tooltip = html`${branchName} 已与 ${upstream} 发生分叉`;
 				break;
 			case 'behind':
-				tooltip = html`${branchName} is behind ${upstream}`;
+				tooltip = html`${branchName} 落后于 ${upstream}`;
 				break;
 			case 'ahead':
-				tooltip = html`${branchName} is ahead of ${upstream}`;
+				tooltip = html`${branchName} 领先于 ${upstream}`;
 				break;
 			case 'missingUpstream':
-				tooltip = html`${branchName} is missing its upstream ${upstream}`;
+				tooltip = html`${branchName} 缺少上游分支 ${upstream}`;
 				break;
 			case 'upToDate':
-				tooltip = html`${branchName} is up to date with ${upstream}`;
+				tooltip = html`${branchName} 与 ${upstream} 保持同步`;
 				break;
 			case 'local':
-				tooltip = html`${branchName} is a local branch which hasn't been published`;
+				tooltip = html`${branchName} 是尚未发布的本地分支`;
 				break;
 			case 'remote':
-				tooltip = html`${branchName} is a remote branch`;
+				tooltip = html`${branchName} 是远程分支`;
 				break;
 			case 'detached':
-				tooltip = html`${branchName} is in a detached state, i.e. checked out to a commit or tag`;
+				tooltip = html`${branchName} 处于分离头状态，即检出到某个提交或标签`;
 				break;
 			default:
-				tooltip = html`${branchName} is in an unknown state`;
+				tooltip = html`${branchName} 处于未知状态`;
 				break;
 		}
 
@@ -182,14 +182,14 @@ export class GlBranchIcon extends LitElement {
 		if (this.worktree) {
 			if (this.hasChanges) {
 				tooltip = html`${tooltip}
-					<p>Checked out in a worktree and has working (uncommitted) changes</p>`;
+					<p>已在工作树中检出，且有工作区（未提交）变更</p>`;
 			} else {
 				tooltip = html`${tooltip}
-					<p>Checked out in a worktree</p>`;
+					<p>已在工作树中检出</p>`;
 			}
 		} else if (this.hasChanges) {
 			tooltip = html`${tooltip}
-				<p>Has working (uncommitted) changes</p>`;
+				<p>有工作区（未提交）变更</p>`;
 		}
 		return tooltip;
 	}

@@ -65,8 +65,8 @@ export class GlOnboarding extends LitElement {
 						@click=${this.onDismissWalkthrough}
 						class="walkthrough-progress__button"
 						appearance="toolbar"
-						tooltip="Dismiss"
-						aria-label="Dismiss"
+						tooltip="关闭"
+						aria-label="关闭"
 						><code-icon icon="x"></code-icon
 					></gl-button>`
 				: nothing}
@@ -74,7 +74,7 @@ export class GlOnboarding extends LitElement {
 				<a class="walkthrough-progress" href=${createCommandLink('gitlens.showWelcomeView')}>
 					<header class="walkthrough-progress__title">
 						<span
-							>GitLens Walkthrough
+							>GitLens 引导
 							(${this._state.walkthroughProgress.doneCount}/${this._state.walkthroughProgress
 								.allCount})</span
 						>
@@ -85,7 +85,7 @@ export class GlOnboarding extends LitElement {
 					></progress>
 				</a>
 				<div slot="content">
-					<div>Open Walkthrough</div>
+					<div>打开引导</div>
 					<hr />
 					${this.renderWalkthroughProgress()}
 				</div>
@@ -96,8 +96,7 @@ export class GlOnboarding extends LitElement {
 		if (this._state.walkthroughProgress == null) return undefined;
 
 		return html`<p class="walkthrough-progress__label">
-				Walkthrough Progress
-				(${this._state.walkthroughProgress.doneCount}/${this._state.walkthroughProgress.allCount})
+				引导进度 (${this._state.walkthroughProgress.doneCount}/${this._state.walkthroughProgress.allCount})
 			</p>
 			<ul class="walkthrough-progress__steps">
 				${Object.entries(walkthroughProgressSteps).map(([key, label]) => {

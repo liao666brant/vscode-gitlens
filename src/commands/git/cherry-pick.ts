@@ -20,7 +20,6 @@ import { createFlagsQuickPickItem } from '../../quickpicks/items/flags.js';
 import { executeCommand } from '../../system/-webview/command.js';
 import { ensureArray } from '../../system/array.js';
 import { Logger } from '../../system/logger.js';
-import { pluralize } from '../../system/string.js';
 import type { ViewsWithRepositoryFolders } from '../../views/viewBase.js';
 import type {
 	AsyncStepResultGenerator,
@@ -72,8 +71,8 @@ export interface CherryPickGitCommandArgs {
 
 export class CherryPickGitCommand extends QuickCommand<State> {
 	constructor(container: Container, args?: CherryPickGitCommandArgs) {
-		super(container, 'cherry-pick', 'cherry-pick', 'Cherry Pick', {
-			description: 'integrates changes from specified commits into the current branch',
+		super(container, 'cherry-pick', 'cherry-pick', '拣选提交', {
+			description: '将指定提交的更改合入当前分支',
 		});
 
 		this.initialState = { confirm: true, ...args?.state };
@@ -104,16 +103,14 @@ export class CherryPickGitCommand extends QuickCommand<State> {
 			Logger.error(ex, this.title);
 
 			if (CherryPickError.is(ex, 'wouldOverwriteChanges')) {
-				void window.showWarningMessage(
-					'Unable to cherry-pick. Your local changes would be overwritten. Please commit or stash your changes before trying again.',
-				);
+				void window.showWarningMessage('无法执行拣选提交。你的本地更改会被覆盖。请先提交或暂存更改后再试。');
 				return;
 			}
 
 			if (CherryPickError.is(ex, 'conflicts')) {
 				this.container.telemetry.sendEvent('gitCommand/conflict', { command: 'cherry-pick' });
 				void window.showWarningMessage(
-					'Unable to cherry-pick due to conflicts. Resolve the conflicts before continuing, or abort the cherry-pick.',
+					'由于存在冲突，无法执行拣选提交。请先解决冲突再继续，或中止本次拣选提交。',
 				);
 				void executeCommand('gitlens.showCommitsView');
 				return;
@@ -121,7 +118,7 @@ export class CherryPickGitCommand extends QuickCommand<State> {
 
 			if (CherryPickError.is(ex, 'alreadyInProgress')) {
 				void window.showWarningMessage(
-					'Unable to cherry-pick. A cherry-pick is already in progress. Continue or abort the current cherry-pick first.',
+					'无法执行拣选提交。当前已有拣选提交正在进行。请先继续或中止当前拣选提交。',
 				);
 				void executeCommand('gitlens.showCommitsView');
 				return;
@@ -140,10 +137,10 @@ export class CherryPickGitCommand extends QuickCommand<State> {
 					? getReferenceLabel(pausedOperation?.incoming, { icon: false, label: true, quoted: true })
 					: undefined;
 
-				const skip = { title: 'Skip' };
-				const cancel = { title: 'Cancel', isCloseAffordance: true };
+				const skip = { title: '跳过' };
+				const cancel = { title: '取消', isCloseAffordance: true };
 				const result = await window.showInformationMessage(
-					`Unable to complete the cherry-pick operation because ${pausedAt ?? 'it'} resulted in an empty commit.\n\nDo you want to skip ${pausedAt ?? 'this commit'}?`,
+					`无法完成拣选提交操作，因为 ${pausedAt ?? '该提交'} 产生了空提交。\n\n是否要跳过 ${pausedAt ?? '该提交'}？`,
 					{ modal: true },
 					skip,
 					cancel,
@@ -156,7 +153,7 @@ export class CherryPickGitCommand extends QuickCommand<State> {
 				return;
 			}
 
-			void showGitErrorMessage(ex, CherryPickError.is(ex) ? undefined : 'Unable to cherry-pick');
+			void showGitErrorMessage(ex, CherryPickError.is(ex) ? undefined : '无法执行拣选提交');
 		}
 	}
 
@@ -228,7 +225,7 @@ export class CherryPickGitCommand extends QuickCommand<State> {
 
 				const result: StepResult<GitReference> = yield* pickBranchOrTagStep(state, context, {
 					filter: { branches: b => b.id !== context.destination.id },
-					placeholder: context => `Choose a branch${context.showTags ? ' or tag' : ''} to cherry-pick from`,
+					placeholder: context => `选择要从中拣选提交的分支${context.showTags ? '或标签' : ''}`,
 					picked: context.selectedBranchOrTag?.ref,
 					value: context.selectedBranchOrTag == null ? state.references?.[0]?.ref : undefined,
 				});
@@ -274,8 +271,8 @@ export class CherryPickGitCommand extends QuickCommand<State> {
 				const result: StepResult<GitReference[]> = yield* pickCommitsStep(state, context, {
 					emptyItems: [
 						createDirectiveQuickPickItem(Directive.Cancel, true, {
-							label: 'OK',
-							detail: `No pickable commits found on ${getReferenceLabel(context.selectedBranchOrTag, { icon: false })}`,
+							label: '确定',
+							detail: `在 ${getReferenceLabel(context.selectedBranchOrTag, { icon: false })} 上未找到可拣选的提交`,
 						}),
 					],
 					log: await log,
@@ -283,8 +280,8 @@ export class CherryPickGitCommand extends QuickCommand<State> {
 					picked: state.references?.map(r => r.ref),
 					placeholder: (context, log) =>
 						!log?.commits.size
-							? `No pickable commits found on ${getReferenceLabel(context.selectedBranchOrTag, { icon: false })}`
-							: `Choose commits to cherry-pick into ${getReferenceLabel(context.destination, { icon: false })}`,
+							? `在 ${getReferenceLabel(context.selectedBranchOrTag, { icon: false })} 上未找到可拣选的提交`
+							: `选择要拣选到 ${getReferenceLabel(context.destination, { icon: false })} 的提交`,
 				});
 				if (result === StepResultBreak) {
 					state.references = undefined!;
@@ -324,27 +321,27 @@ export class CherryPickGitCommand extends QuickCommand<State> {
 		const items: FlagsQuickPickItem<Flags>[] = [
 			createFlagsQuickPickItem<Flags>(state.flags, [], {
 				label: this.title,
-				detail: `Will apply ${getReferenceLabel(state.references, { label: false })} to ${getReferenceLabel(
+				detail: `将把 ${getReferenceLabel(state.references, { label: false })} 应用到 ${getReferenceLabel(
 					context.destination,
 					{ label: false },
 				)}`,
 			}),
 			createFlagsQuickPickItem<Flags>(state.flags, ['--edit'], {
-				label: `${this.title} & Edit`,
+				label: `${this.title} 并编辑`,
 				description: '--edit',
-				detail: `Will edit and apply ${getReferenceLabel(state.references, {
+				detail: `将编辑并把 ${getReferenceLabel(state.references, {
 					label: false,
-				})} to ${getReferenceLabel(context.destination, {
+				})} 应用到 ${getReferenceLabel(context.destination, {
 					label: false,
 				})}`,
 			}),
 			createFlagsQuickPickItem<Flags>(state.flags, ['--no-commit'], {
-				label: `${this.title} without Committing`,
+				label: `${this.title} 且不提交`,
 				description: '--no-commit',
-				detail: `Will apply ${getReferenceLabel(state.references, { label: false })} to ${getReferenceLabel(
+				detail: `将把 ${getReferenceLabel(state.references, { label: false })} 应用到 ${getReferenceLabel(
 					context.destination,
 					{ label: false },
-				)} without Committing`,
+				)}，但不提交`,
 			}),
 		];
 
@@ -372,7 +369,7 @@ export class CherryPickGitCommand extends QuickCommand<State> {
 						0,
 						1,
 						createDirectiveQuickPickItem(Directive.Noop, false, {
-							label: 'No Conflicts Detected',
+							label: '未检测到冲突',
 							iconPath: new ThemeIcon('check'),
 						}),
 					);
@@ -381,7 +378,7 @@ export class CherryPickGitCommand extends QuickCommand<State> {
 						0,
 						1,
 						createDirectiveQuickPickItem(Directive.Noop, false, {
-							label: 'Unable to Detect Conflicts',
+							label: '无法检测冲突',
 							detail: result.message,
 							iconPath: new ThemeIcon('error'),
 						}),
@@ -391,11 +388,8 @@ export class CherryPickGitCommand extends QuickCommand<State> {
 						0,
 						1,
 						createDirectiveQuickPickItem(Directive.Noop, false, {
-							label: 'Conflicts Detected',
-							detail: `Will result in ${result.stoppedOnFirstConflict ? 'at least ' : ''}${pluralize(
-								'conflicting file',
-								result.conflict.files.length,
-							)} that will need to be resolved`,
+							label: '检测到冲突',
+							detail: `将产生${result.stoppedOnFirstConflict ? '至少 ' : ''}${result.conflict.files.length} 个需要解决的冲突文件`,
 							iconPath: new ThemeIcon('warning'),
 						}),
 					);
@@ -415,7 +409,7 @@ export class CherryPickGitCommand extends QuickCommand<State> {
 
 			notices.push(
 				createDirectiveQuickPickItem(Directive.Noop, false, {
-					label: `$(loading~spin) \u00a0Detecting Conflicts...`,
+					label: `$(loading~spin) \u00a0正在检测冲突...`,
 					// Don't use this, because the spin here causes the icon to spin incorrectly
 					//iconPath: new ThemeIcon('loading~spin'),
 				}),
@@ -423,7 +417,7 @@ export class CherryPickGitCommand extends QuickCommand<State> {
 			);
 		}
 
-		step = this.createConfirmStep(appendReposToTitle(`Confirm ${context.title}`, state, context), [
+		step = this.createConfirmStep(appendReposToTitle(`确认 ${context.title}`, state, context), [
 			...notices,
 			...items,
 		]);

@@ -136,8 +136,8 @@ export async function openCommitChangesInDiffTool(commit: GitCommit): Promise<vo
 
 	if (
 		!(await confirmOpenIfNeeded(files, {
-			message: `Are you sure you want to externally open the changes for each of the ${files.length} files?`,
-			confirmButton: 'Open Changes',
+			message: `确定要在外部工具中分别打开这 ${files.length} 个文件的更改吗？`,
+			confirmButton: '打开更改',
 			threshold: filesOpenDiffsThreshold,
 		}))
 	) {
@@ -172,8 +172,8 @@ export async function openMultipleChanges(
 	if (openIndividually) {
 		if (
 			!(await confirmOpenIfNeeded(files, {
-				message: `Are you sure you want to open the changes for each of the ${files.length} files?`,
-				confirmButton: 'Open Changes',
+				message: `确定要分别打开这 ${files.length} 个文件的更改吗？`,
+				confirmButton: '打开更改',
 				threshold: filesOpenDiffsThreshold,
 			}))
 		) {
@@ -195,8 +195,8 @@ export async function openMultipleChanges(
 
 	if (
 		!(await confirmOpenIfNeeded(files, {
-			message: `Are you sure you want to view the changes for all ${files.length} files?`,
-			confirmButton: 'View Changes',
+			message: `确定要查看全部 ${files.length} 个文件的更改吗？`,
+			confirmButton: '查看更改',
 			threshold: filesOpenMultiDiffThreshold,
 		}))
 	) {
@@ -450,11 +450,11 @@ export async function openFolderCompare(
 	const files = await svc.diff.getDiffStatus(comparison, undefined, { path: relativePath });
 	if (files == null) {
 		void window.showWarningMessage(
-			`No changes in '${relativePath}' between ${shortenRevision(refs.lhs, {
+			`在 ${shortenRevision(refs.lhs, {
 				strings: { working: 'Working Tree' },
 			})} ${GlyphChars.ArrowLeftRightLong} ${shortenRevision(refs.rhs, {
 				strings: { working: 'Working Tree' },
-			})}`,
+			})} 之间，'${relativePath}' 没有更改`,
 		);
 		return;
 	}
@@ -557,7 +557,7 @@ export async function openFileAtRevision(
 		editor = await getOrOpenTextEditor(uri, { throwOnError: true, ...opts });
 	} catch (ex) {
 		if (!ex?.message?.includes('Unable to resolve nonexistent file')) {
-			void window.showErrorMessage(`Unable to open '${gitUri.relativePath}' in revision '${gitUri.sha}'`);
+			void window.showErrorMessage(`无法在修订版本 '${gitUri.sha}' 中打开 '${gitUri.relativePath}'`);
 			return;
 		}
 
@@ -567,8 +567,8 @@ export async function openFileAtRevision(
 			{
 				ignoreFocusOut: true,
 				initialPath: gitUri.relativePath,
-				title: `Open File at Revision \u2022 Unable to open '${gitUri.relativePath}'`,
-				placeholder: 'Choose a file revision to open',
+				title: `在修订版本中打开文件 \u2022 无法打开 '${gitUri.relativePath}'`,
+				placeholder: '选择要打开的文件修订版本',
 				keyboard: {
 					keys: ['right', 'alt+right', 'ctrl+right'],
 					onDidPressKey: async (_key, uri) => {
@@ -619,8 +619,8 @@ export async function openFiles(
 
 	if (
 		!(await confirmOpenIfNeeded(files, {
-			message: `Are you sure you want to open each of the ${files.length} files?`,
-			confirmButton: 'Open Files',
+			message: `确定要逐个打开这 ${files.length} 个文件吗？`,
+			confirmButton: '打开文件',
 			threshold: filesOpenThreshold,
 		}))
 	) {
@@ -649,8 +649,8 @@ export async function openFilesAtRevision(
 
 	if (
 		!(await confirmOpenIfNeeded(files, {
-			message: `Are you sure you want to open each of the ${files.length} file revisions?`,
-			confirmButton: 'Open Revisions',
+			message: `确定要逐个打开这 ${files.length} 个文件修订版本吗？`,
+			confirmButton: '打开修订版本',
 			threshold: filesOpenThreshold,
 		}))
 	) {
@@ -697,10 +697,10 @@ export async function restoreFile(
 	} catch (ex) {
 		void showGitErrorMessage(
 			ex,
-			`Unable to restore '${path}' from revision '${getReferenceLabel(revision, {
+			`无法从修订版本 '${getReferenceLabel(revision, {
 				icon: false,
 				capitalize: false,
-			})}': ${ex.message}`,
+			})}' 还原 '${path}'：${ex.message}`,
 		);
 	}
 }
@@ -799,8 +799,8 @@ export async function openOnlyChangedFiles(container: Container, commitOrFiles: 
 
 	if (
 		!(await confirmOpenIfNeeded(files, {
-			message: `Are you sure you want to open each of the ${files.length} files?`,
-			confirmButton: 'Open Files',
+			message: `确定要逐个打开这 ${files.length} 个文件吗？`,
+			confirmButton: '打开文件',
 			threshold: 10,
 		}))
 	) {
@@ -819,10 +819,10 @@ export async function undoCommit(container: Container, commit: GitRevisionRefere
 
 	if (scmCommit?.hash !== commit.ref) {
 		void window.showWarningMessage(
-			`Commit ${getReferenceLabel(commit, {
+			`提交 ${getReferenceLabel(commit, {
 				capitalize: true,
 				icon: false,
-			})} cannot be undone, because it is no longer the most recent commit.`,
+			})} 无法撤销，因为它已不再是最新提交。`,
 		);
 
 		return;
@@ -832,15 +832,12 @@ export async function undoCommit(container: Container, commit: GitRevisionRefere
 	const hasChanges = await svc.status.hasWorkingChanges();
 	if (hasChanges) {
 		const confirm = { title: '撤销提交' };
-		const cancel = { title: 'Cancel', isCloseAffordance: true };
+		const cancel = { title: '取消', isCloseAffordance: true };
 		const result = await window.showWarningMessage(
-			`You have uncommitted changes in the working tree.\n\nDo you still want to undo ${getReferenceLabel(
-				commit,
-				{
-					capitalize: false,
-					icon: false,
-				},
-			)}?`,
+			`工作区中有未提交更改。\n\n仍要撤销 ${getReferenceLabel(commit, {
+				capitalize: false,
+				icon: false,
+			})} 吗？`,
 			{ modal: true },
 			confirm,
 			cancel,
@@ -858,8 +855,8 @@ async function confirmOpenIfNeeded(
 ): Promise<boolean> {
 	if (items.length <= options.threshold) return true;
 
-	const confirm = { title: options.confirmButton ?? 'Open' };
-	const cancel = { title: options.cancelButton ?? 'Cancel', isCloseAffordance: true };
+	const confirm = { title: options.confirmButton ?? '打开' };
+	const cancel = { title: options.cancelButton ?? '取消', isCloseAffordance: true };
 	const result = await window.showWarningMessage(options.message, { modal: true }, confirm, cancel);
 	return result === confirm;
 }

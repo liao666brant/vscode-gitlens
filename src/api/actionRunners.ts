@@ -22,7 +22,7 @@ export const enum ActionRunnerType {
 	BuiltInPartnerInstaller = 3,
 }
 
-export const builtInActionRunnerName = 'Built In';
+export const builtInActionRunnerName = '内置';
 
 class ActionRunnerQuickPickItem implements QuickPickItem {
 	private readonly _label: string;
@@ -47,7 +47,7 @@ class NoActionRunnersQuickPickItem implements QuickPickItem {
 	public readonly runner: RegisteredActionRunner | undefined;
 
 	get label(): string {
-		return 'No actions were found';
+		return '未找到可用操作';
 	}
 
 	get detail(): string | undefined {
@@ -234,7 +234,7 @@ export class ActionRunners implements Disposable {
 	): Disposable {
 		return this.register(
 			action,
-			{ ...runner, partnerId: partnerId, name: `${runner.name} (Not Installed)` },
+			{ ...runner, partnerId: partnerId, name: `${runner.name}（未安装）` },
 			ActionRunnerType.BuiltInPartnerInstaller,
 		);
 	}
@@ -281,20 +281,20 @@ export class ActionRunners implements Disposable {
 						let placeholder;
 						switch (context.type) {
 							case 'createPullRequest':
-								title = 'Create Pull Request';
-								placeholder = 'Choose how to create a pull request';
+								title = '创建拉取请求';
+								placeholder = '选择创建拉取请求的方式';
 								break;
 							case 'openPullRequest':
-								title = 'Open Pull Request';
-								placeholder = 'Choose how to open the pull request';
+								title = '打开拉取请求';
+								placeholder = '选择打开拉取请求的方式';
 								break;
 							case 'openIssue':
-								title = 'Open Issue';
-								placeholder = 'Choose how to open the issue';
+								title = '打开问题';
+								placeholder = '选择打开问题的方式';
 								break;
 							case 'hover.commands':
-								title = 'Need Help or Want to Collaborate?';
-								placeholder = 'Choose what you would like to do';
+								title = '需要帮助或想协作？';
+								placeholder = '选择您想执行的操作';
 								break;
 							default:
 								debugger;

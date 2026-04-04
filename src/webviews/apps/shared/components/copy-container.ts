@@ -79,10 +79,10 @@ export class GlCopyContainer extends LitElement {
 	content?: string;
 
 	@property()
-	copyLabel: string = 'Copy';
+	copyLabel: string = '复制';
 
 	@property()
-	copiedLabel: string = 'Copied';
+	copiedLabel: string = '已复制';
 
 	@property({ type: Boolean, reflect: true })
 	disabled = false;
@@ -145,10 +145,10 @@ export class GlCopyContainer extends LitElement {
 				await navigator.clipboard.writeText(this.content);
 				this.label = this.copiedLabel;
 			} catch {
-				this.label = 'Unable to Copy';
+				this.label = '无法复制';
 			}
 		} else {
-			this.label = 'Nothing to Copy';
+			this.label = '没有可复制内容';
 		}
 		this.createResetTimer();
 	}

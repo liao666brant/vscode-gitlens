@@ -25,7 +25,7 @@ import { createDirectiveQuickPickItem, Directive } from './items/directive.js';
 
 export class ConfigureCustomRemoteProviderCommandQuickPickItem extends CommandQuickPickItem {
 	constructor() {
-		super({ label: 'See how to configure a custom remote provider...' });
+		super({ label: '查看如何配置自定义远程提供程序...' });
 	}
 
 	override async execute(): Promise<void> {
@@ -139,13 +139,13 @@ export class CopyOrOpenRemoteCommandQuickPickItem extends CommandQuickPickItem {
 			const integrationName = providersMetadata[integrationId].name;
 			const connectItem = createQuickPickItemOfT(
 				{
-					label: `Connect to ${integrationName}...`,
-					detail: `Connect an integration with ${integrationName} to create cross-repository pull requests`,
+					label: `连接到 ${integrationName}...`,
+					detail: `连接 ${integrationName} 集成以创建跨仓库拉取请求`,
 					picked: true,
 				},
 				true,
 			);
-			const cancelItem = createDirectiveQuickPickItem(Directive.Cancel, false, { label: 'Cancel' });
+			const cancelItem = createDirectiveQuickPickItem(Directive.Cancel, false, { label: '取消' });
 			const quickpickPromise = new Promise<undefined | QuickPickItem>(resolve => {
 				disposables.push(
 					quickpick.onDidHide(() => resolve(undefined)),
@@ -157,8 +157,8 @@ export class CopyOrOpenRemoteCommandQuickPickItem extends CommandQuickPickItem {
 				);
 			});
 			quickpick.ignoreFocusOut = getQuickPickIgnoreFocusOut();
-			quickpick.title = `Connect ${integrationName} Integration`;
-			quickpick.placeholder = `Requires an integration with ${integrationName} to create cross-repository pull requests`;
+			quickpick.title = `连接 ${integrationName} 集成`;
+			quickpick.placeholder = `创建跨仓库拉取请求需要连接 ${integrationName} 集成`;
 			quickpick.matchOnDetail = true;
 			quickpick.items = [connectItem, cancelItem];
 			quickpick.show();
@@ -192,15 +192,15 @@ export class CopyRemoteResourceCommandQuickPickItem extends CommandQuickPickItem
 			remotes: remotes,
 			clipboard: true,
 		};
-		const label = `Copy Link to ${getNameFromRemoteResource(resource)} for ${
-			providers?.length ? providers[0].name : 'Remote'
-		}${providers?.length === 1 ? '' : GlyphChars.Ellipsis}`;
+		const label = `复制 ${getNameFromRemoteResource(resource)} 链接（${
+			providers?.length ? providers[0].name : '远程仓库'
+		}${providers?.length === 1 ? '' : GlyphChars.Ellipsis}）`;
 		super(label, new ThemeIcon('copy'), 'gitlens.openOnRemote', [commandArgs]);
 	}
 
 	override async onDidPressKey(key: Keys): Promise<void> {
 		await super.onDidPressKey(key);
-		void window.showInformationMessage('URL copied to the clipboard');
+		void window.showInformationMessage('URL 已复制到剪贴板');
 	}
 }
 
@@ -213,11 +213,11 @@ export class OpenRemoteResourceCommandQuickPickItem extends CommandQuickPickItem
 			clipboard: false,
 		};
 		super(
-			`Open ${getNameFromRemoteResource(resource)} on ${
+			`在 ${
 				providers?.length === 1
 					? providers[0].name
-					: `${providers?.length ? providers[0].name : 'Remote'}${GlyphChars.Ellipsis}`
-			}`,
+					: `${providers?.length ? providers[0].name : '远程仓库'}${GlyphChars.Ellipsis}`
+			} 打开 ${getNameFromRemoteResource(resource)}`,
 			new ThemeIcon('link-external'),
 			'gitlens.openOnRemote',
 			[commandArgs],
@@ -246,7 +246,7 @@ export async function showRemoteProviderPicker(
 	let items: (ConfigureCustomRemoteProviderCommandQuickPickItem | CopyOrOpenRemoteCommandQuickPickItem)[];
 	if (remotes.length === 0) {
 		items = [new ConfigureCustomRemoteProviderCommandQuickPickItem()];
-		placeholder = 'No auto-detected or configured remote providers found';
+		placeholder = '未找到自动检测到或已配置的远程提供程序';
 	} else {
 		if (autoPick === 'default' && remotes.length > 1) {
 			// If there is a default just execute it directly

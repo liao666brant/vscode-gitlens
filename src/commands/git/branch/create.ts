@@ -88,8 +88,8 @@ export interface BranchCreateGitCommandArgs {
 
 export class BranchCreateGitCommand extends QuickCommand<State> {
 	constructor(container: Container, args?: BranchCreateGitCommandArgs) {
-		super(container, 'branch-create', 'create', 'Create Branch', {
-			description: 'creates a new branch',
+		super(container, 'branch-create', 'create', '创建分支', {
+			description: '创建新分支',
 		});
 
 		this.initialState = { confirm: args?.confirm, ...args?.state };
@@ -140,9 +140,9 @@ export class BranchCreateGitCommand extends QuickCommand<State> {
 					using step = steps.enterStep(Steps.PickRef);
 
 					const result = yield* pickBranchOrTagStep(state, context, {
-						placeholder: `Choose a base to create the new branch from`,
+						placeholder: `选择新分支的基准来源`,
 						picked: state.reference?.ref ?? (await state.repo.git.branches.getBranch())?.ref,
-						title: 'Select Base to Create Branch From',
+						title: '选择创建分支的基准',
 						value: isRevisionReference(state.reference) ? state.reference.ref : undefined,
 					});
 					if (result === StepResultBreak) {
@@ -167,7 +167,7 @@ export class BranchCreateGitCommand extends QuickCommand<State> {
 					}
 
 					const result = yield* inputBranchNameStep(state, context, {
-						prompt: 'Please provide a name for the new branch',
+						prompt: '请为新分支输入名称',
 						title: `${context.title} from ${getReferenceLabel(state.reference, {
 							capitalize: true,
 							icon: false,
@@ -269,20 +269,16 @@ export class BranchCreateGitCommand extends QuickCommand<State> {
 						Logger.error(ex, context.title);
 
 						if (BranchError.is(ex, 'alreadyExists')) {
-							void window.showWarningMessage(
-								`Unable to create branch '${state.name}'. A branch with that name already exists.`,
-							);
+							void window.showWarningMessage(`无法创建分支“${state.name}”。同名分支已存在。`);
 							return;
 						}
 
 						if (BranchError.is(ex, 'invalidName')) {
-							void window.showWarningMessage(
-								`Unable to create branch '${state.name}'. The branch name is invalid.`,
-							);
+							void window.showWarningMessage(`无法创建分支“${state.name}”。分支名称无效。`);
 							return;
 						}
 
-						void showGitErrorMessage(ex, BranchError.is(ex) ? undefined : 'Unable to create branch');
+						void showGitErrorMessage(ex, BranchError.is(ex) ? undefined : '无法创建分支');
 						return;
 					}
 				}
@@ -322,7 +318,7 @@ export class BranchCreateGitCommand extends QuickCommand<State> {
 			confirmItems.push(
 				createFlagsQuickPickItem<Flags>(state.flags, [], {
 					label: context.title,
-					detail: `Will create a new branch named ${state.name} from ${getReferenceLabel(state.reference)}`,
+					detail: `将从 ${getReferenceLabel(state.reference)} 创建名为 ${state.name} 的新分支`,
 				}),
 			);
 		}
@@ -330,10 +326,8 @@ export class BranchCreateGitCommand extends QuickCommand<State> {
 		if (!state.confirmOptions || state.confirmOptions.includes('--switch')) {
 			confirmItems.push(
 				createFlagsQuickPickItem<Flags>(state.flags, ['--switch'], {
-					label: `Create & Switch to Branch`,
-					detail: `Will create and switch to a new branch named ${state.name} from ${getReferenceLabel(
-						state.reference,
-					)}`,
+					label: `创建并切换到分支`,
+					detail: `将从 ${getReferenceLabel(state.reference)} 创建名为 ${state.name} 的新分支并切换过去`,
 				}),
 			);
 		}
@@ -341,17 +335,15 @@ export class BranchCreateGitCommand extends QuickCommand<State> {
 		if (!state.confirmOptions || state.confirmOptions.includes('--worktree')) {
 			confirmItems.push(
 				createFlagsQuickPickItem<Flags>(state.flags, ['--worktree'], {
-					label: `${context.title} in New Worktree`,
-					description: 'avoids modifying your working tree',
-					detail: `Will create a new worktree for a new branch named ${state.name} from ${getReferenceLabel(
-						state.reference,
-					)}`,
+					label: `在新工作树中${context.title}`,
+					description: '避免修改当前工作树',
+					detail: `将从 ${getReferenceLabel(state.reference)} 为名为 ${state.name} 的新分支创建新的工作树`,
 				}),
 			);
 		}
 
 		const step: QuickPickStep<FlagsQuickPickItem<Flags>> = createConfirmStep(
-			appendReposToTitle(`Confirm ${context.title}`, state, context),
+			appendReposToTitle(`确认${context.title}`, state, context),
 			confirmItems,
 			context,
 		);

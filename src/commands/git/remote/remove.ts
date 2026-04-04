@@ -49,8 +49,8 @@ export interface RemoteRemoveGitCommandArgs {
 
 export class RemoteRemoveGitCommand extends QuickCommand<State> {
 	constructor(container: Container, args?: RemoteRemoveGitCommandArgs) {
-		super(container, 'remote-remove', 'remove', 'Remove Remote', {
-			description: 'removes the specified remote',
+		super(container, 'remote-remove', 'remove', '移除远程', {
+			description: '移除指定远程',
 		});
 
 		this.initialState = { confirm: args?.confirm, ...args?.state };
@@ -112,7 +112,7 @@ export class RemoteRemoveGitCommand extends QuickCommand<State> {
 				const picked: string | undefined = typeof state.remote === 'string' ? state.remote : state.remote?.name;
 				const result: GitRemote | typeof StepResultBreak = yield* pickRemoteStep(state, context, {
 					picked: picked,
-					placeholder: 'Choose remote to remove',
+					placeholder: '选择要移除的远程',
 				});
 				if (result === StepResultBreak) {
 					state.remote = undefined!;
@@ -142,7 +142,7 @@ export class RemoteRemoveGitCommand extends QuickCommand<State> {
 				await state.repo.git.remotes.removeRemote?.(state.remote.name);
 			} catch (ex) {
 				Logger.error(ex);
-				void showGenericErrorMessage('Unable to remove remote');
+				void showGenericErrorMessage('无法移除远程');
 			}
 		}
 
@@ -154,8 +154,8 @@ export class RemoteRemoveGitCommand extends QuickCommand<State> {
 		context: Context,
 	): StepResultGenerator<void> {
 		const step: QuickPickStep = createConfirmStep(
-			appendReposToTitle(`Confirm ${context.title}`, state, context),
-			[{ label: context.title, detail: `Will remove remote '${state.remote.name}'` }],
+			appendReposToTitle(`确认${context.title}`, state, context),
+			[{ label: context.title, detail: `将移除远程“${state.remote.name}”` }],
 			context,
 		);
 		const selection: StepSelection<typeof step> = yield step;

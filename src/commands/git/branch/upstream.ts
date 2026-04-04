@@ -55,8 +55,8 @@ export interface BranchUpstreamGitCommandArgs {
 
 export class BranchUpstreamGitCommand extends QuickCommand<State> {
 	constructor(container: Container, args?: BranchUpstreamGitCommandArgs) {
-		super(container, 'branch-upstream', 'upstream', 'Change Upstream', {
-			description: 'manages upstream tracking for a branch',
+		super(container, 'branch-upstream', 'upstream', '更改上游', {
+			description: '管理分支的上游跟踪',
 		});
 
 		this.initialState = { confirm: args?.confirm, ...args?.state };
@@ -106,7 +106,7 @@ export class BranchUpstreamGitCommand extends QuickCommand<State> {
 				const result = yield* pickBranchStep(state, context, {
 					filter: b => !b.remote,
 					picked: state.reference?.ref,
-					placeholder: 'Choose a branch to change its upstream tracking',
+					placeholder: '选择要更改上游跟踪的分支',
 				});
 				if (result === StepResultBreak) {
 					state.reference = undefined!;
@@ -122,14 +122,14 @@ export class BranchUpstreamGitCommand extends QuickCommand<State> {
 
 				const result = yield* pickOrResetBranchStep(state, context, {
 					filter: b => b.remote,
-					placeholder: 'Choose an upstream branch to track',
+					placeholder: '选择要跟踪的上游分支',
 					picked: state.upstream?.ref,
 					reset:
 						state.reference.upstream != null
 							? {
-									label: 'Unset Upstream',
-									description: 'Removes any upstream tracking',
-									button: { icon: new ThemeIcon('discard'), tooltip: 'Unset Upstream' },
+									label: '取消上游',
+									description: '移除上游跟踪',
+									button: { icon: new ThemeIcon('discard'), tooltip: '取消上游' },
 								}
 							: undefined,
 				});
@@ -163,7 +163,7 @@ export class BranchUpstreamGitCommand extends QuickCommand<State> {
 				);
 			} catch (ex) {
 				Logger.error(ex, context.title);
-				void showGitErrorMessage(ex, BranchError.is(ex) ? undefined : 'Unable to manage upstream tracking');
+				void showGitErrorMessage(ex, BranchError.is(ex) ? undefined : '无法管理上游跟踪');
 			}
 		}
 
@@ -174,24 +174,22 @@ export class BranchUpstreamGitCommand extends QuickCommand<State> {
 		let title;
 		let detail;
 		if (state.upstream == null) {
-			title = 'Unset Upstream';
-			detail = `Will remove the upstream tracking from ${getReferenceLabel(state.reference)}`;
+			title = '取消上游';
+			detail = `将移除 ${getReferenceLabel(state.reference)} 的上游跟踪`;
 		} else if (state.reference.upstream == null) {
-			title = 'Set Upstream';
-			detail = `Will set the upstream tracking for ${getReferenceLabel(state.reference)} to ${getReferenceLabel(
-				state.upstream,
-				{ label: false },
-			)}`;
+			title = '设置上游';
+			detail = `将把 ${getReferenceLabel(state.reference)} 的上游跟踪设置为 ${getReferenceLabel(state.upstream, {
+				label: false,
+			})}`;
 		} else {
-			title = `Change Upstream`;
-			detail = `Will change the upstream tracking for ${getReferenceLabel(state.reference)} to ${getReferenceLabel(
-				state.upstream,
-				{ label: false },
-			)}`;
+			title = `更改上游`;
+			detail = `将把 ${getReferenceLabel(state.reference)} 的上游跟踪更改为 ${getReferenceLabel(state.upstream, {
+				label: false,
+			})}`;
 		}
 
 		const step: QuickPickStep = createConfirmStep(
-			appendReposToTitle(`Confirm ${title}`, state, context),
+			appendReposToTitle(`确认${title}`, state, context),
 			[{ label: title, detail: detail }],
 			context,
 		);
