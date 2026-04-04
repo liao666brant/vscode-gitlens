@@ -364,7 +364,3 @@ export class GlLaunchpad extends SignalWatcher(LitElement) {
 		return html`<menu class="menu">${result}</menu>`;
 	}
 }
-
-function formatPullRequestCount(count: number): string {
-	return `${count} 个拉取请求`;
-}
