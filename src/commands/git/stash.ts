@@ -45,8 +45,8 @@ export interface StashGitCommandArgs {
 
 export class StashGitCommand extends QuickCommandWithSubcommands<Subcommands, State, StashContext> {
 	constructor(container: Container, args?: StashGitCommandArgs) {
-		super(container, 'stash', 'stash', 'Stash', {
-			description: 'shelves (stashes) local changes to be reapplied later',
+		super(container, 'stash', 'stash', '存储', {
+			description: '暂存本地更改以便稍后重新应用',
 		});
 
 		this.initialState = { confirm: args?.confirm, ...args?.state };

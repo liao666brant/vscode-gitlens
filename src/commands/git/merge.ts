@@ -17,7 +17,6 @@ import type { FlagsQuickPickItem } from '../../quickpicks/items/flags.js';
 import { createFlagsQuickPickItem } from '../../quickpicks/items/flags.js';
 import { executeCommand } from '../../system/-webview/command.js';
 import { Logger } from '../../system/logger.js';
-import { pluralize } from '../../system/string.js';
 import type { ViewsWithRepositoryFolders } from '../../views/viewBase.js';
 import type {
 	AsyncStepResultGenerator,
@@ -70,10 +69,14 @@ export interface MergeGitCommandArgs {
 	state?: Partial<State>;
 }
 
+function formatCommitCount(count: number | undefined) {
+	return `${count ?? 0} 个提交`;
+}
+
 export class MergeGitCommand extends QuickCommand<State> {
 	constructor(container: Container, args?: MergeGitCommandArgs) {
-		super(container, 'merge', 'merge', 'Merge', {
-			description: 'integrates changes from a specified branch into the current branch',
+		super(container, 'merge', 'merge', '合并', {
+			description: '将指定分支的更改合并到当前分支',
 		});
 
 		this.initialState = { confirm: true, ...args?.state };
@@ -112,30 +115,24 @@ export class MergeGitCommand extends QuickCommand<State> {
 			Logger.error(ex, this.title);
 
 			if (MergeError.is(ex, 'uncommittedChanges') || MergeError.is(ex, 'wouldOverwriteChanges')) {
-				void window.showWarningMessage(
-					'Unable to merge. Your local changes would be overwritten. Please commit or stash your changes before trying again.',
-				);
+				void window.showWarningMessage('无法合并。你的本地更改会被覆盖。请先提交或存储更改后再试。');
 				return;
 			}
 
 			if (MergeError.is(ex, 'conflicts')) {
 				this.container.telemetry.sendEvent('gitCommand/conflict', { command: 'merge' });
-				void window.showWarningMessage(
-					'Unable to merge due to conflicts. Resolve the conflicts before continuing, or abort the merge.',
-				);
+				void window.showWarningMessage('由于存在冲突，无法合并。请先解决冲突再继续，或中止本次合并。');
 				void executeCommand('gitlens.showCommitsView');
 				return;
 			}
 
 			if (MergeError.is(ex, 'alreadyInProgress')) {
-				void window.showWarningMessage(
-					'Unable to merge. A merge is already in progress. Continue or abort the current merge first.',
-				);
+				void window.showWarningMessage('无法合并。当前已有合并正在进行。请先继续或中止当前合并。');
 				void executeCommand('gitlens.showCommitsView');
 				return;
 			}
 
-			void showGitErrorMessage(ex, MergeError.is(ex) ? undefined : 'Unable to merge');
+			void showGitErrorMessage(ex, MergeError.is(ex) ? undefined : '无法合并');
 		}
 	}
 
@@ -191,7 +188,7 @@ export class MergeGitCommand extends QuickCommand<State> {
 				context.destination = branch;
 			}
 
-			context.title = `${this.title} into ${getReferenceLabel(context.destination, {
+			context.title = `${this.title}到 ${getReferenceLabel(context.destination, {
 				icon: false,
 				label: false,
 			})}`;
@@ -206,7 +203,7 @@ export class MergeGitCommand extends QuickCommand<State> {
 				});
 
 				const result: StepResult<GitReference> = yield* pickBranchOrTagStep(state, context, {
-					placeholder: context => `Choose a branch${context.showTags ? ' or tag' : ''} to merge`,
+					placeholder: context => `选择要合并的分支${context.showTags ? '或标签' : ''}`,
 					picked: context.selectedBranchOrTag?.ref,
 					value: context.selectedBranchOrTag == null ? state.reference?.ref : undefined,
 					additionalButtons: [pickCommitToggle],
@@ -245,8 +242,8 @@ export class MergeGitCommand extends QuickCommand<State> {
 				const result: StepResult<GitReference> = yield* pickCommitStep(state, context, {
 					emptyItems: [
 						createDirectiveQuickPickItem(Directive.Cancel, true, {
-							label: 'OK',
-							detail: `No commits found on ${getReferenceLabel(context.selectedBranchOrTag, { icon: false })}`,
+							label: '确定',
+							detail: `在 ${getReferenceLabel(context.selectedBranchOrTag, { icon: false })} 上未找到提交`,
 						}),
 					],
 					ignoreFocusOut: true,
@@ -254,8 +251,8 @@ export class MergeGitCommand extends QuickCommand<State> {
 					onDidLoadMore: log => context.cache.set(rev, Promise.resolve(log)),
 					placeholder: (context, log) =>
 						!log?.commits.size
-							? `No commits found on ${getReferenceLabel(context.selectedBranchOrTag, { icon: false })}`
-							: `Choose a commit to merge into ${getReferenceLabel(context.destination, { icon: false })}`,
+							? `在 ${getReferenceLabel(context.selectedBranchOrTag, { icon: false })} 上未找到提交`
+							: `选择要合并到 ${getReferenceLabel(context.destination, { icon: false })} 的提交`,
 					picked: state.reference?.ref,
 				});
 				if (result === StepResultBreak) {
@@ -295,24 +292,24 @@ export class MergeGitCommand extends QuickCommand<State> {
 			createRevisionRange(context.destination.ref, state.reference.ref, '...'),
 		);
 
-		const title = `Merge ${getReferenceLabel(state.reference, { icon: false, label: false })} into ${getReferenceLabel(context.destination, { icon: false, label: false })} `;
+		const title = `将 ${getReferenceLabel(state.reference, { icon: false, label: false })} 合并到 ${getReferenceLabel(context.destination, { icon: false, label: false })}`;
 		const count = counts != null ? counts.right : 0;
 		if (count === 0) {
 			const step: QuickPickStep<DirectiveQuickPickItem> = this.createConfirmStep(
-				appendReposToTitle(`Confirm ${title}`, state, context),
+				appendReposToTitle(`确认${title}`, state, context),
 				[],
 				createDirectiveQuickPickItem(Directive.Cancel, true, {
-					label: 'OK',
+					label: '确定',
 					detail: `${getReferenceLabel(context.destination, {
 						capitalize: true,
 						label: false,
-					})} is already up to date with ${getReferenceLabel(state.reference, { label: false })}`,
+					})} 已与 ${getReferenceLabel(state.reference, { label: false })} 保持同步`,
 				}),
 				{
-					placeholder: `Nothing to merge; ${getReferenceLabel(context.destination, {
+					placeholder: `无可合并内容；${getReferenceLabel(context.destination, {
 						label: false,
 						icon: false,
-					})} is already up to date`,
+					})} 已保持最新`,
 				},
 			);
 			const selection: StepSelection<typeof step> = yield step;
@@ -323,43 +320,38 @@ export class MergeGitCommand extends QuickCommand<State> {
 		const items = [
 			createFlagsQuickPickItem<Flags>(state.flags, [], {
 				label: this.title,
-				detail: `Will merge ${pluralize('commit', count)} from ${getReferenceLabel(state.reference, {
+				detail: `将把 ${getReferenceLabel(state.reference, {
 					label: false,
-				})} into ${getReferenceLabel(context.destination, { label: false })}`,
+				})} 的 ${formatCommitCount(count)} 合并到 ${getReferenceLabel(context.destination, { label: false })}`,
 				picked: true,
 			}),
 			createFlagsQuickPickItem<Flags>(state.flags, ['--ff-only'], {
-				label: `Fast-forward ${this.title}`,
+				label: `快进${this.title}`,
 				description: '--ff-only',
-				detail: `Will fast-forward merge ${pluralize('commit', count)} from ${getReferenceLabel(
-					state.reference,
-					{ label: false },
-				)} into ${getReferenceLabel(context.destination, { label: false })}`,
+				detail: `将通过快进方式把 ${getReferenceLabel(state.reference, {
+					label: false,
+				})} 的 ${formatCommitCount(count)} 合并到 ${getReferenceLabel(context.destination, { label: false })}`,
 			}),
 			createFlagsQuickPickItem<Flags>(state.flags, ['--squash'], {
-				label: `Squash ${this.title}`,
+				label: `压缩${this.title}`,
 				description: '--squash',
-				detail: `Will squash ${pluralize('commit', count)} from ${getReferenceLabel(state.reference, {
+				detail: `将把 ${getReferenceLabel(state.reference, {
 					label: false,
-				})} into one when merging into ${getReferenceLabel(context.destination, { label: false })}`,
+				})} 的 ${formatCommitCount(count)} 压缩为一个提交后再合并到 ${getReferenceLabel(context.destination, { label: false })}`,
 			}),
 			createFlagsQuickPickItem<Flags>(state.flags, ['--no-ff'], {
-				label: `No Fast-forward ${this.title}`,
+				label: `非快进${this.title}`,
 				description: '--no-ff',
-				detail: `Will create a merge commit when merging ${pluralize('commit', count)} from ${getReferenceLabel(
-					state.reference,
-					{ label: false },
-				)} into ${getReferenceLabel(context.destination, { label: false })}`,
+				detail: `合并 ${getReferenceLabel(state.reference, {
+					label: false,
+				})} 的 ${formatCommitCount(count)} 到 ${getReferenceLabel(context.destination, { label: false })} 时将创建合并提交`,
 			}),
 			createFlagsQuickPickItem<Flags>(state.flags, ['--no-ff', '--no-commit'], {
-				label: `Don't Commit ${this.title}`,
+				label: `先不提交${this.title}`,
 				description: '--no-commit --no-ff',
-				detail: `Will pause before committing the merge of ${pluralize(
-					'commit',
-					count,
-				)} from ${getReferenceLabel(state.reference, {
+				detail: `在将 ${getReferenceLabel(state.reference, {
 					label: false,
-				})} into ${getReferenceLabel(context.destination, { label: false })}`,
+				})} 的 ${formatCommitCount(count)} 合并到 ${getReferenceLabel(context.destination, { label: false })} 后，先暂停并等待你手动提交`,
 			}),
 		];
 
@@ -382,7 +374,7 @@ export class MergeGitCommand extends QuickCommand<State> {
 						0,
 						1,
 						createDirectiveQuickPickItem(Directive.Noop, false, {
-							label: 'No Conflicts Detected',
+							label: '未检测到冲突',
 							iconPath: new ThemeIcon('check'),
 						}),
 					);
@@ -391,7 +383,7 @@ export class MergeGitCommand extends QuickCommand<State> {
 						0,
 						1,
 						createDirectiveQuickPickItem(Directive.Noop, false, {
-							label: 'Unable to Detect Conflicts',
+							label: '无法检测冲突',
 							detail: result.message,
 							iconPath: new ThemeIcon('error'),
 						}),
@@ -401,11 +393,8 @@ export class MergeGitCommand extends QuickCommand<State> {
 						0,
 						1,
 						createDirectiveQuickPickItem(Directive.Noop, false, {
-							label: 'Conflicts Detected',
-							detail: `Will result in ${pluralize(
-								'conflicting file',
-								result.conflict.files.length,
-							)} that will need to be resolved`,
+							label: '检测到冲突',
+							detail: `将产生 ${result.conflict.files.length} 个需要解决的冲突文件`,
 							iconPath: new ThemeIcon('warning'),
 						}),
 					);
@@ -425,7 +414,7 @@ export class MergeGitCommand extends QuickCommand<State> {
 
 			notices.push(
 				createDirectiveQuickPickItem(Directive.Noop, false, {
-					label: `$(loading~spin) \u00a0Detecting Conflicts...`,
+					label: `$(loading~spin) \u00a0正在检测冲突...`,
 					// Don't use this, because the spin here causes the icon to spin incorrectly
 					//iconPath: new ThemeIcon('loading~spin'),
 				}),
@@ -433,7 +422,7 @@ export class MergeGitCommand extends QuickCommand<State> {
 			);
 		}
 
-		step = this.createConfirmStep(appendReposToTitle(`Confirm ${title}`, state, context), [...notices, ...items]);
+		step = this.createConfirmStep(appendReposToTitle(`确认${title}`, state, context), [...notices, ...items]);
 		const selection: StepSelection<typeof step> = yield step;
 		return canPickStepContinue(step, state, selection) ? selection[0].item : StepResultBreak;
 	}

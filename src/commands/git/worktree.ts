@@ -48,8 +48,8 @@ export interface WorktreeGitCommandArgs {
 
 export class WorktreeGitCommand extends QuickCommandWithSubcommands<Subcommands, State, WorktreeContext> {
 	constructor(container: Container, args?: WorktreeGitCommandArgs) {
-		super(container, 'worktree', 'worktree', `Worktrees ${proBadgeSuperscript}`, {
-			description: `${proBadge}\u00a0\u00a0open, create, or delete worktrees`,
+		super(container, 'worktree', 'worktree', `工作树 ${proBadgeSuperscript}`, {
+			description: `${proBadge}\u00a0\u00a0打开、创建或删除工作树`,
 		});
 
 		this.initialState = { confirm: args?.confirm, ...args?.state };

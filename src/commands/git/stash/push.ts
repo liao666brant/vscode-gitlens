@@ -66,8 +66,8 @@ export interface StashPushGitCommandArgs {
 
 export class StashPushGitCommand extends QuickCommand<State> {
 	constructor(container: Container, args?: StashPushGitCommandArgs) {
-		super(container, 'stash-push', 'push', 'Push Stash', {
-			description: 'stashes local changes',
+		super(container, 'stash-push', 'push', '创建存储', {
+			description: '存储本地更改',
 		});
 
 		this.initialState = { confirm: args?.confirm, flags: [], ...args?.state };
@@ -163,20 +163,20 @@ export class StashPushGitCommand extends QuickCommand<State> {
 					if (!state.flags.includes('--include-untracked') && !state.reducedConfirm) {
 						confirmOverride = true;
 						void window.showWarningMessage(
-							'No changes to stash. Choose the "Push & Include Untracked" option, if you have untracked files.',
+							'没有可存储的更改。如果你有未跟踪文件，请选择“创建存储并包含未跟踪文件”选项。',
 						);
 						continue;
 					}
 
-					void window.showInformationMessage('No changes to stash.');
+					void window.showInformationMessage('没有可存储的更改。');
 					return;
 				}
 
 				if (StashPushError.is(ex, 'conflictingStagedAndUnstagedLines') && state.flags.includes('--staged')) {
-					const confirm = { title: 'Stash Everything' };
-					const cancel = { title: 'Cancel', isCloseAffordance: true };
+					const confirm = { title: '存储全部更改' };
+					const cancel = { title: '取消', isCloseAffordance: true };
 					const result = await window.showErrorMessage(
-						`Changes were stashed, but the working tree cannot be updated because at least one file has staged and unstaged changes on the same line(s)\n\nDo you want to try again by stashing both your staged and unstaged changes?`,
+						`更改已存储，但由于至少有一个文件在同一行同时包含已暂存和未暂存更改，工作树无法更新。\n\n是否要重新尝试，并同时存储已暂存和未暂存的更改？`,
 						{ modal: true },
 						confirm,
 						cancel,
@@ -193,11 +193,11 @@ export class StashPushGitCommand extends QuickCommand<State> {
 
 				const msg: string = ex?.message ?? ex?.toString() ?? '';
 				if (msg.includes('newer version of Git')) {
-					void window.showErrorMessage(`Unable to stash changes. ${msg}`);
+					void window.showErrorMessage(`无法存储更改。${msg}`);
 					return;
 				}
 
-				void showGitErrorMessage(ex, StashPushError.is(ex) ? undefined : 'Unable to stash changes');
+				void showGitErrorMessage(ex, StashPushError.is(ex) ? undefined : '无法存储更改');
 				return;
 			}
 		}
@@ -213,7 +213,7 @@ export class StashPushGitCommand extends QuickCommand<State> {
 
 		const generateMessageButton: QuickInputButton = {
 			iconPath: new ThemeIcon('sparkle'),
-			tooltip: 'Generate Stash Message',
+			tooltip: '生成存储消息',
 		};
 
 		const step = createInputStep({
@@ -225,13 +225,13 @@ export class StashPushGitCommand extends QuickCommand<State> {
 					? `${pad(GlyphChars.Dot, 2, 2)}${
 							state.uris.length === 1
 								? formatPath(state.uris[0], { fileOnly: true })
-								: `${state.uris.length} files`
+								: `${state.uris.length} 个文件`
 						}`
 					: undefined,
 			),
-			placeholder: 'Stash message',
+			placeholder: '存储消息',
 			value: state.message,
-			prompt: 'Please provide a stash message',
+			prompt: '请输入存储消息',
 			buttons:
 				this.container.ai.enabled && this.container.ai.allowed
 					? [QuickInputButtons.Back, generateMessageButton]
@@ -257,7 +257,7 @@ export class StashPushGitCommand extends QuickCommand<State> {
 						}
 
 						if (!diff?.contents) {
-							void window.showInformationMessage('No changes to generate a stash message from.');
+							void window.showInformationMessage('没有可用于生成存储消息的更改。');
 							return;
 						}
 
@@ -266,7 +266,7 @@ export class StashPushGitCommand extends QuickCommand<State> {
 							m =>
 								(input.validationMessage = {
 									severity: InputBoxValidationSeverity.Info,
-									message: `$(loading~spin) Generating stash message with ${m.name}...`,
+									message: `$(loading~spin) 正在使用 ${m.name} 生成存储消息...`,
 								}),
 							() => (input.validationMessage = undefined),
 						);
@@ -325,40 +325,40 @@ export class StashPushGitCommand extends QuickCommand<State> {
 				const withUntrackedDescFlags = withUntrackedFlags.filter(f => f !== '--snapshot');
 				const withUntrackedDetails: string[] = [];
 				if (state.flags.includes('--keep-index')) {
-					withUntrackedDetails.push('keeping staged files intact');
+					withUntrackedDetails.push('保留已暂存文件不变');
 				}
-				withUntrackedDetails.push('including untracked files');
+				withUntrackedDetails.push('包含未跟踪文件');
 
 				const withoutUntrackedDescFlags = withoutUntrackedFlags.filter(f => f !== '--snapshot');
 				const withoutUntrackedDetails: string[] = [];
 				if (state.flags.includes('--keep-index')) {
-					withoutUntrackedDetails.push('keeping staged files intact');
+					withoutUntrackedDetails.push('保留已暂存文件不变');
 				}
 
 				confirmations.push(
 					createFlagsQuickPickItem<Flags>(state.flags, withUntrackedFlags, {
-						label: `${context.title} & Include Untracked`,
+						label: `${context.title}并包含未跟踪文件`,
 						description: withUntrackedDescFlags.length ? withUntrackedDescFlags.join(' ') : undefined,
-						detail: `Will stash unstaged changes${withUntrackedDetails.length ? `, ${withUntrackedDetails.join(' and ')}` : ''}`,
+						detail: `将存储未暂存更改${withUntrackedDetails.length ? `，${withUntrackedDetails.join('，')}` : ''}`,
 					}),
 					createFlagsQuickPickItem<Flags>(state.flags, withoutUntrackedFlags, {
 						label: context.title,
 						description: withoutUntrackedDescFlags.length ? withoutUntrackedDescFlags.join(' ') : undefined,
-						detail: `Will stash unstaged changes${withoutUntrackedDetails.length ? `, ${withoutUntrackedDetails.join(' and ')}` : ''}`,
+						detail: `将存储未暂存更改${withoutUntrackedDetails.length ? `，${withoutUntrackedDetails.join('，')}` : ''}`,
 					}),
 				);
 			} else {
 				const descriptionFlags = state.flags.filter(f => f !== '--snapshot');
 				const details: string[] = [];
 				if (state.flags.includes('--keep-index')) {
-					details.push('keeping staged files intact');
+					details.push('保留已暂存文件不变');
 				}
 
 				confirmations.push(
 					createFlagsQuickPickItem<Flags>(state.flags, [...state.flags], {
 						label: context.title,
 						description: descriptionFlags.length ? descriptionFlags.join(' ') : undefined,
-						detail: `Will stash unstaged changes${details.length ? `, ${details.join(' and ')}` : ''}`,
+						detail: `将存储未暂存更改${details.length ? `，${details.join('，')}` : ''}`,
 					}),
 				);
 			}
@@ -370,22 +370,22 @@ export class StashPushGitCommand extends QuickCommand<State> {
 			confirmations.push(
 				createFlagsQuickPickItem<Flags>(state.flags, [...baseFlags], {
 					label: context.title,
-					detail: `Will stash changes from ${
+					detail: `将存储来自 ${
 						state.uris.length === 1
 							? formatPath(state.uris[0], { fileOnly: true })
-							: `${state.uris.length} files`
+							: `${state.uris.length} 个文件`
 					}`,
 				}),
 			);
 			if (!state.flags.includes('--include-untracked')) {
 				confirmations.push(
 					createFlagsQuickPickItem<Flags>(state.flags, [...baseFlags, '--keep-index'], {
-						label: `${context.title} & Keep Staged`,
-						detail: `Will stash changes from ${
+						label: `${context.title}并保留已暂存内容`,
+						detail: `将存储来自 ${
 							state.uris.length === 1
 								? formatPath(state.uris[0], { fileOnly: true })
-								: `${state.uris.length} files`
-						}, but will keep staged files intact`,
+								: `${state.uris.length} 个文件`
+						} 的更改，但保留已暂存文件不变`,
 					}),
 				);
 			}
@@ -393,36 +393,36 @@ export class StashPushGitCommand extends QuickCommand<State> {
 			confirmations.push(
 				createFlagsQuickPickItem<Flags>(state.flags, [...baseFlags], {
 					label: context.title,
-					detail: `Will stash ${stagedOnly ? 'staged' : 'uncommitted'} changes`,
+					detail: `将存储${stagedOnly ? '已暂存' : '未提交'}更改`,
 				}),
 				createFlagsQuickPickItem<Flags>(state.flags, [...baseFlags, '--snapshot'], {
-					label: `${context.title} Snapshot`,
-					detail: 'Will stash uncommitted changes without changing the working tree',
+					label: `${context.title}快照`,
+					detail: '将存储未提交更改，但不修改工作树',
 				}),
 			);
 			if (!stagedOnly) {
 				confirmations.push(
 					createFlagsQuickPickItem<Flags>(state.flags, [...baseFlags, '--include-untracked'], {
-						label: `${context.title} & Include Untracked`,
+						label: `${context.title}并包含未跟踪文件`,
 						description: '--include-untracked',
-						detail: 'Will stash uncommitted changes, including untracked files',
+						detail: '将存储未提交更改，并包含未跟踪文件',
 					}),
 				);
 				confirmations.push(
 					createFlagsQuickPickItem<Flags>(state.flags, [...baseFlags, '--keep-index'], {
-						label: `${context.title} & Keep Staged`,
+						label: `${context.title}并保留已暂存内容`,
 						description: '--keep-index',
-						detail: `Will stash ${stagedOnly ? 'staged' : 'uncommitted'} changes, but will keep staged files intact`,
+						detail: `将存储${stagedOnly ? '已暂存' : '未提交'}更改，但保留已暂存文件不变`,
 					}),
 				);
 			}
 		}
 
 		const step = this.createConfirmStep(
-			appendReposToTitle(`Confirm ${context.title}`, state, context),
+			appendReposToTitle(`确认${context.title}`, state, context),
 			confirmations,
 			undefined,
-			{ placeholder: `Confirm ${context.title}` },
+			{ placeholder: `确认${context.title}` },
 		);
 		const selection: StepSelection<typeof step> = yield step;
 		return canPickStepContinue(step, state, selection) ? selection[0].item : StepResultBreak;

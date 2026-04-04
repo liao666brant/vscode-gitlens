@@ -54,8 +54,8 @@ export class StashApplyOrPopGitCommand extends QuickCommand<State> {
 
 	constructor(container: Container, args?: StashApplyOrPopGitCommandArgs) {
 		const mode = args?.command === 'stash-pop' ? 'pop' : 'apply';
-		super(container, `stash.${mode}`, mode, mode === 'pop' ? 'Pop Stash' : 'Apply Stash', {
-			description: mode === 'pop' ? 'applies and deletes a stash' : 'applies a stash to the working tree',
+		super(container, `stash.${mode}`, mode, mode === 'pop' ? '弹出存储' : '应用存储', {
+			description: mode === 'pop' ? '应用并删除存储' : '将存储应用到工作树',
 		});
 
 		this.mode = mode;
@@ -107,10 +107,10 @@ export class StashApplyOrPopGitCommand extends QuickCommand<State> {
 					stash: await state.repo.git.stash?.getStash(),
 					placeholder: (_context, stash) =>
 						stash == null
-							? `No stashes found in ${state.repo.name}`
+							? `${state.repo.name} 中未找到存储`
 							: state.mode === 'pop'
-								? 'Choose a stash to pop'
-								: 'Choose a stash to apply to your working tree',
+								? '选择要弹出的存储'
+								: '选择要应用到工作树的存储',
 					picked: state.reference?.ref,
 				});
 				if (result === StepResultBreak) {
@@ -157,11 +157,9 @@ export class StashApplyOrPopGitCommand extends QuickCommand<State> {
 				Logger.error(ex, context.title);
 
 				if (StashApplyError.is(ex, 'uncommittedChanges')) {
-					void window.showWarningMessage(
-						'Unable to apply stash. Your local changes would be overwritten. Please commit or stash your changes before trying again.',
-					);
+					void window.showWarningMessage('无法应用存储。你的本地更改会被覆盖。请先提交或存储更改后再试。');
 				} else {
-					void showGitErrorMessage(ex, StashApplyError.is(ex) ? undefined : 'Unable to apply stash');
+					void showGitErrorMessage(ex, StashApplyError.is(ex) ? undefined : '无法应用存储');
 				}
 			}
 		}
@@ -171,32 +169,28 @@ export class StashApplyOrPopGitCommand extends QuickCommand<State> {
 
 	private *confirmStep(state: StepState<State<Repository>>, context: Context): StepResultGenerator<Mode> {
 		const step = this.createConfirmStep<{ label: string; detail: string; item: Mode }>(
-			appendReposToTitle(`Confirm ${context.title}`, state, context),
+			appendReposToTitle(`确认${context.title}`, state, context),
 			[
 				{
 					label: context.title,
 					detail:
 						this.mode === 'pop'
-							? `Will delete ${getReferenceLabel(
-									state.reference,
-								)} and apply the changes to the working tree`
-							: `Will apply the changes from ${getReferenceLabel(state.reference)} to the working tree`,
+							? `将删除 ${getReferenceLabel(state.reference)}，并将更改应用到工作树`
+							: `将把 ${getReferenceLabel(state.reference)} 的更改应用到工作树`,
 					item: this.mode,
 				},
 				{
-					label: this.mode === 'pop' ? 'Apply Stash' : 'Pop Stash',
+					label: this.mode === 'pop' ? '应用存储' : '弹出存储',
 					detail:
 						this.mode === 'pop'
-							? `Will apply the changes from ${getReferenceLabel(state.reference)} to the working tree`
-							: `Will delete ${getReferenceLabel(
-									state.reference,
-								)} and apply the changes to the working tree`,
+							? `将把 ${getReferenceLabel(state.reference)} 的更改应用到工作树`
+							: `将删除 ${getReferenceLabel(state.reference)}，并将更改应用到工作树`,
 					item: this.mode === 'pop' ? 'apply' : 'pop',
 				},
 			],
 			undefined,
 			{
-				placeholder: `Confirm ${context.title}`,
+				placeholder: `确认${context.title}`,
 				additionalButtons: [ShowDetailsViewQuickInputButton, RevealInSideBarQuickInputButton],
 				onDidClickButton: (_quickpick, button) => {
 					if (button === ShowDetailsViewQuickInputButton) {

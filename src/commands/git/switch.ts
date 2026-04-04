@@ -79,8 +79,8 @@ export interface SwitchGitCommandArgs {
 
 export class SwitchGitCommand extends QuickCommand<State> {
 	constructor(container: Container, args?: SwitchGitCommandArgs) {
-		super(container, 'switch', 'switch', 'Switch to...', {
-			description: 'aka checkout, switches to a specified branch',
+		super(container, 'switch', 'switch', '切换到...', {
+			description: '即 checkout，切换到指定分支',
 		});
 
 		this.initialState = { confirm: args?.confirm, ...args?.state };
@@ -96,9 +96,9 @@ export class SwitchGitCommand extends QuickCommand<State> {
 			{
 				location: ProgressLocation.Notification,
 				title: `${
-					isBranchReference(state.reference) || state.createBranch ? 'Switching to' : 'Checking out'
-				} ${getReferenceLabel(state.reference, { icon: false, label: false })} in ${
-					state.repos.length === 1 ? state.repos[0].name : `${state.repos.length} repos`
+					isBranchReference(state.reference) || state.createBranch ? '正在切换到' : '正在检出'
+				} ${getReferenceLabel(state.reference, { icon: false, label: false })} 到 ${
+					state.repos.length === 1 ? state.repos[0].name : `${state.repos.length} 个仓库`
 				}`,
 			},
 			() =>
@@ -122,7 +122,7 @@ export class SwitchGitCommand extends QuickCommand<State> {
 				Logger.error(ex, this.title);
 				void showGitErrorMessage(
 					ex,
-					`Unable to fast-forward ${getReferenceLabel(state.reference, {
+					`无法快进 ${getReferenceLabel(state.reference, {
 						icon: false,
 						label: true,
 					})}`,
@@ -191,7 +191,7 @@ export class SwitchGitCommand extends QuickCommand<State> {
 				using step = steps.enterStep(Steps.PickBranchOrTag);
 
 				const result = yield* pickBranchOrTagStepMultiRepo(state, context, {
-					placeholder: context => `Choose a branch${context.showTags ? ' or tag' : ''} to switch to`,
+					placeholder: context => `选择要切换到的分支${context.showTags ? '或标签' : ''}`,
 					allowCreate: state.repos.length === 1,
 				});
 				if (result === StepResultBreak) {
@@ -258,7 +258,7 @@ export class SwitchGitCommand extends QuickCommand<State> {
 								Logger.error(ex, this.title);
 								void showGitErrorMessage(
 									ex,
-									`Unable to fast-forward ${getReferenceLabel(state.reference, {
+									`无法快进 ${getReferenceLabel(state.reference, {
 										icon: false,
 										label: true,
 									})}`,
@@ -282,17 +282,14 @@ export class SwitchGitCommand extends QuickCommand<State> {
 									confirmation: state.worktreeDefaultOpen
 										? undefined
 										: {
-												title: `Confirm Switch to Worktree \u2022 ${getReferenceLabel(
-													state.reference,
-													{
-														icon: false,
-														label: false,
-													},
-												)}`,
+												title: `确认切换到工作树 \u2022 ${getReferenceLabel(state.reference, {
+													icon: false,
+													label: false,
+												})}`,
 												placeholder: `${getReferenceLabel(state.reference, {
 													capitalize: true,
 													icon: false,
-												})} is linked to a worktree`,
+												})} 已关联到工作树`,
 											},
 								},
 								onWorkspaceChanging: state.onWorkspaceChanging,
@@ -359,12 +356,12 @@ export class SwitchGitCommand extends QuickCommand<State> {
 					case 'switchToNewBranch': {
 						using step = steps.enterStep(Steps.InputBranchName);
 
-						context.title = `Switch to New Branch`;
+						context.title = `切换到新分支`;
 						this._canConfirmOverride = false;
 
 						const result = yield* inputBranchNameStep(state, context, {
-							prompt: 'Please provide a name for the new branch',
-							title: `${context.title} from ${getReferenceLabel(state.reference, {
+							prompt: '请输入新分支名称',
+							title: `${context.title}，来源 ${getReferenceLabel(state.reference, {
 								capitalize: true,
 								icon: false,
 								label: state.reference.refType !== 'branch',
@@ -456,10 +453,10 @@ export class SwitchGitCommand extends QuickCommand<State> {
 
 		if (!isBranchReference(state.reference)) {
 			confirmations.push({
-				label: `Checkout to ${getReferenceTypeLabel(state.reference)}`,
-				description: '(detached)',
-				detail: `Will checkout to ${getReferenceLabel(state.reference)}${
-					state.repos.length > 1 ? ` in ${state.repos.length} repos` : ''
+				label: `检出到${getReferenceTypeLabel(state.reference)}`,
+				description: '（分离 HEAD）',
+				detail: `将检出到 ${getReferenceLabel(state.reference)}${
+					state.repos.length > 1 ? `（共 ${state.repos.length} 个仓库）` : ''
 				}`,
 				item: 'switch',
 			});
@@ -467,32 +464,30 @@ export class SwitchGitCommand extends QuickCommand<State> {
 
 		if (!state.createBranch) {
 			if (context.canSwitchToLocalBranch != null) {
-				confirmations.push(createQuickPickSeparator('Local'));
+				confirmations.push(createQuickPickSeparator('本地'));
 				confirmations.push({
-					label: `Switch to Local Branch`,
+					label: `切换到本地分支`,
 					description: '',
-					detail: `Will switch to local ${getReferenceLabel(
+					detail: `将切换到本地分支 ${getReferenceLabel(
 						context.canSwitchToLocalBranch,
-					)} for ${getReferenceLabel(state.reference)}`,
+					)}，用于跟踪 ${getReferenceLabel(state.reference)}`,
 					item: 'switchToLocalBranch',
 				});
 
 				if (state.repos.length === 1) {
 					confirmations.push({
-						label: `Switch to Local Branch & Fast-Forward`,
+						label: `切换到本地分支并快进`,
 						description: '',
-						detail: `Will switch to and fast-forward local ${getReferenceLabel(
-							context.canSwitchToLocalBranch,
-						)}`,
+						detail: `将切换到本地分支并快进 ${getReferenceLabel(context.canSwitchToLocalBranch)}`,
 						item: 'switchToLocalBranchAndFastForward',
 					});
 				}
 			} else if (isLocalBranch) {
 				confirmations.push({
-					label: 'Switch to Branch',
+					label: '切换到分支',
 					description: '',
-					detail: `Will switch to ${getReferenceLabel(state.reference)}${
-						state.repos.length > 1 ? ` in ${state.repos.length} repos` : ''
+					detail: `将切换到 ${getReferenceLabel(state.reference)}${
+						state.repos.length > 1 ? `（共 ${state.repos.length} 个仓库）` : ''
 					}`,
 					item: 'switch',
 				});
@@ -502,29 +497,27 @@ export class SwitchGitCommand extends QuickCommand<State> {
 		if (!isLocalBranch || state.createBranch || context.promptToCreateBranch) {
 			if (isRemoteBranch) {
 				if (confirmations.length) {
-					confirmations.push(createQuickPickSeparator('Remote'));
+					confirmations.push(createQuickPickSeparator('远程'));
 				}
 				confirmations.push({
-					label: 'Create & Switch to New Local Branch',
+					label: '创建并切换到新的本地分支',
 					description: '',
-					detail: `Will create and switch to a new local branch${
-						state.createBranch ? ` named ${state.createBranch}` : ''
-					} from ${getReferenceLabel(state.reference)}${
-						state.repos.length > 1 ? ` in ${state.repos.length} repos` : ''
+					detail: `将从 ${getReferenceLabel(state.reference)} 创建并切换到新的本地分支${
+						state.createBranch ? `“${state.createBranch}”` : ''
+					}${state.repos.length > 1 ? `（共 ${state.repos.length} 个仓库）` : ''}
 					}`,
 					item: 'switchToNewBranch',
 				});
 			} else {
 				if (confirmations.length) {
-					confirmations.push(createQuickPickSeparator('Branch'));
+					confirmations.push(createQuickPickSeparator('分支'));
 				}
 				confirmations.push({
-					label: `Create & Switch to New Branch from ${getReferenceTypeLabel(state.reference)}`,
+					label: `从 ${getReferenceTypeLabel(state.reference)} 创建并切换到新分支`,
 					description: '',
-					detail: `Will create and switch to a new branch${
-						state.createBranch ? ` named ${state.createBranch}` : ''
-					} from ${getReferenceLabel(state.reference)}${
-						state.repos.length > 1 ? ` in ${state.repos.length} repos` : ''
+					detail: `将从 ${getReferenceLabel(state.reference)} 创建并切换到新分支${
+						state.createBranch ? `“${state.createBranch}”` : ''
+					}${state.repos.length > 1 ? `（共 ${state.repos.length} 个仓库）` : ''}
 					}`,
 					item: 'switchToNewBranch',
 				});
@@ -533,41 +526,39 @@ export class SwitchGitCommand extends QuickCommand<State> {
 
 		if (state.repos.length === 1) {
 			if (confirmations.length) {
-				confirmations.push(createQuickPickSeparator('Worktree'));
+				confirmations.push(createQuickPickSeparator('工作树'));
 			}
 			if (isLocalBranch) {
 				confirmations.push({
-					label: `Create Worktree for Branch...`,
-					description: 'avoids modifying your working tree',
-					detail: `Will create a new worktree for ${getReferenceLabel(state.reference)}`,
+					label: `为分支创建工作树...`,
+					description: '避免修改当前工作树',
+					detail: `将为 ${getReferenceLabel(state.reference)} 创建新的工作树`,
 					item: 'switchViaWorktree',
 				});
 			} else if (!state.createBranch && context.canSwitchToLocalBranch != null) {
 				confirmations.push({
-					label: `Create Worktree for Local Branch...`,
-					description: 'avoids modifying your working tree',
-					detail: `Will create a new worktree for local ${getReferenceLabel(context.canSwitchToLocalBranch)}`,
+					label: `为本地分支创建工作树...`,
+					description: '避免修改当前工作树',
+					detail: `将为本地分支 ${getReferenceLabel(context.canSwitchToLocalBranch)} 创建新的工作树`,
 					item: 'switchToLocalBranchViaWorktree',
 				});
 			} else if (isRemoteBranch) {
 				confirmations.push({
-					label: `Create Worktree for New Local Branch...`,
-					description: 'avoids modifying your working tree',
-					detail: `Will create a new worktree for a new local branch${
-						state.createBranch ? ` named ${state.createBranch}` : ''
-					} from ${getReferenceLabel(state.reference)}${
-						state.repos.length > 1 ? ` in ${state.repos.length} repos` : ''
+					label: `为新的本地分支创建工作树...`,
+					description: '避免修改当前工作树',
+					detail: `将从 ${getReferenceLabel(state.reference)} 为新的本地分支创建工作树${
+						state.createBranch ? `“${state.createBranch}”` : ''
+					}${state.repos.length > 1 ? `（共 ${state.repos.length} 个仓库）` : ''}
 					}`,
 					item: 'switchToNewBranchViaWorktree',
 				});
 			} else {
 				confirmations.push({
-					label: `Create Worktree for New Branch from ${getReferenceTypeLabel(state.reference)}...`,
-					description: 'avoids modifying your working tree',
-					detail: `Will create a new worktree for a new branch${
-						state.createBranch ? ` named ${state.createBranch}` : ''
-					} from ${getReferenceLabel(state.reference)}${
-						state.repos.length > 1 ? ` in ${state.repos.length} repos` : ''
+					label: `从 ${getReferenceTypeLabel(state.reference)} 为新分支创建工作树...`,
+					description: '避免修改当前工作树',
+					detail: `将从 ${getReferenceLabel(state.reference)} 为新分支创建工作树${
+						state.createBranch ? `“${state.createBranch}”` : ''
+					}${state.repos.length > 1 ? `（共 ${state.repos.length} 个仓库）` : ''}
 					}`,
 					item: 'switchToNewBranchViaWorktree',
 				});
@@ -576,26 +567,26 @@ export class SwitchGitCommand extends QuickCommand<State> {
 
 		if (isRemoteBranch && !state.createBranch) {
 			if (confirmations.length) {
-				confirmations.push(createQuickPickSeparator('Checkout'));
+				confirmations.push(createQuickPickSeparator('检出'));
 			}
 			confirmations.push({
-				label: `Checkout to Remote Branch`,
-				description: '(detached)',
-				detail: `Will checkout to ${getReferenceLabel(state.reference)}`,
+				label: `检出到远程分支`,
+				description: '（分离 HEAD）',
+				detail: `将检出到 ${getReferenceLabel(state.reference)}`,
 				item: 'switch',
 			});
 		}
 
 		const step = this.createConfirmStep(
 			appendReposToTitle(
-				`Confirm Switch to ${getReferenceLabel(state.reference, { icon: false, capitalize: true })}`,
+				`确认切换到 ${getReferenceLabel(state.reference, { icon: false, capitalize: true })}`,
 				state,
 				context,
 			),
 			confirmations,
 			undefined,
 			{
-				placeholder: `Confirm ${context.title}`,
+				placeholder: `确认${context.title}`,
 			},
 		);
 		const selection: StepSelection<typeof step> = yield step;

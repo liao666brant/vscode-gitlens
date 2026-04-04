@@ -18,7 +18,6 @@ import type { FlagsQuickPickItem } from '../../quickpicks/items/flags.js';
 import { createFlagsQuickPickItem } from '../../quickpicks/items/flags.js';
 import { executeCommand } from '../../system/-webview/command.js';
 import { Logger } from '../../system/logger.js';
-import { pluralize } from '../../system/string.js';
 import { createDisposable } from '../../system/unifiedDisposable.js';
 import type { ViewsWithRepositoryFolders } from '../../views/viewBase.js';
 import type {
@@ -71,11 +70,14 @@ export interface RebaseGitCommandArgs {
 	state?: Partial<State>;
 }
 
+function formatCommitCount(count: number | undefined) {
+	return `${count ?? 0} 个提交`;
+}
+
 export class RebaseGitCommand extends QuickCommand<State> {
 	constructor(container: Container, args?: RebaseGitCommandArgs) {
-		super(container, 'rebase', 'rebase', 'Rebase', {
-			description:
-				'integrates changes from a specified branch into the current branch, by changing the base of the branch and reapplying the commits on top',
+		super(container, 'rebase', 'rebase', '变基', {
+			description: '通过更改分支基底并在其上重新应用提交，将指定分支的更改集成到当前分支',
 		});
 
 		this.initialState = { confirm: true, ...args?.state };
@@ -119,32 +121,26 @@ export class RebaseGitCommand extends QuickCommand<State> {
 			Logger.error(ex, this.title);
 
 			if (RebaseError.is(ex, 'uncommittedChanges') || RebaseError.is(ex, 'wouldOverwriteChanges')) {
-				void window.showWarningMessage(
-					'Unable to rebase. Your local changes would be overwritten. Please commit or stash your changes before trying again.',
-				);
+				void window.showWarningMessage('无法变基。你的本地更改会被覆盖。请先提交或存储更改后再试。');
 				return;
 			}
 
 			if (RebaseError.is(ex, 'conflicts')) {
 				this.container.telemetry.sendEvent('gitCommand/conflict', { command: 'rebase' });
-				void window.showWarningMessage(
-					'Unable to rebase due to conflicts. Resolve the conflicts before continuing, or abort the rebase.',
-				);
+				void window.showWarningMessage('由于存在冲突，无法变基。请先解决冲突再继续，或中止本次变基。');
 				// TODO: open the rebase editor, if its not already open?
 				void executeCommand('gitlens.showCommitsView');
 				return;
 			}
 
 			if (RebaseError.is(ex, 'alreadyInProgress')) {
-				void window.showWarningMessage(
-					'Unable to rebase. A rebase is already in progress. Continue or abort the current rebase first.',
-				);
+				void window.showWarningMessage('无法变基。当前已有变基正在进行。请先继续或中止当前变基。');
 				// TODO: open the rebase editor, if its not already open?
 				void executeCommand('gitlens.showCommitsView');
 				return;
 			}
 
-			void showGitErrorMessage(ex, RebaseError.is(ex) ? undefined : 'Unable to rebase');
+			void showGitErrorMessage(ex, RebaseError.is(ex) ? undefined : '无法变基');
 		}
 	}
 
@@ -203,7 +199,7 @@ export class RebaseGitCommand extends QuickCommand<State> {
 			context.title = `${this.title} ${getReferenceLabel(context.branch, {
 				icon: false,
 				label: false,
-			})} onto`;
+			})} 到`;
 			context.pickCommitForItem = false;
 
 			if (steps.isAtStep(Steps.PickBranchOrTag) || state.destination == null) {
@@ -215,7 +211,7 @@ export class RebaseGitCommand extends QuickCommand<State> {
 				});
 
 				const result = yield* pickBranchOrTagStep(state, context, {
-					placeholder: context => `Choose a branch${context.showTags ? ' or tag' : ''} to rebase onto`,
+					placeholder: context => `选择要变基到的分支${context.showTags ? '或标签' : ''}`,
 					picked: context.selectedBranchOrTag?.ref,
 					value: context.selectedBranchOrTag == null ? state.destination?.ref : undefined,
 					additionalButtons: [pickCommitToggle],
@@ -254,8 +250,8 @@ export class RebaseGitCommand extends QuickCommand<State> {
 				const result = yield* pickCommitStep(state, context, {
 					emptyItems: [
 						createDirectiveQuickPickItem(Directive.Cancel, true, {
-							label: 'OK',
-							detail: `No commits found on ${getReferenceLabel(context.selectedBranchOrTag, { icon: false })}`,
+							label: '确定',
+							detail: `在 ${getReferenceLabel(context.selectedBranchOrTag, { icon: false })} 上未找到提交`,
 						}),
 					],
 					ignoreFocusOut: true,
@@ -263,8 +259,8 @@ export class RebaseGitCommand extends QuickCommand<State> {
 					onDidLoadMore: log => context.cache.set(rev, Promise.resolve(log)),
 					placeholder: (context, log) =>
 						!log?.commits.size
-							? `No commits found on ${getReferenceLabel(context.selectedBranchOrTag, { icon: false })}`
-							: `Choose a commit to rebase ${getReferenceLabel(context.branch, { icon: false })} onto`,
+							? `在 ${getReferenceLabel(context.selectedBranchOrTag, { icon: false })} 上未找到提交`
+							: `选择要让 ${getReferenceLabel(context.branch, { icon: false })} 变基到的提交`,
 					picked: state.destination?.ref,
 				});
 				if (result === StepResultBreak) {
@@ -309,19 +305,19 @@ export class RebaseGitCommand extends QuickCommand<State> {
 		const behind = counts?.left ?? 0;
 		if (behind === 0 && ahead === 0) {
 			const step: QuickPickStep<DirectiveQuickPickItem> = this.createConfirmStep(
-				appendReposToTitle(`Confirm ${title}`, state, context),
+				appendReposToTitle(`确认${title}`, state, context),
 				[],
 				createDirectiveQuickPickItem(Directive.Cancel, true, {
-					label: 'OK',
+					label: '确定',
 					detail: `${getReferenceLabel(context.branch, {
 						capitalize: true,
-					})} is already up to date with ${getReferenceLabel(state.destination, { label: false })}`,
+					})} 已与 ${getReferenceLabel(state.destination, { label: false })} 保持同步`,
 				}),
 				{
-					placeholder: `Nothing to rebase; ${getReferenceLabel(context.branch, {
+					placeholder: `无可变基内容；${getReferenceLabel(context.branch, {
 						label: false,
 						icon: false,
-					})} is already up to date`,
+					})} 已保持最新`,
 				},
 			);
 			const selection: StepSelection<typeof step> = yield step;
@@ -331,21 +327,21 @@ export class RebaseGitCommand extends QuickCommand<State> {
 
 		const items: FlagsQuickPickItem<Flags>[] = [
 			createFlagsQuickPickItem<Flags>(state.flags, ['--interactive'], {
-				label: `Interactive ${this.title}`,
+				label: `交互式${this.title}`,
 				description: '--interactive',
-				detail: `Will interactively update ${getReferenceLabel(context.branch, {
+				detail: `将交互式更新 ${getReferenceLabel(context.branch, {
 					label: false,
-				})} by applying ${pluralize('commit', ahead)} on top of ${getReferenceLabel(state.destination, {
+				})}，把 ${formatCommitCount(ahead)} 应用到 ${getReferenceLabel(state.destination, {
 					label: false,
-				})}`,
+				})} 之上`,
 				picked: behind === 0,
 			}),
 			createFlagsQuickPickItem<Flags>(state.flags, ['--interactive', '--update-refs'], {
-				label: `Interactive ${this.title} & Update Branches`,
+				label: `交互式${this.title}并更新分支`,
 				description: '--interactive --update-refs',
-				detail: `Will interactively update ${getReferenceLabel(context.branch, {
+				detail: `将交互式更新 ${getReferenceLabel(context.branch, {
 					label: false,
-				})} and any branches pointing to rebased commits`,
+				})} 以及所有指向已变基提交的分支`,
 			}),
 		];
 
@@ -353,19 +349,19 @@ export class RebaseGitCommand extends QuickCommand<State> {
 			items.unshift(
 				createFlagsQuickPickItem<Flags>(state.flags, [], {
 					label: this.title,
-					detail: `Will update ${getReferenceLabel(context.branch, {
+					detail: `将更新 ${getReferenceLabel(context.branch, {
 						label: false,
-					})} by applying ${pluralize('commit', ahead)} on top of ${getReferenceLabel(state.destination, {
+					})}，把 ${formatCommitCount(ahead)} 应用到 ${getReferenceLabel(state.destination, {
 						label: false,
-					})}`,
+					})} 之上`,
 					picked: true,
 				}),
 				createFlagsQuickPickItem<Flags>(state.flags, ['--update-refs'], {
-					label: `${this.title} & Update Branches`,
+					label: `${this.title}并更新分支`,
 					description: '--update-refs',
-					detail: `Will update ${getReferenceLabel(context.branch, {
+					detail: `将更新 ${getReferenceLabel(context.branch, {
 						label: false,
-					})} and any branches pointing to rebased commits`,
+					})} 以及所有指向已变基提交的分支`,
 				}),
 			);
 		}
@@ -392,7 +388,7 @@ export class RebaseGitCommand extends QuickCommand<State> {
 						0,
 						1,
 						createDirectiveQuickPickItem(Directive.Noop, false, {
-							label: 'No Conflicts Detected',
+							label: '未检测到冲突',
 							iconPath: new ThemeIcon('check'),
 						}),
 					);
@@ -401,7 +397,7 @@ export class RebaseGitCommand extends QuickCommand<State> {
 						0,
 						1,
 						createDirectiveQuickPickItem(Directive.Noop, false, {
-							label: 'Unable to Detect Conflicts',
+							label: '无法检测冲突',
 							detail: result.message,
 							iconPath: new ThemeIcon('error'),
 						}),
@@ -411,11 +407,8 @@ export class RebaseGitCommand extends QuickCommand<State> {
 						0,
 						1,
 						createDirectiveQuickPickItem(Directive.Noop, false, {
-							label: 'Conflicts Detected',
-							detail: `Will result in ${result.stoppedOnFirstConflict ? 'at least ' : ''}${pluralize(
-								'conflicting file',
-								result.conflict.files.length,
-							)} that will need to be resolved`,
+							label: '检测到冲突',
+							detail: `将产生${result.stoppedOnFirstConflict ? '至少 ' : ''}${result.conflict.files.length} 个需要解决的冲突文件`,
 							iconPath: new ThemeIcon('warning'),
 						}),
 					);
@@ -435,7 +428,7 @@ export class RebaseGitCommand extends QuickCommand<State> {
 
 			notices.push(
 				createDirectiveQuickPickItem(Directive.Noop, false, {
-					label: `$(loading~spin) \u00a0Detecting Conflicts...`,
+					label: `$(loading~spin) \u00a0正在检测冲突...`,
 					// Don't use this, because the spin here causes the icon to spin incorrectly
 					//iconPath: new ThemeIcon('loading~spin'),
 				}),
@@ -443,7 +436,7 @@ export class RebaseGitCommand extends QuickCommand<State> {
 			);
 		}
 
-		step = this.createConfirmStep(appendReposToTitle(`Confirm ${title}`, state, context), [...notices, ...items]);
+		step = this.createConfirmStep(appendReposToTitle(`确认${title}`, state, context), [...notices, ...items]);
 		const selection: StepSelection<typeof step> = yield step;
 		return canPickStepContinue(step, state, selection) ? selection[0].item : StepResultBreak;
 	}

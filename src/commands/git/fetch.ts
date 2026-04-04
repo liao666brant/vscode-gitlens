@@ -56,7 +56,7 @@ export interface FetchGitCommandArgs {
 
 export class FetchGitCommand extends QuickCommand<State> {
 	constructor(container: Container, args?: FetchGitCommandArgs) {
-		super(container, 'fetch', 'fetch', 'Fetch', { description: 'fetches changes from one or more remotes' });
+		super(container, 'fetch', 'fetch', '抓取', { description: '从一个或多个远程抓取更改' });
 
 		this.initialState = { confirm: args?.confirm, ...args?.state };
 	}
@@ -148,47 +148,44 @@ export class FetchGitCommand extends QuickCommand<State> {
 		if (state.repos.length === 1) {
 			const lastFetched = await state.repos[0].getLastFetched();
 			if (lastFetched !== 0) {
-				lastFetchedOn = `${pad(GlyphChars.Dot, 2, 2)}Last fetched ${fromNow(new Date(lastFetched))}`;
+				lastFetchedOn = `${pad(GlyphChars.Dot, 2, 2)}上次抓取于 ${fromNow(new Date(lastFetched))}`;
 			}
 		}
 
 		let step: QuickPickStep<FlagsQuickPickItem<Flags>>;
 
 		if (state.repos.length === 1 && isBranchReference(state.reference)) {
-			step = this.createConfirmStep(
-				appendReposToTitle(`Confirm ${context.title}`, state, context, lastFetchedOn),
-				[
-					createFlagsQuickPickItem<Flags>(state.flags, [], {
-						label: this.title,
-						detail: `Will fetch ${getReferenceLabel(state.reference)}`,
-					}),
-				],
-			);
+			step = this.createConfirmStep(appendReposToTitle(`确认${context.title}`, state, context, lastFetchedOn), [
+				createFlagsQuickPickItem<Flags>(state.flags, [], {
+					label: this.title,
+					detail: `将抓取 ${getReferenceLabel(state.reference)}`,
+				}),
+			]);
 		} else {
 			const reposToFetch =
 				state.repos.length === 1 ? `$(repo) ${state.repos[0].name}` : `${state.repos.length} repos`;
 
 			step = createConfirmStep(
-				appendReposToTitle(`Confirm ${this.title}`, state, context, lastFetchedOn),
+				appendReposToTitle(`确认${this.title}`, state, context, lastFetchedOn),
 				[
 					createFlagsQuickPickItem<Flags>(state.flags, [], {
 						label: this.title,
-						detail: `Will fetch ${reposToFetch}`,
+						detail: `将抓取 ${reposToFetch}`,
 					}),
 					createFlagsQuickPickItem<Flags>(state.flags, ['--prune'], {
-						label: `${this.title} & Prune`,
+						label: `${this.title}并清理`,
 						description: '--prune',
-						detail: `Will fetch and prune ${reposToFetch}`,
+						detail: `将抓取并清理 ${reposToFetch}`,
 					}),
 					createFlagsQuickPickItem<Flags>(state.flags, ['--all'], {
-						label: `${this.title} All`,
+						label: `${this.title}全部远程`,
 						description: '--all',
-						detail: `Will fetch all remotes of ${reposToFetch}`,
+						detail: `将抓取 ${reposToFetch} 的全部远程`,
 					}),
 					createFlagsQuickPickItem<Flags>(state.flags, ['--all', '--prune'], {
-						label: `${this.title} All & Prune`,
+						label: `${this.title}全部远程并清理`,
 						description: '--all --prune',
-						detail: `Will fetch and prune all remotes of ${reposToFetch}`,
+						detail: `将抓取并清理 ${reposToFetch} 的全部远程`,
 					}),
 				],
 				context,

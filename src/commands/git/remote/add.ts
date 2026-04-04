@@ -55,8 +55,8 @@ export interface RemoteAddGitCommandArgs {
 
 export class RemoteAddGitCommand extends QuickCommand<State> {
 	constructor(container: Container, args?: RemoteAddGitCommandArgs) {
-		super(container, 'remote-add', 'add', 'Add Remote', {
-			description: 'adds a new remote',
+		super(container, 'remote-add', 'add', '添加远程', {
+			description: '添加新的远程仓库',
 		});
 
 		this.initialState = { confirm: args?.confirm, flags: ['-f'], ...args?.state };
@@ -105,7 +105,7 @@ export class RemoteAddGitCommand extends QuickCommand<State> {
 				using step = steps.enterStep(Steps.InputName);
 
 				const result = yield* inputRemoteNameStep(state, context, {
-					prompt: 'Please provide a name for the remote',
+					prompt: '请输入远程名称',
 					value: state.name,
 				});
 				if (result === StepResultBreak) {
@@ -121,7 +121,7 @@ export class RemoteAddGitCommand extends QuickCommand<State> {
 				using step = steps.enterStep(Steps.InputUrl);
 
 				const result = yield* inputRemoteUrlStep(state, context, {
-					prompt: 'Please provide a URL for the remote',
+					prompt: '请输入远程 URL',
 					value: state.url,
 				});
 				if (result === StepResultBreak) {
@@ -163,16 +163,16 @@ export class RemoteAddGitCommand extends QuickCommand<State> {
 
 	private *confirmStep(state: StepState<State<Repository>>, context: Context): StepResultGenerator<Flags[]> {
 		const step: QuickPickStep<FlagsQuickPickItem<Flags>> = createConfirmStep(
-			appendReposToTitle(`Confirm ${context.title}`, state, context),
+			appendReposToTitle(`确认${context.title}`, state, context),
 			[
 				createFlagsQuickPickItem<Flags>(state.flags, [], {
 					label: context.title,
-					detail: `Will add remote '${state.name}' for ${state.url}`,
+					detail: `将为 ${state.url} 添加远程“${state.name}”`,
 				}),
 				createFlagsQuickPickItem<Flags>(state.flags, ['-f'], {
-					label: `${context.title} and Fetch`,
+					label: `${context.title}并抓取`,
 					description: '-f',
-					detail: `Will add and fetch remote '${state.name}' for ${state.url}`,
+					detail: `将为 ${state.url} 添加远程“${state.name}”并立即抓取`,
 				}),
 			],
 			context,

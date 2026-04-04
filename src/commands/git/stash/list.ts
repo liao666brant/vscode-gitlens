@@ -36,8 +36,8 @@ export interface StashListGitCommandArgs {
 
 export class StashListGitCommand extends QuickCommand<State> {
 	constructor(container: Container, args?: StashListGitCommandArgs) {
-		super(container, 'stash-list', 'list', 'Stashes', {
-			description: 'lists stashes',
+		super(container, 'stash-list', 'list', '存储列表', {
+			description: '列出存储',
 		});
 
 		this.initialState = { confirm: args?.confirm, ...args?.state };

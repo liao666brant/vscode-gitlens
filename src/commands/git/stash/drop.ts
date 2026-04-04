@@ -45,8 +45,8 @@ export interface StashDropGitCommandArgs {
 
 export class StashDropGitCommand extends QuickCommand<State> {
 	constructor(container: Container, args?: StashDropGitCommandArgs) {
-		super(container, 'stash-drop', 'drop', 'Drop Stashes', {
-			description: 'deletes stash entries',
+		super(container, 'stash-drop', 'drop', '删除存储', {
+			description: '删除存储条目',
 		});
 
 		this.initialState = { confirm: args?.confirm, ...args?.state };
@@ -100,7 +100,7 @@ export class StashDropGitCommand extends QuickCommand<State> {
 				const result: StepResult<GitStashReference[]> = yield* pickStashesStep(state, context, {
 					stash: await state.repo.git.stash?.getStash(),
 					placeholder: (_context, stash) =>
-						stash == null ? `No stashes found in ${state.repo.name}` : 'Choose stashes to delete',
+						stash == null ? `${state.repo.name} 中未找到存储` : '选择要删除的存储',
 					picked: state.references?.map(r => r.ref),
 				});
 				if (result === StepResultBreak) {
@@ -132,7 +132,7 @@ export class StashDropGitCommand extends QuickCommand<State> {
 					Logger.error(ex, context.title);
 					void showGitErrorMessage(
 						ex,
-						`Unable to delete stash@{${ref.stashNumber}}${ref.message ? `: ${ref.message}` : ''}`,
+						`无法删除 stash@{${ref.stashNumber}}${ref.message ? `: ${ref.message}` : ''}`,
 					);
 				}
 			}
@@ -143,15 +143,15 @@ export class StashDropGitCommand extends QuickCommand<State> {
 
 	private *confirmStep(state: StepState<State<Repository>>, context: Context): StepResultGenerator<void> {
 		const step = this.createConfirmStep(
-			appendReposToTitle(`Confirm ${context.title}`, state, context),
+			appendReposToTitle(`确认${context.title}`, state, context),
 			[
 				{
 					label: context.title,
-					detail: `Will delete ${getReferenceLabel(state.references)}`,
+					detail: `将删除 ${getReferenceLabel(state.references)}`,
 				},
 			],
 			undefined,
-			{ placeholder: `Confirm ${context.title}` },
+			{ placeholder: `确认${context.title}` },
 		);
 		const selection: StepSelection<typeof step> = yield step;
 		return canPickStepContinue(step, state, selection) ? undefined : StepResultBreak;

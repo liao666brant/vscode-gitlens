@@ -32,8 +32,8 @@ export interface RemoteGitCommandArgs {
 
 export class RemoteGitCommand extends QuickCommandWithSubcommands<Subcommands, State, RemoteContext> {
 	constructor(container: Container, args?: RemoteGitCommandArgs) {
-		super(container, 'remote', 'remote', 'Remote', {
-			description: 'add, prune, or remove remotes',
+		super(container, 'remote', 'remote', '远程', {
+			description: '添加、清理或移除远程',
 		});
 
 		this.initialState = { confirm: args?.confirm, ...args?.state };

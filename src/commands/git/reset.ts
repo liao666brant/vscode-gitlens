@@ -58,7 +58,7 @@ export interface ResetGitCommandArgs {
 
 export class ResetGitCommand extends QuickCommand<State> {
 	constructor(container: Container, args?: ResetGitCommandArgs) {
-		super(container, 'reset', 'reset', 'Reset', { description: 'resets the current branch to a specified commit' });
+		super(container, 'reset', 'reset', '重置', { description: '将当前分支重置到指定提交' });
 
 		this.initialState = { confirm: args?.confirm ?? true, ...args?.state };
 		this._canSkipConfirm = !this.initialState.confirm;
@@ -84,9 +84,7 @@ export class ResetGitCommand extends QuickCommand<State> {
 			Logger.error(ex, this.title);
 
 			if (mode === 'keep' && (ResetError.is(ex, 'notUpToDate') || ResetError.is(ex, 'wouldOverwriteChanges'))) {
-				void window.showWarningMessage(
-					'Unable to safely reset. Your local changes would be overwritten by the reset. Please commit or stash your changes before trying again.',
-				);
+				void window.showWarningMessage('无法安全重置。重置操作会覆盖你的本地更改。请先提交或存储更改后再试。');
 			} else {
 				void showGitErrorMessage(ex);
 			}
@@ -157,16 +155,16 @@ export class ResetGitCommand extends QuickCommand<State> {
 				const result = yield* pickCommitStep(state, context, {
 					emptyItems: [
 						createDirectiveQuickPickItem(Directive.Cancel, true, {
-							label: 'OK',
-							detail: `${context.destination.name} has no commits`,
+							label: '确定',
+							detail: `${context.destination.name} 没有提交`,
 						}),
 					],
 					log: await log,
 					onDidLoadMore: log => context.cache.set(rev, Promise.resolve(log)),
 					placeholder: (context, log) =>
 						!log?.commits.size
-							? `${context.destination.name} has no commits`
-							: `Choose a commit to reset ${context.destination.name} to`,
+							? `${context.destination.name} 没有提交`
+							: `选择要将 ${context.destination.name} 重置到的提交`,
 					picked: state.reference?.ref,
 				});
 				if (result === StepResultBreak) {
@@ -200,34 +198,33 @@ export class ResetGitCommand extends QuickCommand<State> {
 
 	private *confirmStep(state: StepState<State<Repository>>, context: Context): StepResultGenerator<Flags[]> {
 		const step: QuickPickStep<FlagsQuickPickItem<Flags>> = this.createConfirmStep(
-			appendReposToTitle(`Confirm ${context.title}`, state, context),
+			appendReposToTitle(`确认${context.title}`, state, context),
 			[
 				createFlagsQuickPickItem<Flags>(state.flags, [], {
 					label: this.title,
-					description: '--mixed \u2022 unstages your changes and reset changes',
-					detail: `Will unstage your changes and reset ${getReferenceLabel(context.destination)} to ${getReferenceLabel(
+					description: '--mixed \u2022 取消暂存更改并重置分支',
+					detail: `将取消暂存你的更改，并将 ${getReferenceLabel(context.destination)} 重置到 ${getReferenceLabel(
 						state.reference,
 					)}`,
 				}),
 				createFlagsQuickPickItem<Flags>(state.flags, ['--soft'], {
-					label: `Soft ${this.title}`,
-					description: '--soft \u2022 keeps your changes and stages reset changes',
-					detail: `Will keep your changes and reset ${getReferenceLabel(context.destination)} to ${getReferenceLabel(
+					label: `软${this.title}`,
+					description: '--soft \u2022 保留更改并暂存重置后的差异',
+					detail: `将保留你的更改，并将 ${getReferenceLabel(context.destination)} 重置到 ${getReferenceLabel(
 						state.reference,
 					)}`,
 				}),
 				createFlagsQuickPickItem<Flags>(state.flags, ['--keep'], {
-					label: `Safe Hard ${this.title}`,
-					description:
-						'--keep \u2022 keeps your changes and discards reset changes; aborts if reset changes would overwrite them',
-					detail: `Will safely hard reset ${getReferenceLabel(context.destination)} to ${getReferenceLabel(
+					label: `安全硬${this.title}`,
+					description: '--keep \u2022 保留你的更改并丢弃重置差异；如果会覆盖更改则中止',
+					detail: `将安全地把 ${getReferenceLabel(context.destination)} 硬重置到 ${getReferenceLabel(
 						state.reference,
 					)}`,
 				}),
 				createFlagsQuickPickItem<Flags>(state.flags, ['--hard'], {
-					label: `Hard ${this.title}`,
-					description: '$(warning) --hard \u2022 discards ALL changes',
-					detail: `Will discard ALL changes and reset ${getReferenceLabel(context.destination)} to ${getReferenceLabel(
+					label: `硬${this.title}`,
+					description: '$(warning) --hard \u2022 丢弃所有更改',
+					detail: `将丢弃所有更改，并将 ${getReferenceLabel(context.destination)} 重置到 ${getReferenceLabel(
 						state.reference,
 					)}`,
 				}),

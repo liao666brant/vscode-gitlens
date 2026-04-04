@@ -46,8 +46,8 @@ export interface BranchGitCommandArgs {
 
 export class BranchGitCommand extends QuickCommandWithSubcommands<Subcommands, State, BranchContext> {
 	constructor(container: Container, args?: BranchGitCommandArgs) {
-		super(container, 'branch', 'branch', 'Branch', {
-			description: 'create, change merge target, change upstream, prune, rename, or delete branches',
+		super(container, 'branch', 'branch', '分支', {
+			description: '创建分支、更改合并目标、更改上游、清理、重命名或删除分支',
 		});
 
 		this.initialState = { confirm: args?.confirm, ...args?.state };

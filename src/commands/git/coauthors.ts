@@ -38,8 +38,8 @@ export interface CoAuthorsGitCommandArgs {
 
 export class CoAuthorsGitCommand extends QuickCommand<State> {
 	constructor(container: Container, args?: CoAuthorsGitCommandArgs) {
-		super(container, 'co-authors', 'co-authors', 'Add Co-Authors', {
-			description: 'adds co-authors to a commit message',
+		super(container, 'co-authors', 'co-authors', '添加共同作者', {
+			description: '向提交消息添加共同作者',
 		});
 
 		this.initialState = { confirm: false, ...args?.state };
@@ -141,7 +141,7 @@ export class CoAuthorsGitCommand extends QuickCommand<State> {
 
 				const result = yield* pickContributorsStep(state, context, {
 					picked: state.contributors?.map(c => c.email)?.filter(<T>(email?: T): email is T => email != null),
-					placeholder: 'Choose contributors to add as co-authors',
+					placeholder: '选择要添加为共同作者的贡献者',
 				});
 				if (result === StepResultBreak) {
 					state.contributors = undefined!;

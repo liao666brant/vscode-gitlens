@@ -94,30 +94,24 @@ export class RevertGitCommand extends QuickCommand<State> {
 			Logger.error(ex, this.title);
 
 			if (RevertError.is(ex, 'uncommittedChanges') || RevertError.is(ex, 'wouldOverwriteChanges')) {
-				void window.showWarningMessage(
-					'Unable to revert. Your local changes would be overwritten. Please commit or stash your changes before trying again.',
-				);
+				void window.showWarningMessage('无法撤销。你的本地更改会被覆盖。请先提交或存储更改后再试。');
 				return;
 			}
 
 			if (RevertError.is(ex, 'conflicts')) {
 				this.container.telemetry.sendEvent('gitCommand/conflict', { command: 'revert' });
-				void window.showWarningMessage(
-					'Unable to revert due to conflicts. Resolve the conflicts before continuing, or abort the revert.',
-				);
+				void window.showWarningMessage('由于存在冲突，无法撤销。请先解决冲突再继续，或中止本次撤销。');
 				void executeCommand('gitlens.showCommitsView');
 				return;
 			}
 
 			if (RevertError.is(ex, 'alreadyInProgress')) {
-				void window.showWarningMessage(
-					'Unable to revert. A revert is already in progress. Continue or abort the current revert first.',
-				);
+				void window.showWarningMessage('无法撤销。当前已有撤销操作正在进行。请先继续或中止当前撤销。');
 				void executeCommand('gitlens.showCommitsView');
 				return;
 			}
 
-			void showGitErrorMessage(ex, RevertError.is(ex) ? undefined : 'Unable to revert');
+			void showGitErrorMessage(ex, RevertError.is(ex) ? undefined : '无法撤销');
 		}
 	}
 
@@ -187,14 +181,14 @@ export class RevertGitCommand extends QuickCommand<State> {
 				const result: StepResult<GitRevisionReference[]> = yield* pickCommitsStep(state, context, {
 					emptyItems: [
 						createDirectiveQuickPickItem(Directive.Cancel, true, {
-							label: 'OK',
-							detail: `${context.destination.name} has no commits`,
+							label: '确定',
+							detail: `${context.destination.name} 没有提交`,
 						}),
 					],
 					log: await log,
 					onDidLoadMore: log => context.cache.set(rev, Promise.resolve(log)),
 					placeholder: (context, log) =>
-						!log?.commits.size ? `${context.destination.name} has no commits` : 'Choose commits to revert',
+						!log?.commits.size ? `${context.destination.name} 没有提交` : '选择要撤销的提交',
 					picked: state.references?.map(r => r.ref),
 				});
 				if (result === StepResultBreak) {
@@ -233,17 +227,17 @@ export class RevertGitCommand extends QuickCommand<State> {
 		context: Context,
 	): StepResultGenerator<Flags[]> {
 		const step: QuickPickStep<FlagsQuickPickItem<Flags>> = this.createConfirmStep(
-			appendReposToTitle(`Confirm ${context.title}`, state, context),
+			appendReposToTitle(`确认${context.title}`, state, context),
 			[
 				createFlagsQuickPickItem<Flags>(state.flags, ['--no-edit'], {
 					label: this.title,
 					description: '--no-edit',
-					detail: `Will revert ${getReferenceLabel(state.references)}`,
+					detail: `将撤销 ${getReferenceLabel(state.references)}`,
 				}),
 				createFlagsQuickPickItem<Flags>(state.flags, ['--edit'], {
-					label: `${this.title} & Edit`,
+					label: `${this.title}并编辑`,
 					description: '--edit',
-					detail: `Will revert and edit ${getReferenceLabel(state.references)}`,
+					detail: `将撤销并编辑 ${getReferenceLabel(state.references)}`,
 				}),
 			],
 		);

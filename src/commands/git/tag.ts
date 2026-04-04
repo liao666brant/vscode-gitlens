@@ -28,7 +28,7 @@ export interface TagGitCommandArgs {
 
 export class TagGitCommand extends QuickCommandWithSubcommands<Subcommands, State, TagContext> {
 	constructor(container: Container, args?: TagGitCommandArgs) {
-		super(container, 'tag', 'tag', 'Tag', { description: 'create, or delete tags' });
+		super(container, 'tag', 'tag', '标签', { description: '创建或删除标签' });
 
 		this.initialState = { confirm: args?.confirm, ...args?.state };
 	}

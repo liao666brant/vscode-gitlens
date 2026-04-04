@@ -16,7 +16,6 @@ import { showReferencePicker2 } from '../../quickpicks/referencePicker.js';
 import { configuration } from '../../system/-webview/configuration.js';
 import { getContext } from '../../system/-webview/context.js';
 import { first, join, map } from '../../system/iterable.js';
-import { pluralize } from '../../system/string.js';
 import { SearchResultsNode } from '../../views/nodes/searchResultsNode.js';
 import type { ViewsWithRepositoryFolders } from '../../views/viewBase.js';
 import type {
@@ -99,32 +98,36 @@ export interface SearchGitCommandArgs {
 	state?: Partial<State>;
 }
 
+function formatResultCount(count: number, hasMore: boolean) {
+	return `${hasMore ? `${count}+` : count} 条结果`;
+}
+
 const searchOperatorToTitleMap = new Map<SearchOperators, string>([
-	['', 'Search by Message'],
-	['=:', 'Search by Message'],
-	['message:', 'Search by Message'],
-	['@:', 'Search by Author'],
-	['author:', 'Search by Author'],
-	['#:', 'Search by Commit SHA'],
-	['commit:', 'Search by Commit SHA'],
-	['?:', 'Search by File'],
-	['file:', 'Search by File'],
-	['~:', 'Search by Changes'],
-	['change:', 'Search by Changes'],
-	['is:', 'Search by Type'],
-	['type:', 'Search by Type'],
-	['after:', 'Search After Date'],
-	['since:', 'Search After Date'],
-	['before:', 'Search Before Date'],
-	['until:', 'Search Before Date'],
-	['^:', 'Search by Reference or Range'],
-	['ref:', 'Search by Reference or Range'],
+	['', '按消息搜索'],
+	['=:', '按消息搜索'],
+	['message:', '按消息搜索'],
+	['@:', '按作者搜索'],
+	['author:', '按作者搜索'],
+	['#:', '按提交 SHA 搜索'],
+	['commit:', '按提交 SHA 搜索'],
+	['?:', '按文件搜索'],
+	['file:', '按文件搜索'],
+	['~:', '按更改搜索'],
+	['change:', '按更改搜索'],
+	['is:', '按类型搜索'],
+	['type:', '按类型搜索'],
+	['after:', '搜索某日期之后'],
+	['since:', '搜索某日期之后'],
+	['before:', '搜索某日期之前'],
+	['until:', '搜索某日期之前'],
+	['^:', '按引用或范围搜索'],
+	['ref:', '按引用或范围搜索'],
 ]);
 
 export class SearchGitCommand extends QuickCommand<State> {
 	constructor(container: Container, args?: SearchGitCommandArgs) {
-		super(container, 'search', 'search', 'Commit Search', {
-			description: 'aka grep, searches for commits',
+		super(container, 'search', 'search', '提交搜索', {
+			description: '即 grep，用于搜索提交',
 		});
 
 		this.initialState = { confirm: false, ...args?.state };
@@ -227,7 +230,7 @@ export class SearchGitCommand extends QuickCommand<State> {
 				void this.container.views.searchAndCompare.search(
 					state.repo.path,
 					search,
-					{ label: { label: `for ${state.query}` } },
+					{ label: { label: `搜索 ${state.query}` } },
 					context.resultPromise.then(r => r.log),
 					state.showResultsInSideBar instanceof SearchResultsNode ? state.showResultsInSideBar : undefined,
 				);
@@ -246,19 +249,17 @@ export class SearchGitCommand extends QuickCommand<State> {
 					onDidLoadMore: log => (context.resultPromise = Promise.resolve({ search: search, log: log })),
 					placeholder: (_context, log) =>
 						!log?.commits.size
-							? `No results for ${state.query}`
-							: `${pluralize('result', log.count, {
-									format: c => (log.hasMore ? `${c}+` : String(c)),
-								})} for ${state.query}`,
+							? `${state.query} 没有结果`
+							: `${formatResultCount(log.count, log.hasMore)}，匹配 ${state.query}`,
 					picked: context.commit?.ref,
 					showInSideBarCommand: new ActionQuickPickItem(
-						'$(link-external)  Show Results in Side Bar',
+						'$(link-external)  在侧边栏中显示结果',
 						() =>
 							void this.container.views.searchAndCompare.search(
 								repoPath,
 								search,
 								{
-									label: { label: `for ${state.query}` },
+									label: { label: `搜索 ${state.query}` },
 									reveal: { select: true, focus: false, expand: true },
 								},
 								context.resultPromise?.then(r => r.log),
@@ -271,7 +272,7 @@ export class SearchGitCommand extends QuickCommand<State> {
 								repoPath,
 								search,
 								{
-									label: { label: `for ${state.query}` },
+									label: { label: `搜索 ${state.query}` },
 									reveal: { select: true, focus: false, expand: true },
 								},
 								context.resultPromise?.then(r => r.log),
@@ -325,26 +326,26 @@ export class SearchGitCommand extends QuickCommand<State> {
 		const items: QuickPickItemOfT<Items>[] = [
 			{
 				label: searchOperatorToTitleMap.get('')!,
-				description: `<message> or message:<message> or =:<message> ${GlyphChars.Dash} use quotes to search for phrases`,
+				description: `<message> 或 message:<message> 或 =:<message> ${GlyphChars.Dash} 使用引号可搜索短语`,
 				alwaysShow: true,
 				item: { type: 'add', operator: 'message:' },
 			},
 			{
 				label: searchOperatorToTitleMap.get('author:')!,
-				description: 'author:<author> or @:<author>',
+				description: 'author:<author> 或 @:<author>',
 				buttons: [UseAuthorPickerQuickInputButton],
 				alwaysShow: true,
 				item: { type: 'add', operator: 'author:' },
 			},
 			{
 				label: searchOperatorToTitleMap.get('commit:')!,
-				description: '<sha> or commit:<sha> or #:<sha>',
+				description: '<sha> 或 commit:<sha> 或 #:<sha>',
 				alwaysShow: true,
 				item: { type: 'add', operator: 'commit:' },
 			},
 			{
 				label: searchOperatorToTitleMap.get('ref:')!,
-				description: 'ref:<ref> or ^:<ref> (supports ranges like main..feature)',
+				description: 'ref:<ref> 或 ^:<ref>（支持 main..feature 这类范围）',
 				buttons: [UseRefPickerQuickInputButton],
 				alwaysShow: true,
 				item: { type: 'add', operator: 'ref:' },
@@ -355,34 +356,34 @@ export class SearchGitCommand extends QuickCommand<State> {
 			items.push(
 				{
 					label: searchOperatorToTitleMap.get('type:')!,
-					description: 'type:stash or is:stash; type:tip or is:tip',
+					description: 'type:stash 或 is:stash；type:tip 或 is:tip',
 					alwaysShow: true,
 					item: { type: 'add', operator: 'type:' },
 				},
 				createQuickPickSeparator(),
 				{
 					label: searchOperatorToTitleMap.get('file:')!,
-					description: 'file: glob or ?: glob',
+					description: 'file: glob 或 ?: glob 模式',
 					buttons: [UseFilePickerQuickInputButton, UseFolderPickerQuickInputButton],
 					alwaysShow: true,
 					item: { type: 'add', operator: 'file:' },
 				},
 				{
 					label: searchOperatorToTitleMap.get('change:')!,
-					description: 'change: pattern or ~: pattern',
+					description: 'change: pattern 或 ~: pattern 模式',
 					alwaysShow: true,
 					item: { type: 'add', operator: 'change:' },
 				},
 				createQuickPickSeparator(),
 				{
 					label: searchOperatorToTitleMap.get('after:')!,
-					description: 'after: date or since: date',
+					description: 'after: 日期 或 since: 日期',
 					alwaysShow: true,
 					item: { type: 'add', operator: 'after:' },
 				},
 				{
 					label: searchOperatorToTitleMap.get('before:')!,
-					description: 'before: date or until: date',
+					description: 'before: 日期 或 until: 日期',
 					alwaysShow: true,
 					item: { type: 'add', operator: 'before:' },
 				},
@@ -399,9 +400,7 @@ export class SearchGitCommand extends QuickCommand<State> {
 		const step = createPickStep<(typeof items)[number]>({
 			title: appendReposToTitle(context.title, state, context),
 			placeholder:
-				aiAllowed && state.naturalLanguage
-					? 'e.g. "Show my commits from last month"'
-					: 'e.g. "Updates dependencies" author:eamodio',
+				aiAllowed && state.naturalLanguage ? '例如：“显示我上个月的提交”' : '例如：“更新依赖” author:eamodio',
 			ignoreFocusOut: true,
 			matchOnDescription: true,
 			matchOnDetail: true,
@@ -503,7 +502,7 @@ export class SearchGitCommand extends QuickCommand<State> {
 					const newItems: QuickPickItemOfT<Items>[] = [...items];
 
 					const searchItem: QuickPickItemOfT<Items> = {
-						label: 'Search for',
+						label: '搜索',
 						description: quickpick.value,
 						iconPath: new ThemeIcon('search'),
 						item: { type: 'search', useNaturalLanguage: false },
@@ -512,7 +511,7 @@ export class SearchGitCommand extends QuickCommand<State> {
 
 					if (aiAllowed) {
 						const naturalLanguageItem: QuickPickItemOfT<Items> = {
-							label: 'Search using Natural Language',
+							label: '使用自然语言搜索',
 							description: quickpick.value,
 							iconPath: new ThemeIcon('sparkle'),
 							alwaysShow: true,
@@ -573,8 +572,8 @@ async function updateSearchQuery(
 		const contributors = await showContributorsPicker(
 			context.container,
 			state.repo,
-			'Search by Author',
-			'Choose contributors to include commits from',
+			'按作者搜索',
+			'选择要包含其提交的贡献者',
 			{
 				appendReposToTitle: true,
 				clearButton: true,
@@ -609,8 +608,8 @@ async function updateSearchQuery(
 			canSelectFiles: usePickers.file.type === 'file',
 			canSelectFolders: usePickers.file.type === 'folder',
 			canSelectMany: usePickers.file.type === 'file',
-			title: 'Search by File',
-			openLabel: 'Add to Search',
+			title: '按文件搜索',
+			openLabel: '添加到搜索',
 			defaultUri: state.repo.folder?.uri,
 		});
 
@@ -635,16 +634,11 @@ async function updateSearchQuery(
 
 		const refs = ops.get('ref:');
 
-		const pick = await showReferencePicker2(
-			state.repo.path,
-			'Search by Reference or Range',
-			'Choose a reference to search',
-			{
-				allowedAdditionalInput: { range: true, rev: false },
-				include: ['branches', 'tags', 'HEAD'],
-				picked: refs && first(refs),
-			},
-		);
+		const pick = await showReferencePicker2(state.repo.path, '按引用或范围搜索', '选择要搜索的引用', {
+			allowedAdditionalInput: { range: true, rev: false },
+			include: ['branches', 'tags', 'HEAD'],
+			picked: refs && first(refs),
+		});
 
 		if (pick.value != null) {
 			ops.set('ref:', new Set([pick.value.ref]));
