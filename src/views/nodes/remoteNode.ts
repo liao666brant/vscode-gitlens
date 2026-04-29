@@ -46,7 +46,7 @@ export class RemoteNode extends ViewNode<'remote', ViewsWithRemotes> {
 			filter: b => b.remote && b.name.startsWith(this.remote.name),
 			sort: true,
 		});
-		if (branches.values.length === 0) return [new MessageNode(this.view, this, 'No branches could be found.')];
+		if (branches.values.length === 0) return [new MessageNode(this.view, this, '未找到任何分支。')];
 
 		// TODO@eamodio handle paging
 		const branchNodes = branches.values.map(
@@ -115,19 +115,19 @@ export class RemoteNode extends ViewNode<'remote', ViewsWithRemotes> {
 
 				item.contextValue = `${ContextValues.Remote}${connected ? '+connected' : '+disconnected'}`;
 				tooltip = `\`${this.remote.name}\` \u00a0(${provider.name} ${GlyphChars.Dash} _${
-					connected ? 'connected' : 'not connected'
-				}${this.remote.default ? ', default' : ''}_) \n\n${provider.displayPath}`;
+					connected ? '已连接' : '未连接'
+				}${this.remote.default ? '，默认' : ''}_) \n\n${provider.displayPath}`;
 			} else {
 				item.contextValue = ContextValues.Remote;
 				tooltip = `\`${this.remote.name}\` \u00a0(${provider.name}${
-					this.remote.default ? ', default' : ''
+					this.remote.default ? '，默认' : ''
 				}) \n\n${provider.displayPath}`;
 			}
 		} else {
 			item.contextValue = ContextValues.Remote;
 			item.iconPath = new ThemeIcon('cloud');
 			tooltip = `\`${this.remote.name}\` \u00a0(${this.remote.domain}${
-				this.remote.default ? ', default' : ''
+				this.remote.default ? '，默认' : ''
 			}) \n\n${this.remote.path}`;
 		}
 

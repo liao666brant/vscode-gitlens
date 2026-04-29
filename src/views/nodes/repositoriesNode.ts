@@ -28,7 +28,7 @@ export class RepositoriesNode extends SubscribeableViewNode<
 	getChildren(): ViewNode[] {
 		if (this.children == null) {
 			const repositories = this.view.container.git.openRepositories;
-			if (repositories.length === 0) return [new MessageNode(this.view, this, 'No repositories could be found.')];
+			if (repositories.length === 0) return [new MessageNode(this.view, this, '未找到任何仓库。')];
 
 			this.children = repositories.map(r => new RepositoryNode(GitUri.fromRepoPath(r.path), this.view, this, r));
 		}
@@ -41,7 +41,7 @@ export class RepositoriesNode extends SubscribeableViewNode<
 		const isLinkedWorkspace = isInWorkspacesView && this.view.container.workspaces.currentWorkspaceId != null;
 		const isCurrentLinkedWorkspace = isLinkedWorkspace && this.view.container.workspaces.currentWorkspace != null;
 		const item = new TreeItem(
-			isInWorkspacesView ? 'Current Window' : 'Repositories',
+			isInWorkspacesView ? '当前窗口' : '仓库',
 			isInWorkspacesView ? TreeItemCollapsibleState.Collapsed : TreeItemCollapsibleState.Expanded,
 		);
 
@@ -85,7 +85,7 @@ export class RepositoriesNode extends SubscribeableViewNode<
 		if (repositories.length === 0 && (this.children == null || this.children.length === 0)) return;
 
 		if (repositories.length === 0) {
-			this.children = [new MessageNode(this.view, this, 'No repositories could be found.')];
+			this.children = [new MessageNode(this.view, this, '未找到任何仓库。')];
 			return;
 		}
 

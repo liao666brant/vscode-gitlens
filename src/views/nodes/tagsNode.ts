@@ -34,7 +34,7 @@ export class TagsNode extends CacheableChildrenViewNode<'tags', ViewsWithTagsNod
 	async getChildren(): Promise<ViewNode[]> {
 		if (this.children == null) {
 			const tags = await this.repo.git.tags.getTags({ sort: true });
-			if (tags.values.length === 0) return [new MessageNode(this.view, this, 'No tags could be found.')];
+			if (tags.values.length === 0) return [new MessageNode(this.view, this, '未找到任何标签。')];
 
 			// TODO@eamodio handle paging
 			const tagNodes = tags.values.map(
@@ -57,7 +57,7 @@ export class TagsNode extends CacheableChildrenViewNode<'tags', ViewsWithTagsNod
 	}
 
 	getTreeItem(): TreeItem {
-		const item = new TreeItem('Tags', TreeItemCollapsibleState.Collapsed);
+		const item = new TreeItem('标签', TreeItemCollapsibleState.Collapsed);
 		item.id = this.id;
 		item.contextValue = ContextValues.Tags;
 		item.iconPath = new ThemeIcon('tag');

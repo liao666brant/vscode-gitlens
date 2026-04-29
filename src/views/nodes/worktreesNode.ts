@@ -39,7 +39,7 @@ export class WorktreesNode extends CacheableChildrenViewNode<'worktrees', ViewsW
 			if (!access.allowed) return [];
 
 			const worktrees = await this.repo.git.worktrees?.getWorktrees();
-			if (!worktrees?.length) return [new MessageNode(this.view, this, 'No worktrees could be found.')];
+			if (!worktrees?.length) return [new MessageNode(this.view, this, '未找到任何工作树。')];
 
 			const children = sortWorktrees(worktrees).map(w => new WorktreeNode(this.uri, this.view, this, w));
 
@@ -85,7 +85,7 @@ export class WorktreesNode extends CacheableChildrenViewNode<'worktrees', ViewsW
 		item.contextValue = ContextValues.Worktrees;
 		item.description = access.allowed
 			? undefined
-			: ` ${GlyphChars.Warning}  Unlock this feature for privately hosted repos with GitLens Pro`;
+			: ` ${GlyphChars.Warning}  使用 GitLens Pro 解锁私有托管仓库的此功能`;
 		// TODO@eamodio `folder` icon won't work here for some reason
 		item.iconPath = new ThemeIcon('folder-opened');
 		return item;

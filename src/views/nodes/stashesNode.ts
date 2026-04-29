@@ -33,7 +33,7 @@ export class StashesNode extends CacheableChildrenViewNode<'stashes', ViewsWithS
 	async getChildren(): Promise<ViewNode[]> {
 		if (this.children == null) {
 			const stash = await this.repo.git.stash?.getStash();
-			if (!stash?.stashes.size) return [new MessageNode(this.view, this, 'No stashes could be found.')];
+			if (!stash?.stashes.size) return [new MessageNode(this.view, this, '未找到任何贮藏。')];
 
 			this.children = [...map(stash.stashes.values(), c => new StashNode(this.view, this, c))];
 		}
@@ -42,7 +42,7 @@ export class StashesNode extends CacheableChildrenViewNode<'stashes', ViewsWithS
 	}
 
 	getTreeItem(): TreeItem {
-		const item = new TreeItem('Stashes', TreeItemCollapsibleState.Collapsed);
+		const item = new TreeItem('贮藏', TreeItemCollapsibleState.Collapsed);
 		item.id = this.id;
 		item.contextValue = ContextValues.Stashes;
 		item.iconPath = new ThemeIcon('gitlens-stashes');

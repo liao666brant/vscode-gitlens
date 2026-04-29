@@ -8,7 +8,7 @@ import { trace } from '../../system/decorators/log.js';
 import { map } from '../../system/iterable.js';
 import { joinPaths, normalizePath } from '../../system/path.js';
 import { cancellable, PromiseCancelledError } from '../../system/promise.js';
-import { pluralize, sortCompare } from '../../system/string.js';
+import { sortCompare } from '../../system/string.js';
 import type { ViewsWithCommits } from '../viewBase.js';
 import { ContextValues, getViewNodeId, ViewNode } from './abstract/viewNode.js';
 import type { FileNode } from './folderNode.js';
@@ -135,21 +135,20 @@ export class ResultsFilesNode extends ViewNode<'results-files', ViewsWithCommits
 				this.getFilesQueryResults(),
 				this._options.timeout === false ? undefined : this._options.timeout,
 			);
-			label = results.label;
+			label = getChangedFilesLabel(results.files?.length);
 			if (filter == null && results.stats != null) {
-				description = `${pluralize('addition', results.stats.additions)} (+), ${pluralize(
-					'deletion',
-					results.stats.deletions,
-				)} (-)${results.stats.approximated ? ' *approximated' : ''}`;
+				description = `${results.stats.additions} 处新增 (+), ${results.stats.deletions} 处删除 (-)${
+					results.stats.approximated ? ' *估算值' : ''
+				}`;
 				tooltip = `${label}, ${description}`;
 			}
 
 			if (filter != null) {
-				description = 'Filtered';
+				description = '已筛选';
 				tooltip = `${label} &mdash; ${description}`;
 				files = results.filtered?.get(filter);
 				if (files == null) {
-					label = 'files changed';
+					label = getChangedFilesLabel();
 					icon = new ThemeIcon('ellipsis');
 					// Need to use Collapsed before we have results or the item won't show up in the view until the children are awaited
 					// https://github.com/microsoft/vscode/issues/54806 & https://github.com/microsoft/vscode/issues/62214
@@ -174,7 +173,7 @@ export class ResultsFilesNode extends ViewNode<'results-files', ViewsWithCommits
 				void ex.promise.then(() => queueMicrotask(() => this.triggerChange(false)));
 			}
 
-			label = 'files changed';
+			label = getChangedFilesLabel();
 			icon = new ThemeIcon('ellipsis');
 			// Need to use Collapsed before we have results or the item won't show up in the view until the children are awaited
 			// https://github.com/microsoft/vscode/issues/54806 & https://github.com/microsoft/vscode/issues/62214
@@ -182,7 +181,7 @@ export class ResultsFilesNode extends ViewNode<'results-files', ViewsWithCommits
 		}
 
 		const item = new TreeItem(
-			`${filter != null && files != null ? `Showing ${files.length} of ` : ''}${label}`,
+			`${filter != null && files != null ? `正在显示 ${files.length} 个，共 ` : ''}${label}`,
 			state,
 		);
 		item.description = description;
@@ -251,4 +250,8 @@ export class ResultsFilesNode extends ViewNode<'results-files', ViewsWithCommits
 		results.filtered ??= new Map();
 		results.filtered.set(filter, filterTo == null ? [] : results.files!.filter(f => filterTo.has(f.path)));
 	}
+}
+
+function getChangedFilesLabel(count?: number): string {
+	return count == null ? '文件已更改' : `${count === 0 ? '无' : count} 个文件已更改`;
 }

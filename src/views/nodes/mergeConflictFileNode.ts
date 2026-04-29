@@ -48,7 +48,7 @@ export class MergeConflictFileNode extends ViewFileNode<'conflict-file', ViewsWi
 		item.description = this.description;
 		item.contextValue = `${ContextValues.File}+conflicted`;
 
-		item.tooltip = getFileTooltipMarkdown(this.file, 'in ```Index```');
+		item.tooltip = getFileTooltipMarkdown(this.file, '在 ```索引``` 中');
 
 		// Use the file icon and decorations
 		item.resourceUri = this.view.container.git.getAbsoluteUri(this.file.path, this.repoPath);
@@ -101,7 +101,7 @@ export class MergeConflictFileNode extends ViewFileNode<'conflict-file', ViewsWi
 	override getCommand(): Command {
 		return createCoreCommand(
 			'vscode.open',
-			'Open File',
+			'打开文件',
 			this.view.container.git.getAbsoluteUri(this.file.path, this.repoPath),
 			{
 				preserveFocus: true,

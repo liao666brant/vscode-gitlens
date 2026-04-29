@@ -45,7 +45,7 @@ export class CodeSuggestionsNode extends CacheableChildrenViewNode<'drafts-code-
 	}
 
 	getTreeItem(): TreeItem {
-		const item = new TreeItem('Code Suggestions', TreeItemCollapsibleState.Collapsed);
+		const item = new TreeItem('代码建议', TreeItemCollapsibleState.Collapsed);
 		item.contextValue = ContextValues.CodeSuggestions;
 		return item;
 	}

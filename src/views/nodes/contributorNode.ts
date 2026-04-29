@@ -10,7 +10,6 @@ import { formatNumeric } from '../../system/date.js';
 import { gate } from '../../system/decorators/gate.js';
 import { trace } from '../../system/decorators/log.js';
 import { map } from '../../system/iterable.js';
-import { pluralize } from '../../system/string.js';
 import type { ContactPresence } from '../../vsls/vsls.js';
 import type { ViewsWithContributors } from '../viewBase.js';
 import type { ClipboardType, PageableViewNode } from './abstract/viewNode.js';
@@ -67,7 +66,7 @@ export class ContributorNode extends ViewNode<'contributor', ViewsWithContributo
 
 	async getChildren(): Promise<ViewNode[]> {
 		const log = await this.getLog();
-		if (log == null) return [new MessageNode(this.view, this, 'No commits could be found.')];
+		if (log == null) return [new MessageNode(this.view, this, '未找到任何提交。')];
 
 		const hasPathspec = this.options?.pathspec != null;
 		const useFileRevisionAsCommit = this.options?.pathspec != null && !this.options.pathspec.isFolder;
@@ -101,17 +100,13 @@ export class ContributorNode extends ViewNode<'contributor', ViewsWithContributo
 
 		const shortStats =
 			this.contributor.stats != null
-				? ` (${pluralize('file', this.contributor.stats.files)}, +${formatNumeric(
+				? ` (${this.contributor.stats.files} 个文件, +${formatNumeric(
 						this.contributor.stats.additions,
-					)} -${formatNumeric(this.contributor.stats.deletions)} ${pluralize(
-						'line',
-						this.contributor.stats.additions + this.contributor.stats.deletions,
-						{ only: true },
-					)})`
+					)} -${formatNumeric(this.contributor.stats.deletions)} 行)`
 				: '';
 
 		const item = new TreeItem(
-			this.contributor.current ? `${this.contributor.label} (you)` : this.contributor.label,
+			this.contributor.current ? `${this.contributor.label} (你)` : this.contributor.label,
 			TreeItemCollapsibleState.Collapsed,
 		);
 		item.id = this.id;
@@ -122,10 +117,9 @@ export class ContributorNode extends ViewNode<'contributor', ViewsWithContributo
 			presence != null && presence.status !== 'offline'
 				? `${presence.statusText} ${GlyphChars.Space}${GlyphChars.Dot}${GlyphChars.Space} `
 				: ''
-		}${this.contributor.latestCommitDate != null ? `${this.contributor.formatDateFromNow()}, ` : ''}${pluralize(
-			'commit',
-			this.contributor.contributionCount,
-		)}${shortStats}`;
+		}${this.contributor.latestCommitDate != null ? `${this.contributor.formatDateFromNow()}, ` : ''}${
+			this.contributor.contributionCount
+		} 个提交${shortStats}`;
 
 		let avatarUri;
 		let avatarMarkdown;
@@ -137,9 +131,7 @@ export class ContributorNode extends ViewNode<'contributor', ViewsWithContributo
 			});
 
 			if (presence != null) {
-				const title = `${this.contributor.contributionCount ? 'You are' : `${this.contributor.label} is`} ${
-					presence.status === 'dnd' ? 'in ' : ''
-				}${presence.statusText.toLocaleLowerCase()}`;
+				const title = `${this.contributor.contributionCount ? '你正' : `${this.contributor.label} 正`} ${presence.statusText.toLocaleLowerCase()}`;
 
 				avatarMarkdown = `![${title}](${avatarUri.toString(
 					true,
@@ -155,29 +147,25 @@ export class ContributorNode extends ViewNode<'contributor', ViewsWithContributo
 
 		const stats =
 			this.contributor.stats != null
-				? `\\\n${pluralize('file', this.contributor.stats.files)} changed, ${pluralize(
-						'addition',
-						this.contributor.stats.additions,
-					)}, ${pluralize('deletion', this.contributor.stats.deletions)}`
+				? `\\\n${this.contributor.stats.files} 个文件已更改，${this.contributor.stats.additions} 处新增，${this.contributor.stats.deletions} 处删除`
 				: '';
 
 		const link = this.contributor.email
-			? `__[${this.contributor.name}](mailto:${this.contributor.email} "Email ${this.contributor.label} (${this.contributor.email})")__`
+			? `__[${this.contributor.name}](mailto:${this.contributor.email} "给 ${this.contributor.label} 发邮件 (${this.contributor.email})")__`
 			: `__${this.contributor.label}__`;
 
 		const lastCommitted =
 			this.contributor.latestCommitDate != null
-				? `Last commit ${this.contributor.formatDateFromNow()} (${this.contributor.formatDate()})\\\n`
+				? `上次提交于 ${this.contributor.formatDateFromNow()} (${this.contributor.formatDate()})\\\n`
 				: '';
 
 		const pathContext = this.options?.pathspec?.uri
-			? ` to \`${this.view.container.git.getRelativePath(this.options?.pathspec?.uri, this.uri.repoPath!)}\``
+			? ` 到 \`${this.view.container.git.getRelativePath(this.options?.pathspec?.uri, this.uri.repoPath!)}\``
 			: '';
 		const markdown = new MarkdownString(
-			`${avatarMarkdown ?? ''} &nbsp;${link} \n\n${lastCommitted}${pluralize(
-				'commit',
-				this.contributor.contributionCount,
-			)}${pathContext}${stats}`,
+			`${avatarMarkdown ?? ''} &nbsp;${link} \n\n${lastCommitted}${
+				this.contributor.contributionCount
+			} 个提交${pathContext}${stats}`,
 		);
 		markdown.supportHtml = true;
 		markdown.isTrusted = true;

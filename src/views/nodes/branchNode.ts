@@ -249,7 +249,7 @@ export class BranchNode
 						: undefined,
 				]);
 				const log = getSettledValue(logResult);
-				if (log == null) return [new MessageNode(this.view, this, 'No commits could be found.')];
+				if (log == null) return [new MessageNode(this.view, this, '未找到任何提交。')];
 
 				const children = [];
 
@@ -538,15 +538,15 @@ export async function getBranchNodeParts(
 	const suffixes = [];
 	if (current) {
 		if (branch.rebasing) {
-			suffixes.push('rebasing');
+			suffixes.push('变基中');
 		}
-		suffixes.push('current branch');
+		suffixes.push('当前分支');
 	}
 	if (options?.worktree) {
 		if (options.worktree.opened && !current) {
-			suffixes.push('in an opened worktree');
+			suffixes.push('在已打开的工作树中');
 		} else {
-			suffixes.push('in a worktree');
+			suffixes.push('在工作树中');
 		}
 	}
 
@@ -624,22 +624,24 @@ export async function getBranchNodeParts(
 			description = options?.showAsCommits
 				? `${branch.getTrackingStatus({
 						suffix: pad(GlyphChars.Dot, 1, 1),
-					})}${branch.getNameWithoutRemote()}${branch.rebasing ? ' (Rebasing)' : ''}${pad(arrows, 2, 2)}${
+					})}${branch.getNameWithoutRemote()}${branch.rebasing ? ' (变基中)' : ''}${pad(arrows, 2, 2)}${
 						branch.upstream.name
 					}`
 				: `${branch.getTrackingStatus({ suffix: `${GlyphChars.Space} ` })}${arrows}${GlyphChars.Space} ${
 						branch.upstream.name
 					}`;
 
-			tooltip += `\n\nBranch is ${branch.getTrackingStatus({
-				empty: `${branch.upstream.missing ? 'missing upstream' : 'up to date with'} \\\n $(git-branch) \`${
+			tooltip += `\n\n分支 ${branch.getTrackingStatus({
+				empty: `${branch.upstream.missing ? '缺失上游' : '已与'} \\\n $(git-branch) \`${
 					branch.upstream.name
-				}\`${remote?.provider?.name ? ` on ${remote.provider.name}` : ''}`,
+				}\`${remote?.provider?.name ? `（${remote.provider.name}）` : ''}${
+					branch.upstream.missing ? '' : ' 保持最新'
+				}`,
 				expand: true,
 				icons: true,
 				separator: ', ',
 				suffix: `\\\n$(git-branch) \`${branch.upstream.name}\`${
-					remote?.provider?.name ? ` on ${remote.provider.name}` : ''
+					remote?.provider?.name ? `（${remote.provider.name}）` : ''
 				}`,
 			})}`;
 
@@ -666,14 +668,14 @@ export async function getBranchNodeParts(
 			);
 			const providerName = providers?.length ? providers[0].name : undefined;
 
-			tooltip += `\n\nLocal branch, hasn't been published to ${providerName ?? 'a remote'}`;
+			tooltip += `\n\n本地分支，尚未发布到 ${providerName ?? '远程'}`;
 		}
 	}
 
 	if (branch.date != null) {
 		description = `${description ? `${description}${pad(GlyphChars.Dot, 2, 2)}` : ''}${branch.formattedDate}`;
 
-		tooltip += `\n\nLast commit ${branch.formatDateFromNow()} (${branch.formatDate(
+		tooltip += `\n\n上次提交于 ${branch.formatDateFromNow()} (${branch.formatDate(
 			container.BranchDateFormatting.dateFormat,
 		)})`;
 	}
@@ -683,21 +685,19 @@ export async function getBranchNodeParts(
 	tooltip.isTrusted = true;
 
 	if (branch.starred) {
-		tooltip.appendMarkdown('\\\n$(star-full) Favorited');
+		tooltip.appendMarkdown('\\\n$(star-full) 已收藏');
 	}
 
 	if (options?.pendingPullRequest != null) {
-		tooltip.appendMarkdown(`\n\n$(loading~spin) Loading associated pull request${GlyphChars.Ellipsis}`);
+		tooltip.appendMarkdown(`\n\n$(loading~spin) 正在加载关联的拉取请求${GlyphChars.Ellipsis}`);
 	}
 
 	let label;
 	if (options?.showAsCommits) {
-		label = 'Commits';
+		label = '提交';
 	} else {
 		const branchName = branch.getNameWithoutRemote();
-		label = `${!options?.useBaseNameOnly ? branchName : branch.getBasename()}${
-			branch.rebasing ? ' (Rebasing)' : ''
-		}`;
+		label = `${!options?.useBaseNameOnly ? branchName : branch.getBasename()}${branch.rebasing ? ' (变基中)' : ''}`;
 	}
 
 	let localUnpublished = false;
@@ -761,12 +761,12 @@ export class CommitsCurrentBranchNode extends SubscribeableViewNode<'commits-cur
 	async getTreeItem(): Promise<TreeItem> {
 		const lastFetched = (await this.getLastFetched()) ?? 0;
 		const context = `${this.branch.name}${
-			lastFetched ? ` \u00a0\u2022\u00a0 fetched ${fromNow(new Date(lastFetched))}` : ''
+			lastFetched ? ` \u00a0\u2022\u00a0 获取于 ${fromNow(new Date(lastFetched))}` : ''
 		}`;
 
 		const item = new TreeItem('', TreeItemCollapsibleState.None);
 		item.contextValue = ContextValues.CommitsCurrentBranch;
-		item.description = `\u2014\u00a0\u00a0 on ${context}`;
+		item.description = `\u2014\u00a0\u00a0 在 ${context}`;
 		item.tooltip = context;
 		return item;
 	}

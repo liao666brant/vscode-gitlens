@@ -59,7 +59,7 @@ export class FileHistoryNode
 
 	async getChildren(): Promise<ViewNode[]> {
 		this.view.description = `${this.label}${
-			this.parent instanceof FileHistoryTrackerNode && !this.parent.followingEditor ? ' (pinned)' : ''
+			this.parent instanceof FileHistoryTrackerNode && !this.parent.followingEditor ? ' (已固定)' : ''
 		}`;
 
 		if (this.view.mode === 'contributors') {
@@ -73,12 +73,12 @@ export class FileHistoryNode
 		const item = new TreeItem(label, TreeItemCollapsibleState.Expanded);
 		item.contextValue = ContextValues.FileHistory;
 		item.description = this.uri.directory;
-		item.tooltip = `History of ${this.uri.fileName}\n${this.uri.directory}/${
+		item.tooltip = `${this.uri.fileName} 的历史\n${this.uri.directory}/${
 			this.uri.sha == null ? '' : `\n\n${this.uri.sha}`
 		}`;
 
 		this.view.description = `${label}${
-			this.parent instanceof FileHistoryTrackerNode && !this.parent.followingEditor ? ' (pinned)' : ''
+			this.parent instanceof FileHistoryTrackerNode && !this.parent.followingEditor ? ' (已固定)' : ''
 		}`;
 
 		return item;
@@ -209,7 +209,7 @@ export class FileHistoryNode
 				: svc.getRelativePath(this.uri, this.uri.repoPath),
 			stats: true,
 		});
-		if (!result?.contributors.length) return [new MessageNode(this.view, this, 'No contributors could be found.')];
+		if (!result?.contributors.length) return [new MessageNode(this.view, this, '未找到任何贡献者。')];
 
 		const children = result.contributors.map(
 			contributor =>
@@ -314,7 +314,7 @@ export class FileHistoryNode
 			}
 		}
 
-		if (!children.length) return [new MessageNode(this.view, this, 'No file history could be found.')];
+		if (!children.length) return [new MessageNode(this.view, this, '未找到任何文件历史。')];
 
 		return children;
 	}

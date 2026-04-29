@@ -65,7 +65,7 @@ export class LineHistoryNode
 
 	async getChildren(): Promise<ViewNode[]> {
 		this.view.description = `${this.label}${
-			this.parent instanceof LineHistoryTrackerNode && !this.parent.followingEditor ? ' (pinned)' : ''
+			this.parent instanceof LineHistoryTrackerNode && !this.parent.followingEditor ? ' (已固定)' : ''
 		}`;
 
 		const children: ViewNode[] = [];
@@ -147,7 +147,7 @@ export class LineHistoryNode
 			}
 		}
 
-		if (children.length === 0) return [new MessageNode(this.view, this, 'No line history could be found.')];
+		if (children.length === 0) return [new MessageNode(this.view, this, '未找到任何行历史。')];
 		return children;
 	}
 
@@ -156,12 +156,12 @@ export class LineHistoryNode
 		const item = new TreeItem(label, TreeItemCollapsibleState.Expanded);
 		item.contextValue = ContextValues.LineHistory;
 		item.description = this.uri.directory;
-		item.tooltip = `History of ${this.uri.fileName}${this.lines}\n${this.uri.directory}/${
+		item.tooltip = `${this.uri.fileName}${this.lines} 的历史\n${this.uri.directory}/${
 			this.uri.sha == null ? '' : `\n\n${this.uri.sha}`
 		}`;
 
 		this.view.description = `${label}${
-			this.parent instanceof LineHistoryTrackerNode && !this.parent.followingEditor ? ' (pinned)' : ''
+			this.parent instanceof LineHistoryTrackerNode && !this.parent.followingEditor ? ' (已固定)' : ''
 		}`;
 
 		return item;

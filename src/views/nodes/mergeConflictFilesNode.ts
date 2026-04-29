@@ -4,7 +4,7 @@ import type { GitPausedOperationStatus } from '../../git/models/pausedOperationS
 import type { GitStatusFile } from '../../git/models/statusFile.js';
 import { makeHierarchical } from '../../system/array.js';
 import { joinPaths, normalizePath } from '../../system/path.js';
-import { pluralize, sortCompare } from '../../system/string.js';
+import { sortCompare } from '../../system/string.js';
 import type { ViewsWithCommits } from '../viewBase.js';
 import { ViewNode } from './abstract/viewNode.js';
 import type { FileNode } from './folderNode.js';
@@ -48,7 +48,7 @@ export class MergeConflictFilesNode extends ViewNode<'conflict-files', ViewsWith
 	}
 
 	getTreeItem(): TreeItem {
-		const item = new TreeItem(pluralize('conflict', this.conflicts.length), TreeItemCollapsibleState.Expanded);
+		const item = new TreeItem(`${this.conflicts.length} 个冲突`, TreeItemCollapsibleState.Expanded);
 		return item;
 	}
 }

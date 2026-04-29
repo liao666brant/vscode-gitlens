@@ -13,7 +13,6 @@ import { fromNow } from '../../system/date.js';
 import { gate } from '../../system/decorators/gate.js';
 import { trace } from '../../system/decorators/log.js';
 import { first, last, map } from '../../system/iterable.js';
-import { pluralize } from '../../system/string.js';
 import type { ViewsWithCommits } from '../viewBase.js';
 import type { PageableViewNode } from './abstract/viewNode.js';
 import { ContextValues, getViewNodeId, ViewNode } from './abstract/viewNode.js';
@@ -92,7 +91,7 @@ export class BranchTrackingStatusNode
 				...comparison,
 				ref1: resolved.sha,
 				ref2: comparison.ref1,
-				title: `Changes to push to ${comparison.ref2}`,
+				title: `要推送到 ${comparison.ref2} 的更改`,
 			};
 		}
 
@@ -185,17 +184,17 @@ export class BranchTrackingStatusNode
 		}
 
 		function getBranchStatus(this: BranchTrackingStatusNode, remote: GitRemote | undefined) {
-			return `$(git-branch) \`${this.branch.name}\` is ${getUpstreamStatus(this.status.upstream, {
+			return `$(git-branch) \`${this.branch.name}\` ${getUpstreamStatus(this.status.upstream, {
 				empty: this.status.upstream!.missing
-					? `missing upstream $(git-branch) \`${this.status.upstream!.name}\``
-					: `up to date with $(git-branch) \`${this.status.upstream!.name}\`${
-							remote?.provider?.name ? ` on ${remote.provider.name}` : ''
-						}`,
+					? `缺失上游 $(git-branch) \`${this.status.upstream!.name}\``
+					: `已与 $(git-branch) \`${this.status.upstream!.name}\`${
+							remote?.provider?.name ? `（${remote.provider.name}）` : ''
+						} 保持最新`,
 				expand: true,
 				icons: true,
 				separator: ', ',
 				suffix: ` $(git-branch) \`${this.status.upstream!.name}\`${
-					remote?.provider?.name ? ` on ${remote.provider.name}` : ''
+					remote?.provider?.name ? `（${remote.provider.name}）` : ''
 				}`,
 			})}`;
 		}
@@ -210,13 +209,13 @@ export class BranchTrackingStatusNode
 			case 'ahead': {
 				const remote = await this.branch.getRemote();
 
-				label = 'Outgoing';
-				description = `${pluralize('commit', this.status.upstream!.state.ahead)} to push to ${
+				label = '传出';
+				description = `${this.status.upstream!.state.ahead} 个提交要推送到 ${
 					remote?.name ?? getRemoteNameFromBranchName(this.status.upstream!.name)
 				}`;
-				tooltip = `${pluralize('commit', this.status.upstream!.state.ahead)} to push to \`${
+				tooltip = `${this.status.upstream!.state.ahead} 个提交要推送到 \`${
 					this.status.upstream!.name
-				}\`${remote?.provider?.name ? ` on ${remote?.provider.name}` : ''}\\\n${getBranchStatus.call(
+				}\`${remote?.provider?.name ? `（${remote?.provider.name}）` : ''}\\\n${getBranchStatus.call(
 					this,
 					remote,
 				)}`;
@@ -235,13 +234,13 @@ export class BranchTrackingStatusNode
 			case 'behind': {
 				const remote = await this.branch.getRemote();
 
-				label = 'Incoming';
-				description = `${pluralize('commit', this.status.upstream!.state.behind)} to pull from ${
+				label = '传入';
+				description = `${this.status.upstream!.state.behind} 个提交要从 ${
 					remote?.name ?? getRemoteNameFromBranchName(this.status.upstream!.name)
-				}`;
-				tooltip = `${pluralize('commit', this.status.upstream!.state.behind)} to pull from \`${
+				} 拉取`;
+				tooltip = `${this.status.upstream!.state.behind} 个提交要从 \`${
 					this.status.upstream!.name
-				}\`${remote?.provider?.name ? ` on ${remote.provider.name}` : ''}\\\n${getBranchStatus.call(
+				}\`${remote?.provider?.name ? `（${remote.provider.name}）` : ''} 拉取\\\n${getBranchStatus.call(
 					this,
 					remote,
 				)}`;
@@ -260,9 +259,9 @@ export class BranchTrackingStatusNode
 			case 'same': {
 				const remote = await this.branch.getRemote();
 
-				label = `Up to date with ${remote?.name ?? getRemoteNameFromBranchName(this.status.upstream!.name)}${
-					remote?.provider?.name ? ` on ${remote.provider.name}` : ''
-				}`;
+				label = `已与 ${remote?.name ?? getRemoteNameFromBranchName(this.status.upstream!.name)}${
+					remote?.provider?.name ? `（${remote.provider.name}）` : ''
+				} 保持最新`;
 				description = lastFetched ? fromNow(lastFetched) : '';
 				tooltip = getBranchStatus.call(this, remote);
 
@@ -277,7 +276,7 @@ export class BranchTrackingStatusNode
 			case 'missing': {
 				const remote = await this.branch.getRemote();
 
-				label = `Missing upstream branch${remote?.provider?.name ? ` on ${remote.provider.name}` : ''}`;
+				label = `缺失上游分支${remote?.provider?.name ? `（${remote.provider.name}）` : ''}`;
 				description = this.status.upstream!.name;
 				tooltip = getBranchStatus.call(this, remote);
 
@@ -299,8 +298,8 @@ export class BranchTrackingStatusNode
 				const providers = getHighlanderProviders(remotes);
 				const providerName = providers?.length ? providers[0].name : undefined;
 
-				label = `Publish ${this.branch.name} to ${providerName ?? 'a remote'}`;
-				tooltip = `\`${this.branch.name}\` hasn't been published to ${providerName ?? 'a remote'}`;
+				label = `将 ${this.branch.name} 发布到 ${providerName ?? '远程'}`;
+				tooltip = `\`${this.branch.name}\` 尚未发布到 ${providerName ?? '远程'}`;
 
 				collapsibleState = TreeItemCollapsibleState.None;
 				contextValue = this.root ? ContextValues.StatusNoUpstream : ContextValues.BranchStatusNoUpstream;
@@ -318,7 +317,7 @@ export class BranchTrackingStatusNode
 		item.contextValue = contextValue;
 		item.description = description;
 		if (lastFetched) {
-			tooltip += `\n\nLast fetched ${fromNow(lastFetched)}`;
+			tooltip += `\n\n上次获取于 ${fromNow(lastFetched)}`;
 		}
 		item.iconPath = icon;
 

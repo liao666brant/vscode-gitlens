@@ -39,7 +39,7 @@ export class DraftNode extends ViewNode<'draft', ViewsWithCommits | DraftsView> 
 	}
 
 	getTreeItem(): TreeItem {
-		const label = this.draft.title ?? `Draft (${this.draft.id})`;
+		const label = this.draft.title ?? `草稿 (${this.draft.id})`;
 		const item = new TreeItem(label, TreeItemCollapsibleState.None);
 
 		const dateFormat = configuration.get('defaultDateFormat') ?? 'MMMM Do, YYYY h:mma';
@@ -55,7 +55,7 @@ export class DraftNode extends ViewNode<'draft', ViewsWithCommits | DraftsView> 
 		item.contextValue = contextValue;
 		item.description = fromNow(this.draft.updatedAt);
 		item.command = {
-			title: 'Open',
+			title: '打开',
 			command: 'gitlens.views.draft.open',
 			arguments: [this],
 		};
@@ -69,11 +69,11 @@ export class DraftNode extends ViewNode<'draft', ViewsWithCommits | DraftsView> 
 			avatarUri ?? new ThemeIcon(this.draft.type === 'suggested_pr_change' ? 'gitlens-code-suggestion' : 'cloud');
 
 		item.tooltip = new MarkdownString(
-			`${label}${this.draft.description ? `\\\n${this.draft.description}` : ''}\n\nCreated ${
-				this.draft.author?.name ? ` by ${this.draft.author.name}` : ''
+			`${label}${this.draft.description ? `\\\n${this.draft.description}` : ''}\n\n创建于 ${
+				this.draft.author?.name ? `，由 ${this.draft.author.name} 创建` : ''
 			} ${fromNow(this.draft.createdAt)} &nbsp; _(${formatDate(this.draft.createdAt, dateFormat)})_${
 				showUpdated
-					? ` \\\nLast updated ${fromNow(this.draft.updatedAt)} &nbsp; _(${formatDate(
+					? ` \\\n上次更新于 ${fromNow(this.draft.updatedAt)} &nbsp; _(${formatDate(
 							this.draft.updatedAt,
 							dateFormat,
 						)})_`

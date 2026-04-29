@@ -52,12 +52,8 @@ export class WorkspaceNode extends SubscribeableViewNode<
 						new CommandMessageNode(
 							this.view,
 							this,
-							createCommand<[WorkspaceNode]>(
-								'gitlens.views.workspaces.addRepos',
-								'Add Repositories...',
-								this,
-							),
-							'No repositories',
+							createCommand<[WorkspaceNode]>('gitlens.views.workspaces.addRepos', '添加仓库...', this),
+							'没有仓库',
 						),
 					);
 
@@ -86,7 +82,7 @@ export class WorkspaceNode extends SubscribeableViewNode<
 				}
 			} catch (_ex) {
 				this.children = undefined;
-				return [new MessageNode(this.view, this, 'Failed to load repositories')];
+				return [new MessageNode(this.view, this, '加载仓库失败')];
 			}
 
 			this.children = children;
@@ -110,7 +106,7 @@ export class WorkspaceNode extends SubscribeableViewNode<
 		const descriptionItems = [];
 		if (this.workspace.current) {
 			contextValue += '+current';
-			descriptionItems.push('current');
+			descriptionItems.push('当前');
 			item.resourceUri = createViewDecorationUri('workspace', { current: true });
 		}
 		if (this.workspace.localPath != null) {
@@ -125,11 +121,11 @@ export class WorkspaceNode extends SubscribeableViewNode<
 		item.contextValue = contextValue;
 		item.iconPath = new ThemeIcon(this.workspace.type === 'cloud' ? 'cloud' : 'folder');
 		item.tooltip = `${this.workspace.name}\n${
-			cloud ? `Cloud Workspace ${this.workspace.shared ? '(Shared)' : ''}` : 'Local Workspace'
-		}${cloud && this.workspace.provider != null ? `\nProvider: ${this.workspace.provider}` : ''}`;
+			cloud ? `云工作区 ${this.workspace.shared ? '（已共享）' : ''}` : '本地工作区'
+		}${cloud && this.workspace.provider != null ? `\n提供商：${this.workspace.provider}` : ''}`;
 
 		if (cloud && this.workspace.organizationId != null) {
-			descriptionItems.push('shared');
+			descriptionItems.push('已共享');
 		}
 
 		item.description = descriptionItems.join(', ');

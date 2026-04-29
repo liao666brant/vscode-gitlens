@@ -153,7 +153,7 @@ export class WorktreeNode extends CacheableChildrenViewNode<'worktree', ViewsWit
 						: undefined,
 				]);
 				const log = getSettledValue(logResult);
-				if (log == null) return [new MessageNode(this.view, this, 'No commits could be found.')];
+				if (log == null) return [new MessageNode(this.view, this, '未找到任何提交。')];
 
 				const children = [];
 
@@ -358,47 +358,45 @@ export class WorktreeNode extends CacheableChildrenViewNode<'worktree', ViewsWit
 			this.worktree.isDefault || this.worktree.opened
 				? ` \u00a0(${
 						this.worktree.isDefault
-							? `_default${this.worktree.opened ? ', active_' : '_'}`
+							? `_默认${this.worktree.opened ? '，活动_' : '_'}`
 							: this.worktree.opened
-								? '_active_'
+								? '_活动_'
 								: ''
 					})`
 				: '';
 
 		const folder = `\\\n$(folder) [\`${
 			this.worktree.friendlyPath
-		}\`](command:gitlens.views.revealWorktreeInExplorer?%22${this.worktree.uri.toString()}%22 "Reveal in Explorer")`;
+		}\`](command:gitlens.views.revealWorktreeInExplorer?%22${this.worktree.uri.toString()}%22 "在资源管理器中显示")`;
 
 		switch (this.worktree.type) {
 			case 'bare':
-				tooltip.appendMarkdown(
-					`${this.worktree.isDefault ? '$(pass) ' : ''}Bare Worktree${indicators}${folder}`,
-				);
+				tooltip.appendMarkdown(`${this.worktree.isDefault ? '$(pass) ' : ''}裸工作树${indicators}${folder}`);
 				break;
 
 			case 'branch': {
 				const { branch } = this.worktree;
 				tooltip.appendMarkdown(
-					`${this.worktree.isDefault ? '$(pass) ' : ''}Worktree for $(git-branch) \`${
+					`${this.worktree.isDefault ? '$(pass) ' : ''}$(git-branch) \`${
 						branch?.getNameWithoutRemote() ?? branch?.name
-					}\`${indicators}${folder}`,
+					}\` 的工作树${indicators}${folder}`,
 				);
 
 				if (branch != null && !branch.remote) {
 					if (branch.upstream != null) {
 						const remote = await branch.getRemote();
 						tooltip.appendMarkdown(
-							`\n\nBranch is ${branch.getTrackingStatus({
+							`\n\n分支 ${branch.getTrackingStatus({
 								empty: `${
-									branch.upstream.missing ? 'missing upstream' : 'up to date with'
+									branch.upstream.missing ? '缺失上游' : '已与'
 								} \\\n $(git-branch) \`${branch.upstream.name}\`${
-									remote?.provider?.name ? ` on ${remote.provider.name}` : ''
-								}`,
+									remote?.provider?.name ? `（${remote.provider.name}）` : ''
+								}${branch.upstream.missing ? '' : ' 保持最新'}`,
 								expand: true,
 								icons: true,
 								separator: ', ',
 								suffix: `\\\n$(git-branch) \`${branch.upstream.name}\`${
-									remote?.provider?.name ? ` on ${remote.provider.name}` : ''
+									remote?.provider?.name ? `（${remote.provider.name}）` : ''
 								}`,
 							})}`,
 						);
@@ -408,9 +406,7 @@ export class WorktreeNode extends CacheableChildrenViewNode<'worktree', ViewsWit
 								.getRepositoryService(branch.repoPath)
 								.remotes.getRemotesWithProviders(),
 						);
-						tooltip.appendMarkdown(
-							`\n\nLocal branch, hasn't been published to ${providerName ?? 'a remote'}`,
-						);
+						tooltip.appendMarkdown(`\n\n本地分支，尚未发布到 ${providerName ?? '远程'}`);
 					}
 				}
 
@@ -419,7 +415,7 @@ export class WorktreeNode extends CacheableChildrenViewNode<'worktree', ViewsWit
 
 			case 'detached':
 				tooltip.appendMarkdown(
-					`${this.worktree.isDefault ? '$(pass) ' : ''}Detached Worktree at $(git-commit) ${shortenRevision(
+					`${this.worktree.isDefault ? '$(pass) ' : ''}分离工作树，位于 $(git-commit) ${shortenRevision(
 						this.worktree.sha,
 					)}${indicators}${folder}`,
 				);
@@ -433,8 +429,8 @@ export class WorktreeNode extends CacheableChildrenViewNode<'worktree', ViewsWit
 				this._lazyStatus ??= lazy(() => this.worktree.getStatus());
 				const status = await this._lazyStatus.value;
 				const stats = status?.getFormattedDiffStatus({
-					prefix: 'Has Uncommitted Changes\\\n',
-					empty: 'No Uncommitted Changes',
+					prefix: '有未提交的更改\\\n',
+					empty: '没有未提交的更改',
 					expand: true,
 				});
 				if (stats != null) {
@@ -448,18 +444,18 @@ export class WorktreeNode extends CacheableChildrenViewNode<'worktree', ViewsWit
 		// Add pending pull request indicator
 		const pendingPullRequest = this.getState('pendingPullRequest');
 		if (pendingPullRequest != null) {
-			tooltip.appendMarkdown(`\n\n$(loading~spin) Loading associated pull request${GlyphChars.Ellipsis}`);
+			tooltip.appendMarkdown(`\n\n$(loading~spin) 正在加载关联的拉取请求${GlyphChars.Ellipsis}`);
 		}
 
 		// Add missing worktree warning
 		const { missing } = await this.hasWorkingChanges();
 		if (missing) {
-			tooltip.appendMarkdown(`\n\n${GlyphChars.Warning} Unable to locate worktree path`);
+			tooltip.appendMarkdown(`\n\n${GlyphChars.Warning} 无法定位工作树路径`);
 		}
 
 		// Add favorited indicator
 		if (this.worktree.branch?.starred) {
-			tooltip.appendMarkdown('\n\n$(star-full) Favorited');
+			tooltip.appendMarkdown('\n\n$(star-full) 已收藏');
 		}
 
 		item.tooltip = tooltip;

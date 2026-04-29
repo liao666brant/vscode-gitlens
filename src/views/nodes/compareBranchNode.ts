@@ -14,7 +14,6 @@ import { CommandQuickPickItem } from '../../quickpicks/items/common.js';
 import { showReferencePicker } from '../../quickpicks/referencePicker.js';
 import { debug, trace } from '../../system/decorators/log.js';
 import { weakEvent } from '../../system/event.js';
-import { pluralize } from '../../system/string.js';
 import type { ViewsWithBranches } from '../viewBase.js';
 import type { WorktreesView } from '../worktreesView.js';
 import { SubscribeableViewNode } from './abstract/subscribeableViewNode.js';
@@ -159,7 +158,7 @@ export class CompareBranchNode extends SubscribeableViewNode<
 					this.view,
 					this,
 					this.repoPath,
-					'Behind',
+					'落后',
 					{
 						query: this.getCommitsQuery(behind.range),
 						comparison: behind,
@@ -171,7 +170,7 @@ export class CompareBranchNode extends SubscribeableViewNode<
 						},
 					},
 					{
-						description: pluralize('commit', counts?.right ?? 0),
+						description: `${counts?.right ?? 0} 个提交`,
 						expand: false,
 					},
 				),
@@ -179,7 +178,7 @@ export class CompareBranchNode extends SubscribeableViewNode<
 					this.view,
 					this,
 					this.repoPath,
-					'Ahead',
+					'领先',
 					{
 						query: this.getCommitsQuery(ahead.range),
 						comparison: ahead,
@@ -191,7 +190,7 @@ export class CompareBranchNode extends SubscribeableViewNode<
 						},
 					},
 					{
-						description: pluralize('commit', counts?.left ?? 0),
+						description: `${counts?.left ?? 0} 个提交`,
 						expand: false,
 					},
 				),
@@ -223,20 +222,16 @@ export class CompareBranchNode extends SubscribeableViewNode<
 		let label;
 		let tooltip;
 		if (this._compareWith == null) {
-			label = `Compare ${
-				this.compareWithWorkingTree ? 'Working Tree' : this.branch.name
-			} with <branch, tag, or ref>`;
+			label = `将 ${this.compareWithWorkingTree ? '工作树' : this.branch.name} 与 <分支、标签或引用> 比较`;
 			state = TreeItemCollapsibleState.None;
-			tooltip = `Click to compare ${
-				this.compareWithWorkingTree ? 'Working Tree' : this.branch.name
-			} with a branch, tag, or ref`;
+			tooltip = `点击将 ${this.compareWithWorkingTree ? '工作树' : this.branch.name} 与分支、标签或引用比较`;
 		} else {
-			label = `Compare ${this.compareWithWorkingTree ? 'Working Tree' : this.branch.name} with ${
+			label = `将 ${this.compareWithWorkingTree ? '工作树' : this.branch.name} 与 ${
 				this._compareWith.label ??
 				shortenRevision(this._compareWith.ref, {
-					strings: { working: 'Working Tree' },
+					strings: { working: '工作树' },
 				})
-			}`;
+			} 比较`;
 			state = TreeItemCollapsibleState.Collapsed;
 		}
 
@@ -250,9 +245,9 @@ export class CompareBranchNode extends SubscribeableViewNode<
 
 		if (this._compareWith == null) {
 			item.command = {
-				title: `Compare ${this.branch.name}${this.compareWithWorkingTree ? ' (working)' : ''} with${
+				title: `将 ${this.branch.name}${this.compareWithWorkingTree ? '（工作树）' : ''} 与${
 					GlyphChars.Ellipsis
-				}`,
+				}比较`,
 				command: 'gitlens.views.editNode',
 				arguments: [this],
 			};
@@ -283,8 +278,8 @@ export class CompareBranchNode extends SubscribeableViewNode<
 	async edit(): Promise<void> {
 		const pick = await showReferencePicker(
 			this.branch.repoPath,
-			`Compare ${this.branch.name}${this.compareWithWorkingTree ? ' (working)' : ''} with`,
-			'Choose a reference (branch, tag, etc) to compare with',
+			`将 ${this.branch.name}${this.compareWithWorkingTree ? '（工作树）' : ''} 与之比较`,
+			'选择要比较的引用（分支、标签等）',
 			{
 				allowedAdditionalInput: { rev: true },
 				picked: this.branch.ref,

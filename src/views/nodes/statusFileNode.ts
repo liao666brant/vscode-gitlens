@@ -152,7 +152,7 @@ export class StatusFileNode extends ViewRefFileNode<'status-file', ViewsWithComm
 		function getStatusSuffix(f: GitFileWithCommit) {
 			return isSingleChange
 				? ''
-				: `in \`\`\`${f.commit.isUncommitted ? '' : '$(git-commit) '}${shortenRevision(f.commit.sha)}\`\`\``;
+				: `在 \`\`\`${f.commit.isUncommitted ? '' : '$(git-commit) '}${shortenRevision(f.commit.sha)}\`\`\` 中`;
 		}
 
 		let tooltip = this._files
@@ -196,7 +196,7 @@ export class StatusFileNode extends ViewRefFileNode<'status-file', ViewsWithComm
 		if ((this._hasStagedChanges || this._hasUnstagedChanges) && this._files.length === 1) {
 			return createCommand<[undefined, DiffWithPreviousCommandArgs]>(
 				'gitlens.diffWithPrevious:views',
-				'Open Changes with Previous Revision',
+				'打开与上一修订版的更改',
 				undefined,
 				{
 					commit: this.commit,
@@ -261,6 +261,6 @@ export class StatusFileNode extends ViewRefFileNode<'status-file', ViewsWithComm
 			}
 		}
 
-		return createCommand<[DiffWithCommandArgs]>('gitlens.diffWith', 'Open Changes', commandArgs);
+		return createCommand<[DiffWithCommandArgs]>('gitlens.diffWith', '打开更改', commandArgs);
 	}
 }

@@ -11,7 +11,6 @@ import { createRevisionRange, shortenRevision } from '../../git/utils/revision.u
 import { gate } from '../../system/decorators/gate.js';
 import { debug, trace } from '../../system/decorators/log.js';
 import { weakEvent } from '../../system/event.js';
-import { pluralize } from '../../system/string.js';
 import type { SearchAndCompareView } from '../searchAndCompareView.js';
 import type { View } from '../viewBase.js';
 import { SubscribeableViewNode } from './abstract/subscribeableViewNode.js';
@@ -146,7 +145,7 @@ export class CompareResultsNode extends SubscribeableViewNode<
 					this.view,
 					this,
 					this.repoPath,
-					'Behind',
+					'落后',
 					{
 						query: this.getCommitsQuery(behind.range),
 						comparison: behind,
@@ -158,7 +157,7 @@ export class CompareResultsNode extends SubscribeableViewNode<
 						},
 					},
 					{
-						description: pluralize('commit', counts?.right ?? 0),
+						description: `${counts?.right ?? 0} 个提交`,
 						expand: false,
 					},
 				),
@@ -166,7 +165,7 @@ export class CompareResultsNode extends SubscribeableViewNode<
 					this.view,
 					this,
 					this.repoPath,
-					'Ahead',
+					'领先',
 					{
 						query: this.getCommitsQuery(ahead.range),
 						comparison: ahead,
@@ -178,7 +177,7 @@ export class CompareResultsNode extends SubscribeableViewNode<
 						},
 					},
 					{
-						description: pluralize('commit', counts?.left ?? 0),
+						description: `${counts?.left ?? 0} 个提交`,
 						expand: false,
 					},
 				),
@@ -213,11 +212,8 @@ export class CompareResultsNode extends SubscribeableViewNode<
 		}
 
 		const item = new TreeItem(
-			`Comparing ${
-				this._ref.label ?? shortenRevision(this._ref.ref, { strings: { working: 'Working Tree' } })
-			} with ${
-				this._compareWith.label ??
-				shortenRevision(this._compareWith.ref, { strings: { working: 'Working Tree' } })
+			`正在比较 ${this._ref.label ?? shortenRevision(this._ref.ref, { strings: { working: '工作树' } })} 与 ${
+				this._compareWith.label ?? shortenRevision(this._compareWith.ref, { strings: { working: '工作树' } })
 			}`,
 			TreeItemCollapsibleState.Collapsed,
 		);
@@ -252,7 +248,7 @@ export class CompareResultsNode extends SubscribeableViewNode<
 	@debug()
 	async swap(): Promise<void> {
 		if (this._ref.ref === '') {
-			void window.showErrorMessage('Cannot swap comparisons with the working tree');
+			void window.showErrorMessage('无法与工作树交换比较方向');
 			return;
 		}
 

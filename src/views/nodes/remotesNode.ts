@@ -33,7 +33,7 @@ export class RemotesNode extends CacheableChildrenViewNode<'remotes', ViewsWithR
 		if (this.children == null) {
 			const remotes = await this.repo.git.remotes.getRemotes({ sort: true });
 			if (!remotes.length) {
-				return [new MessageNode(this.view, this, 'No remotes could be found')];
+				return [new MessageNode(this.view, this, '未找到任何远程。')];
 			}
 
 			const expand = remotes.length === 1;
@@ -46,7 +46,7 @@ export class RemotesNode extends CacheableChildrenViewNode<'remotes', ViewsWithR
 	}
 
 	getTreeItem(): TreeItem {
-		const item = new TreeItem('Remotes', TreeItemCollapsibleState.Collapsed);
+		const item = new TreeItem('远程', TreeItemCollapsibleState.Collapsed);
 		item.id = this.id;
 		item.contextValue = ContextValues.Remotes;
 		item.iconPath = new ThemeIcon('cloud');

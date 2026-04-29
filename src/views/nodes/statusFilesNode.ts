@@ -8,7 +8,7 @@ import type { GitStatusFile } from '../../git/models/statusFile.js';
 import { makeHierarchical } from '../../system/array.js';
 import { filter, flatMap, groupBy, map } from '../../system/iterable.js';
 import { joinPaths, normalizePath } from '../../system/path.js';
-import { pluralize, sortCompare } from '../../system/string.js';
+import { sortCompare } from '../../system/string.js';
 import type { ViewsWithWorkingTree } from '../viewBase.js';
 import { ContextValues, getViewNodeId, ViewNode } from './abstract/viewNode.js';
 import type { FileNode } from './folderNode.js';
@@ -128,9 +128,9 @@ export class StatusFilesNode extends ViewNode<'status-files', ViewsWithWorkingTr
 			}
 		}
 
-		const label = files === -1 ? '?? files changed' : `${pluralize('file', files)} changed`;
+		const label = files === -1 ? '?? 个文件已更改' : `${files} 个文件已更改`;
 		const item = new TreeItem(label, TreeItemCollapsibleState.Collapsed);
-		item.description = 'working tree';
+		item.description = '工作树';
 		item.id = this.id;
 		item.contextValue = ContextValues.StatusFiles;
 		item.iconPath = {

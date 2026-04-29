@@ -76,7 +76,7 @@ export class MergeConflictCurrentChangesNode extends ViewNode<
 			lhs: {
 				sha: this.status.mergeBase,
 				uri: GitUri.fromFile(this.file, this.status.repoPath, undefined, true),
-				title: `${this.file.path} (merge-base)`,
+				title: `${this.file.path}（合并基准）`,
 			},
 			rhs: {
 				sha: 'HEAD',
@@ -102,7 +102,7 @@ export class MergeConflictCurrentChangesNode extends ViewNode<
 		if (cancellation.isCancellationRequested) return undefined;
 
 		const markdown = new MarkdownString(
-			`Current changes on ${getReferenceLabel(this.currentRef, { label: false })}\\\n$(file)${
+			`${getReferenceLabel(this.currentRef, { label: false })} 上的当前更改\\\n$(file)${
 				GlyphChars.Space
 			}${this.file.path}`,
 			true,

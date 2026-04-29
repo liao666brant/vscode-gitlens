@@ -66,7 +66,7 @@ export class FileHistoryTrackerNode extends SubscribeableViewNode<'file-history-
 			if (!this.hasUri) {
 				this.view.description = this.view.grouped ? this.view.groupedLabel : undefined;
 
-				this.view.message = 'There are no editors open that can provide file history information.';
+				this.view.message = '当前没有打开可提供文件历史信息的编辑器。';
 				this.children = undefined;
 				return [];
 			}
@@ -81,10 +81,10 @@ export class FileHistoryTrackerNode extends SubscribeableViewNode<'file-history-
 			const folder = await svc.isFolderUri(this.uri);
 
 			if (this.view.grouped) {
-				this.view.groupedLabel = (folder ? 'Folder History' : 'File History').toLocaleLowerCase();
+				this.view.groupedLabel = folder ? '文件夹历史' : '文件历史';
 				this.view.description = this.view.groupedLabel;
 			} else {
-				this.view.title = folder ? 'Folder History' : 'File History';
+				this.view.title = folder ? '文件夹历史' : '文件历史';
 			}
 
 			let branch;
@@ -107,7 +107,7 @@ export class FileHistoryTrackerNode extends SubscribeableViewNode<'file-history-
 	}
 
 	getTreeItem(): TreeItem {
-		const item = new TreeItem('File History', TreeItemCollapsibleState.Expanded);
+		const item = new TreeItem('文件历史', TreeItemCollapsibleState.Expanded);
 		item.contextValue = ContextValues.ActiveFileHistory;
 
 		return item;
@@ -157,16 +157,11 @@ export class FileHistoryTrackerNode extends SubscribeableViewNode<'file-history-
 	@gate()
 	@debug()
 	async changeBase(): Promise<void> {
-		const pick = await showReferencePicker(
-			this.uri.repoPath!,
-			'Change File History Base',
-			'Choose a reference to set as the new base',
-			{
-				allowedAdditionalInput: { rev: true },
-				picked: this._base,
-				sort: { branches: { current: true }, tags: {} },
-			},
-		);
+		const pick = await showReferencePicker(this.uri.repoPath!, '更改文件历史基准', '选择一个引用作为新的基准', {
+			allowedAdditionalInput: { rev: true },
+			picked: this._base,
+			sort: { branches: { current: true }, tags: {} },
+		});
 		if (pick == null) return;
 
 		if (isBranchReference(pick)) {

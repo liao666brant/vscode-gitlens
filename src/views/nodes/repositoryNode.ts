@@ -214,7 +214,7 @@ export class RepositoryNode extends SubscribeableViewNode<'repository', ViewsWit
 
 		let description;
 		let tooltip = `${this.repo.name ?? this.uri.repoPath ?? ''}${
-			lastFetched ? `${pad(GlyphChars.Dash, 2, 2)}Last fetched ${formatLastFetched(lastFetched, false)}` : ''
+			lastFetched ? `${pad(GlyphChars.Dash, 2, 2)}上次获取于 ${formatLastFetched(lastFetched, false)}` : ''
 		}${this.repo.name ? `\\\n${this.uri.repoPath}` : ''}`;
 		let workingStatus = '';
 
@@ -242,7 +242,7 @@ export class RepositoryNode extends SubscribeableViewNode<'repository', ViewsWit
 
 		const status = await this._status;
 		if (status != null) {
-			tooltip += `\n\nCurrent branch $(git-branch) ${status.branch}${status.rebasing ? ' (Rebasing)' : ''}`;
+			tooltip += `\n\n当前分支 $(git-branch) ${status.branch}${status.rebasing ? ' (变基中)' : ''}`;
 
 			if (this.view.config.includeWorkingTree && status.files.length !== 0) {
 				workingStatus = status.getFormattedDiffStatus({
@@ -255,7 +255,7 @@ export class RepositoryNode extends SubscribeableViewNode<'repository', ViewsWit
 				suffix: pad(GlyphChars.Dot, 1, 1),
 			});
 
-			description = `${upstreamStatus}${status.branch}${status.rebasing ? ' (Rebasing)' : ''}${workingStatus}`;
+			description = `${upstreamStatus}${status.branch}${status.rebasing ? ' (变基中)' : ''}${workingStatus}`;
 
 			let providerName;
 			if (status.upstream != null) {
@@ -267,14 +267,14 @@ export class RepositoryNode extends SubscribeableViewNode<'repository', ViewsWit
 			}
 
 			if (status.upstream != null) {
-				tooltip += ` is ${status.getUpstreamStatus({
-					empty: `up to date with $(git-branch) ${status.upstream.name}${
-						providerName ? ` on ${providerName}` : ''
-					}`,
+				tooltip += ` ${status.getUpstreamStatus({
+					empty: `已与 $(git-branch) ${status.upstream.name}${
+						providerName ? `（${providerName}）` : ''
+					} 保持最新`,
 					expand: true,
 					icons: true,
 					separator: ', ',
-					suffix: ` $(git-branch) ${status.upstream.name}${providerName ? ` on ${providerName}` : ''}`,
+					suffix: ` $(git-branch) ${status.upstream.name}${providerName ? `（${providerName}）` : ''}`,
 				})}`;
 
 				if (status.upstream.state.behind) {
@@ -286,7 +286,7 @@ export class RepositoryNode extends SubscribeableViewNode<'repository', ViewsWit
 			}
 
 			if (workingStatus) {
-				tooltip += `\n\nWorking tree has uncommitted changes${status.getFormattedDiffStatus({
+				tooltip += `\n\n工作树有未提交的更改${status.getFormattedDiffStatus({
 					expand: true,
 					prefix: '\n',
 					separator: '\n',
@@ -295,7 +295,7 @@ export class RepositoryNode extends SubscribeableViewNode<'repository', ViewsWit
 		}
 
 		if (workspace != null) {
-			tooltip += `\n\nRepository is ${this.repo.closed ? 'not ' : ''}open in the current window`;
+			tooltip += `\n\n仓库${this.repo.closed ? '未' : '已'}在当前窗口中打开`;
 		}
 
 		const item = new TreeItem(
@@ -307,7 +307,7 @@ export class RepositoryNode extends SubscribeableViewNode<'repository', ViewsWit
 		item.id = this.id;
 		item.contextValue = contextValue;
 		item.description = `${description ?? ''}${
-			lastFetched ? `${pad(GlyphChars.Dot, 1, 1)}Last fetched ${formatLastFetched(lastFetched)}` : ''
+			lastFetched ? `${pad(GlyphChars.Dot, 1, 1)}上次获取于 ${formatLastFetched(lastFetched)}` : ''
 		}`;
 		item.iconPath = getRepositoryStatusIconPath(this.view.container, this.repo, status);
 

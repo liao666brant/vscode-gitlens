@@ -19,7 +19,6 @@ import {
 } from '../../git/utils/pullRequest.utils.js';
 import { createRevisionRange } from '../../git/utils/revision.utils.js';
 import { createCommand } from '../../system/-webview/command.js';
-import { pluralize } from '../../system/string.js';
 import type { ViewsWithCommits } from '../viewBase.js';
 import { createViewDecorationUri } from '../viewDecorationProvider.js';
 import { CacheableChildrenViewNode } from './abstract/cacheableChildrenViewNode.js';
@@ -132,7 +131,7 @@ export class PullRequestNode extends CacheableChildrenViewNode<'pullrequest', Vi
 		if (this.pullRequest.refs?.base != null && this.pullRequest.refs.head != null) {
 			item.contextValue += `+refs`;
 		}
-		item.description = `${this.pullRequest.state}, ${this.pullRequest.formatDateFromNow()}`;
+		item.description = `${getPullRequestStateLabel(this.pullRequest.state)}, ${this.pullRequest.formatDateFromNow()}`;
 		item.iconPath = getIssueOrPullRequestThemeIcon(this.pullRequest);
 		item.tooltip = getPullRequestTooltip(this.pullRequest, this.context);
 
@@ -160,9 +159,9 @@ export async function getPullRequestChildren(
 			new MessageNode(
 				view,
 				parent,
-				`Unable to locate repository '${pullRequest.refs?.head.owner ?? pullRequest.repository.owner}/${
+				`无法定位仓库“${pullRequest.refs?.head.owner ?? pullRequest.repository.owner}/${
 					pullRequest.refs?.head.repo ?? pullRequest.repository.repo
-				}'.`,
+				}”。`,
 			),
 		];
 	}
@@ -177,14 +176,14 @@ export async function getPullRequestChildren(
 				parent,
 				createCommand<[ViewNode, PullRequest, Repository]>(
 					'gitlens.views.addPullRequestRemote',
-					'Add Pull Request Remote...',
+					'添加拉取请求远程...',
 					parent,
 					pullRequest,
 					repo,
 				),
-				`Unable to find a remote for '${identity.provider.repoDomain}'`,
+				`找不到“${identity.provider.repoDomain}”的远程`,
 				undefined,
-				`Click to add a remote for '${identity.provider.repoDomain}'`,
+				`点击为“${identity.provider.repoDomain}”添加远程`,
 				new ThemeIcon(
 					'question',
 					new ThemeColor('gitlens.decorations.workspaceRepoMissingForegroundColor' satisfies Colors),
@@ -198,11 +197,11 @@ export async function getPullRequestChildren(
 	const counts = await ensurePullRequestRefs(
 		pullRequest,
 		repo,
-		{ promptMessage: `Unable to open details for PR #${pullRequest.id} because of a missing remote.` },
+		{ promptMessage: `由于缺少远程，无法打开 PR #${pullRequest.id} 的详细信息。` },
 		refs,
 	);
 	if (!counts?.right) {
-		return [new MessageNode(view, parent, 'No commits could be found.')];
+		return [new MessageNode(view, parent, '未找到任何提交。')];
 	}
 
 	const comparison = {
@@ -216,7 +215,7 @@ export async function getPullRequestChildren(
 			view,
 			parent,
 			repoPath,
-			'Commits',
+			'提交',
 			{
 				query: getCommitsQuery(view.container, repoPath, comparison.range),
 				comparison: comparison,
@@ -224,7 +223,7 @@ export async function getPullRequestChildren(
 			{
 				autolinks: false,
 				expand: false,
-				description: pluralize('commit', counts?.right ?? 0),
+				description: `${counts?.right ?? 0} 个提交`,
 			},
 		),
 		new CodeSuggestionsNode(view, parent, repoPath, pullRequest),
@@ -258,24 +257,37 @@ export function getPullRequestTooltip(
 
 	if (context?.commit != null) {
 		tooltip.appendMarkdown(
-			`Commit \`$(git-commit) ${context.commit.shortSha}\` was introduced by $(git-pull-request) PR #${pullRequest.id}\n\n`,
+			`提交 \`$(git-commit) ${context.commit.shortSha}\` 由 $(git-pull-request) PR #${pullRequest.id} 引入\n\n`,
 		);
 	}
 
-	const linkTitle = ` "Open Pull Request \\#${pullRequest.id} on ${pullRequest.provider.name}"`;
+	const linkTitle = ` "在 ${pullRequest.provider.name} 上打开拉取请求 \\#${pullRequest.id}"`;
 	tooltip.appendMarkdown(
 		`${getIssueOrPullRequestMarkdownIcon(pullRequest)} [**${pullRequest.title.trim()}**](${
 			pullRequest.url
-		}${linkTitle}) \\\n[${context?.idPrefix ?? ''}#${pullRequest.id}](${pullRequest.url}${linkTitle}) by [@${
+		}${linkTitle}) \\\n[${context?.idPrefix ?? ''}#${pullRequest.id}](${pullRequest.url}${linkTitle}) 由 [@${
 			pullRequest.author.name
-		}](${pullRequest.author.url} "Open @${pullRequest.author.name} on ${
+		}](${pullRequest.author.url} "在 ${
 			pullRequest.provider.name
-		}") was ${pullRequest.state.toLowerCase()} ${pullRequest.formatDateFromNow()}`,
+		} 上打开 @${pullRequest.author.name}") 于 ${pullRequest.formatDateFromNow()} ${getPullRequestStateLabel(
+			pullRequest.state,
+		)}`,
 	);
 	if (context?.codeSuggestionsCount != null && context.codeSuggestionsCount > 0) {
-		tooltip.appendMarkdown(
-			`\n\n$(gitlens-code-suggestion) ${pluralize('code suggestion', context.codeSuggestionsCount)}`,
-		);
+		tooltip.appendMarkdown(`\n\n$(gitlens-code-suggestion) ${context.codeSuggestionsCount} 条代码建议`);
 	}
 	return tooltip;
+}
+
+function getPullRequestStateLabel(state: PullRequest['state']): string {
+	switch (state) {
+		case 'closed':
+			return '已关闭';
+		case 'merged':
+			return '已合并';
+		case 'opened':
+			return '已打开';
+		default:
+			return state;
+	}
 }

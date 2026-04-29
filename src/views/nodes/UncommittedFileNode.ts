@@ -107,7 +107,7 @@ export class UncommittedFileNode extends ViewRefFileNode<'uncommitted-file', Vie
 	override getCommand(): Command | undefined {
 		return createCommand<[undefined, DiffWithPreviousCommandArgs]>(
 			'gitlens.diffWithPrevious:views',
-			'Open Changes with Previous Revision',
+			'打开与上一修订版的更改',
 			undefined,
 			{
 				uri: GitUri.fromFile(this.file, this.repoPath),

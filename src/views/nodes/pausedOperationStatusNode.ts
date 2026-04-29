@@ -4,15 +4,37 @@ import { GitUri } from '../../git/gitUri.js';
 import type { GitBranch } from '../../git/models/branch.js';
 import type { GitPausedOperationStatus } from '../../git/models/pausedOperationStatus.js';
 import type { GitStatus } from '../../git/models/status.js';
-import { pausedOperationStatusStringsByType } from '../../git/utils/pausedOperationStatus.utils.js';
 import { getReferenceLabel } from '../../git/utils/reference.utils.js';
 import { Lazy } from '../../system/lazy.js';
-import { pluralize } from '../../system/string.js';
 import type { ViewsWithCommits } from '../viewBase.js';
 import { createViewDecorationUri } from '../viewDecorationProvider.js';
 import { ContextValues, getViewNodeId, ViewNode } from './abstract/viewNode.js';
 import { MergeConflictFilesNode } from './mergeConflictFilesNode.js';
 import { RebaseCommitNode } from './rebaseCommitNode.js';
+
+const pausedOperationStatusStringsByType = {
+	'cherry-pick': {
+		label: '正在拣选',
+		conflicts: '解决冲突以继续拣选',
+		directionality: '到',
+	},
+	merge: {
+		label: '正在合并',
+		conflicts: '解决冲突以继续合并',
+		directionality: '到',
+	},
+	rebase: {
+		label: '正在变基',
+		conflicts: '解决冲突以继续变基',
+		directionality: '到',
+		pending: '待变基',
+	},
+	revert: {
+		label: '正在还原',
+		conflicts: '解决冲突以继续还原',
+		directionality: '在',
+	},
+} as const;
 
 export class PausedOperationStatusNode extends ViewNode<'paused-operation-status', ViewsWithCommits> {
 	private _status: GitStatus | undefined;
@@ -103,7 +125,7 @@ export class PausedOperationStatusNode extends ViewNode<'paused-operation-status
 				break;
 		}
 
-		item.description = hasConflicts ? pluralize('conflict', status.conflicts.length) : undefined;
+		item.description = hasConflicts ? `${status.conflicts.length} 个冲突` : undefined;
 
 		const iconColor: Colors = hasConflicts
 			? 'gitlens.decorations.statusMergingOrRebasingConflictForegroundColor'
@@ -157,7 +179,7 @@ export class PausedOperationStatusNode extends ViewNode<'paused-operation-status
 			tooltip = `${strings.label} ${getReferenceLabel(this.pausedOpStatus.incoming, { label: false })} ${
 				strings.directionality
 			} ${getReferenceLabel(this.pausedOpStatus.current, { label: false })}${
-				hasConflicts ? `\n\nResolve ${pluralize('conflict', status.conflicts.length)} before continuing` : ''
+				hasConflicts ? `\n\n继续前请先解决 ${status.conflicts.length} 个冲突` : ''
 			}`;
 		} else {
 			const { hasStarted } = this.pausedOpStatus;
@@ -171,13 +193,9 @@ export class PausedOperationStatusNode extends ViewNode<'paused-operation-status
 				label: false,
 			})}${
 				hasStarted
-					? `\n\nPaused at step ${this.pausedOpStatus.steps.current.number} of ${
+					? `\n\n已暂停在第 ${this.pausedOpStatus.steps.current.number}/${
 							this.pausedOpStatus.steps.total
-						}${
-							hasConflicts
-								? `\\\nResolve ${pluralize('conflict', status.conflicts.length)} before continuing`
-								: ''
-						}`
+						} 步${hasConflicts ? `\\\n继续前请先解决 ${status.conflicts.length} 个冲突` : ''}`
 					: ''
 			}`;
 		}

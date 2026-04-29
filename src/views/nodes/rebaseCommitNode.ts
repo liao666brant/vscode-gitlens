@@ -7,7 +7,7 @@ export class RebaseCommitNode extends CommitNode {
 	// eslint-disable-next-line @typescript-eslint/require-await
 	override async getTreeItem(): Promise<TreeItem> {
 		const item = new TreeItem(
-			`Paused at commit ${this.commit.shortSha}`,
+			`已暂停在提交 ${this.commit.shortSha}`,
 			this._options.expand ? TreeItemCollapsibleState.Expanded : TreeItemCollapsibleState.Collapsed,
 		);
 		item.id = this.id;
@@ -21,6 +21,6 @@ export class RebaseCommitNode extends CommitNode {
 	}
 
 	protected override getTooltipTemplate(): string {
-		return `Rebase paused at ${super.getTooltipTemplate()}`;
+		return `变基已暂停在 ${super.getTooltipTemplate()}`;
 	}
 }

@@ -62,10 +62,10 @@ export class AutolinkedItemNode extends ViewNode<'autolink', ViewsWithCommits> {
 			const { provider } = autolink;
 
 			const item = new TreeItem(
-				autolink.description ?? `Autolink ${autolink.prefix}${autolink.id}`,
+				autolink.description ?? `自动链接 ${autolink.prefix}${autolink.id}`,
 				TreeItemCollapsibleState.None,
 			);
-			item.description = provider?.name ?? 'Custom';
+			item.description = provider?.name ?? '自定义';
 			item.iconPath = new ThemeIcon(
 				pending
 					? 'loading~spin'
@@ -79,13 +79,13 @@ export class AutolinkedItemNode extends ViewNode<'autolink', ViewsWithCommits> {
 			item.tooltip = new MarkdownString(
 				`${
 					autolink.description
-						? `Autolinked ${autolink.description}`
+						? `自动链接的 ${autolink.description}`
 						: `${
 								autolink.type == null
-									? 'Autolinked'
+									? '自动链接'
 									: autolink.type === 'pullrequest'
-										? 'Autolinked Pull Request'
-										: 'Autolinked Issue'
+										? '自动链接的拉取请求'
+										: '自动链接的问题'
 							} ${autolink.prefix}${autolink.id}`
 				} \\\n[${autolink.url}](${autolink.url}${autolink.title != null ? ` "${autolink.title}"` : ''})`,
 			);
@@ -99,14 +99,14 @@ export class AutolinkedItemNode extends ViewNode<'autolink', ViewsWithCommits> {
 		item.iconPath = getIssueOrPullRequestThemeIcon(enriched);
 		item.contextValue = `${ContextValues.AutolinkedItem}+${enriched.type === 'pullrequest' ? 'pr' : 'issue'}`;
 
-		const linkTitle = ` "Open ${enriched.type === 'pullrequest' ? 'Pull Request' : 'Issue'} \\#${enriched.id} on ${
-			enriched.provider.name
-		}"`;
+		const linkTitle = ` "在 ${enriched.provider.name} 上打开${
+			enriched.type === 'pullrequest' ? '拉取请求' : '问题'
+		} \\#${enriched.id}"`;
 		const tooltip = new MarkdownString(
 			`${getIssueOrPullRequestMarkdownIcon(enriched)} [**${enriched.title.trim()}**](${
 				enriched.url
-			}${linkTitle}) \\\n[#${enriched.id}](${enriched.url}${linkTitle}) was ${
-				enriched.closed ? (enriched.state === 'merged' ? 'merged' : 'closed') : 'opened'
+			}${linkTitle}) \\\n[#${enriched.id}](${enriched.url}${linkTitle}) 已${
+				enriched.closed ? (enriched.state === 'merged' ? '合并' : '关闭') : '打开'
 			} ${relativeTime}`,
 			true,
 		);

@@ -6,7 +6,7 @@ import type { Repository } from '../../git/models/repository.js';
 import { configuration } from '../../system/-webview/configuration.js';
 import { getScopedCounter } from '../../system/counter.js';
 import { isPromise } from '../../system/promise.js';
-import { compareSubstringIgnoreCase, equalsIgnoreCase, pluralize } from '../../system/string.js';
+import { compareSubstringIgnoreCase, equalsIgnoreCase } from '../../system/string.js';
 import type { View } from '../viewBase.js';
 import type { PageableViewNode } from './abstract/viewNode.js';
 import { ContextValues, ViewNode } from './abstract/viewNode.js';
@@ -148,7 +148,7 @@ export class GroupedHeaderNode extends ActionMessageNodeBase {
 		super(
 			view,
 			parent,
-			view.grouped ? (view.groupedLabel ?? view.name).toLocaleUpperCase() : 'Showing',
+			view.grouped ? (view.groupedLabel ?? view.name).toLocaleUpperCase() : '正在显示',
 			view.grouped ? view.description : undefined,
 			undefined,
 			undefined,
@@ -206,18 +206,18 @@ export class GroupedHeaderNode extends ActionMessageNodeBase {
 		if (!this.view.supportsRepositoryFilter) return tooltip;
 
 		if (this.view.isRepositoryFilterExcludingWorktreesActive()) {
-			tooltip.appendMarkdown('\n\nShowing all repos, excluding worktrees / submodules');
-			tooltip.appendMarkdown('\\\nClick to change filtering');
+			tooltip.appendMarkdown('\n\n正在显示所有仓库，不含工作树/子模块');
+			tooltip.appendMarkdown('\\\n点击更改筛选');
 		} else {
 			const { openRepositories } = this.view.container.git;
-			const type = openRepositories.some(r => r.isWorktree) ? 'repos / worktrees' : 'repos';
+			const type = openRepositories.some(r => r.isWorktree) ? '仓库/工作树' : '仓库';
 
 			if (this.view.isRepositoryFilterActive()) {
-				tooltip.appendMarkdown(`\n\nShowing ${repos.length} of ${openRepositories.length} ${type}`);
-				tooltip.appendMarkdown('\\\nClick to change filtering');
+				tooltip.appendMarkdown(`\n\n正在显示 ${openRepositories.length} 个${type}中的 ${repos.length} 个`);
+				tooltip.appendMarkdown('\\\n点击更改筛选');
 			} else if (repos.length > 1) {
-				tooltip.appendMarkdown(`\n\nShowing all ${type}`);
-				tooltip.appendMarkdown('\\\nClick to filter by a repo or worktree');
+				tooltip.appendMarkdown(`\n\n正在显示所有${type}`);
+				tooltip.appendMarkdown('\\\n点击按仓库或工作树筛选');
 			}
 		}
 
@@ -228,11 +228,11 @@ export class GroupedHeaderNode extends ActionMessageNodeBase {
 		if (!this.view.supportsRepositoryFilter) return undefined;
 		if (!repos?.length) return undefined;
 
-		const prefix = this.view.grouped ? 'showing ' : '';
+		const prefix = this.view.grouped ? '正在显示 ' : '';
 
 		if (repos.length === 1) {
 			if (this.view.repositoryFilter?.length) {
-				return addSuffix ? `${prefix}${repos[0].name} — click to change` : repos[0].name;
+				return addSuffix ? `${prefix}${repos[0].name} — 点击更改` : repos[0].name;
 			}
 			return undefined;
 		}
@@ -240,10 +240,8 @@ export class GroupedHeaderNode extends ActionMessageNodeBase {
 		// When excluding worktrees/submodules, always show "repos" not "repos / worktrees"
 		const mixed = !this.view.supportsWorktreeCollapsing && !this.view.isRepositoryFilterExcludingWorktreesActive();
 
-		const label = pluralize(mixed ? 'repo / worktree' : 'repo', repos.length, {
-			plural: mixed ? 'repos / worktrees' : 'repos',
-		});
-		return addSuffix ? `${prefix}${label} — click to filter` : label;
+		const label = mixed ? `${repos.length} 个仓库/工作树` : `${repos.length} 个仓库`;
+		return addSuffix ? `${prefix}${label} — 点击筛选` : label;
 	}
 
 	private getViewDescription(): string | undefined {
@@ -332,7 +330,7 @@ export class LoadMoreNode extends PagerNode {
 			parent,
 			options?.message ??
 				(options?.pageSize === 0
-					? `Load all ${GlyphChars.Space}${GlyphChars.Dash}${GlyphChars.Space} this may take a while`
+					? `全部加载 ${GlyphChars.Space}${GlyphChars.Dash}${GlyphChars.Space} 这可能需要一段时间`
 					: '加载更多'),
 			previousNode,
 			options,

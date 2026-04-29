@@ -7,7 +7,7 @@ import { createRevisionRange } from '../../git/utils/revision.utils.js';
 import { makeHierarchical } from '../../system/array.js';
 import { filter, flatMap, groupByMap, map } from '../../system/iterable.js';
 import { joinPaths, normalizePath } from '../../system/path.js';
-import { pluralize, sortCompare } from '../../system/string.js';
+import { sortCompare } from '../../system/string.js';
 import type { ViewsWithCommits } from '../viewBase.js';
 import { ContextValues, getViewNodeId, ViewNode } from './abstract/viewNode.js';
 import type { BranchTrackingStatus } from './branchTrackingStatusNode.js';
@@ -48,7 +48,7 @@ export class BranchTrackingStatusFilesNode extends ViewNode<'tracking-status-fil
 			repoPath: this.repoPath,
 			ref1: this.ref1,
 			ref2: this.ref2,
-			title: this.direction === 'ahead' ? `Changes to push to ${this.ref2}` : `Changes to pull from ${this.ref2}`,
+			title: this.direction === 'ahead' ? `要推送到 ${this.ref2} 的更改` : `要从 ${this.ref2} 拉取的更改`,
 		};
 	}
 
@@ -110,7 +110,7 @@ export class BranchTrackingStatusFilesNode extends ViewNode<'tracking-status-fil
 			.diff.getChangedFilesCount(this.direction === 'behind' ? `${this.ref1}...${this.ref2}` : `${this.ref2}...`);
 		const files = stats?.files ?? 0;
 
-		const label = `${pluralize('file', files)} changed`;
+		const label = `${files} 个文件已更改`;
 		const item = new TreeItem(label, TreeItemCollapsibleState.Collapsed);
 		item.id = this.id;
 		item.contextValue = ContextValues.BranchStatusFiles;

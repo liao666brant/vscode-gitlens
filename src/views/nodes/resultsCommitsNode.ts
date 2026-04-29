@@ -89,7 +89,7 @@ export class ResultsCommitsNodeBase<Type extends TreeViewNodeTypes, View extends
 		const { log } = await this.getCommitsQueryResults();
 		if (!log?.commits.size) {
 			this._onChildrenCompleted?.fulfill();
-			return [new MessageNode(this.view, this, 'No results found')];
+			return [new MessageNode(this.view, this, '未找到结果')];
 		}
 
 		const getBranchAndTagTips = await this.view.container.git

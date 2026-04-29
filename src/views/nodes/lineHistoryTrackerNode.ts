@@ -71,7 +71,7 @@ export class LineHistoryTrackerNode extends SubscribeableViewNode<
 			if (!this.hasUri) {
 				this.view.description = this.view.grouped ? this.view.groupedLabel : undefined;
 
-				this.view.message = 'There are no editors open that can provide line history information.';
+				this.view.message = '当前没有打开可提供行历史信息的编辑器。';
 				return [];
 			}
 
@@ -79,14 +79,14 @@ export class LineHistoryTrackerNode extends SubscribeableViewNode<
 			const editorContents = this._editorContents;
 
 			if (selection == null) {
-				this.view.message = 'There was no selection provided for line history.';
+				this.view.message = '未提供用于行历史的选择范围。';
 				this.view.description = `${this.view.groupedLabel ? `${this.view.groupedLabel} \u2022 ` : ''}${
 					this.uri.fileName
 				}${
 					this.uri.sha
 						? ` ${this.uri.sha === deletedOrMissing ? this.uri.shortSha : `(${this.uri.shortSha})`}`
 						: ''
-				}${!this.followingEditor ? ' (pinned)' : ''}`;
+				}${!this.followingEditor ? ' (已固定)' : ''}`;
 				return [];
 			}
 
@@ -112,7 +112,7 @@ export class LineHistoryTrackerNode extends SubscribeableViewNode<
 	}
 
 	getTreeItem(): TreeItem {
-		const item = new TreeItem('Line History', TreeItemCollapsibleState.Expanded);
+		const item = new TreeItem('行历史', TreeItemCollapsibleState.Expanded);
 		item.contextValue = ContextValues.ActiveLineHistory;
 
 		void this.ensureSubscription();
@@ -175,16 +175,11 @@ export class LineHistoryTrackerNode extends SubscribeableViewNode<
 	@gate()
 	@debug()
 	async changeBase(): Promise<void> {
-		const pick = await showReferencePicker(
-			this.uri.repoPath!,
-			'Change Line History Base',
-			'Choose a reference to set as the new base',
-			{
-				allowedAdditionalInput: { rev: true },
-				picked: this._base,
-				sort: { branches: { current: true }, tags: {} },
-			},
-		);
+		const pick = await showReferencePicker(this.uri.repoPath!, '更改行历史基准', '选择一个引用作为新的基准', {
+			allowedAdditionalInput: { rev: true },
+			picked: this._base,
+			sort: { branches: { current: true }, tags: {} },
+		});
 		if (pick == null) return;
 
 		if (isBranchReference(pick)) {

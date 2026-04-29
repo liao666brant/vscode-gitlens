@@ -6,7 +6,6 @@ import { executeGitCommand } from '../../git/actions.js';
 import type { GitLog } from '../../git/models/log.js';
 import type { CommitsQueryResults } from '../../git/queryResults.js';
 import { getSearchQueryComparisonKey, getStoredSearchQuery } from '../../git/search.js';
-import { pluralize } from '../../system/string.js';
 import type { SearchAndCompareView } from '../searchAndCompareView.js';
 import type { ViewNode } from './abstract/viewNode.js';
 import { ContextValues, getViewNodeId } from './abstract/viewNode.js';
@@ -209,14 +208,12 @@ function createSearchQuery(
 		const queryLabel = labels.queryLabel;
 		const resultsType =
 			typeof queryLabel === 'string'
-				? { singular: 'search result', plural: 'search results' }
-				: (queryLabel.resultsType ?? { singular: 'search result', plural: 'search results' });
+				? { singular: '搜索结果', plural: '搜索结果' }
+				: (queryLabel.resultsType ?? { singular: '搜索结果', plural: '搜索结果' });
 
-		const label = `${pluralize(resultsType.singular, count, {
-			format: c => (log?.hasMore ? `${c}+` : String(c)),
-			plural: resultsType.plural,
-			zero: 'No',
-		})} ${typeof queryLabel === 'string' ? queryLabel : queryLabel.label}`;
+		const label = `${count === 0 ? '无' : log?.hasMore ? `${count}+` : count} ${
+			count === 1 ? resultsType.singular : resultsType.plural
+		} ${typeof queryLabel === 'string' ? queryLabel : queryLabel.label}`;
 
 		const results: Mutable<SearchQueryResults> = {
 			label: label,
@@ -228,11 +225,9 @@ function createSearchQuery(
 			results.more = async (limit: number | undefined) => {
 				results.log = (await results.log?.more?.(limit)) ?? results.log;
 				const newCount = results.log?.count ?? 0;
-				results.label = `${pluralize(resultsType.singular, newCount, {
-					format: c => (results.log?.hasMore ? `${c}+` : String(c)),
-					plural: resultsType.plural,
-					zero: 'No',
-				})} ${typeof queryLabel === 'string' ? queryLabel : queryLabel.label}`;
+				results.label = `${newCount === 0 ? '无' : results.log?.hasMore ? `${newCount}+` : newCount} ${
+					newCount === 1 ? resultsType.singular : resultsType.plural
+				} ${typeof queryLabel === 'string' ? queryLabel : queryLabel.label}`;
 				results.hasMore = results.log?.hasMore ?? true;
 			};
 		}

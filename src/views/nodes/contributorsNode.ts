@@ -129,7 +129,7 @@ export class ContributorsNode extends CacheableChildrenViewNode<
 			timeout || undefined,
 		);
 		if (!result.contributors.length) {
-			return [new MessageNode(this.view, this, 'No contributors could be found.')];
+			return [new MessageNode(this.view, this, '未找到任何贡献者。')];
 		}
 
 		const children: (ContributorNode | MessageNode | ActionMessageNode)[] = [];
@@ -141,16 +141,16 @@ export class ContributorsNode extends CacheableChildrenViewNode<
 					n => {
 						n.update({
 							iconPath: new ThemeIcon('loading~spin'),
-							message: 'Loading contributors...',
-							description: `waiting for ${(timeout * 2) / 1000}s`,
+							message: '正在加载贡献者...',
+							description: `等待 ${(timeout * 2) / 1000} 秒`,
 							tooltip: null,
 						});
 						this.storeState('overrideMaxWait', timeout * 2);
 						void this.triggerChange(true);
 					},
-					stats ? 'Showing incomplete contributors and statistics' : 'Showing incomplete contributors',
-					result.cancelled.reason === 'timedout' ? `timed out after ${timeout / 1000}s` : 'cancelled',
-					'Click to retry and wait longer for contributors',
+					stats ? '正在显示不完整的贡献者和统计信息' : '正在显示不完整的贡献者',
+					result.cancelled.reason === 'timedout' ? `${timeout / 1000} 秒后超时` : '已取消',
+					'点击重试，并等待更久以加载贡献者',
 					new ThemeIcon('warning', new ThemeColor('list.warningForeground' satisfies CoreColors)),
 				),
 			);
@@ -161,7 +161,7 @@ export class ContributorsNode extends CacheableChildrenViewNode<
 				new MessageNode(
 					this.view,
 					this,
-					'Loading statistics...',
+					'正在加载统计信息...',
 					undefined,
 					undefined,
 					new ThemeIcon('loading~spin'),

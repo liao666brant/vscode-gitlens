@@ -53,7 +53,7 @@ export class MergeConflictIncomingChangesNode extends ViewNode<
 	async getTreeItem(): Promise<TreeItem> {
 		const commit = await this.getCommit();
 
-		const item = new TreeItem('Incoming changes', TreeItemCollapsibleState.None);
+		const item = new TreeItem('传入更改', TreeItemCollapsibleState.None);
 		item.contextValue = ContextValues.MergeConflictIncomingChanges;
 		item.description = getReferenceLabel(this.status.incoming, { expand: false, icon: false });
 		// Show the specific commit SHA in parens when it adds info beyond the incoming label
@@ -81,16 +81,16 @@ export class MergeConflictIncomingChangesNode extends ViewNode<
 		if (this.status.mergeBase == null) {
 			return createCoreCommand(
 				'vscode.open',
-				'Open Revision',
+				'打开修订版',
 				this.view.container.git.getRepositoryService(this.status.repoPath).getRevisionUri(ref, this.file.path),
 			);
 		}
 
-		return createCommand<[DiffWithCommandArgs]>('gitlens.diffWith', 'Open Changes', {
+		return createCommand<[DiffWithCommandArgs]>('gitlens.diffWith', '打开更改', {
 			lhs: {
 				sha: this.status.mergeBase,
 				uri: GitUri.fromFile(this.file, this.status.repoPath, undefined, true),
-				title: `${this.file.path} (merge-base)`,
+				title: `${this.file.path}（合并基准）`,
 			},
 			rhs: {
 				sha: ref,
@@ -98,7 +98,7 @@ export class MergeConflictIncomingChangesNode extends ViewNode<
 				title: `${this.file.path} (${
 					this.status.incoming != null
 						? getReferenceLabel(this.status.incoming, { expand: false, icon: false })
-						: 'incoming'
+						: '传入'
 				})`,
 			},
 			repoPath: this.status.repoPath,
@@ -117,7 +117,7 @@ export class MergeConflictIncomingChangesNode extends ViewNode<
 		if (cancellation.isCancellationRequested) return undefined;
 
 		const markdown = new MarkdownString(
-			`Incoming changes from ${getReferenceLabel(this.status.incoming, { label: false })}\\\n$(file)${
+			`来自 ${getReferenceLabel(this.status.incoming, { label: false })} 的传入更改\\\n$(file)${
 				GlyphChars.Space
 			}${this.file.path}`,
 			true,
