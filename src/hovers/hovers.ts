@@ -90,31 +90,31 @@ export async function changesMessage(
 			repoPath: commit.repoPath,
 			range: compareUris.range,
 			source: telemetrySource,
-		})} "Open Changes")`;
+		})} "打开更改")`;
 
 		previous =
 			compareUris.previous.sha == null || compareUris.previous.isUncommitted
 				? `  &nbsp;_${shortenRevision(compareUris.previous.sha, {
-						strings: { working: 'Working Tree' },
+						strings: { working: '工作区' },
 					})}_ &nbsp;${GlyphChars.ArrowLeftRightLong}&nbsp; `
 				: `  &nbsp;[$(git-commit) ${shortenRevision(
 						compareUris.previous.sha || '',
-					)}](${ShowQuickCommitCommand.createMarkdownCommandLink(compareUris.previous.sha || '', undefined, telemetrySource)} "Show Commit") &nbsp;${GlyphChars.ArrowLeftRightLong}&nbsp; `;
+					)}](${ShowQuickCommitCommand.createMarkdownCommandLink(compareUris.previous.sha || '', undefined, telemetrySource)} "显示提交") &nbsp;${GlyphChars.ArrowLeftRightLong}&nbsp; `;
 
 		current =
 			compareUris.current.sha == null || compareUris.current.isUncommitted
-				? `_${shortenRevision(compareUris.current.sha, { strings: { working: 'Working Tree' } })}_`
+				? `_${shortenRevision(compareUris.current.sha, { strings: { working: '工作区' } })}_`
 				: `[$(git-commit) ${shortenRevision(
 						compareUris.current.sha || '',
-					)}](${ShowQuickCommitCommand.createMarkdownCommandLink(compareUris.current.sha || '', undefined, telemetrySource)} "Show Commit")`;
+					)}](${ShowQuickCommitCommand.createMarkdownCommandLink(compareUris.current.sha || '', undefined, telemetrySource)} "显示提交")`;
 	} else {
-		message = `[$(compare-changes)](${DiffWithCommand.createMarkdownCommandLink(commit, range, telemetrySource)} "Open Changes")`;
+		message = `[$(compare-changes)](${DiffWithCommand.createMarkdownCommandLink(commit, range, telemetrySource)} "打开更改")`;
 
 		previousSha ??= await commit.getPreviousSha();
 		if (previousSha && previousSha !== deletedOrMissing) {
 			previous = `  &nbsp;[$(git-commit) ${shortenRevision(
 				previousSha,
-			)}](${ShowQuickCommitCommand.createMarkdownCommandLink(previousSha, undefined, telemetrySource)} "Show Commit") &nbsp;${
+			)}](${ShowQuickCommitCommand.createMarkdownCommandLink(previousSha, undefined, telemetrySource)} "显示提交") &nbsp;${
 				GlyphChars.ArrowLeftRightLong
 			}&nbsp;`;
 		}
@@ -123,10 +123,10 @@ export async function changesMessage(
 			commit.sha,
 			undefined,
 			telemetrySource,
-		)} "Show Commit")`;
+		)} "显示提交")`;
 	}
 
-	message = `${diff}\n---\n\nChanges${previous ?? ' added in '}${current} &nbsp;&nbsp;|&nbsp;&nbsp; ${message}`;
+	message = `${diff}\n---\n\n变更${previous ?? ' 新增于 '}${current} &nbsp;&nbsp;|&nbsp;&nbsp; ${message}`;
 
 	const markdown = new MarkdownString(message, true);
 	markdown.supportHtml = true;
@@ -147,8 +147,8 @@ export async function localChangesMessage(
 	let previous;
 	let current;
 	if (fromCommit == null) {
-		previous = '_Working Tree_';
-		current = '_Unsaved_';
+		previous = '_工作区_';
+		current = '_未保存_';
 	} else {
 		const file = await fromCommit.findFile(uri);
 		if (file == null) return undefined;
@@ -163,17 +163,17 @@ export async function localChangesMessage(
 			repoPath: uri.repoPath!,
 			range: editorLineToDiffRange(editorLine),
 			source: telemetrySource,
-		})} "Open Changes")`;
+		})} "打开更改")`;
 
 		previous = `[$(git-commit) ${fromCommit.shortSha}](${ShowQuickCommitCommand.createMarkdownCommandLink(
 			fromCommit.sha,
 			undefined,
 			telemetrySource,
-		)} "Show Commit")`;
+		)} "显示提交")`;
 
-		current = '_Working Tree_';
+		current = '_工作区_';
 	}
-	message = `${diff}\n---\n\nLocal Changes  &nbsp;${previous} &nbsp;${
+	message = `${diff}\n---\n\n本地变更  &nbsp;${previous} &nbsp;${
 		GlyphChars.ArrowLeftRightLong
 	}&nbsp; ${current}${message == null ? '' : ` &nbsp;&nbsp;|&nbsp;&nbsp; ${message}`}`;
 

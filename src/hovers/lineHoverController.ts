@@ -133,7 +133,7 @@ export class LineHoverController implements Disposable {
 				pullRequests: cfg.pullRequests.enabled,
 				timeout: 250,
 				sourceName: 'editor:hover',
-			})) ?? 'Cancelled';
+			})) ?? '已取消';
 		return new Hover(message, range);
 	}
 
