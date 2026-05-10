@@ -73,11 +73,11 @@ export class StatusBarController implements Disposable {
 				this._statusBarMode.command = 'gitlens.switchMode' satisfies GlCommands;
 				this._statusBarMode.text = mode.statusBarItemName;
 				this._statusBarMode.tooltip = new MarkdownString(
-					`**${mode.statusBarItemName}** ${GlyphChars.Dash} ${mode.description}\n\n---\n\nClick to Switch GitLens Modes`,
+					`**${mode.statusBarItemName}** ${GlyphChars.Dash} ${mode.description}\n\n---\n\n点击切换 GitLens 模式`,
 					true,
 				);
 				this._statusBarMode.accessibilityInformation = {
-					label: `GitLens Mode: ${mode.statusBarItemName}\nClick to Switch GitLens Modes`,
+					label: `GitLens 模式：${mode.statusBarItemName}\n点击切换 GitLens 模式`,
 				};
 				this._statusBarMode.show();
 			} else {
@@ -169,24 +169,24 @@ export class StatusBarController implements Disposable {
 					};
 
 					if (doc.canDirtyIdle) {
-						statusBarItem.text = '$(watch) Blame Paused';
+						statusBarItem.text = '$(watch) 注释暂停';
 						statusBarItem.tooltip.appendMarkdown(
-							`Blame will resume after a [${configuration.get(
+							`注释将在 [${configuration.get(
 								'advanced.blame.delayAfterEdit',
-							)} ms delay](${createMarkdownCommandLink<[undefined, string]>('gitlens.showSettingsPage', [
+							)} 毫秒延迟](${createMarkdownCommandLink<[undefined, string]>('gitlens.showSettingsPage', [
 								undefined,
 								'advanced.blame.delayAfterEdit',
-							])} 'Change the after edit delay') to limit the performance impact because there are unsaved changes`,
+							])} '更改编辑后延迟') 后恢复，以限制因存在未保存更改而产生的性能影响`,
 						);
 					} else {
-						statusBarItem.text = '$(debug-pause) Blame Paused';
+						statusBarItem.text = '$(debug-pause) 注释暂停';
 						statusBarItem.tooltip.appendMarkdown(
-							`Blame will resume after saving because there are unsaved changes and the file is over the [${configuration.get(
+							`注释将在保存后恢复，因为存在未保存更改且文件超过了 [${configuration.get(
 								'advanced.blame.sizeThresholdAfterEdit',
-							)} line threshold](${createMarkdownCommandLink<[undefined, string]>(
-								'gitlens.showSettingsPage',
-								[undefined, 'advanced.blame.sizeThresholdAfterEdit'],
-							)} 'Change the after edit line threshold') to limit the performance impact`,
+							)} 行阈值](${createMarkdownCommandLink<[undefined, string]>('gitlens.showSettingsPage', [
+								undefined,
+								'advanced.blame.sizeThresholdAfterEdit',
+							])} '更改编辑后行阈值') 以限制性能影响`,
 						);
 					}
 
@@ -249,50 +249,50 @@ export class StatusBarController implements Disposable {
 		let actionTooltip: string;
 		switch (cfg.command) {
 			case 'gitlens.copyRemoteCommitUrl':
-				actionTooltip = 'Click to Copy Remote Commit URL';
+				actionTooltip = '点击复制远程提交 URL';
 				break;
 			case 'gitlens.copyRemoteFileUrl':
 				this._statusBarBlame.command = 'gitlens.copyRemoteFileUrlToClipboard' satisfies GlCommands;
-				actionTooltip = 'Click to Copy Remote File Revision URL';
+				actionTooltip = '点击复制远程文件修订版 URL';
 				break;
 			case 'gitlens.diffWithPrevious':
 				this._statusBarBlame.command = 'gitlens.diffLineWithPrevious' satisfies GlCommands;
-				actionTooltip = 'Click to Open Line Changes with Previous Revision';
+				actionTooltip = '点击打开与上一修订版的行变更';
 				break;
 			case 'gitlens.diffWithWorking':
 				this._statusBarBlame.command = 'gitlens.diffLineWithWorking' satisfies GlCommands;
-				actionTooltip = 'Click to Open Line Changes with Working File';
+				actionTooltip = '点击打开与工作文件的行变更';
 				break;
 			case 'gitlens.openCommitOnRemote':
-				actionTooltip = 'Click to Open Commit on Remote';
+				actionTooltip = '点击在远程打开提交';
 				break;
 			case 'gitlens.openFileOnRemote':
-				actionTooltip = 'Click to Open Revision on Remote';
+				actionTooltip = '点击在远程打开修订版';
 				break;
 			case 'gitlens.revealCommitInView':
-				actionTooltip = 'Click to Reveal Commit in the Side Bar';
+				actionTooltip = '点击在侧边栏中显示提交';
 				break;
 			case 'gitlens.showCommitsInView':
-				actionTooltip = 'Click to Search for Commit';
+				actionTooltip = '点击搜索提交';
 				break;
 			case 'gitlens.showQuickCommitDetails':
-				actionTooltip = 'Click to Show Commit';
+				actionTooltip = '点击显示提交';
 				break;
 			case 'gitlens.showQuickCommitFileDetails':
-				actionTooltip = 'Click to Show Commit (file)';
+				actionTooltip = '点击显示提交（文件）';
 				break;
 			case 'gitlens.showQuickRepoHistory':
-				actionTooltip = 'Click to Show Branch History';
+				actionTooltip = '点击显示分支历史';
 				break;
 			case 'gitlens.showQuickFileHistory':
-				actionTooltip = 'Click to Show File History';
+				actionTooltip = '点击显示文件历史';
 				break;
 			case 'gitlens.toggleCodeLens':
-				actionTooltip = 'Click to Toggle Git CodeLens';
+				actionTooltip = '点击切换 Git CodeLens';
 				break;
 			case 'gitlens.toggleFileBlame':
 				this._statusBarBlame.command = 'gitlens.toggleFileBlame:statusbar' satisfies GlCommands;
-				actionTooltip = 'Click to Toggle File Blame';
+				actionTooltip = '点击切换文件注释';
 				break;
 			case 'gitlens.toggleFileChanges': {
 				if (commit.file != null) {
@@ -308,7 +308,7 @@ export class StatusBarController implements Disposable {
 				} else {
 					this._statusBarBlame.command = 'gitlens.toggleFileChanges:statusbar' satisfies GlCommands;
 				}
-				actionTooltip = 'Click to Toggle File Changes';
+				actionTooltip = '点击切换文件变更';
 				break;
 			}
 			case 'gitlens.toggleFileChangesOnly': {
@@ -325,16 +325,16 @@ export class StatusBarController implements Disposable {
 				} else {
 					this._statusBarBlame.command = 'gitlens.toggleFileChanges:statusbar' satisfies GlCommands;
 				}
-				actionTooltip = 'Click to Toggle File Changes';
+				actionTooltip = '点击切换文件变更';
 				break;
 			}
 			case 'gitlens.toggleFileHeatmap':
 				this._statusBarBlame.command = 'gitlens.toggleFileHeatmap:statusbar' satisfies GlCommands;
-				actionTooltip = 'Click to Toggle File Heatmap';
+				actionTooltip = '点击切换文件热力图';
 				break;
 		}
 
-		this._statusBarBlame.tooltip = new MarkdownString(`Loading... \n\n---\n\n${actionTooltip}`);
+		this._statusBarBlame.tooltip = new MarkdownString(`加载中... \n\n---\n\n${actionTooltip}`);
 		this._statusBarBlame.accessibilityInformation = {
 			label: `${this._statusBarBlame.text}\n${actionTooltip}`,
 		};
