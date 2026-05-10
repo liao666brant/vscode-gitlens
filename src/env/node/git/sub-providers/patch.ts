@@ -39,10 +39,10 @@ export class PatchGitSubProvider implements GitPatchSubProvider {
 			const hasChanges = await this.provider.status?.hasWorkingChanges(repoPath);
 			if (hasChanges) {
 				if (options.stash === 'prompt') {
-					const confirm = { title: 'Stash Changes' };
-					const cancel = { title: 'Cancel', isCloseAffordance: true };
+					const confirm = { title: '贮藏更改' };
+					const cancel = { title: '取消', isCloseAffordance: true };
 					const result = await window.showWarningMessage(
-						'You have changes in your working tree.\nDo you want to stash them before applying the patch?',
+						'工作区中存在未提交的更改。\n是否在应用补丁前将其贮藏？',
 						{ modal: true },
 						confirm,
 						cancel,

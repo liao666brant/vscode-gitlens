@@ -946,11 +946,11 @@ export class LocalGitProvider implements GitProvider, Disposable {
 			const msg: string = ex?.toString() ?? '';
 			if (patch && /patch does not apply/i.test(msg)) {
 				const result = await window.showWarningMessage(
-					'Unable to apply changes cleanly. Retry and allow conflicts?',
-					{ title: 'Yes' },
-					{ title: 'No', isCloseAffordance: true },
+					'无法干净地应用更改。是否重试并允许冲突？',
+					{ title: '是' },
+					{ title: '否', isCloseAffordance: true },
 				);
-				if (result?.title !== 'Yes') return;
+				if (result?.title !== '是') return;
 
 				try {
 					void (await this.git.exec({ cwd: root, stdin: patch }, 'apply', '--whitespace=warn', '--3way'));
@@ -963,7 +963,7 @@ export class LocalGitProvider implements GitProvider, Disposable {
 			}
 
 			scope?.error(ex);
-			void showGenericErrorMessage('Unable to apply changes');
+			void showGenericErrorMessage('无法应用更改');
 		}
 	}
 

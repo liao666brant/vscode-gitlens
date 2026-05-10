@@ -693,9 +693,9 @@ export class DiffGitSubProvider implements GitDiffSubProvider {
 		} catch (ex) {
 			const msg: string = ex?.toString() ?? '';
 			if (msg === 'No diff tool found' || /Unknown .+? tool/.test(msg)) {
-				const viewDocs = 'View Git Docs';
+				const viewDocs = '查看 Git 文档';
 				const result = await window.showWarningMessage(
-					'Unable to open changes because the specified diff tool cannot be found or no Git diff tool is configured',
+					'无法打开更改对比，因为找不到指定的差异工具或未配置 Git 差异工具',
 					viewDocs,
 				);
 				if (result === viewDocs) {
@@ -708,7 +708,7 @@ export class DiffGitSubProvider implements GitDiffSubProvider {
 			}
 
 			scope?.error(ex);
-			void showGenericErrorMessage('Unable to open compare');
+			void showGenericErrorMessage('无法打开对比');
 		}
 	}
 
@@ -730,9 +730,9 @@ export class DiffGitSubProvider implements GitDiffSubProvider {
 		} catch (ex) {
 			const msg: string = ex?.toString() ?? '';
 			if (msg === 'No diff tool found' || /Unknown .+? tool/.test(msg)) {
-				const viewDocs = 'View Git Docs';
+				const viewDocs = '查看 Git 文档';
 				const result = await window.showWarningMessage(
-					'Unable to open directory compare because the specified diff tool cannot be found or no Git diff tool is configured',
+					'无法打开目录对比，因为找不到指定的差异工具或未配置 Git 差异工具',
 					viewDocs,
 				);
 				if (result === viewDocs) {
@@ -745,7 +745,7 @@ export class DiffGitSubProvider implements GitDiffSubProvider {
 			}
 
 			scope?.error(ex);
-			void showGenericErrorMessage('Unable to open directory compare');
+			void showGenericErrorMessage('无法打开目录对比');
 		}
 	}
 }

@@ -58,7 +58,7 @@ export class StashGitSubProvider implements GitStashSubProvider {
 					this.container.telemetry.sendEvent('gitCommand/conflict', {
 						command: options?.deleteAfter ? 'stash-pop' : 'stash-apply',
 					});
-					void window.showInformationMessage('Stash applied with conflicts');
+					void window.showInformationMessage('贮藏已应用，但存在冲突');
 					return;
 				}
 			}

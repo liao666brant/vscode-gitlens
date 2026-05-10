@@ -138,7 +138,7 @@ export class GkCliIntegrationProvider implements Disposable {
 		envVars.clear();
 		envVars.persistent = false;
 		envVars.replace('GK_GL_ADDR', server.ipcAddress);
-		envVars.description = 'Enables GK CLI integration';
+		envVars.description = '启用 GK CLI 集成';
 
 		// Create discovery file for external terminal support
 		try {
@@ -239,7 +239,7 @@ export class GkCliIntegrationProvider implements Disposable {
 			const result = await window.withProgress(
 				{
 					location: ProgressLocation.Notification,
-					title: 'Setting up the GitKraken MCP...',
+					title: '正在设置 GitKraken MCP...',
 					cancellable: false,
 				},
 				async () => this.setupMCPCore(source, force),
@@ -250,11 +250,11 @@ export class GkCliIntegrationProvider implements Disposable {
 			}
 
 			if (result.usingExtensionRegistration) {
-				const learnMore = { title: 'Learn More' };
-				const confirm = { title: 'OK', isCloseAffordance: true };
+				const learnMore = { title: '了解更多' };
+				const confirm = { title: '确定', isCloseAffordance: true };
 				window
 					.showInformationMessage(
-						'GitKraken MCP is active in your AI chat, leveraging Git and your integrations to provide context and perform actions.',
+						'GitKraken MCP 已在你的 AI 聊天中激活，利用 Git 和你的集成来提供上下文并执行操作。',
 						learnMore,
 						confirm,
 					)
@@ -290,7 +290,7 @@ export class GkCliIntegrationProvider implements Disposable {
 				}
 			} else {
 				void window.showErrorMessage(
-					`Unable to setup the GitKraken MCP: ${ex instanceof Error ? ex.message : 'Unknown error'}`,
+					`无法设置 GitKraken MCP：${ex instanceof Error ? ex.message : '未知错误'}`,
 				);
 			}
 		}
@@ -482,7 +482,7 @@ export class GkCliIntegrationProvider implements Disposable {
 				switch (ex.reason) {
 					case CLIInstallErrorReason.UnsupportedPlatform:
 						reason = McpSetupErrorReason.CLIUnsupportedPlatform;
-						message = 'GitKraken MCP setup is not supported on this platform.';
+						message = 'GitKraken MCP 设置不支持此平台。';
 						telemetryReason = 'unsupported platform';
 						break;
 					case CLIInstallErrorReason.ProxyUrlFetch:
@@ -493,18 +493,17 @@ export class GkCliIntegrationProvider implements Disposable {
 					case CLIInstallErrorReason.CoreInstall:
 					case CLIInstallErrorReason.GlobalStorageDirectory:
 						reason = McpSetupErrorReason.CLILocalInstallFailed;
-						message = 'Unable to locally install the GitKraken MCP server. Please try again.';
+						message = '无法本地安装 GitKraken MCP 服务器。请重试。';
 						telemetryReason = 'local installation failed';
 						break;
 					case CLIInstallErrorReason.Offline:
 						reason = McpSetupErrorReason.Offline;
-						message =
-							'Unable to setup the GitKraken MCP server when offline. Please try again when you are online.';
+						message = '无法在离线状态下设置 GitKraken MCP 服务器。请在联网后重试。';
 						telemetryReason = 'offline';
 						break;
 					default:
 						reason = McpSetupErrorReason.CLIUnknownError;
-						message = 'Unable to setup the GitKraken MCP: Unknown error.';
+						message = '无法设置 GitKraken MCP：未知错误。';
 						telemetryReason = 'unknown error';
 						break;
 				}

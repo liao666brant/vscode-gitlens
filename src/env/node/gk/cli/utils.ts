@@ -150,8 +150,8 @@ export async function getCLIVersions(cliPath?: string): Promise<{ proxy: string;
 }
 
 export async function showManualMcpSetupPrompt(message: string): Promise<void> {
-	const learnMore = { title: 'View Setup Instructions' };
-	const cancel = { title: 'Cancel', isCloseAffordance: true };
+	const learnMore = { title: '查看设置说明' };
+	const cancel = { title: '取消', isCloseAffordance: true };
 	const result = await window.showErrorMessage(message, { modal: true }, learnMore, cancel);
 
 	if (result === learnMore) {

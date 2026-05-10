@@ -253,7 +253,7 @@ export class CliCommandHandlers implements Disposable {
 		// Check if integrations are connected
 		const hasConnectedIntegration = await this.container.launchpad.hasConnectedIntegration();
 		if (!hasConnectedIntegration) {
-			throw new Error('No connected integrations. Please connect a GitHub, GitLab, or other integration first.');
+			throw new Error('没有已连接的集成。请先连接 GitHub、GitLab 或其他集成。');
 		}
 
 		// Use Launchpad's search to find the PR by URL or number
