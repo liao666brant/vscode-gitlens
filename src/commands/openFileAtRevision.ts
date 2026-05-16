@@ -104,7 +104,7 @@ export class OpenFileAtRevisionCommand extends ActiveEditorCommand {
 			}
 
 			if (args.revisionUri == null) {
-				void showGenericErrorMessage('Unable to open blame');
+				void showGenericErrorMessage('无法打开追溯');
 				return undefined;
 			}
 		}
@@ -134,7 +134,7 @@ export class OpenFileAtRevisionCommand extends ActiveEditorCommand {
 								: undefined),
 					);
 
-				const title = `Open ${args.annotationType === 'blame' ? 'Blame' : 'File'} at Revision${pad(
+				const title = `打开${args.annotationType === 'blame' ? '追溯' : '文件'}的历史版本${pad(
 					GlyphChars.Dot,
 					2,
 					2,
@@ -146,7 +146,7 @@ export class OpenFileAtRevisionCommand extends ActiveEditorCommand {
 				const pick = await showCommitPicker(
 					log,
 					titleWithContext,
-					`Choose a commit to ${args.annotationType === 'blame' ? 'blame' : 'open'} the file revision from`,
+					`选择一个提交以${args.annotationType === 'blame' ? '追溯' : '打开'}该文件版本`,
 					{
 						empty: !gitUri.sha
 							? {
@@ -180,15 +180,15 @@ export class OpenFileAtRevisionCommand extends ActiveEditorCommand {
 										let newTitle;
 
 										if (items.length) {
-											newPlaceholder = `${gitUri.getFormattedFileName()} is likely untracked, choose a different file?`;
-											newTitle = `${titleWithContext} (Untracked?)`;
+											newPlaceholder = `${gitUri.getFormattedFileName()} 可能未被跟踪，选择其他文件？`;
+											newTitle = `${titleWithContext} (未跟踪?)`;
 										} else {
-											newPlaceholder = 'No commits found';
+											newPlaceholder = '未找到提交';
 										}
 
 										items.push(
 											createDirectiveQuickPickItem(Directive.Cancel, undefined, {
-												label: items.length ? 'Cancel' : 'OK',
+												label: items.length ? '取消' : '确定',
 											}),
 										);
 
@@ -214,12 +214,12 @@ export class OpenFileAtRevisionCommand extends ActiveEditorCommand {
 						},
 						showOtherReferences: [
 							CommandQuickPickItem.fromCommand<[Uri]>(
-								'Choose a Branch or Tag...',
+								'选择分支或标签...',
 								'gitlens.openFileRevisionFrom',
 								[uri],
 							),
 							CommandQuickPickItem.fromCommand<[Uri, OpenFileAtRevisionFromCommandArgs]>(
-								'Choose a Stash...',
+								'选择贮藏...',
 								'gitlens.openFileRevisionFrom',
 								[uri, { stash: true }],
 							),
@@ -244,7 +244,7 @@ export class OpenFileAtRevisionCommand extends ActiveEditorCommand {
 			});
 		} catch (ex) {
 			Logger.error(ex, 'OpenFileAtRevisionCommand');
-			void showGenericErrorMessage('Unable to open file at revision');
+			void showGenericErrorMessage('无法打开指定版本的文件');
 		}
 	}
 }

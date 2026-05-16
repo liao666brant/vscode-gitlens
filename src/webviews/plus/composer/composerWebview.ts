@@ -243,7 +243,7 @@ export class ComposerWebviewProvider implements WebviewProvider<State, State, Co
 			// return a base state with an error
 			return {
 				...this.initialState,
-				loadingError: 'No repository found. Please open a Git repository to use the Commit Composer.',
+				loadingError: '未找到仓库。请打开一个 Git 仓库以使用提交编辑器。',
 			};
 		}
 

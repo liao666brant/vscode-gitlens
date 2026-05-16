@@ -52,7 +52,7 @@ export class WorktreesViewNode extends RepositoriesSubscribeableNode<WorktreesVi
 
 			const repositories = this.view.getFilteredRepositories();
 			if (!repositories.length) {
-				this.view.message = 'No worktrees could be found.';
+				this.view.message = '未找到任何工作树。';
 				return [];
 			}
 
@@ -86,7 +86,7 @@ export class WorktreesViewNode extends RepositoriesSubscribeableNode<WorktreesVi
 	}
 
 	getTreeItem(): TreeItem {
-		const item = new TreeItem('Worktrees', TreeItemCollapsibleState.Expanded);
+		const item = new TreeItem('工作树', TreeItemCollapsibleState.Expanded);
 		return item;
 	}
 }
@@ -95,7 +95,7 @@ export class WorktreesView extends ViewBase<'worktrees', WorktreesViewNode, Work
 	protected readonly configKey = 'worktrees';
 
 	constructor(container: Container, grouped?: GroupedViewContext) {
-		super(container, 'worktrees', 'Worktrees', 'worktreesView', grouped);
+		super(container, 'worktrees', '工作树', 'worktreesView', grouped);
 	}
 
 	override getViewDescription(count?: number): string {
@@ -243,7 +243,7 @@ export class WorktreesView extends ViewBase<'worktrees', WorktreesViewNode, Work
 		return window.withProgress(
 			{
 				location: ProgressLocation.Notification,
-				title: `Revealing worktree '${worktree.name}' in the side bar...`,
+				title: `正在侧边栏中显示工作树 '${worktree.name}'...`,
 				cancellable: true,
 			},
 			async (_progress, token) => {

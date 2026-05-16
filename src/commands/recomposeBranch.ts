@@ -44,7 +44,7 @@ export class RecomposeBranchCommand extends GlCommandBase {
 			// Get repository path using picker fallback
 			const repoPath =
 				args?.repoPath ??
-				(await getBestRepositoryOrShowPicker(this.container, undefined, undefined, 'Recompose Branch'))?.path;
+				(await getBestRepositoryOrShowPicker(this.container, undefined, undefined, '重组分支'))?.path;
 			if (!repoPath) return;
 
 			args = { ...args };
@@ -52,15 +52,10 @@ export class RecomposeBranchCommand extends GlCommandBase {
 			// Get branch name using picker fallback
 			let branchName = args.branchName;
 			if (!branchName) {
-				const result = await showReferencePicker2(
-					repoPath,
-					'Recompose Branch',
-					'Choose a branch to recompose',
-					{
-						include: ['branches'],
-						sort: { branches: { current: true } },
-					},
-				);
+				const result = await showReferencePicker2(repoPath, '重组分支', '选择要重组的分支', {
+					include: ['branches'],
+					sort: { branches: { current: true } },
+				});
 				if (result.value == null || result.value instanceof CommandQuickPickItem) return;
 
 				const pick = result.value;
@@ -74,20 +69,20 @@ export class RecomposeBranchCommand extends GlCommandBase {
 			// Validate that the repository exists
 			const repo = this.container.git.getRepository(repoPath);
 			if (!repo) {
-				void window.showErrorMessage('Repository not found');
+				void window.showErrorMessage('未找到仓库');
 				return;
 			}
 
 			// Validate that the branch exists
 			const branch = await repo.git.branches.getBranch(branchName);
 			if (!branch) {
-				void window.showErrorMessage(`Branch '${branchName}' not found`);
+				void window.showErrorMessage(`未找到分支 '${branchName}'`);
 				return;
 			}
 
 			// Check if branch is remote-only
 			if (branch.remote && !branch.upstream) {
-				void window.showErrorMessage(`Cannot recompose remote-only branch '${branchName}'`);
+				void window.showErrorMessage(`无法重组仅存在于远程的分支 '${branchName}'`);
 				return;
 			}
 
@@ -105,7 +100,7 @@ export class RecomposeBranchCommand extends GlCommandBase {
 				},
 			);
 		} catch (ex) {
-			void window.showErrorMessage(`Failed to recompose branch: ${ex}`);
+			void window.showErrorMessage(`重组分支失败：${ex}`);
 		}
 	}
 }

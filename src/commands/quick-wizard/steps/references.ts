@@ -414,7 +414,7 @@ export function* pickBranchOrTagStepMultiRepo<
 
 	type CrossCommandItem = QuickPickItem & { item: ResultItem };
 	const choosePullRequestItem: CrossCommandItem = {
-		label: 'Choose a Pull Request...',
+		label: '选择一个 Pull Request...',
 		iconPath: new ThemeIcon('git-pull-request'),
 		alwaysShow: true,
 		item: {

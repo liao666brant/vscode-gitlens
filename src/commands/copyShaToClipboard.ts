@@ -87,7 +87,7 @@ export class CopyShaToClipboardCommand extends ActiveEditorCommand {
 						args.sha = blame.commit.sha;
 					} catch (ex) {
 						Logger.error(ex, 'CopyShaToClipboardCommand', `getBlameForLine(${blameline})`);
-						void showGenericErrorMessage('Unable to copy commit SHA');
+						void showGenericErrorMessage('无法复制提交 SHA');
 
 						return;
 					}
@@ -99,7 +99,7 @@ export class CopyShaToClipboardCommand extends ActiveEditorCommand {
 			);
 		} catch (ex) {
 			Logger.error(ex, 'CopyShaToClipboardCommand');
-			void showGenericErrorMessage('Unable to copy commit SHA');
+			void showGenericErrorMessage('无法复制提交 SHA');
 		}
 	}
 }

@@ -60,7 +60,7 @@ export async function activate(context: ExtensionContext): Promise<GitLensApi | 
 				// Show message if debug logging is not enabled (level > Debug)
 				if (channel.logLevel === LogLevel.Off || channel.logLevel > LogLevel.Debug) {
 					channel.appendLine(
-						'To enable debug logging, run "GitLens: Enable Debug Logging" or "Developer: Set Log Level..." from the Command Palette',
+						'要启用调试日志，请从命令面板运行 "GitLens: Enable Debug Logging" 或 "Developer: Set Log Level..."',
 					);
 				}
 				return channel;
@@ -303,7 +303,7 @@ function setKeysForSync(context: ExtensionContext, ...keys: (SyncedStorageKeys |
 function registerBuiltInActionRunners(container: Container): void {
 	container.context.subscriptions.push(
 		container.actionRunners.registerBuiltIn<CreatePullRequestActionContext>('createPullRequest', {
-			label: ctx => `Create Pull Request on ${ctx.remote?.provider?.name ?? 'Remote'}`,
+			label: ctx => `在 ${ctx.remote?.provider?.name ?? '远程'} 上创建拉取请求`,
 			run: async ctx => {
 				if (ctx.type !== 'createPullRequest') return;
 
@@ -322,7 +322,7 @@ function registerBuiltInActionRunners(container: Container): void {
 			},
 		}),
 		container.actionRunners.registerBuiltIn<OpenPullRequestActionContext>('openPullRequest', {
-			label: ctx => `Open Pull Request on ${ctx.provider?.name ?? 'Remote'}`,
+			label: ctx => `在 ${ctx.provider?.name ?? '远程'} 上打开拉取请求`,
 			run: async ctx => {
 				if (ctx.type !== 'openPullRequest') return;
 
@@ -332,7 +332,7 @@ function registerBuiltInActionRunners(container: Container): void {
 			},
 		}),
 		container.actionRunners.registerBuiltIn<OpenIssueActionContext>('openIssue', {
-			label: ctx => `Open Issue on ${ctx.provider?.name ?? 'Remote'}`,
+			label: ctx => `在 ${ctx.provider?.name ?? '远程'} 上打开议题`,
 			run: async ctx => {
 				if (ctx.type !== 'openIssue') return;
 

@@ -54,7 +54,7 @@ export class WorkspacesViewNode extends ViewNode<'workspaces', WorkspacesView> {
 				}
 
 				if (cloudWorkspaces.length === 0 && cloudWorkspaceInfo == null) {
-					children.push(new MessageNode(this.view, this, 'No cloud workspaces found.'));
+					children.push(new MessageNode(this.view, this, '未找到云工作区。'));
 				}
 
 				if (localWorkspaceInfo != null) {
@@ -69,7 +69,7 @@ export class WorkspacesViewNode extends ViewNode<'workspaces', WorkspacesView> {
 	}
 
 	getTreeItem(): TreeItem {
-		const item = new TreeItem('Workspaces', TreeItemCollapsibleState.Expanded);
+		const item = new TreeItem('工作区', TreeItemCollapsibleState.Expanded);
 		return item;
 	}
 
@@ -87,7 +87,7 @@ export class WorkspacesView extends ViewBase<'workspaces', WorkspacesViewNode, W
 	private _disposable: Disposable | undefined;
 
 	constructor(container: Container) {
-		super(container, 'workspaces', 'Workspaces', 'workspacesView');
+		super(container, 'workspaces', '工作区', 'workspacesView');
 
 		this.description = previewBadge;
 		this.disposables.push(container.workspaces.onDidResetWorkspaces(() => void this.refresh(true)));
@@ -124,7 +124,7 @@ export class WorkspacesView extends ViewBase<'workspaces', WorkspacesViewNode, W
 		return window.withProgress(
 			{
 				location: ProgressLocation.Notification,
-				title: `Revealing workspace ${workspaceId} in the side bar...`,
+				title: `正在侧边栏中显示工作区 ${workspaceId}...`,
 				cancellable: true,
 			},
 			async (_progress, token) => {
@@ -235,7 +235,7 @@ export class WorkspacesView extends ViewBase<'workspaces', WorkspacesViewNode, W
 					await window.withProgress(
 						{
 							location: ProgressLocation.Notification,
-							title: `Locating Repositories for '${node.workspace.name}'...`,
+							title: `正在为 '${node.workspace.name}' 定位仓库...`,
 							cancellable: true,
 						},
 						(_progress, token) =>

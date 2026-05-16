@@ -416,7 +416,7 @@ export class AutolinksProvider implements Disposable {
 												});
 												const name =
 													ref.description?.replace(numRegex, num) ??
-													`Custom Autolink ${ref.prefix}${num}`;
+													`自定义自动链接 ${ref.prefix}${num}`;
 												footnoteIndex = footnotes.size + 1;
 												footnotes.set(
 													footnoteIndex,
@@ -424,7 +424,7 @@ export class AutolinksProvider implements Disposable {
 												);
 											}
 
-											title += `\n${GlyphChars.Dash.repeat(2)}\nLoading...`;
+											title += `\n${GlyphChars.Dash.repeat(2)}\n加载中...`;
 										} else {
 											const issue = issueResult.value;
 											const issueTitle = escapeMarkdown(issue.title.trim());
@@ -467,7 +467,7 @@ export class AutolinksProvider implements Disposable {
 										});
 										const name =
 											ref.description?.replace(numRegex, num) ??
-											`Custom Autolink ${ref.prefix}${num}`;
+											`自定义自动链接 ${ref.prefix}${num}`;
 										footnoteIndex = footnotes.size + 1;
 										footnotes.set(
 											footnoteIndex,
@@ -504,7 +504,7 @@ export class AutolinksProvider implements Disposable {
 											if (footnotes != null && !prs?.has(num)) {
 												const name =
 													ref.description?.replace(numRegex, num) ??
-													`Custom Autolink ${ref.prefix}${num}`;
+													`自定义自动链接 ${ref.prefix}${num}`;
 												footnoteIndex = footnotes.size + 1;
 												footnotes.set(
 													footnoteIndex,
@@ -512,7 +512,7 @@ export class AutolinksProvider implements Disposable {
 												);
 											}
 
-											title += `\n${GlyphChars.Dash.repeat(2)}\nLoading...`;
+											title += `\n${GlyphChars.Dash.repeat(2)}\n加载中...`;
 										} else {
 											const issue = issueResult.value;
 											const issueTitle = encodeHtmlWeak(issue.title.trim());
@@ -541,7 +541,7 @@ export class AutolinksProvider implements Disposable {
 									} else if (footnotes != null && !prs?.has(num)) {
 										const name =
 											ref.description?.replace(numRegex, num) ??
-											`Custom Autolink ${ref.prefix}${num}`;
+											`自定义自动链接 ${ref.prefix}${num}`;
 										footnoteIndex = footnotes.size + 1;
 										footnotes.set(
 											footnoteIndex,
@@ -571,7 +571,7 @@ export class AutolinksProvider implements Disposable {
 										footnoteIndex,
 										`${linkText}: ${
 											issueResult.paused
-												? 'Loading...'
+												? '加载中...'
 												: `${issueResult.value.title}  ${GlyphChars.Dot}  ${capitalize(
 														issueResult.value.state,
 													)}, ${fromNow(

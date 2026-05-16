@@ -13,11 +13,11 @@ export class AccessDeniedError extends Error {
 	constructor(subscription: Subscription, required: RequiredSubscriptionPlanIds | undefined) {
 		let message;
 		if (subscription.account?.verified === false) {
-			message = 'Email verification required';
+			message = '需要验证邮箱';
 		} else if (required != null && isSubscriptionPaidPlan(required)) {
-			message = 'GitLens Pro required';
+			message = '需要 GitLens Pro';
 		} else {
-			message = 'Plan required';
+			message = '需要订阅计划';
 		}
 
 		super(message);
@@ -330,40 +330,40 @@ export class AIError extends Error {
 		let message;
 		switch (reason) {
 			case AIErrorReason.NoEntitlement:
-				message = 'You do not have the required entitlement to use this feature';
+				message = '您没有使用此功能所需的权限';
 				break;
 			case AIErrorReason.RequestTooLarge:
-				message = 'The request is too large';
+				message = '请求过大';
 				break;
 			case AIErrorReason.UserQuotaExceeded:
-				message = 'You have exceeded your user token limit';
+				message = '您已超出用户令牌限制';
 				break;
 			case AIErrorReason.RateLimitExceeded:
-				message = 'Rate limit exceeded';
+				message = '超出速率限制';
 				break;
 			case AIErrorReason.RateLimitOrFundsExceeded:
-				message = 'Rate limit exceeded or your account is out of funds';
+				message = '超出速率限制或账户余额不足';
 				break;
 			case AIErrorReason.ServiceCapacityExceeded:
-				message = 'Service capacity exceeded';
+				message = '服务容量已超出';
 				break;
 			case AIErrorReason.NoRequestData:
-				message = original?.message ?? 'No data was provided for the request';
+				message = original?.message ?? '未提供请求数据';
 				break;
 			case AIErrorReason.ModelNotSupported:
-				message = 'Model not supported for this request';
+				message = '此请求不支持该模型';
 				break;
 			case AIErrorReason.Unauthorized:
-				message = 'You are not authorized to use the specified provider or model';
+				message = '您无权使用指定的提供商或模型';
 				break;
 			case AIErrorReason.DeniedByOrganization:
-				message = 'Your organization has denied access to the specified provider or model';
+				message = '您的组织已拒绝访问指定的提供商或模型';
 				break;
 			case AIErrorReason.DeniedByUser:
-				message = 'You have denied access to the specified provider or model';
+				message = '您已拒绝访问指定的提供商或模型';
 				break;
 			default:
-				message = original?.message ?? 'An unknown error occurred';
+				message = original?.message ?? '发生未知错误';
 				break;
 		}
 

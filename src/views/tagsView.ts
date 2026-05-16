@@ -44,7 +44,7 @@ export class TagsViewNode extends RepositoriesSubscribeableNode<TagsView, TagsRe
 
 			const repositories = this.view.getFilteredRepositories();
 			if (!repositories.length) {
-				this.view.message = 'No tags could be found.';
+				this.view.message = '未找到任何标签。';
 				return [];
 			}
 
@@ -59,7 +59,7 @@ export class TagsViewNode extends RepositoriesSubscribeableNode<TagsView, TagsRe
 
 			const tags = await child.repo.git.tags.getTags();
 			if (!tags.values.length) {
-				this.view.message = 'No tags could be found.';
+				this.view.message = '未找到任何标签。';
 				void child.ensureSubscription();
 
 				return [];
@@ -74,7 +74,7 @@ export class TagsViewNode extends RepositoriesSubscribeableNode<TagsView, TagsRe
 	}
 
 	getTreeItem(): TreeItem {
-		const item = new TreeItem('Tags', TreeItemCollapsibleState.Expanded);
+		const item = new TreeItem('标签', TreeItemCollapsibleState.Expanded);
 		return item;
 	}
 }
@@ -83,7 +83,7 @@ export class TagsView extends ViewBase<'tags', TagsViewNode, TagsViewConfig> {
 	protected readonly configKey = 'tags';
 
 	constructor(container: Container, grouped?: GroupedViewContext) {
-		super(container, 'tags', 'Tags', 'tagsView', grouped);
+		super(container, 'tags', '标签', 'tagsView', grouped);
 	}
 
 	override get canReveal(): boolean {
@@ -198,10 +198,10 @@ export class TagsView extends ViewBase<'tags', TagsViewNode, TagsViewConfig> {
 		return window.withProgress(
 			{
 				location: ProgressLocation.Notification,
-				title: `Revealing ${getReferenceLabel(tag, {
+				title: `正在侧边栏中显示 ${getReferenceLabel(tag, {
 					icon: false,
 					quoted: true,
-				})} in the side bar...`,
+				})}...`,
 				cancellable: true,
 			},
 			async (_progress, token) => {

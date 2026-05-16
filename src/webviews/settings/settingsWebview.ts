@@ -278,7 +278,7 @@ export class SettingsWebviewProvider implements WebviewProvider<State, State, Se
 						messageTruncateAtNewLine: true,
 					});
 				} catch {
-					preview = 'Invalid format';
+					preview = '无效格式';
 				}
 
 				return { preview: preview };

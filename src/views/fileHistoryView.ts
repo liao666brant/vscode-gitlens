@@ -27,7 +27,7 @@ export class FileHistoryView extends ViewBase<
 	private _followEditor: boolean = true;
 
 	constructor(container: Container, grouped?: GroupedViewContext) {
-		super(container, 'fileHistory', 'File History', 'fileHistoryView', grouped);
+		super(container, 'fileHistory', '文件历史', 'fileHistoryView', grouped);
 
 		void setContext('gitlens:views:fileHistory:cursorFollowing', this._followCursor);
 		void setContext('gitlens:views:fileHistory:editorFollowing', this._followEditor);

@@ -28,7 +28,7 @@ const descriptor: CustomEditorDescriptor = {
 	id: 'gitlens.rebase',
 	fileName: 'rebase.html',
 	iconPath: 'images/gitlens-icon.png',
-	title: 'Interactive Rebase',
+	title: '交互式变基',
 	contextKeyPrefix: 'gitlens:webview:rebase',
 	trackingFeature: 'rebaseEditor',
 	type: 'rebase',

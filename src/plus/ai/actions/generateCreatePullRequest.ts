@@ -60,7 +60,7 @@ export async function generateCreatePullRequest(
 				const messages: AIChatMessage[] = [{ role: 'user', content: prompt }];
 				return messages;
 			},
-			getProgressTitle: m => `Generating pull request details with ${m.name}...`,
+			getProgressTitle: m => `正在使用 ${m.name} 生成拉取请求详情...`,
 			getTelemetryInfo: m => ({
 				key: 'ai/generate',
 				data: {

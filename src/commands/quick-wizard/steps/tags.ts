@@ -52,9 +52,9 @@ export async function* inputTagNameStep<
 ): AsyncStepResultGenerator<string> {
 	const step = createInputStep({
 		title: appendReposToTitle(options.title ?? context.title, state, context),
-		placeholder: options.placeholder ?? 'Tag name',
+		placeholder: options.placeholder ?? '标签名称',
 		value: options.value,
-		prompt: options.prompt ?? 'Please provide a tag name',
+		prompt: options.prompt ?? '请提供标签名称',
 		canGoBack: context.steps?.canGoBack,
 		validate: async (value: string | undefined): Promise<[boolean, string | undefined]> => {
 			if (!value) return [false, undefined];

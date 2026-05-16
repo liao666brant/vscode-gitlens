@@ -108,7 +108,7 @@ function isToggleSearchModeItem(item: LaunchpadQuickPickItem): item is ToggleSea
 const connectMoreIntegrationsItem: ConnectMoreIntegrationsQuickPickItem = {
 	type: 'integrations',
 	label: 'Connect an Additional Integration...',
-	detail: 'Connect additional integrations to view their pull requests in Launchpad',
+	detail: '连接其他集成以在 Launchpad 中查看其拉取请求',
 };
 
 interface Context extends StepsContext<StepNames> {
@@ -600,29 +600,32 @@ export class LaunchpadCommand extends QuickCommand<State> {
 
 			if (result?.error != null) {
 				return {
-					title: `${context.title} \u00a0\u2022\u00a0 Unable to Load Items`,
-					placeholder: `Unable to load items (${
+					title: `${context.title} \u00a0\u2022\u00a0 \u65e0\u6cd5\u52a0\u8f7d\u9879\u76ee`,
+					placeholder: `\u65e0\u6cd5\u52a0\u8f7d\u9879\u76ee (${
 						result.error.name === 'HttpError' &&
 						'status' in result.error &&
 						typeof result.error.status === 'number'
 							? `${result.error.status}: ${String(result.error)}`
 							: String(result.error)
 					})`,
-					items: [createDirectiveQuickPickItem(Directive.Cancel, undefined, { label: 'OK' })],
+					items: [createDirectiveQuickPickItem(Directive.Cancel, undefined, { label: '确定' })],
 				};
 			}
 
 			if (!result?.items.length) {
 				if (context.inSearch === 'mode') {
 					return {
-						title: `Search For Pull Request \u00a0\u2022\u00a0 ${context.title}`,
-						placeholder: 'Enter a term to search for a pull request to act on',
+						title: `\u641c\u7d22\u62c9\u53d6\u8bf7\u6c42 \u00a0\u2022\u00a0 ${context.title}`,
+						placeholder:
+							'\u8f93\u5165\u5173\u952e\u8bcd\u641c\u7d22\u8981\u64cd\u4f5c\u7684\u62c9\u53d6\u8bf7\u6c42',
 						items: [
 							{
 								type: 'searchMode',
 								searchMode: false,
-								label: 'Cancel Searching',
-								detail: isFiltering ? 'No pull requests found' : 'Go back to Launchpad',
+								label: '\u53d6\u6d88\u641c\u7d22',
+								detail: isFiltering
+									? '\u672a\u627e\u5230\u62c9\u53d6\u8bf7\u6c42'
+									: '\u8fd4\u56de Launchpad',
 								alwaysShow: true,
 								picked: true,
 							} satisfies ToggleSearchModeQuickPickItem,
@@ -632,12 +635,12 @@ export class LaunchpadCommand extends QuickCommand<State> {
 
 				return {
 					title: context.title,
-					placeholder: 'All done! Take a vacation',
+					placeholder: '全部完成！去度假吧',
 					items: [
 						{
 							type: 'searchMode',
 							searchMode: true,
-							label: 'Search for Pull Request...',
+							label: '搜索拉取请求...',
 							alwaysShow: true,
 							picked: true,
 						} satisfies ToggleSearchModeQuickPickItem,
@@ -651,15 +654,16 @@ export class LaunchpadCommand extends QuickCommand<State> {
 				const offItem: ToggleSearchModeQuickPickItem = {
 					type: 'searchMode',
 					searchMode: false,
-					label: 'Cancel Searching',
-					detail: 'Go back to Launchpad',
+					label: '取消搜索',
+					detail: '返回 Launchpad',
 					alwaysShow: true,
 					picked: !isFiltering && !hasPicked,
 				};
 
 				return {
-					title: `Search For Pull Request \u00a0\u2022\u00a0 ${context.title}`,
-					placeholder: 'Enter a term to search for a pull request to act on',
+					title: `\u641c\u7d22\u62c9\u53d6\u8bf7\u6c42 \u00a0\u2022\u00a0 ${context.title}`,
+					placeholder:
+						'\u8f93\u5165\u5173\u952e\u8bcd\u641c\u7d22\u8981\u64cd\u4f5c\u7684\u62c9\u53d6\u8bf7\u6c42',
 					items: isFiltering ? [...items, offItem] : [offItem, ...items],
 				};
 			}
@@ -667,14 +671,14 @@ export class LaunchpadCommand extends QuickCommand<State> {
 			const onItem: ToggleSearchModeQuickPickItem = {
 				type: 'searchMode',
 				searchMode: true,
-				label: 'Search for Pull Request...',
+				label: '搜索拉取请求...',
 				alwaysShow: true,
 				picked: !isFiltering && !hasPicked,
 			};
 
 			return {
 				title: context.title,
-				placeholder: 'Choose a pull request or paste a pull request URL to act on',
+				placeholder: '选择一个拉取请求或粘贴拉取请求 URL 来操作',
 				items: isFiltering
 					? [...items, onItem]
 					: [onItem, ...getLaunchpadQuickPickItems(result.items, isFiltering)],
@@ -695,7 +699,7 @@ export class LaunchpadCommand extends QuickCommand<State> {
 								type: 'searchMode',
 								searchMode: false,
 								label: `Searching for "${quickpick.value}"...`,
-								detail: 'Click to cancel searching',
+								detail: '点击取消搜索',
 								alwaysShow: true,
 								picked: true,
 							} satisfies ToggleSearchModeQuickPickItem,
@@ -1023,8 +1027,8 @@ export class LaunchpadCommand extends QuickCommand<State> {
 						confirmations.push(
 							createQuickPickItemOfT(
 								{
-									label: 'Switch to Branch',
-									detail: 'Will checkout the branch, create or open a worktree',
+									label: '切换到分支',
+									detail: '将检出分支、创建或打开工作树',
 								},
 								action,
 							),
@@ -1034,8 +1038,8 @@ export class LaunchpadCommand extends QuickCommand<State> {
 						confirmations.push(
 							createQuickPickItemOfT(
 								{
-									label: 'Open in Worktree',
-									detail: 'Will create or open a worktree in a new window',
+									label: '在工作树中打开',
+									detail: '将在新窗口中创建或打开工作树',
 								},
 								action,
 							),
@@ -1045,10 +1049,8 @@ export class LaunchpadCommand extends QuickCommand<State> {
 						confirmations.push(
 							createQuickPickItemOfT(
 								{
-									label: `Switch & Suggest ${
-										state.item.viewer.isAuthor ? 'Additional ' : ''
-									}Code Changes`,
-									detail: 'Will checkout and start suggesting code changes',
+									label: `切换并建议${state.item.viewer.isAuthor ? '额外的' : ''}代码更改`,
+									detail: '将检出并开始建议代码更改',
 								},
 								action,
 							),
@@ -1058,8 +1060,8 @@ export class LaunchpadCommand extends QuickCommand<State> {
 						confirmations.push(
 							createQuickPickItemOfT(
 								{
-									label: `Suggest ${state.item.viewer.isAuthor ? 'Additional ' : ''}Code Changes`,
-									detail: 'Will start suggesting code changes',
+									label: `建议${state.item.viewer.isAuthor ? '额外的' : ''}代码更改`,
+									detail: '将开始建议代码更改',
 								},
 								action,
 							),
@@ -1069,8 +1071,8 @@ export class LaunchpadCommand extends QuickCommand<State> {
 						confirmations.push(
 							createQuickPickItemOfT(
 								{
-									label: 'Open Details',
-									detail: 'Will open the pull request details in the Side Bar',
+									label: '打开详情',
+									detail: '将在侧边栏中打开拉取请求详情',
 								},
 								action,
 							),
@@ -1080,8 +1082,8 @@ export class LaunchpadCommand extends QuickCommand<State> {
 						confirmations.push(
 							createQuickPickItemOfT(
 								{
-									label: 'Open Changes',
-									detail: 'Will open the pull request changes for review',
+									label: '打开更改',
+									detail: '将打开拉取请求更改以供审阅',
 								},
 								action,
 							),
@@ -1091,7 +1093,7 @@ export class LaunchpadCommand extends QuickCommand<State> {
 						confirmations.push(
 							createQuickPickItemOfT(
 								{
-									label: 'Open in Commit Graph',
+									label: '在提交图中打开',
 								},
 								action,
 							),
@@ -1108,7 +1110,7 @@ export class LaunchpadCommand extends QuickCommand<State> {
 			getConfirmations(),
 			undefined,
 			{
-				placeholder: 'Choose an action to perform',
+				placeholder: '选择要执行的操作',
 				onDidClickItemButton: async (quickpick, button, item): Promise<void> => {
 					switch (button) {
 						case OpenOnGitHubQuickInputButton:
@@ -1189,8 +1191,8 @@ export class LaunchpadCommand extends QuickCommand<State> {
 		const confirmations: (QuickPickItemOfT<IntegrationIds> | DirectiveQuickPickItem)[] = !hasConnectedIntegration
 			? [
 					createDirectiveQuickPickItem(Directive.Cancel, undefined, {
-						label: 'Launchpad prioritizes your pull requests to keep you focused and your team unblocked',
-						detail: 'Click to learn more about Launchpad',
+						label: 'Launchpad 对你的拉取请求进行优先排序，帮助你集中注意力并保持团队畅通',
+						detail: '点击了解更多关于 Launchpad 的信息',
 						iconPath: new ThemeIcon('rocket'),
 						onDidSelect: () =>
 							void executeCommand<OpenWalkthroughCommandArgs>('gitlens.openWalkthrough', {
@@ -1211,8 +1213,8 @@ export class LaunchpadCommand extends QuickCommand<State> {
 					confirmations.push(
 						createQuickPickItemOfT(
 							{
-								label: 'Connect to GitHub...',
-								detail: 'Will connect to GitHub to provide access your pull requests and issues',
+								label: '连接到 GitHub...',
+								detail: '将连接到 GitHub 以访问你的拉取请求和议题',
 							},
 							integration,
 						),
@@ -1222,8 +1224,8 @@ export class LaunchpadCommand extends QuickCommand<State> {
 					confirmations.push(
 						createQuickPickItemOfT(
 							{
-								label: 'Connect to GitLab...',
-								detail: 'Will connect to GitLab to provide access your pull requests and issues',
+								label: '连接到 GitLab...',
+								detail: '将连接到 GitLab 以访问你的拉取请求和议题',
 							},
 							integration,
 						),
@@ -1235,10 +1237,14 @@ export class LaunchpadCommand extends QuickCommand<State> {
 		}
 
 		const step = this.createConfirmStep(
-			`${this.title} \u00a0\u2022\u00a0 Connect an Integration`,
+			`${this.title} \u00a0\u2022\u00a0 \u8fde\u63a5\u96c6\u6210`,
 			confirmations,
-			createDirectiveQuickPickItem(Directive.Cancel, false, { label: 'Cancel' }),
-			{ placeholder: 'Connect an integration to get started with Launchpad', buttons: [], ignoreFocusOut: false },
+			createDirectiveQuickPickItem(Directive.Cancel, false, { label: '\u53d6\u6d88' }),
+			{
+				placeholder: '\u8fde\u63a5\u96c6\u6210\u4ee5\u5f00\u59cb\u4f7f\u7528 Launchpad',
+				buttons: [],
+				ignoreFocusOut: false,
+			},
 		);
 
 		const selection: StepSelection<typeof step> = yield step;
@@ -1264,8 +1270,8 @@ export class LaunchpadCommand extends QuickCommand<State> {
 					? []
 					: [
 							createDirectiveQuickPickItem(Directive.Cancel, undefined, {
-								label: 'Launchpad prioritizes your pull requests to keep you focused and your team unblocked',
-								detail: 'Click to learn more about Launchpad',
+								label: 'Launchpad 对你的拉取请求进行优先排序，帮助你集中注意力并保持团队畅通',
+								detail: '点击了解更多关于 Launchpad 的信息',
 								iconPath: new ThemeIcon('rocket'),
 								onDidSelect: () =>
 									void executeCommand<OpenWalkthroughCommandArgs>('gitlens.openWalkthrough', {

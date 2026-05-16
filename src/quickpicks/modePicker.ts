@@ -19,7 +19,7 @@ export async function showModePicker(): Promise<ModesQuickPickItem | undefined> 
 	const items = modeKeys.map(key => {
 		const modeCfg = modes[key];
 		const item: ModesQuickPickItem = {
-			label: `${mode === key ? '$(check)\u00a0\u00a0' : '\u00a0\u00a0\u00a0\u00a0\u00a0'}${modeCfg.name} mode`,
+			label: `${mode === key ? '$(check)\u00a0\u00a0' : '\u00a0\u00a0\u00a0\u00a0\u00a0'}${modeCfg.name} \u6a21\u5f0f`,
 			description: modeCfg.description ? `\u00a0${GlyphChars.Dash}\u00a0 ${modeCfg.description}` : '',
 			key: key,
 		};
@@ -28,13 +28,13 @@ export async function showModePicker(): Promise<ModesQuickPickItem | undefined> 
 
 	if (mode && modes[mode] != null) {
 		items.unshift({
-			label: `Exit ${modes[mode].name} mode`,
+			label: `\u9000\u51fa ${modes[mode].name} \u6a21\u5f0f`,
 			key: undefined,
 		});
 	}
 
 	const pick = await window.showQuickPick(items, {
-		placeHolder: 'select a GitLens mode to enter',
+		placeHolder: '\u9009\u62e9\u8981\u8fdb\u5165\u7684 GitLens \u6a21\u5f0f',
 	});
 
 	return pick;

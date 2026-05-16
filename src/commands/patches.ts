@@ -86,7 +86,7 @@ abstract class CreatePatchCommandBase extends GlCommandBase {
 					repoPath: repo?.path,
 					to: to,
 					uris: [...map(uris, u => Uri.parse(u))],
-					title: to === uncommittedStaged ? 'Staged Changes' : 'Uncommitted Changes',
+					title: to === uncommittedStaged ? '已暂存的更改' : '未提交的更改',
 					includeUntracked: includeUntracked ? true : undefined,
 				};
 			} else if (context.type === 'scm-groups') {
@@ -99,7 +99,7 @@ abstract class CreatePatchCommandBase extends GlCommandBase {
 				args = {
 					repoPath: repo?.path,
 					to: to,
-					title: to === uncommittedStaged ? 'Staged Changes' : 'Uncommitted Changes',
+					title: to === uncommittedStaged ? '已暂存的更改' : '未提交的更改',
 				};
 			} else if (context.type === 'viewItem') {
 				if (isCommandContextViewNodeHasCommit(context)) {
@@ -109,7 +109,7 @@ abstract class CreatePatchCommandBase extends GlCommandBase {
 						args = {
 							repoPath: context.node.commit.repoPath,
 							to: to,
-							title: to === uncommittedStaged ? 'Staged Changes' : 'Uncommitted Changes',
+							title: to === uncommittedStaged ? '已暂存的更改' : '未提交的更改',
 						};
 					} else {
 						if (commit.message == null) {
@@ -134,9 +134,9 @@ abstract class CreatePatchCommandBase extends GlCommandBase {
 						repoPath: context.node.uri.fsPath,
 						to: context.node.compareRef.ref,
 						from: context.node.compareWithRef.ref,
-						title: `Changes between ${shortenRevision(context.node.compareRef.ref)} and ${shortenRevision(
+						title: `${shortenRevision(context.node.compareRef.ref)} 与 ${shortenRevision(
 							context.node.compareWithRef.ref,
-						)}`,
+						)} 之间的更改`,
 					};
 				} else if (isCommandContextViewNodeHasFileRefs(context)) {
 					args = {
@@ -150,7 +150,7 @@ abstract class CreatePatchCommandBase extends GlCommandBase {
 						repoPath: context.node.repoPath,
 						to: uncommitted,
 						from: 'HEAD',
-						title: 'Uncommitted Changes',
+						title: '未提交的更改',
 					};
 				} else if (isCommandContextViewNodeHasRefFile(context)) {
 					if (isUncommitted(context.node.ref.ref)) {
@@ -160,7 +160,7 @@ abstract class CreatePatchCommandBase extends GlCommandBase {
 							to: to,
 							from: context.node.is('uncommitted-file') ? 'HEAD' : undefined,
 							uris: [context.node.uri],
-							title: to === uncommittedStaged ? 'Staged Changes' : 'Uncommitted Changes',
+							title: to === uncommittedStaged ? '已暂存的更改' : '未提交的更改',
 						};
 					} else {
 						args = {
@@ -168,7 +168,7 @@ abstract class CreatePatchCommandBase extends GlCommandBase {
 							to: context.node.ref.sha,
 							from: `${context.node.ref.sha}^`,
 							uris: [context.node.uri],
-							title: `Changes (partial) in ${shortenRevision(context.node.ref.sha)}`,
+							title: `${shortenRevision(context.node.ref.sha)} 中的部分更改`,
 						};
 					}
 				}
@@ -181,7 +181,7 @@ abstract class CreatePatchCommandBase extends GlCommandBase {
 							to: to,
 							from: context.node.is('uncommitted-file') ? 'HEAD' : undefined,
 							uris: [context.node.uri],
-							title: to === uncommittedStaged ? 'Staged Changes' : 'Uncommitted Changes',
+							title: to === uncommittedStaged ? '已暂存的更改' : '未提交的更改',
 						};
 					} else {
 						args = {
@@ -189,7 +189,7 @@ abstract class CreatePatchCommandBase extends GlCommandBase {
 							to: context.node.ref.sha,
 							from: `${context.node.ref.sha}^`,
 							uris: [context.node.uri],
-							title: `Changes (partial) in ${shortenRevision(context.node.ref.sha)}`,
+							title: `${shortenRevision(context.node.ref.sha)} 中的部分更改`,
 						};
 					}
 
@@ -251,7 +251,7 @@ export class CreatePatchCommand extends CreatePatchCommandBase {
 	}
 
 	async execute(args?: CreatePatchCommandArgs): Promise<void> {
-		const diff = await this.getDiff('Create Patch', args);
+		const diff = await this.getDiff('创建补丁', args);
 		if (diff == null) return;
 
 		debugger;
@@ -279,15 +279,15 @@ export class CopyPatchToClipboardCommand extends CreatePatchCommandBase {
 	}
 
 	async execute(args?: CreatePatchCommandArgs): Promise<void> {
-		const diff = await this.getDiff('Copy as Patch', args);
+		const diff = await this.getDiff('\u590d\u5236\u4e3a\u8865\u4e01', args);
 		if (!diff?.contents) {
-			void window.showWarningMessage('No changes found to copy');
+			void window.showWarningMessage('\u672a\u627e\u5230\u53ef\u590d\u5236\u7684\u66f4\u6539');
 			return;
 		}
 
 		await env.clipboard.writeText(diff.contents);
 		void window.showInformationMessage(
-			"Copied patch \u2014 use 'Apply Copied Patch' in another window to apply it",
+			'\u5df2\u590d\u5236\u8865\u4e01 \u2014 \u5728\u53e6\u4e00\u4e2a\u7a97\u53e3\u4e2d\u4f7f\u7528\u300c\u5e94\u7528\u5df2\u590d\u5236\u7684\u8865\u4e01\u300d\u6765\u5e94\u7528\u5b83',
 		);
 	}
 }
@@ -305,11 +305,11 @@ export class ApplyPatchFromClipboardCommand extends GlCommandBase {
 		// Make sure it looks like a valid patch
 		const valid = patch.length ? await repo?.git.patch?.validatePatch(patch) : false;
 		if (!valid) {
-			void window.showWarningMessage('No valid patch found in the clipboard');
+			void window.showWarningMessage('剪贴板中未找到有效的补丁');
 			return;
 		}
 
-		repo ??= await getRepositoryOrShowPicker(this.container, 'Apply Copied Patch');
+		repo ??= await getRepositoryOrShowPicker(this.container, '应用已复制的补丁');
 		if (repo == null) return;
 
 		try {
@@ -317,16 +317,16 @@ export class ApplyPatchFromClipboardCommand extends GlCommandBase {
 			if (commit == null) return;
 
 			await repo.git.patch?.applyUnreachableCommitForPatch(commit.sha, { stash: false });
-			void window.showInformationMessage(`Patch applied successfully`);
+			void window.showInformationMessage(`补丁应用成功`);
 		} catch (ex) {
 			if (ex instanceof CancellationError) return;
 
 			if (ApplyPatchCommitError.is(ex, 'appliedWithConflicts')) {
-				void window.showWarningMessage('Patch applied with conflicts');
+				void window.showWarningMessage('补丁已应用但存在冲突');
 			} else if (ApplyPatchCommitError.is(ex)) {
 				void showGitErrorMessage(ex);
 			} else {
-				void showGitErrorMessage(ex, `Unable to apply patch: ${ex.message}`);
+				void showGitErrorMessage(ex, `无法应用补丁：${ex.message}`);
 			}
 		}
 	}
@@ -372,8 +372,8 @@ export class OpenPatchCommand extends ActiveEditorCommand {
 				canSelectFolders: false,
 				canSelectMany: false,
 				filters: { Patches: ['diff', 'patch'] },
-				openLabel: 'Open Patch',
-				title: 'Open Patch File',
+				openLabel: '打开补丁',
+				title: '打开补丁文件',
 			});
 			const uri = uris?.[0];
 			if (uri == null) return;
@@ -418,9 +418,9 @@ export class OpenCloudPatchCommand extends GlCommandBase {
 	}
 
 	async execute(args?: OpenCloudPatchCommandArgs): Promise<void> {
-		const type = args?.type === 'code_suggestion' ? 'Code Suggestion' : 'Cloud Patch';
+		const type = args?.type === 'code_suggestion' ? 'Code Suggestion' : '云补丁';
 		if (args?.id == null && args?.draft == null) {
-			void window.showErrorMessage(`Cannot open ${type}; no patch or patch id provided`);
+			void window.showErrorMessage(`无法打开${type}；未提供补丁或补丁 ID`);
 			return;
 		}
 
@@ -433,24 +433,24 @@ export class OpenCloudPatchCommand extends GlCommandBase {
 				providerId = getProviderIdFromEntityIdentifier(identifier);
 				providerDomain = identifier.domain ?? undefined;
 			} catch {
-				void window.showErrorMessage(`Cannot open ${type}; invalid provider details.`);
+				void window.showErrorMessage(`无法打开${type}；无效的提供程序详情。`);
 				return;
 			}
 
 			if (providerId == null) {
-				void window.showErrorMessage(`Cannot open ${type}; unsupported provider.`);
+				void window.showErrorMessage(`无法打开${type}；不支持的提供程序。`);
 				return;
 			}
 
 			const integration = await this.container.integrations.get(providerId, providerDomain);
 			if (integration == null) {
-				void window.showErrorMessage(`Cannot open ${type}; provider not found.`);
+				void window.showErrorMessage(`无法打开${type}；未找到提供程序。`);
 				return;
 			}
 
 			const session = await integration.getSession('cloud-patches');
 			if (session == null) {
-				void window.showErrorMessage(`Cannot open ${type}; provider not connected.`);
+				void window.showErrorMessage(`无法打开${type}；提供程序未连接。`);
 				return;
 			}
 
@@ -463,7 +463,7 @@ export class OpenCloudPatchCommand extends GlCommandBase {
 			void showPatchesView({ mode: 'view', draft: draft });
 		} catch (ex) {
 			Logger.error(ex, 'OpenCloudPatchCommand');
-			void window.showErrorMessage(`Unable to open ${type} '${args.id}'`);
+			void window.showErrorMessage(`无法打开${type} '${args.id}'`);
 		}
 	}
 }

@@ -69,28 +69,28 @@ export const PaidDeepLinkTypes: DeepLinkType[] = [];
 export function deepLinkTypeToString(type: DeepLinkType): string {
 	switch (type) {
 		case DeepLinkType.Branch:
-			return 'Branch';
+			return '分支';
 		case DeepLinkType.Command:
-			return 'Command';
+			return '命令';
 		case DeepLinkType.Commit:
-			return 'Commit';
+			return '提交';
 		case DeepLinkType.Comparison:
-			return 'Comparison';
+			return '比较';
 		case DeepLinkType.Draft:
-			return 'Cloud Patch';
+			return '云补丁';
 		case DeepLinkType.File:
-			return 'File';
+			return '文件';
 		case DeepLinkType.Integrations:
-			return 'Integrations';
+			return '集成';
 		case DeepLinkType.Repository:
-			return 'Repository';
+			return '仓库';
 		case DeepLinkType.Tag:
-			return 'Tag';
+			return '标签';
 		case DeepLinkType.Workspace:
-			return 'Workspace';
+			return '工作区';
 		default:
 			debugger;
-			return 'Unknown';
+			return '未知';
 	}
 }
 
@@ -513,32 +513,32 @@ export interface DeepLinkProgress {
 }
 
 export const deepLinkStateToProgress: Record<string, DeepLinkProgress> = {
-	[DeepLinkServiceState.Idle]: { message: 'Done.', increment: 100 },
-	[DeepLinkServiceState.AccountCheck]: { message: 'Checking account...', increment: 1 },
-	[DeepLinkServiceState.PlanCheck]: { message: 'Checking plan...', increment: 2 },
-	[DeepLinkServiceState.TypeMatch]: { message: 'Matching link type...', increment: 5 },
-	[DeepLinkServiceState.RepoMatch]: { message: 'Finding a matching repository...', increment: 10 },
-	[DeepLinkServiceState.CloneOrAddRepo]: { message: 'Adding repository...', increment: 20 },
-	[DeepLinkServiceState.AddedRepoMatch]: { message: 'Finding a matching repository...', increment: 25 },
-	[DeepLinkServiceState.RemoteMatch]: { message: 'Finding a matching remote...', increment: 30 },
-	[DeepLinkServiceState.AddRemote]: { message: 'Adding remote...', increment: 40 },
-	[DeepLinkServiceState.TargetMatch]: { message: 'finding a matching target...', increment: 50 },
-	[DeepLinkServiceState.Fetch]: { message: 'Fetching...', increment: 60 },
-	[DeepLinkServiceState.FetchedTargetMatch]: { message: 'Finding a matching target...', increment: 65 },
-	[DeepLinkServiceState.MaybeOpenRepo]: { message: 'Opening repository...', increment: 70 },
-	[DeepLinkServiceState.RepoOpening]: { message: 'Opening repository...', increment: 75 },
-	[DeepLinkServiceState.GoToTarget]: { message: 'Opening target...', increment: 80 },
-	[DeepLinkServiceState.OpenGraph]: { message: 'Opening graph...', increment: 90 },
-	[DeepLinkServiceState.OpenComparison]: { message: 'Opening comparison...', increment: 90 },
-	[DeepLinkServiceState.OpenDraft]: { message: 'Opening cloud patch...', increment: 90 },
-	[DeepLinkServiceState.OpenWorkspace]: { message: 'Opening workspace...', increment: 90 },
-	[DeepLinkServiceState.OpenFile]: { message: 'Opening file...', increment: 90 },
-	[DeepLinkServiceState.OpenInspect]: { message: 'Opening inspect...', increment: 90 },
-	[DeepLinkServiceState.SwitchToRef]: { message: 'Switching to ref...', increment: 90 },
-	[DeepLinkServiceState.RunCommand]: { message: 'Running command...', increment: 90 },
-	[DeepLinkServiceState.OpenAllPrChanges]: { message: 'Opening all PR changes...', increment: 90 },
-	[DeepLinkServiceState.DeleteBranch]: { message: 'Deleting branch...', increment: 90 },
-	[DeepLinkServiceState.ConnectCloudIntegrations]: { message: 'Connecting cloud integrations...', increment: 90 },
-	[DeepLinkServiceState.StartReview]: { message: 'Starting review...', increment: 90 },
-	[DeepLinkServiceState.StartWork]: { message: 'Starting work...', increment: 90 },
+	[DeepLinkServiceState.Idle]: { message: '完成。', increment: 100 },
+	[DeepLinkServiceState.AccountCheck]: { message: '正在检查账户...', increment: 1 },
+	[DeepLinkServiceState.PlanCheck]: { message: '正在检查计划...', increment: 2 },
+	[DeepLinkServiceState.TypeMatch]: { message: '正在匹配链接类型...', increment: 5 },
+	[DeepLinkServiceState.RepoMatch]: { message: '正在查找匹配的仓库...', increment: 10 },
+	[DeepLinkServiceState.CloneOrAddRepo]: { message: '正在添加仓库...', increment: 20 },
+	[DeepLinkServiceState.AddedRepoMatch]: { message: '正在查找匹配的仓库...', increment: 25 },
+	[DeepLinkServiceState.RemoteMatch]: { message: '正在查找匹配的远程仓库...', increment: 30 },
+	[DeepLinkServiceState.AddRemote]: { message: '正在添加远程仓库...', increment: 40 },
+	[DeepLinkServiceState.TargetMatch]: { message: '正在查找匹配的目标...', increment: 50 },
+	[DeepLinkServiceState.Fetch]: { message: '正在拉取...', increment: 60 },
+	[DeepLinkServiceState.FetchedTargetMatch]: { message: '正在查找匹配的目标...', increment: 65 },
+	[DeepLinkServiceState.MaybeOpenRepo]: { message: '正在打开仓库...', increment: 70 },
+	[DeepLinkServiceState.RepoOpening]: { message: '正在打开仓库...', increment: 75 },
+	[DeepLinkServiceState.GoToTarget]: { message: '正在打开目标...', increment: 80 },
+	[DeepLinkServiceState.OpenGraph]: { message: '正在打开提交图...', increment: 90 },
+	[DeepLinkServiceState.OpenComparison]: { message: '正在打开比较...', increment: 90 },
+	[DeepLinkServiceState.OpenDraft]: { message: '正在打开云补丁...', increment: 90 },
+	[DeepLinkServiceState.OpenWorkspace]: { message: '正在打开工作区...', increment: 90 },
+	[DeepLinkServiceState.OpenFile]: { message: '正在打开文件...', increment: 90 },
+	[DeepLinkServiceState.OpenInspect]: { message: '正在打开检查...', increment: 90 },
+	[DeepLinkServiceState.SwitchToRef]: { message: '正在切换引用...', increment: 90 },
+	[DeepLinkServiceState.RunCommand]: { message: '正在运行命令...', increment: 90 },
+	[DeepLinkServiceState.OpenAllPrChanges]: { message: '正在打开所有 PR 更改...', increment: 90 },
+	[DeepLinkServiceState.DeleteBranch]: { message: '正在删除分支...', increment: 90 },
+	[DeepLinkServiceState.ConnectCloudIntegrations]: { message: '正在连接云集成...', increment: 90 },
+	[DeepLinkServiceState.StartReview]: { message: '正在开始审查...', increment: 90 },
+	[DeepLinkServiceState.StartWork]: { message: '正在开始工作...', increment: 90 },
 };

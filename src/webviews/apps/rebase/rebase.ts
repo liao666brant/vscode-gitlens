@@ -1247,7 +1247,7 @@ export class GlRebaseEditor extends GlAppHost<State, RebaseStateProvider> {
 
 		const currentCommitSha = status.currentCommit;
 		const pauseReason = status.pauseReason;
-		const revealTooltip = this.state?.revealLocation === 'graph' ? 'Open in Commit Graph' : 'Open in Inspect View';
+		const revealTooltip = this.state?.revealLocation === 'graph' ? '在提交图中打开' : '在检查视图中打开';
 
 		// Determine icon based on pause reason
 		let icon: string;
@@ -1412,7 +1412,7 @@ export class GlRebaseEditor extends GlAppHost<State, RebaseStateProvider> {
 		const doneCommitCount = this.doneEntries.filter(e => e.type === 'commit').length;
 		const pendingCommitCount = this.state.entries.filter(e => e.type === 'commit').length;
 		const totalCommitCount = doneCommitCount + pendingCommitCount;
-		const revealTooltip = this.state.revealLocation === 'graph' ? 'Open in Commit Graph' : 'Open in Inspect View';
+		const revealTooltip = this.state.revealLocation === 'graph' ? '在提交图中打开' : '在检查视图中打开';
 
 		return html`
 			<gl-tooltip hoist content=${revealTooltip}>

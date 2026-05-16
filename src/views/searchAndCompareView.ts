@@ -137,7 +137,7 @@ export class SearchAndCompareView extends ViewBase<
 	protected readonly configKey = 'searchAndCompare';
 
 	constructor(container: Container, grouped?: GroupedViewContext) {
-		super(container, 'searchAndCompare', 'Search & Compare', 'searchAndCompareView', grouped);
+		super(container, 'searchAndCompare', '搜索和比较', 'searchAndCompareView', grouped);
 	}
 
 	override get canSelectMany(): boolean {
@@ -263,7 +263,7 @@ export class SearchAndCompareView extends ViewBase<
 		}
 
 		const labels = {
-			label: `Search results ${typeof label === 'string' ? label : label.label}`,
+			label: `搜索结果 ${typeof label === 'string' ? label : label.label}`,
 			queryLabel: label,
 		};
 		if (updateNode != null) {

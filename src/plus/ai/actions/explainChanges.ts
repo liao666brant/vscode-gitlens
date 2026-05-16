@@ -56,7 +56,7 @@ export async function explainChanges(
 				const messages: AIChatMessage[] = [{ role: 'user', content: prompt }];
 				return messages;
 			},
-			getProgressTitle: m => `Explaining changes with ${m.name}...`,
+			getProgressTitle: m => `正在使用 ${m.name} 解释更改...`,
 			getTelemetryInfo: m => ({
 				key: 'ai/explain',
 				data: {

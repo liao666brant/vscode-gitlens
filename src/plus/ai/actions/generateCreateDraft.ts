@@ -60,8 +60,7 @@ export async function generateCreateDraft(
 				const messages: AIChatMessage[] = [{ role: 'user', content: prompt }];
 				return messages;
 			},
-			getProgressTitle: m =>
-				`Generating ${options?.codeSuggestion ? 'code suggestion' : 'cloud patch'} description with ${m.name}...`,
+			getProgressTitle: m => `正在使用 ${m.name} 生成${options?.codeSuggestion ? '代码建议' : '云补丁'}描述...`,
 			getTelemetryInfo: m => ({
 				key: 'ai/generate',
 				data: {

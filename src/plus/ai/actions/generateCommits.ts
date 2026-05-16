@@ -169,7 +169,7 @@ export async function generateCommits(
 			},
 
 			getProgressTitle: (model, attempt) =>
-				`Generating commits with ${model.name}...${attempt > 0 ? ` (attempt ${attempt + 1})` : ''}`,
+				`正在使用 ${model.name} 生成提交...${attempt > 0 ? `（第 ${attempt + 1} 次尝试）` : ''}`,
 
 			getTelemetryInfo: (model, attempt) => ({
 				key: 'ai/generate',

@@ -252,11 +252,17 @@ export class LaunchpadIndicator implements Disposable {
 		tooltip.isTrusted = true;
 
 		tooltip.appendMarkdown(`GitLens Launchpad ${proBadge}\u00a0\u00a0\u00a0\u00a0&mdash;\u00a0\u00a0\u00a0\u00a0`);
-		tooltip.appendMarkdown(`[$(question)](command:gitlens.launchpad.indicator.action?%22info%22 "What is this?")`);
+		tooltip.appendMarkdown(
+			`[$(question)](command:gitlens.launchpad.indicator.action?%22info%22 "\u8fd9\u662f\u4ec0\u4e48\uff1f")`,
+		);
 		tooltip.appendMarkdown('\u00a0');
-		tooltip.appendMarkdown(`[$(gear)](command:workbench.action.openSettings?%22gitlens.launchpad%22 "Settings")`);
+		tooltip.appendMarkdown(
+			`[$(gear)](command:workbench.action.openSettings?%22gitlens.launchpad%22 "\u8bbe\u7f6e")`,
+		);
 		tooltip.appendMarkdown('\u00a0\u00a0|\u00a0\u00a0');
-		tooltip.appendMarkdown(`[$(circle-slash) Hide](command:gitlens.launchpad.indicator.action?%22hide%22 "Hide")`);
+		tooltip.appendMarkdown(
+			`[$(circle-slash) \u9690\u85cf](command:gitlens.launchpad.indicator.action?%22hide%22 "\u9690\u85cf")`,
+		);
 
 		if (
 			state === 'idle' ||
@@ -266,11 +272,9 @@ export class LaunchpadIndicator implements Disposable {
 		) {
 			tooltip.appendMarkdown('\n\n---\n\n');
 			tooltip.appendMarkdown(
-				`[Launchpad](command:gitlens.launchpad.indicator.action?%22info%22 "Learn about Launchpad") organizes your pull requests into actionable groups to help you focus and keep your team unblocked.`,
+				`[Launchpad](command:gitlens.launchpad.indicator.action?%22info%22 "了解 Launchpad") 将你的拉取请求组织为可操作的分组，帮助你集中注意力并保持团队畅通。`,
 			);
-			tooltip.appendMarkdown(
-				"\n\nIt's always accessible using the `GitLens: Open Launchpad` command from the Command Palette.",
-			);
+			tooltip.appendMarkdown('\n\n你可以随时通过命令面板中的 `GitLens: Open Launchpad` 命令访问它。');
 		}
 
 		switch (state) {
@@ -284,7 +288,7 @@ export class LaunchpadIndicator implements Disposable {
 			case 'disconnected':
 				this.clearRefreshTimer();
 				tooltip.appendMarkdown(
-					`\n\n---\n\n[Connect an integration](command:gitlens.showLaunchpad?%7B%22source%22%3A%22launchpad-indicator%22%7D "Connect an integration") to get started.`,
+					`\n\n---\n\n[连接集成](command:gitlens.showLaunchpad?%7B%22source%22%3A%22launchpad-indicator%22%7D "连接集成") 以开始使用。`,
 				);
 
 				this._statusBarLaunchpad.text = `$(rocket)$(gitlens-unplug) Launchpad`;
@@ -294,7 +298,7 @@ export class LaunchpadIndicator implements Disposable {
 
 			case 'loading':
 				this.startRefreshTimer(0);
-				tooltip.appendMarkdown('\n\n---\n\n$(loading~spin) Loading...');
+				tooltip.appendMarkdown('\n\n---\n\n$(loading~spin) 加载中...');
 
 				this._statusBarLaunchpad.text = '$(rocket)$(loading~spin)';
 				this._statusBarLaunchpad.tooltip = tooltip;
@@ -307,7 +311,7 @@ export class LaunchpadIndicator implements Disposable {
 
 			case 'failed':
 				this.clearRefreshTimer();
-				tooltip.appendMarkdown('\n\n---\n\n$(alert) Unable to load items');
+				tooltip.appendMarkdown('\n\n---\n\n$(alert) 无法加载项目');
 
 				this._statusBarLaunchpad.text = '$(rocket)$(alert)';
 				this._statusBarLaunchpad.tooltip = tooltip;
@@ -350,12 +354,10 @@ export class LaunchpadIndicator implements Disposable {
 		const hasImportantGroupsWithItems = groups.some(group => groupedItems.get(group)?.length);
 		if (totalGroupedItems === 0) {
 			tooltip.appendMarkdown('\n\n---\n\n');
-			tooltip.appendMarkdown('You are all caught up!');
+			tooltip.appendMarkdown('已全部处理完毕！');
 		} else if (!hasImportantGroupsWithItems) {
 			tooltip.appendMarkdown('\n\n---\n\n');
-			tooltip.appendMarkdown(
-				`No pull requests need your attention\\\n(${totalGroupedItems} other pull requests)`,
-			);
+			tooltip.appendMarkdown(`没有需要你关注的拉取请求\\\n(${totalGroupedItems} 个其他拉取请求)`);
 		} else {
 			for (const group of groups) {
 				const items = groupedItems.get(group);
@@ -370,7 +372,7 @@ export class LaunchpadIndicator implements Disposable {
 					case 'mergeable': {
 						priorityIcon ??= icon;
 						color = new ThemeColor('gitlens.launchpadIndicatorMergeableColor' satisfies Colors);
-						priorityItem ??= { item: items[0], groupLabel: 'can be merged' };
+						priorityItem ??= { item: items[0], groupLabel: '可以合并' };
 						tooltip.appendMarkdown(
 							`<span style="color:var(--vscode-gitlens-launchpadIndicatorMergeableHoverColor);">${icon}</span>$(blank) [${
 								labelType === 'item' && priorityItem != null
@@ -384,7 +386,7 @@ export class LaunchpadIndicator implements Disposable {
 										selectTopItem: true,
 									},
 								} satisfies Omit<LaunchpadCommandArgs, 'command'>),
-							)} "Open Ready to Merge in Launchpad")`,
+							)} "在 Launchpad 中打开可合并项")`,
 						);
 						break;
 					}
@@ -405,14 +407,14 @@ export class LaunchpadIndicator implements Disposable {
 
 						let actionGroupItems = action.get('unassigned-reviewers');
 						if (actionGroupItems?.length) {
-							actionMessage = `${actionGroupItems.length > 1 ? 'need' : 'needs'} reviewers`;
+							actionMessage = '需要审阅者';
 							summaryMessage += `${actionGroupItems.length} ${actionMessage}`;
 							item ??= actionGroupItems[0];
 						}
 
 						actionGroupItems = action.get('failed-checks');
 						if (actionGroupItems?.length) {
-							actionMessage = `failed CI checks`;
+							actionMessage = `CI 检查失败`;
 							summaryMessage += `${hasMultipleCategories ? ', ' : ''}${
 								actionGroupItems.length
 							} ${actionMessage}`;
@@ -421,7 +423,7 @@ export class LaunchpadIndicator implements Disposable {
 
 						actionGroupItems = action.get('conflicts');
 						if (actionGroupItems?.length) {
-							actionMessage = `${actionGroupItems.length > 1 ? 'have' : 'has'} conflicts`;
+							actionMessage = `存在冲突`;
 							summaryMessage += `${hasMultipleCategories ? ', ' : ''}${
 								actionGroupItems.length
 							} ${actionMessage}`;
@@ -438,7 +440,7 @@ export class LaunchpadIndicator implements Disposable {
 									? this.getPriorityItemLabel(item, items.length)
 									: pluralize('pull request', items.length)
 							} ${
-								hasMultipleCategories ? 'are blocked' : actionMessage
+								hasMultipleCategories ? '被阻塞' : actionMessage
 							}](command:gitlens.showLaunchpad?${encodeURIComponent(
 								JSON.stringify({
 									source: 'launchpad-indicator',
@@ -447,20 +449,20 @@ export class LaunchpadIndicator implements Disposable {
 										selectTopItem: true,
 									},
 								} satisfies Omit<LaunchpadCommandArgs, 'command'>),
-							)} "Open Blocked in Launchpad")`,
+							)} "在 Launchpad 中打开被阻塞项")`,
 						);
 						if (hasMultipleCategories) {
 							tooltip.appendMarkdown(`\\\n$(blank)$(blank) ${summaryMessage}`);
 						}
 
 						if (item != null) {
-							let label = 'is blocked';
+							let label = '被阻塞';
 							if (item.actionableCategory === 'unassigned-reviewers') {
-								label = 'needs reviewers';
+								label = '需要审阅者';
 							} else if (item.actionableCategory === 'failed-checks') {
-								label = 'failed CI checks';
+								label = 'CI 检查失败';
 							} else if (item.actionableCategory === 'conflicts') {
-								label = 'has conflicts';
+								label = '存在冲突';
 							}
 							priorityItem ??= { item: item, groupLabel: label };
 						}
@@ -484,9 +486,9 @@ export class LaunchpadIndicator implements Disposable {
 										selectTopItem: true,
 									},
 								} satisfies Omit<LaunchpadCommandArgs, 'command'>),
-							)} "Open Follow-Up in Launchpad")`,
+							)} "在 Launchpad 中打开需跟进项")`,
 						);
-						priorityItem ??= { item: items[0], groupLabel: 'requires follow-up' };
+						priorityItem ??= { item: items[0], groupLabel: '需要跟进' };
 						break;
 					}
 					case 'needs-review': {
@@ -507,9 +509,9 @@ export class LaunchpadIndicator implements Disposable {
 										selectTopItem: true,
 									},
 								} satisfies Omit<LaunchpadCommandArgs, 'command'>),
-							)} "Open Needs Your Review in Launchpad")`,
+							)} "在 Launchpad 中打开需审阅项")`,
 						);
-						priorityItem ??= { item: items[0], groupLabel: 'needs your review' };
+						priorityItem ??= { item: items[0], groupLabel: '需要你审阅' };
 						break;
 					}
 				}
@@ -563,13 +565,13 @@ export class LaunchpadIndicator implements Disposable {
 						break;
 					}
 					case 'hide': {
-						const hide = { title: 'Hide Anyway' };
-						const cancel = { title: 'Cancel', isCloseAffordance: true };
+						const hide = { title: '仍然隐藏' };
+						const cancel = { title: '取消', isCloseAffordance: true };
 						const action = await window.showInformationMessage(
-							'GitLens Launchpad helps you focus and keep your team unblocked.\n\nAre you sure you want hide the indicator?',
+							'GitLens Launchpad 帮助你集中注意力并保持团队畅通。\n\n确定要隐藏指示器吗？',
 							{
 								modal: true,
-								detail: '\nYou can always access Launchpad using the "GitLens: Open Launchpad" command, and can re-enable the indicator with the "GitLens: Toggle Launchpad Indicator" command.',
+								detail: '\n你可以随时通过 "GitLens: Open Launchpad" 命令访问 Launchpad，也可以通过 "GitLens: Toggle Launchpad Indicator" 命令重新启用指示器。',
 							},
 							hide,
 							cancel,

@@ -19,7 +19,7 @@ export class ShowLastQuickPickCommand extends GlCommandBase {
 			return commands.executeCommand(command.command, ...command.args);
 		} catch (ex) {
 			Logger.error(ex, 'ShowLastQuickPickCommand');
-			return showGenericErrorMessage('Unable to show last quick pick');
+			return showGenericErrorMessage('无法显示上次的快速选择');
 		}
 	}
 }

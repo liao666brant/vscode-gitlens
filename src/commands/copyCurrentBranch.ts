@@ -35,7 +35,7 @@ export class CopyCurrentBranchCommand extends ActiveEditorCommand {
 			}
 		} catch (ex) {
 			Logger.error(ex, 'CopyCurrentBranchCommand');
-			void showGenericErrorMessage('Unable to copy current branch name');
+			void showGenericErrorMessage('无法复制当前分支名称');
 		}
 	}
 }

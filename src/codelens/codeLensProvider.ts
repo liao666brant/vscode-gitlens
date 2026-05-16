@@ -453,10 +453,10 @@ export class GitCodeLensProvider implements CodeLensProvider, Disposable {
 
 	private resolveGitRecentChangeCodeLens(lens: GitRecentChangeCodeLens, _token: CancellationToken): CodeLens {
 		const blame = lens.getBlame();
-		if (blame == null) return applyCommandWithNoClickAction('Unknown, (Blame failed)', lens);
+		if (blame == null) return applyCommandWithNoClickAction('未知（Blame 失败）', lens);
 
 		const recentCommit = first(blame.commits.values());
-		if (recentCommit == null) return applyCommandWithNoClickAction('Unknown, (Blame failed)', lens);
+		if (recentCommit == null) return applyCommandWithNoClickAction('未知（Blame 失败）', lens);
 
 		// TODO@eamodio This is FAR too expensive, but this accounts for commits that delete lines -- is there another way?
 		// if (lens.uri != null) {
@@ -529,14 +529,13 @@ export class GitCodeLensProvider implements CodeLensProvider, Disposable {
 
 	private resolveGitAuthorsCodeLens(lens: GitAuthorsCodeLens, _token: CancellationToken): CodeLens {
 		const blame = lens.getBlame();
-		if (blame == null) return applyCommandWithNoClickAction('? authors (Blame failed)', lens);
+		if (blame == null) return applyCommandWithNoClickAction('? 位作者（Blame 失败）', lens);
 
 		const count = blame.authors.size;
-		const author = first(blame.authors.values())?.name ?? 'Unknown';
-		const andOthers =
-			count > 1 ? ` and ${pluralize('one other', count - 1, { only: true, plural: 'others' })}` : '';
+		const author = first(blame.authors.values())?.name ?? '未知';
+		const andOthers = count > 1 ? ` 和其他 ${count - 1} 人` : '';
 
-		let title = `${pluralize('author', count, { zero: '?' })} (${author}${andOthers})`;
+		let title = `${count === 0 ? '?' : count} 位作者（${author}${andOthers}）`;
 		if (configuration.get('debug')) {
 			title += ` [${lens.languageId}: ${SymbolKind[lens.symbol.kind]}(${lens.range.start.character}-${
 				lens.range.end.character

@@ -24,12 +24,12 @@ export class OpenChangedFilesCommand extends GlCommandBase {
 
 		try {
 			if (args.uris == null) {
-				const repo = await getRepositoryOrShowPicker(this.container, 'Open All Changed Files');
+				const repo = await getRepositoryOrShowPicker(this.container, '打开所有已更改的文件');
 				if (repo == null) return;
 
 				const status = await repo.git.status.getStatus();
 				if (status == null) {
-					void window.showWarningMessage('Unable to open changed files');
+					void window.showWarningMessage('无法打开已更改的文件');
 
 					return;
 				}
@@ -40,7 +40,7 @@ export class OpenChangedFilesCommand extends GlCommandBase {
 			openTextEditors(args.uris);
 		} catch (ex) {
 			Logger.error(ex, 'OpenChangedFilesCommand');
-			void showGenericErrorMessage('Unable to open all changed files');
+			void showGenericErrorMessage('无法打开所有已更改的文件');
 		}
 	}
 }

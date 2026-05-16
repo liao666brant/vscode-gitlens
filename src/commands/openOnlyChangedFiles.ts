@@ -25,12 +25,12 @@ export class OpenOnlyChangedFilesCommand extends GlCommandBase {
 
 		try {
 			if (args.uris == null) {
-				const repo = await getRepositoryOrShowPicker(this.container, 'Open Changed & Close Unchanged Files');
+				const repo = await getRepositoryOrShowPicker(this.container, '打开已更改的文件并关闭未更改的文件');
 				if (repo == null) return;
 
 				const status = await repo.git.status.getStatus();
 				if (status == null) {
-					void window.showWarningMessage('Unable to open changed & close unchanged files');
+					void window.showWarningMessage('无法打开已更改的文件并关闭未更改的文件');
 
 					return;
 				}
@@ -78,7 +78,7 @@ export class OpenOnlyChangedFilesCommand extends GlCommandBase {
 			}
 		} catch (ex) {
 			Logger.error(ex, 'OpenOnlyChangedFilesCommand');
-			void showGenericErrorMessage('Unable to open changed & close unchanged files');
+			void showGenericErrorMessage('无法打开已更改的文件并关闭未更改的文件');
 		}
 	}
 }

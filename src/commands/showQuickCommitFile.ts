@@ -78,14 +78,14 @@ export class ShowQuickCommitFileCommand extends ActiveEditorCachedCommand {
 			try {
 				const blame = await this.container.git.getBlameForLine(gitUri, blameLine);
 				if (blame == null) {
-					void showFileNotUnderSourceControlWarningMessage('Unable to show commit file details');
+					void showFileNotUnderSourceControlWarningMessage('无法显示提交文件详情');
 
 					return;
 				}
 
 				// Because the previous sha of an uncommitted file isn't trust worthy we just have to kick out
 				if (blame.commit.isUncommitted) {
-					void showLineUncommittedWarningMessage('Unable to show commit file details');
+					void showLineUncommittedWarningMessage('无法显示提交文件详情');
 
 					return;
 				}
@@ -95,7 +95,7 @@ export class ShowQuickCommitFileCommand extends ActiveEditorCachedCommand {
 				args.commit = blame.commit;
 			} catch (ex) {
 				Logger.error(ex, 'ShowQuickCommitFileDetailsCommand', `getBlameForLine(${blameLine})`);
-				void showGenericErrorMessage('Unable to show commit file details');
+				void showGenericErrorMessage('无法显示提交文件详情');
 
 				return;
 			}
@@ -117,7 +117,7 @@ export class ShowQuickCommitFileCommand extends ActiveEditorCachedCommand {
 						.getRepositoryService(repoPath!)
 						.commits.getCommitForFile(gitUri, args.sha);
 					if (args.commit == null) {
-						void showCommitNotFoundWarningMessage('Unable to show commit file details');
+						void showCommitNotFoundWarningMessage('无法显示提交文件详情');
 
 						return;
 					}
@@ -125,7 +125,7 @@ export class ShowQuickCommitFileCommand extends ActiveEditorCachedCommand {
 			}
 
 			if (args.commit == null) {
-				void showCommitNotFoundWarningMessage('Unable to show commit file details');
+				void showCommitNotFoundWarningMessage('无法显示提交文件详情');
 
 				return;
 			}
@@ -147,7 +147,7 @@ export class ShowQuickCommitFileCommand extends ActiveEditorCachedCommand {
 			});
 		} catch (ex) {
 			Logger.error(ex, 'ShowQuickCommitFileDetailsCommand');
-			void showGenericErrorMessage('Unable to show commit file details');
+			void showGenericErrorMessage('无法显示提交文件详情');
 		}
 	}
 }
@@ -180,7 +180,7 @@ export class ShowQuickCommitRevisionCommand extends ActiveEditorCachedCommand {
 			});
 		} catch (ex) {
 			Logger.error(ex, 'ShowQuickCommitRevisionCommand');
-			void showGenericErrorMessage('Unable to show commit details');
+			void showGenericErrorMessage('无法显示提交详情');
 		}
 	}
 }

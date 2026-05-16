@@ -16,7 +16,7 @@ export class ToggleLineBlameCommand extends ActiveEditorCommand {
 			await this.container.lineAnnotations.toggle(editor);
 		} catch (ex) {
 			Logger.error(ex, 'ToggleLineBlameCommand');
-			void showGenericErrorMessage('Unable to toggle line blame annotations');
+			void showGenericErrorMessage('无法切换行追溯注释');
 		}
 	}
 }

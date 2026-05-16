@@ -52,9 +52,9 @@ export async function* inputBranchNameStep<
 ): AsyncStepResultGenerator<string> {
 	const step = createInputStep({
 		title: appendReposToTitle(options?.title ?? context.title, state, context),
-		placeholder: options?.placeholder ?? 'Branch name',
+		placeholder: options?.placeholder ?? '分支名称',
 		value: options?.value,
-		prompt: options?.prompt ?? 'Please provide a branch name',
+		prompt: options?.prompt ?? '请提供分支名称',
 		canGoBack: context.steps?.canGoBack,
 		validate: async (value: string | undefined): Promise<[boolean, string | undefined]> => {
 			if (!value) return [false, undefined];

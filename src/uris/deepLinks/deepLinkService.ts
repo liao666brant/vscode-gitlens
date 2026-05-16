@@ -180,13 +180,13 @@ export class DeepLinkService implements Disposable {
 					!link.repoPath &&
 					!link.targetId)
 			) {
-				void window.showErrorMessage('Unable to resolve link');
+				void window.showErrorMessage('无法解析链接');
 				Logger.warn(`Unable to resolve link - missing basic properties: ${uri.toString()}`);
 				return;
 			}
 
 			if (!Object.values(DeepLinkType).includes(link.type)) {
-				void window.showErrorMessage('Unable to resolve link');
+				void window.showErrorMessage('无法解析链接');
 				Logger.warn(`Unable to resolve link - unknown link type: ${uri.toString()}`);
 				return;
 			}
@@ -197,13 +197,13 @@ export class DeepLinkService implements Disposable {
 				link.targetId == null &&
 				link.mainId == null
 			) {
-				void window.showErrorMessage('Unable to resolve link');
+				void window.showErrorMessage('无法解析链接');
 				Logger.warn(`Unable to resolve link - no main/target id provided: ${uri.toString()}`);
 				return;
 			}
 
 			if (link.type === DeepLinkType.Comparison && link.secondaryTargetId == null) {
-				void window.showErrorMessage('Unable to resolve link');
+				void window.showErrorMessage('无法解析链接');
 				Logger.warn(`Unable to resolve link - no secondary target id provided: ${uri.toString()}`);
 				return;
 			}
@@ -512,23 +512,22 @@ export class DeepLinkService implements Disposable {
 		customMessage?: string;
 	}): Promise<DeepLinkRepoOpenType | undefined> {
 		const openOptions: OpenQuickPickItem[] = [
-			{ label: 'Choose a Local Folder...', action: 'folder' },
-			{ label: 'Choose a Workspace File...', action: 'workspace' },
+			{ label: '选择本地文件夹...', action: 'folder' },
+			{ label: '选择工作区文件...', action: 'workspace' },
 		];
 
 		if (this._context.remoteUrl != null) {
-			openOptions.push({ label: 'Clone Repository...', action: 'clone' });
+			openOptions.push({ label: '克隆仓库...', action: 'clone' });
 		}
 
 		if (options?.includeCurrent) {
-			openOptions.push(createQuickPickSeparator(), { label: 'Use Current Window', action: 'current' });
+			openOptions.push(createQuickPickSeparator(), { label: '使用当前窗口', action: 'current' });
 		}
 
-		openOptions.push(createQuickPickSeparator(), { label: 'Cancel' });
+		openOptions.push(createQuickPickSeparator(), { label: '取消' });
 		const openTypeResult = await window.showQuickPick(openOptions, {
-			title: 'Locating Repository',
-			placeHolder:
-				options?.customMessage ?? 'Unable to locate a matching repository, please choose how to locate it',
+			title: '定位仓库',
+			placeHolder: options?.customMessage ?? '无法找到匹配的仓库，请选择定位方式',
 		});
 
 		return openTypeResult?.action;
@@ -537,56 +536,59 @@ export class DeepLinkService implements Disposable {
 	private async showOpenLocationPrompt(openType: DeepLinkRepoOpenType): Promise<OpenWorkspaceLocation | undefined> {
 		// Only add the "add to workspace" option if openType is 'folder'
 		const openOptions: OpenLocationQuickPickItem[] = [
-			{ label: 'Open in Current Window', action: 'currentWindow' },
-			{ label: 'Open in New Window', action: 'newWindow' },
+			{ label: '\u5728\u5f53\u524d\u7a97\u53e3\u6253\u5f00', action: 'currentWindow' },
+			{ label: '\u5728\u65b0\u7a97\u53e3\u6253\u5f00', action: 'newWindow' },
 		];
 
 		if (openType !== 'workspace') {
-			openOptions.push({ label: 'Add Folder to Workspace', action: 'addToWorkspace' });
+			openOptions.push({
+				label: '\u5c06\u6587\u4ef6\u5939\u6dfb\u52a0\u5230\u5de5\u4f5c\u533a',
+				action: 'addToWorkspace',
+			});
 		}
 
 		let suffix;
 		switch (openType) {
 			case 'clone':
-				suffix = ' \u00a0\u2022\u00a0 Clone';
+				suffix = ' \u00a0\u2022\u00a0 \u514b\u9686';
 				break;
 			case 'folder':
-				suffix = ' \u00a0\u2022\u00a0 Folder';
+				suffix = ' \u00a0\u2022\u00a0 \u6587\u4ef6\u5939';
 				break;
 			case 'workspace':
-				suffix = ' \u00a0\u2022\u00a0 Workspace from File';
+				suffix = ' \u00a0\u2022\u00a0 \u4ece\u6587\u4ef6\u6253\u5f00\u5de5\u4f5c\u533a';
 				break;
 			case 'current':
 				suffix = '';
 				break;
 		}
 
-		openOptions.push(createQuickPickSeparator(), { label: 'Cancel' });
+		openOptions.push(createQuickPickSeparator(), { label: '\u53d6\u6d88' });
 		const openLocationResult = await window.showQuickPick(openOptions, {
-			title: `Locating Repository${suffix}`,
-			placeHolder: `Please choose where to open the repository ${
-				openType === 'clone' ? 'after cloning' : openType
-			}`,
+			title: `\u5b9a\u4f4d\u4ed3\u5e93${suffix}`,
+			placeHolder: `\u8bf7\u9009\u62e9${
+				openType === 'clone' ? '\u514b\u9686\u540e' : ''
+			}\u6253\u5f00\u4ed3\u5e93\u7684\u4f4d\u7f6e`,
 		});
 
 		return openLocationResult?.action;
 	}
 
 	private async showAddRemotePrompt(remoteUrl: string, existingRemoteNames: string[]): Promise<string | undefined> {
-		const add: QuickPickItem = { label: 'Add Remote' };
-		const cancel: QuickPickItem = { label: 'Cancel' };
+		const add: QuickPickItem = { label: '添加远程仓库' };
+		const cancel: QuickPickItem = { label: '取消' };
 		const result = await window.showQuickPick([add, cancel], {
-			title: `Locating Remote`,
-			placeHolder: `Unable to find remote for '${remoteUrl}', would you like to add a new remote?`,
+			title: `定位远程仓库`,
+			placeHolder: `无法找到 '${remoteUrl}' 的远程仓库，是否要添加新的远程仓库？`,
 		});
 		if (result !== add) return undefined;
 
 		const remoteName = await window.showInputBox({
-			prompt: 'Enter a name for the remote',
+			prompt: '输入远程仓库名称',
 			value: getMaybeRemoteNameFromRemoteUrl(remoteUrl),
 			validateInput: value => {
-				if (!value) return 'A name is required';
-				if (existingRemoteNames.includes(value)) return 'A remote with that name already exists';
+				if (!value) return '名称不能为空';
+				if (existingRemoteNames.includes(value)) return '已存在同名的远程仓库';
 				return undefined;
 			},
 		});
@@ -619,7 +621,7 @@ export class DeepLinkService implements Disposable {
 						{
 							cancellable: true,
 							location: ProgressLocation.Notification,
-							title: `Opening ${deepLinkTypeToString(targetType ?? DeepLinkType.Repository)} link...`,
+							title: `正在打开${deepLinkTypeToString(targetType ?? DeepLinkType.Repository)}链接...`,
 						},
 						(progress, token) => {
 							progress.report({ increment: 0 });
@@ -666,7 +668,7 @@ export class DeepLinkService implements Disposable {
 			switch (state) {
 				case DeepLinkServiceState.Idle: {
 					if (action === DeepLinkServiceAction.DeepLinkErrored) {
-						void window.showErrorMessage('Unable to resolve link');
+						void window.showErrorMessage('无法解析链接');
 						Logger.warn(`Unable to resolve link - ${message}: ${url}`);
 					}
 
@@ -841,25 +843,21 @@ export class DeepLinkService implements Disposable {
 					let repoOpenType: DeepLinkRepoOpenType | undefined;
 
 					if (matchingLocalRepoPaths.length > 0) {
-						chosenRepoPath = await window.showQuickPick(
-							[...matchingLocalRepoPaths, 'Choose a different location'],
-							{ placeHolder: 'Matching repository found. Choose a location to open it.' },
-						);
+						chosenRepoPath = await window.showQuickPick([...matchingLocalRepoPaths, '选择其他位置'], {
+							placeHolder: '找到匹配的仓库。请选择打开位置。',
+						});
 
 						if (chosenRepoPath == null) {
 							action = DeepLinkServiceAction.DeepLinkCancelled;
 							break;
-						} else if (chosenRepoPath !== 'Choose a different location') {
+						} else if (chosenRepoPath !== '选择其他位置') {
 							this._context.repoOpenUri = Uri.file(chosenRepoPath);
 							repoOpenType = 'folder';
 						}
 					}
 
 					repoOpenType ??= await this.showOpenTypePrompt({
-						customMessage:
-							chosenRepoPath === 'Choose a different location'
-								? 'Please choose an option to open the repository'
-								: undefined,
+						customMessage: chosenRepoPath === '选择其他位置' ? '请选择打开仓库的方式' : undefined,
 					});
 
 					if (!repoOpenType) {
@@ -876,8 +874,8 @@ export class DeepLinkService implements Disposable {
 
 					this._context.repoOpenUri ??= (
 						await window.showOpenDialog({
-							title: `Choose a ${repoOpenType === 'workspace' ? 'workspace' : 'folder'} to ${
-								repoOpenType === 'clone' ? 'clone the repository to' : 'open the repository'
+							title: `选择${repoOpenType === 'workspace' ? '工作区' : '文件夹'}以${
+								repoOpenType === 'clone' ? '克隆仓库到此处' : '打开仓库'
 							}`,
 							canSelectFiles: repoOpenType === 'workspace',
 							canSelectFolders: repoOpenType !== 'workspace',
@@ -900,7 +898,7 @@ export class DeepLinkService implements Disposable {
 							repoClonePath = await window.withProgress(
 								{
 									location: ProgressLocation.Notification,
-									title: `Cloning repository for link: ${this._context.url}}`,
+									title: `正在为链接克隆仓库: ${this._context.url}}`,
 								},
 
 								async () =>

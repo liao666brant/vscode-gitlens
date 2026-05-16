@@ -38,7 +38,7 @@ export async function* ensureAccessStep<
 			createQuickPickSeparator(),
 			createDirectiveQuickPickItem(Directive.Cancel),
 		);
-		placeholder = 'You must verify your email before you can continue';
+		placeholder = '您必须先验证邮箱才能继续';
 	} else {
 		if (access.subscription.required == null) {
 			parentStep.skip();
@@ -58,14 +58,14 @@ export async function* ensureAccessStep<
 			case 'worktrees':
 				placeholder =
 					isSubscriptionPaidPlan(access.subscription.required) && access.subscription.current.account != null
-						? 'Unlock this feature for privately hosted repos with GitLens Pro'
-						: 'Try GitLens Pro to unlock this feature for privately hosted repos';
+						? '使用 GitLens Pro 解锁私有仓库的此功能'
+						: '试用 GitLens Pro 以解锁私有仓库的此功能';
 				break;
 			default:
 				placeholder =
 					isSubscriptionPaidPlan(access.subscription.required) && access.subscription.current.account != null
-						? 'Unlock this feature with GitLens Pro'
-						: 'Try GitLens Pro to unlock this feature';
+						? '使用 GitLens Pro 解锁此功能'
+						: '试用 GitLens Pro 以解锁此功能';
 				break;
 		}
 
@@ -91,7 +91,7 @@ export async function* ensureAccessStep<
 				0,
 				0,
 				createDirectiveQuickPickItem(Directive.Cancel, undefined, {
-					label: 'Launchpad prioritizes your pull requests to keep you focused and your team unblocked',
+					label: 'Launchpad 优先处理您的 Pull Request，帮助您保持专注并让团队不受阻碍',
 					detail: 'Click to learn more about Launchpad',
 					iconPath: new ThemeIcon('rocket'),
 					onDidSelect: () =>
@@ -108,7 +108,7 @@ export async function* ensureAccessStep<
 				0,
 				0,
 				createDirectiveQuickPickItem(Directive.Noop, undefined, {
-					label: 'Start reviewing a pull request from your connected integrations',
+					label: '从已连接的集成中开始审查 Pull Request',
 					iconPath: new ThemeIcon('git-pull-request'),
 				}),
 				createQuickPickSeparator(),
@@ -119,7 +119,7 @@ export async function* ensureAccessStep<
 				0,
 				0,
 				createDirectiveQuickPickItem(Directive.Noop, undefined, {
-					label: 'Start work on an issue from your connected integrations',
+					label: '从已连接的集成中开始处理 Issue',
 					iconPath: new ThemeIcon('issues'),
 				}),
 				createQuickPickSeparator(),
@@ -130,7 +130,7 @@ export async function* ensureAccessStep<
 				0,
 				0,
 				createDirectiveQuickPickItem(Directive.Noop, undefined, {
-					label: 'Connect your branches to their associated issues in Home view',
+					label: '在主页视图中将分支与关联的 Issue 连接',
 					iconPath: new ThemeIcon('issues'),
 				}),
 				createQuickPickSeparator(),
@@ -141,7 +141,7 @@ export async function* ensureAccessStep<
 				0,
 				0,
 				createDirectiveQuickPickItem(Directive.Noop, undefined, {
-					label: 'Worktrees minimize context switching by allowing simultaneous work on multiple branches',
+					label: 'Worktrees 允许同时在多个分支上工作，最大限度减少上下文切换',
 					iconPath: getIconPathUris(Container.instance, 'icon-repo.svg'),
 				}),
 			);

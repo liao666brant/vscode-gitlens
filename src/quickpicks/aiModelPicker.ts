@@ -22,12 +22,12 @@ export interface ProviderQuickPickItem extends QuickPickItem {
 
 const ClearAIKeyButton: QuickInputButton = {
 	iconPath: new ThemeIcon('trash'),
-	tooltip: 'Clear AI Key',
+	tooltip: '清除 AI 密钥',
 };
 
 const ConfigureAIKeyButton: QuickInputButton = {
 	iconPath: new ThemeIcon('key'),
-	tooltip: 'Configure AI Key...',
+	tooltip: '配置 AI 密钥...',
 };
 
 export async function showAIProviderPicker(
@@ -50,8 +50,8 @@ export async function showAIProviderPicker(
 
 	const quickpick = window.createQuickPick<ProviderQuickPickItem>();
 	quickpick.ignoreFocusOut = getQuickPickIgnoreFocusOut();
-	quickpick.title = 'Select AI Provider';
-	quickpick.placeholder = 'Choose an AI provider to use';
+	quickpick.title = '选择 AI 提供程序';
+	quickpick.placeholder = '选择要使用的 AI 提供程序';
 
 	const disposables: Disposable[] = [];
 
@@ -69,7 +69,7 @@ export async function showAIProviderPicker(
 			for (const p of providers.values()) {
 				if (!p.primary && !addedRequiredKeySeparator) {
 					addedRequiredKeySeparator = true;
-					items.push(createQuickPickSeparator<ProviderQuickPickItem>('Requires API Key'));
+					items.push(createQuickPickSeparator<ProviderQuickPickItem>('需要 API 密钥'));
 				}
 
 				items.push({
@@ -81,14 +81,14 @@ export async function showAIProviderPicker(
 						p.id === current?.provider && currentModelName
 							? `      ${currentModelName}`
 							: p.id === 'gitkraken'
-								? '      Models provided by GitKraken'
+								? '      由 GitKraken 提供的模型'
 								: undefined,
 					buttons: !p.primary ? (p.configured ? [ClearAIKeyButton] : [ConfigureAIKeyButton]) : undefined,
 					description:
 						p.id === 'gitkraken'
 							? hasPaidPlan
-								? '  included in your plan'
-								: '  included in GitLens Pro'
+								? '  已包含在您的计划中'
+								: '  已包含在 GitLens Pro 中'
 							: undefined,
 				} satisfies ProviderQuickPickItem);
 			}
@@ -142,9 +142,8 @@ export async function showAIModelPicker(
 
 	if (!models.length) {
 		items.push({
-			label: 'No models found',
-			description:
-				provider === 'ollama' ? 'Please install a model or check your Ollama server configuration' : undefined,
+			label: '未找到模型',
+			description: provider === 'ollama' ? '请安装模型或检查 Ollama 服务器配置' : undefined,
 			iconPath: new ThemeIcon('error'),
 			directive: Directive.Noop,
 		} satisfies ModelQuickPickItem | DirectiveQuickPickItem);
@@ -156,7 +155,7 @@ export async function showAIModelPicker(
 
 			items.push({
 				label: m.name,
-				description: m.default ? '  recommended' : undefined,
+				description: m.default ? '  推荐' : undefined,
 				iconPath: picked ? new ThemeIcon('check') : new ThemeIcon('blank'),
 				model: m,
 				picked: picked,
@@ -187,8 +186,8 @@ export async function showAIModelPicker(
 				}),
 			);
 
-			quickpick.title = 'Select AI Model';
-			quickpick.placeholder = 'Choose an AI model to use';
+			quickpick.title = '选择 AI 模型';
+			quickpick.placeholder = '选择要使用的 AI 模型';
 			quickpick.matchOnDescription = true;
 			quickpick.matchOnDetail = true;
 			quickpick.items = items;

@@ -38,7 +38,7 @@ export async function generateSearchQuery(
 				const messages: AIChatMessage[] = [{ role: 'user', content: prompt }];
 				return messages;
 			},
-			getProgressTitle: m => `Generating search query with ${m.name}...`,
+			getProgressTitle: m => `正在使用 ${m.name} 生成搜索查询...`,
 			getTelemetryInfo: m => ({
 				key: 'ai/generate',
 				data: {

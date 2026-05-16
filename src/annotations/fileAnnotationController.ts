@@ -604,23 +604,23 @@ export class FileAnnotationController implements Disposable {
 		progress?: Progress<{ message: string }>,
 	): Promise<AnnotationProviderBase | undefined> {
 		if (progress != null) {
-			let annotationsLabel = 'annotations';
+			let annotationsLabel = '注释';
 			switch (type) {
 				case 'blame':
-					annotationsLabel = 'blame annotations';
+					annotationsLabel = 'Blame 注释';
 					break;
 
 				case 'changes':
-					annotationsLabel = 'changes annotations';
+					annotationsLabel = '更改注释';
 					break;
 
 				case 'heatmap':
-					annotationsLabel = 'heatmap annotations';
+					annotationsLabel = '热力图注释';
 					break;
 			}
 
 			progress.report({
-				message: `Computing ${annotationsLabel} for ${basename(editor.document.fileName)}`,
+				message: `正在计算 ${basename(editor.document.fileName)} 的${annotationsLabel}`,
 			});
 		}
 

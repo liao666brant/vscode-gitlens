@@ -8,7 +8,7 @@ import { createRemoteQuickPickItem } from './items/gitWizard.js';
 
 export async function showRemotePicker(
 	title: string | undefined,
-	placeholder: string = 'Choose a remote',
+	placeholder: string = '选择远程仓库',
 	remotes: GitRemote[],
 	options?: {
 		autoPick?: 'default' | boolean;
@@ -20,7 +20,7 @@ export async function showRemotePicker(
 	let picked: RemoteQuickPickItem | undefined;
 
 	if (remotes.length === 0) {
-		placeholder = 'No remotes found';
+		placeholder = '未找到远程仓库';
 	} else {
 		if (options?.autoPick === 'default' && remotes.length > 1) {
 			// If there is a default just execute it directly

@@ -71,7 +71,7 @@ export class OpenComparisonOnRemoteCommand extends GlCommandBase {
 			}));
 		} catch (ex) {
 			Logger.error(ex, 'OpenComparisonOnRemoteCommand');
-			void showGenericErrorMessage('Unable to open comparison on remote provider');
+			void showGenericErrorMessage('无法在远程提供程序上打开比较');
 		}
 	}
 }

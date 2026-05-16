@@ -54,7 +54,7 @@ export class DiffLineWithWorkingCommand extends ActiveEditorCommand {
 			try {
 				const blame = await this.container.git.getBlameForLine(gitUri, blameEditorLine, editor?.document);
 				if (blame == null) {
-					void showFileNotUnderSourceControlWarningMessage('Unable to open compare');
+					void showFileNotUnderSourceControlWarningMessage('无法打开比较');
 
 					return;
 				}
@@ -80,7 +80,7 @@ export class DiffLineWithWorkingCommand extends ActiveEditorCommand {
 				args.range = { startLine: blame.line.line, endLine: blame.line.line };
 			} catch (ex) {
 				Logger.error(ex, 'DiffLineWithWorkingCommand', `getBlameForLine(${blameEditorLine})`);
-				void showGenericErrorMessage('Unable to open compare');
+				void showGenericErrorMessage('无法打开比较');
 
 				return;
 			}
@@ -91,7 +91,7 @@ export class DiffLineWithWorkingCommand extends ActiveEditorCommand {
 
 		const workingUri = await args.commit.file?.getWorkingUri();
 		if (workingUri == null) {
-			void window.showWarningMessage('Unable to open compare. File has been deleted from the working tree');
+			void window.showWarningMessage('无法打开比较。文件已从工作区中删除');
 
 			return;
 		}

@@ -103,12 +103,12 @@ export class ExternalDiffCommand extends GlCommandBase {
 
 		if (context.command === 'gitlens.externalDiffAll') {
 			if (args.files == null) {
-				const repository = await getRepositoryOrShowPicker(this.container, 'Open All Changes (difftool)');
+				const repository = await getRepositoryOrShowPicker(this.container, '打开所有更改（difftool）');
 				if (repository == null) return;
 
 				const status = await this.container.git.getRepositoryService(repository.uri).status.getStatus();
 				if (status == null) {
-					return void window.showInformationMessage("The repository doesn't have any changes");
+					return void window.showInformationMessage('该仓库没有任何更改');
 				}
 
 				args.files = [];
@@ -150,7 +150,7 @@ export class ExternalDiffCommand extends GlCommandBase {
 				const uri = editor.document.uri;
 				const status = await repo.git.status.getStatusForFile?.(uri);
 				if (status == null) {
-					void window.showInformationMessage("The current file doesn't have any changes");
+					void window.showInformationMessage('当前文件没有任何更改');
 
 					return;
 				}
@@ -170,11 +170,8 @@ export class ExternalDiffCommand extends GlCommandBase {
 
 			const tool = configuration.get('advanced.externalDiffTool') || (await repo.git.diff.getDiffTool?.());
 			if (!tool) {
-				const viewDocs = 'View Git Docs';
-				const result = await window.showWarningMessage(
-					'Unable to open changes because no Git diff tool is configured',
-					viewDocs,
-				);
+				const viewDocs = '查看 Git 文档';
+				const result = await window.showWarningMessage('无法打开更改，因为未配置 Git diff 工具', viewDocs);
 				if (result === viewDocs) {
 					void env.openExternal(
 						Uri.parse('https://git-scm.com/docs/git-config#Documentation/git-config.txt-difftool'),
@@ -194,7 +191,7 @@ export class ExternalDiffCommand extends GlCommandBase {
 			}
 		} catch (ex) {
 			Logger.error(ex, 'ExternalDiffCommand');
-			void showGenericErrorMessage('Unable to open changes in diff tool');
+			void showGenericErrorMessage('无法在 diff 工具中打开更改');
 		}
 	}
 }

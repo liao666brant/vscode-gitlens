@@ -104,38 +104,36 @@ export class OpenOnRemoteCommand extends GlCommandBase {
 			};
 
 			let title;
-			let placeholder = `Choose which remote to ${
-				args.clipboard ? `copy the link${resources.length > 1 ? 's' : ''} for` : 'open on'
-			} (or use the gear to set it as default)`;
+			let placeholder = args.clipboard
+				? `选择要复制链接的远程仓库（或使用齿轮图标设为默认）`
+				: `选择要打开的远程仓库（或使用齿轮图标设为默认）`;
 
 			function getTitlePrefix(type: string): string {
-				return args?.clipboard
-					? `Copy ${provider} ${type} Link${resources.length > 1 ? 's' : ''}`
-					: `Open ${type} on ${provider}`;
+				return args?.clipboard ? `复制 ${provider} ${type} 链接` : `在 ${provider} 上打开${type}`;
 			}
 
 			const [resource] = resources;
 			switch (resource.type) {
 				case RemoteResourceType.Branch:
-					title = getTitlePrefix('Branch');
+					title = getTitlePrefix('分支');
 					if (resources.length === 1) {
 						title += `${pad(GlyphChars.Dot, 2, 2)}${resource.branch}`;
 					}
 					break;
 
 				case RemoteResourceType.Branches:
-					title = getTitlePrefix('Branches');
+					title = getTitlePrefix('分支');
 					break;
 
 				case RemoteResourceType.Commit:
-					title = getTitlePrefix('Commit');
+					title = getTitlePrefix('提交');
 					if (resources.length === 1) {
 						title += `${pad(GlyphChars.Dot, 2, 2)}${shortenRevision(resource.sha)}`;
 					}
 					break;
 
 				case RemoteResourceType.Comparison:
-					title = getTitlePrefix('Comparisons');
+					title = getTitlePrefix('比较');
 					if (resources.length === 1) {
 						title += `${pad(GlyphChars.Dot, 2, 2)}${createRevisionRange(
 							resource.base,
@@ -151,42 +149,42 @@ export class OpenOnRemoteCommand extends GlCommandBase {
 
 					if (resources.length > 1) {
 						title = args.clipboard
-							? `Copy ${provider} Create Pull Request Links`
-							: `Create Pull Requests on ${provider}`;
+							? `复制 ${provider} 创建 Pull Request 链接`
+							: `在 ${provider} 上创建 Pull Request`;
 
-						placeholder = `Choose which remote to ${
-							args.clipboard ? 'copy the create pull request links for' : 'create the pull requests on'
-						}`;
+						placeholder = args.clipboard
+							? `选择要复制创建 Pull Request 链接的远程仓库`
+							: `选择要创建 Pull Request 的远程仓库`;
 					} else {
 						title = `${
 							args.clipboard
-								? `Copy ${provider} Create Pull Request Link`
-								: `Create Pull Request on ${provider}`
+								? `复制 ${provider} 创建 Pull Request 链接`
+								: `在 ${provider} 上创建 Pull Request`
 						}${pad(GlyphChars.Dot, 2, 2)}${
 							resource.base?.branch
 								? createRevisionRange(resource.base.branch, resource.head.branch, '...')
 								: resource.head.branch
 						}`;
 
-						placeholder = `Choose which remote to ${
-							args.clipboard ? 'copy the create pull request link for' : 'create the pull request on'
-						}`;
+						placeholder = args.clipboard
+							? `选择要复制创建 Pull Request 链接的远程仓库`
+							: `选择要创建 Pull Request 的远程仓库`;
 					}
 					break;
 
 				case RemoteResourceType.File:
-					title = getTitlePrefix('File');
+					title = getTitlePrefix('文件');
 					if (resources.length === 1) {
 						title += `${pad(GlyphChars.Dot, 2, 2)}${resource.fileName}`;
 					}
 					break;
 
 				case RemoteResourceType.Repo:
-					title = getTitlePrefix('Repository');
+					title = getTitlePrefix('仓库');
 					break;
 
 				case RemoteResourceType.Revision: {
-					title = getTitlePrefix('File');
+					title = getTitlePrefix('文件');
 					if (resources.length === 1) {
 						title += `${pad(GlyphChars.Dot, 2, 2)}${shortenRevision(resource.sha)}${pad(
 							GlyphChars.Dot,
@@ -210,7 +208,7 @@ export class OpenOnRemoteCommand extends GlCommandBase {
 			await pick?.execute();
 		} catch (ex) {
 			Logger.error(ex, 'OpenOnRemoteCommand');
-			void showGenericErrorMessage('Unable to open in remote provider');
+			void showGenericErrorMessage('无法在远程提供程序中打开');
 		}
 	}
 }

@@ -39,7 +39,7 @@ export class CommitsRepositoryNode extends RepositoryFolderNode<CommitsView, Bra
 		if (this.child == null) {
 			const branch = await this.repo.git.branches.getBranch();
 			if (branch == null) {
-				this.view.message = 'No commits could be found.';
+				this.view.message = '未找到任何提交。';
 
 				return [];
 			}
@@ -141,7 +141,7 @@ export class CommitsViewNode extends RepositoriesSubscribeableNode<CommitsView, 
 
 			const repositories = this.view.getFilteredRepositories();
 			if (!repositories.length) {
-				this.view.message = 'No commits could be found.';
+				this.view.message = '未找到任何提交。';
 
 				return [];
 			}
@@ -209,7 +209,7 @@ export class CommitsViewNode extends RepositoriesSubscribeableNode<CommitsView, 
 	}
 
 	getTreeItem(): TreeItem {
-		const item = new TreeItem('Commits', TreeItemCollapsibleState.Expanded);
+		const item = new TreeItem('提交', TreeItemCollapsibleState.Expanded);
 		return item;
 	}
 }
@@ -223,7 +223,7 @@ export class CommitsView extends ViewBase<'commits', CommitsViewNode, CommitsVie
 	protected readonly configKey = 'commits';
 
 	constructor(container: Container, grouped?: GroupedViewContext) {
-		super(container, 'commits', 'Commits', 'commitsView', grouped);
+		super(container, 'commits', '提交', 'commitsView', grouped);
 		this.disposables.push(container.usage.onDidChange(this.onUsageChanged, this));
 	}
 
@@ -407,10 +407,10 @@ export class CommitsView extends ViewBase<'commits', CommitsViewNode, CommitsVie
 		return window.withProgress(
 			{
 				location: ProgressLocation.Notification,
-				title: `Revealing ${getReferenceLabel(commit, {
+				title: `正在侧边栏中显示 ${getReferenceLabel(commit, {
 					icon: false,
 					quoted: true,
-				})} in the side bar...`,
+				})}...`,
 				cancellable: true,
 			},
 			async (_progress, token) => {
@@ -478,15 +478,9 @@ export class CommitsView extends ViewBase<'commits', CommitsViewNode, CommitsVie
 		}
 
 		if (filter) {
-			repo ??= await getRepositoryOrShowPicker(
-				this.container,
-				'Filter Commits',
-				'Choose a repository',
-				undefined,
-				{
-					excludeWorktrees: true,
-				},
-			);
+			repo ??= await getRepositoryOrShowPicker(this.container, '筛选提交', '选择仓库', undefined, {
+				excludeWorktrees: true,
+			});
 			if (repo == null) return;
 
 			let authors = this.state.filterCommits.get(repo.id);
@@ -498,8 +492,8 @@ export class CommitsView extends ViewBase<'commits', CommitsViewNode, CommitsVie
 			const result = await showContributorsPicker(
 				this.container,
 				repo,
-				'Filter Commits',
-				repo.virtual ? 'Choose a contributor to show commits from' : 'Choose contributors to show commits from',
+				'筛选提交',
+				repo.virtual ? '选择要显示其提交的贡献者' : '选择要显示其提交的贡献者',
 				{
 					appendReposToTitle: true,
 					clearButton: true,

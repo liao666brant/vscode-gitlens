@@ -149,7 +149,7 @@ export abstract class QuickWizardCommandBase extends GlCommandBase {
 					disposables.push(quickpick.onDidHide(() => resolve(step)));
 
 					quickpick.title = title;
-					quickpick.placeholder = 'Loading...';
+					quickpick.placeholder = '加载中...';
 					quickpick.busy = true;
 					quickpick.enabled = false;
 
@@ -806,7 +806,7 @@ export abstract class QuickWizardCommandBase extends GlCommandBase {
 				let items;
 				let shown = false;
 				if (isPromise(step.items)) {
-					quickpick.placeholder = 'Loading...';
+					quickpick.placeholder = '加载中...';
 
 					quickpick.busy = true;
 

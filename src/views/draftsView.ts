@@ -42,14 +42,14 @@ export class DraftsViewNode extends CacheableChildrenViewNode<'drafts', DraftsVi
 				if (!isFlat) {
 					if (mine?.length) {
 						children.push(
-							new GroupingNode(this.view, this, 'Created by Me', p =>
+							new GroupingNode(this.view, this, '我创建的', p =>
 								mine.map(d => new DraftNode(this.uri, this.view, p, d)),
 							),
 						);
 					}
 					if (shared?.length) {
 						children.push(
-							new GroupingNode(this.view, this, 'Shared with Me', p =>
+							new GroupingNode(this.view, this, '与我共享的', p =>
 								shared.map(d => new DraftNode(this.uri, this.view, p, d)),
 							),
 						);
@@ -129,10 +129,10 @@ export class DraftsView extends ViewBase<'drafts', DraftsViewNode, DraftsViewCon
 			registerViewCommand(
 				this.getQualifiedCommand('delete'),
 				async (node: DraftNode) => {
-					const confirm = { title: 'Delete' };
-					const cancel = { title: 'Cancel', isCloseAffordance: true };
+					const confirm = { title: '删除' };
+					const cancel = { title: '取消', isCloseAffordance: true };
 					const result = await window.showInformationMessage(
-						`Are you sure you want to delete Cloud Patch '${node.draft.title}'?`,
+						`确定要删除 Cloud Patch '${node.draft.title}' 吗？`,
 						{ modal: true },
 						confirm,
 						cancel,

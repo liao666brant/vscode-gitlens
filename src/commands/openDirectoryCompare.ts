@@ -69,14 +69,9 @@ export class OpenDirectoryCompareCommand extends ActiveEditorCommand {
 			if (!repoPath) return;
 
 			if (!args.ref1) {
-				const pick = await showReferencePicker(
-					repoPath,
-					'Directory Compare Working Tree with',
-					'Choose a branch or tag to compare with',
-					{
-						allowedAdditionalInput: { rev: true },
-					},
-				);
+				const pick = await showReferencePicker(repoPath, '目录比较工作区与', '选择要比较的分支或标签', {
+					allowedAdditionalInput: { rev: true },
+				});
 				if (pick == null) return;
 
 				args.ref1 = pick.ref;
@@ -86,7 +81,7 @@ export class OpenDirectoryCompareCommand extends ActiveEditorCommand {
 			void openDirectoryCompare(repoPath, args.ref1, args.ref2);
 		} catch (ex) {
 			Logger.error(ex, 'OpenDirectoryCompareCommand');
-			void showGenericErrorMessage('Unable to open directory compare');
+			void showGenericErrorMessage('无法打开目录比较');
 		}
 	}
 }

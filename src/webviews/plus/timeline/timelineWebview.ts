@@ -346,10 +346,10 @@ export class TimelineWebviewProvider implements WebviewProvider<State, State, Ti
 
 		const pick = await showReferencePicker2(
 			repo.path,
-			params.type === 'base' ? 'Choose a Base Reference' : 'Choose a Head Reference',
+			params.type === 'base' ? '选择基准引用' : '选择头部引用',
 			params.type === 'base'
-				? 'Choose a reference (branch, tag, etc) as the base to view history from'
-				: 'Choose a reference (branch, tag, etc) as the head to view history for',
+				? '选择一个引用（分支、标签等）作为查看历史的基准'
+				: '选择一个引用（分支、标签等）作为查看历史的头部',
 			{
 				allowedAdditionalInput: { rev: true /*, range: true */ },
 				picked: ref?.ref,

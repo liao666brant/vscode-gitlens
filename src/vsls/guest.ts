@@ -52,7 +52,7 @@ export class VslsGuestService implements Disposable {
 
 		void this.container.git.setEnabledContext(false);
 		void window.showWarningMessage(
-			'GitLens features will be unavailable. Unable to connect to the host GitLens service. The host may have disabled GitLens guest access or may not have GitLens installed.',
+			'GitLens 功能将不可用。无法连接到主机的 GitLens 服务。主机可能已禁用 GitLens 来宾访问，或未安装 GitLens。',
 		);
 	}
 

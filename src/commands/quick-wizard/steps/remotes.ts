@@ -58,9 +58,9 @@ export async function* inputRemoteNameStep<
 ): AsyncStepResultGenerator<string> {
 	const step = createInputStep({
 		title: appendReposToTitle(options?.title ?? context.title, state, context),
-		placeholder: options?.placeholder ?? 'Remote name',
+		placeholder: options?.placeholder ?? '远程仓库名称',
 		value: options?.value ?? state.remote?.name,
-		prompt: options?.prompt ?? 'Please provide a name for the remote',
+		prompt: options?.prompt ?? '请提供远程仓库名称',
 		canGoBack: context.steps?.canGoBack,
 		validate: async (value: string | undefined): Promise<[boolean, string | undefined]> => {
 			if (!value) return [false, undefined];
@@ -96,9 +96,9 @@ export async function* inputRemoteUrlStep<
 ): AsyncStepResultGenerator<string> {
 	const step = createInputStep({
 		title: appendReposToTitle(options?.title ?? context.title, state, context),
-		placeholder: options?.placeholder ?? 'Remote URL',
+		placeholder: options?.placeholder ?? '远程仓库 URL',
 		value: options?.value ?? state.remote?.url,
-		prompt: options?.prompt ?? 'Please provide a URL for the remote',
+		prompt: options?.prompt ?? '请提供远程仓库的 URL',
 		canGoBack: context.steps?.canGoBack,
 		validate: (value: string | undefined): [boolean, string | undefined] => {
 			if (!value) return [false, undefined];

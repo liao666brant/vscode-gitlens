@@ -36,54 +36,54 @@ export class RecomposeFromCommitCommand extends GlCommandBase {
 	async execute(args?: RecomposeFromCommitCommandArgs): Promise<void> {
 		try {
 			if (!args?.commitSha) {
-				void window.showErrorMessage('Unable to recompose: missing commit information');
+				void window.showErrorMessage('无法重组：缺少提交信息');
 				return;
 			}
 
 			const repoPath = args.repoPath;
 			if (!repoPath) {
-				void window.showErrorMessage('Unable to recompose: missing repository information');
+				void window.showErrorMessage('无法重组：缺少仓库信息');
 				return;
 			}
 
 			const repo = this.container.git.getRepository(repoPath);
 			if (repo == null) {
-				void window.showErrorMessage('Repository not found');
+				void window.showErrorMessage('未找到仓库');
 				return;
 			}
 
 			const commit = await repo.git.commits.getCommit(args.commitSha);
 			if (!commit) {
-				void window.showErrorMessage(`Commit '${args.commitSha}' not found`);
+				void window.showErrorMessage(`未找到提交 '${args.commitSha}'`);
 				return;
 			}
 
 			const branchName = args.branchName;
 			if (!branchName) {
-				void window.showErrorMessage('Unable to determine branch for commit');
+				void window.showErrorMessage('无法确定提交所在的分支');
 				return;
 			}
 
 			const branch = await repo.git.branches.getBranch(branchName);
 			if (!branch) {
-				void window.showErrorMessage(`Branch '${branchName}' not found`);
+				void window.showErrorMessage(`未找到分支 '${branchName}'`);
 				return;
 			}
 
 			if (branch.remote && !branch.upstream) {
-				void window.showErrorMessage(`Cannot recompose remote-only branch '${branchName}'`);
+				void window.showErrorMessage(`无法重组仅存在于远程的分支 '${branchName}'`);
 				return;
 			}
 
 			const headCommitSha = branch.sha;
 			if (!headCommitSha) {
-				void window.showErrorMessage(`Unable to determine head commit for branch '${branchName}'`);
+				void window.showErrorMessage(`无法确定分支 '${branchName}' 的 HEAD 提交`);
 				return;
 			}
 
 			const baseCommitSha = commit.parents.length > 0 ? commit.parents[0] : undefined;
 			if (!baseCommitSha) {
-				void window.showErrorMessage('Unable to determine parent commit');
+				void window.showErrorMessage('无法确定父提交');
 				return;
 			}
 
@@ -99,7 +99,7 @@ export class RecomposeFromCommitCommand extends GlCommandBase {
 				},
 			);
 		} catch (ex) {
-			void window.showErrorMessage(`Failed to recompose from commit: ${ex}`);
+			void window.showErrorMessage(`从提交重组失败：${ex}`);
 		}
 	}
 }

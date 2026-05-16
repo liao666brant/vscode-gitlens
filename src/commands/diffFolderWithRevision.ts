@@ -41,12 +41,7 @@ export class DiffFolderWithRevisionCommand extends ActiveEditorCommand {
 		const gitUri = await GitUri.fromUri(uri);
 
 		try {
-			const repo = await getBestRepositoryOrShowPicker(
-				this.container,
-				uri,
-				editor,
-				`Open Folder Changes with Revision`,
-			);
+			const repo = await getBestRepositoryOrShowPicker(this.container, uri, editor, `打开文件夹与历史版本的更改`);
 			if (repo == null) return;
 
 			const log = repo.git.commits
@@ -60,14 +55,14 @@ export class DiffFolderWithRevisionCommand extends ActiveEditorCommand {
 				);
 
 			const relativePath = repo.git.getRelativePath(uri, repo.path);
-			const title = `Open Folder Changes with Revision${pad(GlyphChars.Dot, 2, 2)}${relativePath}${
+			const title = `打开文件夹与历史版本的更改${pad(GlyphChars.Dot, 2, 2)}${relativePath}${
 				gitUri.sha ? ` at ${shortenRevision(gitUri.sha)}` : ''
 			}`;
-			const pick = await showCommitPicker(log, title, 'Choose a commit to compare with', {
+			const pick = await showCommitPicker(log, title, '选择一个提交进行比较', {
 				picked: gitUri.sha,
 				showOtherReferences: [
 					CommandQuickPickItem.fromCommand<DiffFolderWithRevisionFromCommandArgs>(
-						'Choose a Branch or Tag...',
+						'选择分支或标签...',
 						'gitlens.diffFolderWithRevisionFrom',
 					),
 				],
@@ -77,7 +72,7 @@ export class DiffFolderWithRevisionCommand extends ActiveEditorCommand {
 			void openFolderCompare(this.container, uri, { repoPath: repo.path, lhs: pick.ref, rhs: gitUri.sha ?? '' });
 		} catch (ex) {
 			Logger.error(ex, 'DiffFolderWithRevisionCommand');
-			void showGenericErrorMessage('Unable to open comparison');
+			void showGenericErrorMessage('无法打开比较');
 		}
 	}
 }

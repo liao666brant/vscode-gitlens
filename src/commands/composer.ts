@@ -73,7 +73,7 @@ export class ComposeCommand extends GlCommandBase {
 			);
 		} catch (ex) {
 			Logger.error(ex, 'ComposeCommand', 'execute');
-			void showGenericErrorMessage('Unable to compose commits');
+			void showGenericErrorMessage('无法组合提交');
 		}
 	}
 }

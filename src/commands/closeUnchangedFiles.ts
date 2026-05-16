@@ -23,12 +23,12 @@ export class CloseUnchangedFilesCommand extends GlCommandBase {
 
 		try {
 			if (args.uris == null) {
-				const repo = await getRepositoryOrShowPicker(this.container, 'Close All Unchanged Files');
+				const repo = await getRepositoryOrShowPicker(this.container, '关闭所有未更改的文件');
 				if (repo == null) return;
 
 				const status = await repo.git.status.getStatus();
 				if (status == null) {
-					void window.showWarningMessage('Unable to close unchanged files');
+					void window.showWarningMessage('无法关闭未更改的文件');
 
 					return;
 				}
@@ -59,7 +59,7 @@ export class CloseUnchangedFilesCommand extends GlCommandBase {
 			}
 		} catch (ex) {
 			Logger.error(ex, 'CloseUnchangedFilesCommand');
-			void showGenericErrorMessage('Unable to close all unchanged files');
+			void showGenericErrorMessage('无法关闭所有未更改的文件');
 		}
 	}
 }

@@ -302,10 +302,8 @@ export function getRepositoryPickerTitleAndPlaceholder(
 	context?: string,
 ): { title: string; placeholder: string } {
 	const hasWorktrees = repositories.some(r => r.isWorktree);
-	const title = context
-		? `${action} ${hasWorktrees ? 'Repository or Worktree' : 'Repository'} ${GlyphChars.Dot} ${context}`
-		: action;
-	const placeholder = `Select a ${hasWorktrees ? 'repository or worktree' : 'repository'} to ${action.toLowerCase()} to`;
+	const title = context ? `${action} ${hasWorktrees ? '仓库或工作树' : '仓库'} ${GlyphChars.Dot} ${context}` : action;
+	const placeholder = `选择要${action.toLowerCase()}的${hasWorktrees ? '仓库或工作树' : '仓库'}`;
 
 	return { title: title, placeholder: placeholder };
 }

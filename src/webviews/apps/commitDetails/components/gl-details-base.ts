@@ -54,7 +54,7 @@ export class GlDetailsBase extends LitElement {
 	private _filterMode: 'off' | 'mixed' | 'matched' = 'mixed';
 
 	@property({ attribute: 'empty-text' })
-	emptyText? = 'No Files';
+	emptyText? = '无文件';
 
 	get fileLayout(): ViewFilesLayout {
 		return this.preferences?.files?.layout ?? 'auto';

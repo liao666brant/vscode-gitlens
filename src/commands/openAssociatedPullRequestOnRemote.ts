@@ -37,7 +37,7 @@ export class OpenAssociatedPullRequestOnRemoteCommand extends ActiveEditorComman
 			try {
 				const repo = await getRepositoryOrShowPicker(
 					this.container,
-					'Open Associated Pull Request',
+					'打开关联的 Pull Request',
 					undefined,
 					undefined,
 					{

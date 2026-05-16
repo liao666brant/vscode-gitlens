@@ -47,7 +47,7 @@ export function* pickContributorsStep<
 		title: appendReposToTitle(context.title, state, context),
 		allowEmpty: true,
 		multiselect: true,
-		placeholder: options?.placeholder ?? 'Choose contributors',
+		placeholder: options?.placeholder ?? '选择贡献者',
 		matchOnDescription: true,
 		items: getItems(),
 		canGoBack: context.steps?.canGoBack,

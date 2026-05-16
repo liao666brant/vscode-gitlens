@@ -45,7 +45,7 @@ export class OpenBranchesOnRemoteCommand extends ActiveEditorCommand {
 				this.container,
 				gitUri,
 				editor,
-				args?.clipboard ? 'Copy Remote Branches URL' : 'Open Branches on Remote',
+				args?.clipboard ? '复制远程分支 URL' : '在远程打开分支',
 			)
 		)?.path;
 		if (!repoPath) return;
@@ -61,7 +61,7 @@ export class OpenBranchesOnRemoteCommand extends ActiveEditorCommand {
 			}));
 		} catch (ex) {
 			Logger.error(ex, 'OpenBranchesOnRemoteCommand');
-			void showGenericErrorMessage('Unable to open branches on remote provider');
+			void showGenericErrorMessage('无法在远程提供程序上打开分支');
 		}
 	}
 }

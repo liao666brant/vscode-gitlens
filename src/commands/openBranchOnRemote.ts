@@ -53,7 +53,7 @@ export class OpenBranchOnRemoteCommand extends ActiveEditorCommand {
 				this.container,
 				gitUri,
 				editor,
-				args?.clipboard ? 'Copy Remote Branch URL' : 'Open Branch On Remote',
+				args?.clipboard ? '复制远程分支 URL' : '在远程打开分支',
 			)
 		)?.path;
 		if (!repoPath) return;
@@ -64,8 +64,8 @@ export class OpenBranchOnRemoteCommand extends ActiveEditorCommand {
 			if (args.branch == null) {
 				const result = await showReferencePicker2(
 					repoPath,
-					args.clipboard ? 'Copy Remote Branch URL' : 'Open Branch On Remote',
-					args.clipboard ? 'Choose a branch to copy the URL from' : 'Choose a branch to open',
+					args.clipboard ? '复制远程分支 URL' : '在远程打开分支',
+					args.clipboard ? '选择要复制 URL 的分支' : '选择要打开的分支',
 					{
 						autoPick: true,
 						// checkmarks: false,
@@ -102,7 +102,7 @@ export class OpenBranchOnRemoteCommand extends ActiveEditorCommand {
 			}));
 		} catch (ex) {
 			Logger.error(ex, 'OpenBranchOnRemoteCommand');
-			void showGenericErrorMessage('Unable to open branch on remote provider');
+			void showGenericErrorMessage('无法在远程提供程序上打开分支');
 		}
 	}
 }

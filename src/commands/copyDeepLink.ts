@@ -87,7 +87,7 @@ export class CopyDeepLinkCommand extends ActiveEditorCommand {
 				await this.container.deepLinks.copyDeepLinkUrl(args.workspaceId);
 			} catch (ex) {
 				Logger.error(ex, 'CopyDeepLinkCommand');
-				void showGenericErrorMessage('Unable to copy link');
+				void showGenericErrorMessage('无法复制链接');
 			}
 			return;
 		}
@@ -104,7 +104,7 @@ export class CopyDeepLinkCommand extends ActiveEditorCommand {
 					this.container,
 					gitUri,
 					editor,
-					`Copy Link to ${deepLinkTypeToString(type)}`,
+					`复制${deepLinkTypeToString(type)}的链接`,
 				)
 			)?.path;
 		} else if (typeof args.refOrRepoPath === 'string') {
@@ -140,8 +140,8 @@ export class CopyDeepLinkCommand extends ActiveEditorCommand {
 				chosenRemote = defaultRemote;
 			} else {
 				const pick = await showRemotePicker(
-					`Copy Link to ${deepLinkTypeToString(type)}`,
-					`Choose which remote to copy the link for`,
+					`复制${deepLinkTypeToString(type)}的链接`,
+					`选择要复制链接的远程仓库`,
 					remotes,
 					{
 						autoPick: true,
@@ -168,7 +168,7 @@ export class CopyDeepLinkCommand extends ActiveEditorCommand {
 			}
 		} catch (ex) {
 			Logger.error(ex, 'CopyDeepLinkCommand');
-			void showGenericErrorMessage('Unable to copy link');
+			void showGenericErrorMessage('无法复制链接');
 		}
 	}
 }
@@ -243,7 +243,7 @@ export class CopyFileDeepLinkCommand extends ActiveEditorCommand {
 					`CopyFileDeepLinkCommand: File path ${filePath} is not contained in repo path ${repoPath}`,
 				);
 
-				void showGenericErrorMessage('Unable to copy file link');
+				void showGenericErrorMessage('无法复制文件链接');
 			}
 
 			filePath = filePath.substring(repoPath.length + 1);
@@ -257,8 +257,8 @@ export class CopyFileDeepLinkCommand extends ActiveEditorCommand {
 		if (args?.chooseRef) {
 			const result = await showReferencePicker2(
 				repoPath,
-				`Copy Link to ${filePath} at Reference`,
-				'Choose a reference (branch, tag, etc) to copy the file link for',
+				`复制 ${filePath} 在指定引用处的链接`,
+				'选择要复制文件链接的引用（分支、标签等）',
 				{
 					allowedAdditionalInput: { rev: true },
 					include: ['branches', 'tags', 'workingTree', 'HEAD'],
@@ -297,8 +297,8 @@ export class CopyFileDeepLinkCommand extends ActiveEditorCommand {
 				chosenRemote = defaultRemote;
 			} else {
 				const pick = await showRemotePicker(
-					`Copy Link to ${deepLinkTypeToString(type)}`,
-					`Choose which remote to copy the link for`,
+					`复制${deepLinkTypeToString(type)}的链接`,
+					`选择要复制链接的远程仓库`,
 					remotes,
 					{
 						autoPick: true,
@@ -316,7 +316,7 @@ export class CopyFileDeepLinkCommand extends ActiveEditorCommand {
 			await this.container.deepLinks.copyFileDeepLinkUrl(repoPath, filePath, chosenRemote.url, args.lines, ref);
 		} catch (ex) {
 			Logger.error(ex, 'CopyFileDeepLinkCommand');
-			void showGenericErrorMessage('Unable to copy file link');
+			void showGenericErrorMessage('无法复制文件链接');
 		}
 	}
 }

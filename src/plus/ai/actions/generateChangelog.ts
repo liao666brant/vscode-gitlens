@@ -56,7 +56,7 @@ export async function generateChangelog(
 				const messages: AIChatMessage[] = [{ role: 'user', content: prompt }];
 				return messages;
 			},
-			getProgressTitle: m => `Generating changelog with ${m.name}...`,
+			getProgressTitle: m => `正在使用 ${m.name} 生成变更日志...`,
 			getTelemetryInfo: m => ({
 				key: 'ai/generate',
 				data: {

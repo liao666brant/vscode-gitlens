@@ -149,7 +149,7 @@ export class DiffWithPreviousCommand extends ActiveEditorCommand {
 				'DiffWithPreviousCommand',
 				`getPreviousDiffUris(${gitUri.repoPath}, ${gitUri.fsPath}, ${gitUri.sha})`,
 			);
-			void showGenericErrorMessage('Unable to open compare');
+			void showGenericErrorMessage('无法打开比较');
 		}
 	}
 }

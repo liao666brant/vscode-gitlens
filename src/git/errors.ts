@@ -136,7 +136,7 @@ export class BlameIgnoreRevsFileBadRevisionError extends Error {
 		public readonly revision: string,
 		public readonly original?: Error,
 	) {
-		super(`Invalid revision in blame.ignoreRevsFile: '${revision}'`);
+		super(`blame.ignoreRevsFile 中存在无效的修订版本：'${revision}'`);
 
 		Error.captureStackTrace?.(this, new.target);
 	}

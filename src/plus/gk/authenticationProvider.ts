@@ -120,9 +120,9 @@ export class AccountAuthenticationProvider implements AuthenticationProvider, Di
 
 			scope?.error(ex);
 			void window.showErrorMessage(
-				`Unable to sign in to GitKraken: ${
-					ex instanceof CancellationError ? 'request timed out' : ex
-				}. Please try again. If this issue persists, please contact support.`,
+				`无法登录 GitKraken：${
+					ex instanceof CancellationError ? '请求超时' : ex
+				}。请重试。若问题持续，请联系支持团队。`,
 			);
 			throw ex;
 		}
@@ -163,7 +163,7 @@ export class AccountAuthenticationProvider implements AuthenticationProvider, Di
 			this._onDidChangeSessions.fire({ added: [], removed: [session], changed: [] });
 		} catch (ex) {
 			scope?.error(ex);
-			void window.showErrorMessage(`Unable to sign out of GitKraken: ${ex}`);
+			void window.showErrorMessage(`无法退出 GitKraken：${ex}`);
 			throw ex;
 		}
 	}
@@ -199,7 +199,7 @@ export class AccountAuthenticationProvider implements AuthenticationProvider, Di
 			this._onDidChangeSessions.fire({ added: [], removed: removed, changed: [] });
 		} catch (ex) {
 			scope?.error(ex);
-			void window.showErrorMessage(`Unable to sign out of GitKraken: ${ex}`);
+			void window.showErrorMessage(`无法退出 GitKraken：${ex}`);
 			throw ex;
 		}
 	}

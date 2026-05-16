@@ -61,7 +61,7 @@ export class BranchesViewNode extends RepositoriesSubscribeableNode<BranchesView
 
 			const repositories = this.view.getFilteredRepositories();
 			if (!repositories.length) {
-				this.view.message = 'No branches could be found.';
+				this.view.message = '未找到任何分支。';
 				return [];
 			}
 
@@ -91,7 +91,7 @@ export class BranchesViewNode extends RepositoriesSubscribeableNode<BranchesView
 					!b.remote || (showRemoteBranches && defaultRemote != null && b.getRemoteName() === defaultRemote),
 			});
 			if (!branches.values.length) {
-				this.view.message = 'No branches could be found.';
+				this.view.message = '未找到任何分支。';
 				void child.ensureSubscription();
 
 				return [];
@@ -106,7 +106,7 @@ export class BranchesViewNode extends RepositoriesSubscribeableNode<BranchesView
 	}
 
 	getTreeItem(): TreeItem {
-		const item = new TreeItem('Branches', TreeItemCollapsibleState.Expanded);
+		const item = new TreeItem('分支', TreeItemCollapsibleState.Expanded);
 		return item;
 	}
 }
@@ -115,7 +115,7 @@ export class BranchesView extends ViewBase<'branches', BranchesViewNode, Branche
 	protected readonly configKey = 'branches';
 
 	constructor(container: Container, grouped?: GroupedViewContext) {
-		super(container, 'branches', 'Branches', 'branchesView', grouped);
+		super(container, 'branches', '分支', 'branchesView', grouped);
 	}
 
 	override get canReveal(): boolean {
@@ -287,10 +287,10 @@ export class BranchesView extends ViewBase<'branches', BranchesViewNode, Branche
 		return window.withProgress(
 			{
 				location: ProgressLocation.Notification,
-				title: `Revealing ${getReferenceLabel(branch, {
+				title: `正在侧边栏中显示 ${getReferenceLabel(branch, {
 					icon: false,
 					quoted: true,
-				})} in the side bar...`,
+				})}...`,
 				cancellable: true,
 			},
 			async (_progress, token) => {
@@ -309,10 +309,10 @@ export class BranchesView extends ViewBase<'branches', BranchesViewNode, Branche
 		return window.withProgress(
 			{
 				location: ProgressLocation.Notification,
-				title: `Revealing ${getReferenceLabel(commit, {
+				title: `正在侧边栏中显示 ${getReferenceLabel(commit, {
 					icon: false,
 					quoted: true,
-				})} in the side bar...`,
+				})}...`,
 				cancellable: true,
 			},
 			async (_progress, token) => {

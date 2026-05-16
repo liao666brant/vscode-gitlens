@@ -51,7 +51,7 @@ export class RepositoriesView extends ViewBase<'repositories', RepositoriesNode,
 	protected readonly configKey = 'repositories';
 
 	constructor(container: Container, grouped?: GroupedViewContext) {
-		super(container, 'repositories', 'Repositories', 'repositoriesView', grouped);
+		super(container, 'repositories', '仓库', 'repositoriesView', grouped);
 	}
 
 	override dispose(): void {
@@ -542,10 +542,10 @@ export class RepositoriesView extends ViewBase<'repositories', RepositoriesNode,
 		return window.withProgress(
 			{
 				location: ProgressLocation.Notification,
-				title: `Revealing ${getReferenceLabel(branch, {
+				title: `正在仓库视图中显示 ${getReferenceLabel(branch, {
 					icon: false,
 					quoted: true,
-				})} in the Repositories view...`,
+				})}...`,
 				cancellable: true,
 			},
 			async (_progress, token) => {
@@ -587,10 +587,10 @@ export class RepositoriesView extends ViewBase<'repositories', RepositoriesNode,
 		return window.withProgress(
 			{
 				location: ProgressLocation.Notification,
-				title: `Revealing ${getReferenceLabel(commit, {
+				title: `正在仓库视图中显示 ${getReferenceLabel(commit, {
 					icon: false,
 					quoted: true,
-				})} in the Repositories view...`,
+				})}...`,
 				cancellable: true,
 			},
 			async (_progress, token) => {
@@ -609,7 +609,7 @@ export class RepositoriesView extends ViewBase<'repositories', RepositoriesNode,
 		return window.withProgress(
 			{
 				location: ProgressLocation.Notification,
-				title: `Revealing contributor '${contributor.name} in the Repositories view...`,
+				title: `正在仓库视图中显示贡献者 '${contributor.name}'...`,
 				cancellable: true,
 			},
 			async (_progress, token) => {
@@ -628,7 +628,7 @@ export class RepositoriesView extends ViewBase<'repositories', RepositoriesNode,
 		return window.withProgress(
 			{
 				location: ProgressLocation.Notification,
-				title: `Revealing remote '${remote.name}' in the side bar...`,
+				title: `正在侧边栏中显示远程仓库 '${remote.name}'...`,
 				cancellable: true,
 			},
 			async (_progress, token) => {
@@ -661,10 +661,10 @@ export class RepositoriesView extends ViewBase<'repositories', RepositoriesNode,
 		return window.withProgress(
 			{
 				location: ProgressLocation.Notification,
-				title: `Revealing ${getReferenceLabel(stash, {
+				title: `正在仓库视图中显示 ${getReferenceLabel(stash, {
 					icon: false,
 					quoted: true,
-				})} in the Repositories view...`,
+				})}...`,
 				cancellable: true,
 			},
 			async (_progress, token) => {
@@ -706,10 +706,10 @@ export class RepositoriesView extends ViewBase<'repositories', RepositoriesNode,
 		return window.withProgress(
 			{
 				location: ProgressLocation.Notification,
-				title: `Revealing ${getReferenceLabel(tag, {
+				title: `正在仓库视图中显示 ${getReferenceLabel(tag, {
 					icon: false,
 					quoted: true,
-				})} in the Repositories view...`,
+				})}...`,
 				cancellable: true,
 			},
 			async (_progress, token) => {
@@ -751,7 +751,7 @@ export class RepositoriesView extends ViewBase<'repositories', RepositoriesNode,
 		return window.withProgress(
 			{
 				location: ProgressLocation.Notification,
-				title: `Revealing worktree '${worktree.name}' in the side bar...`,
+				title: `正在侧边栏中显示工作树 '${worktree.name}'...`,
 				cancellable: true,
 			},
 			async (_progress, token) => {

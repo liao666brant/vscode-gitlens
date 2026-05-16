@@ -55,7 +55,7 @@ export class ContributorsViewNode extends RepositoriesSubscribeableNode<Contribu
 
 			const repositories = this.view.getFilteredRepositories();
 			if (!repositories.length) {
-				this.view.message = 'No contributors could be found.';
+				this.view.message = '未找到任何贡献者。';
 				return [];
 			}
 
@@ -88,7 +88,7 @@ export class ContributorsViewNode extends RepositoriesSubscribeableNode<Contribu
 
 			// const contributors = await child.repo.getContributors({ all: all, ref: ref });
 			if (!children.length) {
-				this.view.message = 'No contributors could be found.';
+				this.view.message = '未找到任何贡献者。';
 				void child.ensureSubscription();
 
 				return [];
@@ -103,7 +103,7 @@ export class ContributorsViewNode extends RepositoriesSubscribeableNode<Contribu
 	}
 
 	getTreeItem(): TreeItem {
-		const item = new TreeItem('Contributors', TreeItemCollapsibleState.Expanded);
+		const item = new TreeItem('贡献者', TreeItemCollapsibleState.Expanded);
 		return item;
 	}
 }
@@ -116,7 +116,7 @@ export class ContributorsView extends ViewBase<'contributors', ContributorsViewN
 	protected readonly configKey = 'contributors';
 
 	constructor(container: Container, grouped?: GroupedViewContext) {
-		super(container, 'contributors', 'Contributors', 'contributorsView', grouped);
+		super(container, 'contributors', '贡献者', 'contributorsView', grouped);
 
 		void setContext('gitlens:views:contributors:hideMergeCommits', true);
 	}
@@ -278,7 +278,7 @@ export class ContributorsView extends ViewBase<'contributors', ContributorsViewN
 		return window.withProgress(
 			{
 				location: ProgressLocation.Notification,
-				title: `Revealing contributor '${contributor.name}' in the side bar...`,
+				title: `正在侧边栏中显示贡献者 '${contributor.name}'...`,
 				cancellable: true,
 			},
 			async (_progress, token) => {

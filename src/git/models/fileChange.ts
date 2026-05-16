@@ -2,7 +2,6 @@ import type { Uri } from 'vscode';
 import type { Container } from '../../container.js';
 import { loggable } from '../../system/decorators/log.js';
 import { memoize } from '../../system/decorators/memoize.js';
-import { pluralize } from '../../system/string.js';
 import type { DiffRange } from '../gitProvider.js';
 import type { GitFileStatus } from './fileStatus.js';
 import { GitFileConflictStatus } from './fileStatus.js';
@@ -97,7 +96,7 @@ export class GitFileChange implements GitFileChangeShape {
 		const lineStats = [];
 
 		if (additions) {
-			const additionsText = style === 'expanded' ? `${pluralize('line', additions)} added` : `+${additions}`;
+			const additionsText = style === 'expanded' ? `${additions} 行已添加` : `+${additions}`;
 			if (options?.color && style !== 'short') {
 				lineStats.push(
 					/*html*/ `<span style="color:var(--vscode-gitDecoration-addedResourceForeground);">${additionsText}</span>`,
@@ -134,7 +133,7 @@ export class GitFileChange implements GitFileChangeShape {
 		// 	}
 		// }
 		if (deletions) {
-			const deletionsText = style === 'expanded' ? `${pluralize('line', deletions)} deleted` : `-${deletions}`;
+			const deletionsText = style === 'expanded' ? `${deletions} 行已删除` : `-${deletions}`;
 			if (options?.color && style !== 'short') {
 				lineStats.push(
 					/*html*/ `<span style="color:var(--vscode-gitDecoration-deletedResourceForeground);">${deletionsText}</span>`,

@@ -46,9 +46,7 @@ export class OpenWorkingFileCommand extends ActiveEditorCommand {
 					.getRepositoryService(args.uri.repoPath!)
 					.getWorkingUri(args.uri);
 				if (workingUri === undefined) {
-					void window.showWarningMessage(
-						'Unable to open working file. File could not be found in the working tree',
-					);
+					void window.showWarningMessage('无法打开工作区文件。在工作区中未找到该文件');
 
 					return;
 				}
@@ -71,7 +69,7 @@ export class OpenWorkingFileCommand extends ActiveEditorCommand {
 			}));
 		} catch (ex) {
 			Logger.error(ex, 'OpenWorkingFileCommand');
-			void showGenericErrorMessage('Unable to open working file');
+			void showGenericErrorMessage('无法打开工作区文件');
 		}
 	}
 }

@@ -1854,12 +1854,12 @@ export class GraphWebviewProvider implements WebviewProvider<State, State, Graph
 					case 1:
 						return {
 							title: params.title,
-							placeholder: 'Choose a branch or tag to show commits from',
+							placeholder: '选择要显示提交的分支或标签',
 						};
 					case 2:
 						return {
 							title: params.title,
-							placeholder: 'Choose a base to compare against (e.g., main)',
+							placeholder: '选择要比较的基准（例如 main）',
 						};
 				}
 			},

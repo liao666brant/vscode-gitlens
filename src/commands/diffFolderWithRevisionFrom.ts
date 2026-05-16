@@ -39,12 +39,7 @@ export class DiffFolderWithRevisionFromCommand extends ActiveEditorCommand {
 
 		try {
 			const repoPath = (
-				await getBestRepositoryOrShowPicker(
-					this.container,
-					uri,
-					editor,
-					'Open Folder Changes with Branch or Tag',
-				)
+				await getBestRepositoryOrShowPicker(this.container, uri, editor, '打开文件夹与分支或标签的更改')
 			)?.path;
 			if (!repoPath) return;
 
@@ -57,8 +52,8 @@ export class DiffFolderWithRevisionFromCommand extends ActiveEditorCommand {
 				} else {
 					const result = await showReferencePicker2(
 						repoPath,
-						`Open Folder Changes with Branch or Tag${pad(GlyphChars.Dot, 2, 2)}${relativePath}`,
-						'Choose a reference (branch, tag, etc) to compare',
+						`打开文件夹与分支或标签的更改${pad(GlyphChars.Dot, 2, 2)}${relativePath}`,
+						'选择要比较的引用（分支、标签等）',
 						{
 							allowedAdditionalInput: { rev: true },
 							include: ['branches', 'tags', 'workingTree', 'HEAD'],
@@ -74,10 +69,10 @@ export class DiffFolderWithRevisionFromCommand extends ActiveEditorCommand {
 			if (!args.lhs) {
 				const result = await showReferencePicker2(
 					repoPath,
-					`Open Folder Changes with Branch or Tag${pad(GlyphChars.Dot, 2, 2)}${relativePath}${
+					`打开文件夹与分支或标签的更改${pad(GlyphChars.Dot, 2, 2)}${relativePath}${
 						args.rhs ? ` at ${shortenRevision(args.rhs)}` : ''
 					}`,
-					'Choose a reference (branch, tag, etc) to compare with',
+					'选择要比较的引用（分支、标签等）',
 					{
 						allowedAdditionalInput: { rev: true },
 						include:
@@ -100,7 +95,7 @@ export class DiffFolderWithRevisionFromCommand extends ActiveEditorCommand {
 			void openFolderCompare(this.container, uri, { repoPath: repoPath, lhs: args.lhs, rhs: args.rhs });
 		} catch (ex) {
 			Logger.error(ex, 'DiffFolderWithRevisionFromCommand');
-			void showGenericErrorMessage('Unable to open comparison');
+			void showGenericErrorMessage('无法打开比较');
 		}
 	}
 }

@@ -22,15 +22,15 @@ export type ContactPresenceStatus = 'online' | 'away' | 'busy' | 'dnd' | 'offlin
 function contactStatusToPresence(status: string | undefined): ContactPresence {
 	switch (status) {
 		case 'available':
-			return { status: 'online', statusText: 'Available' };
+			return { status: 'online', statusText: '在线' };
 		case 'away':
-			return { status: 'away', statusText: 'Away' };
+			return { status: 'away', statusText: '离开' };
 		case 'busy':
-			return { status: 'busy', statusText: 'Busy' };
+			return { status: 'busy', statusText: '忙碌' };
 		case 'doNotDisturb':
-			return { status: 'dnd', statusText: 'DND' };
+			return { status: 'dnd', statusText: '免打扰' };
 		default:
-			return { status: 'offline', statusText: 'Offline' };
+			return { status: 'offline', statusText: '离线' };
 	}
 }
 

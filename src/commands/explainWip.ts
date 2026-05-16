@@ -26,8 +26,8 @@ export class ExplainWipCommand extends ExplainCommandBase {
 		return createMarkdownCommandLink<ExplainWipCommandArgs>('gitlens.ai.explainWip:editor', args);
 	}
 
-	pickerTitle = 'Explain Working Changes';
-	repoPickerPlaceholder = 'Choose which repository to explain working changes from';
+	pickerTitle = '解释工作区变更';
+	repoPickerPlaceholder = '选择要解释工作区变更的仓库';
 
 	constructor(container: Container) {
 		super(container, ['gitlens.ai.explainWip', 'gitlens.ai.explainWip:editor', 'gitlens.ai.explainWip:views']);
@@ -58,7 +58,7 @@ export class ExplainWipCommand extends ExplainCommandBase {
 		// Get the diff of working changes
 		const svc = await this.getRepositoryService(editor, uri, args);
 		if (svc?.diff?.getDiff == null) {
-			void showGenericErrorMessage('Unable to get diff service');
+			void showGenericErrorMessage('无法获取差异服务');
 			return;
 		}
 
@@ -67,13 +67,13 @@ export class ExplainWipCommand extends ExplainCommandBase {
 		let label;
 		let to;
 		if (args?.staged === true) {
-			label = 'staged';
+			label = '已暂存';
 			to = uncommittedStaged;
 		} else if (args?.staged === false) {
-			label = 'unstaged';
+			label = '未暂存';
 			to = uncommitted;
 		} else {
-			label = 'working';
+			label = '工作区';
 			to = '';
 		}
 
@@ -81,7 +81,7 @@ export class ExplainWipCommand extends ExplainCommandBase {
 		try {
 			const diff = await svc.diff.getDiff(to, undefined);
 			if (!diff?.contents) {
-				void showGenericErrorMessage(`No ${label} changes found to explain`);
+				void showGenericErrorMessage(`未找到可解释的${label}变更`);
 				return;
 			}
 
@@ -107,7 +107,7 @@ export class ExplainWipCommand extends ExplainCommandBase {
 				{
 					progress: {
 						location: ProgressLocation.Notification,
-						title: `Explaining ${label} changes in ${repoName}...`,
+						title: `正在解释 ${repoName} 的${label}变更...`,
 					},
 				},
 			);
@@ -115,25 +115,25 @@ export class ExplainWipCommand extends ExplainCommandBase {
 			if (result === 'cancelled') return;
 
 			if (result == null) {
-				void showGenericErrorMessage(`Unable to explain ${label} changes`);
+				void showGenericErrorMessage(`无法解释${label}变更`);
 				return;
 			}
 
 			const { promise, model } = result;
 			this.openDocument(promise, `/explain/wip/${svc.path}/${model.id}`, model, 'explain-wip', {
 				header: {
-					title: `${capitalize(label)} Changes Summary`,
-					subtitle: `${capitalize(label)} Changes (${repoName})`,
+					title: `${capitalize(label)}变更摘要`,
+					subtitle: `${capitalize(label)}变更 (${repoName})`,
 				},
 				command: {
-					label: `Explain ${label} Changes`,
+					label: `解释${label}变更`,
 					name: 'gitlens.ai.explainWip',
 					args: { ...args },
 				},
 			});
 		} catch (ex) {
 			Logger.error(ex, 'ExplainWipCommand', 'execute');
-			void showGenericErrorMessage(`Unable to explain ${label} changes`);
+			void showGenericErrorMessage(`无法解释${label}变更`);
 		}
 	}
 }

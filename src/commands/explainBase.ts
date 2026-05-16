@@ -79,7 +79,7 @@ export abstract class ExplainCommandBase extends GlCommandBase {
 
 		const metadataWithContext: MarkdownContentMetadata = { ...metadata, context: loadingContext };
 		const headerContent = getMarkdownHeaderContent(metadataWithContext, this.container.telemetry.enabled);
-		const loadingContent = `${headerContent}\n\n> 🤖 **Generating explanation...**\n> Please wait while the AI analyzes the changes and generates an explanation. This document will update automatically when the content is ready.\n>\n> *This may take a few moments depending on the complexity of the changes.*`;
+		const loadingContent = `${headerContent}\n\n> 🤖 **正在生成解释...**\n> 请稍候，AI 正在分析变更并生成解释。内容准备好后本文档将自动更新。\n>\n> *这可能需要一些时间，取决于变更的复杂程度。*`;
 
 		// Open the document immediately with loading content
 		const documentUri = this.container.markdown.openDocument(
@@ -153,7 +153,7 @@ export abstract class ExplainCommandBase extends GlCommandBase {
 	 */
 	private createCancelledContent(metadata: MarkdownContentMetadata): string {
 		const headerContent = getMarkdownHeaderContent(metadata, this.container.telemetry.enabled);
-		return `${headerContent}\n\n---\n\n\u26a0\ufe0f **Generation Cancelled**\n\nThe AI explanation was cancelled before completion.`;
+		return `${headerContent}\n\n---\n\n\u26a0\ufe0f **\u751f\u6210\u5df2\u53d6\u6d88**\n\nAI \u89e3\u91ca\u5728\u5b8c\u6210\u524d\u88ab\u53d6\u6d88\u3002`;
 	}
 
 	/**
@@ -161,6 +161,6 @@ export abstract class ExplainCommandBase extends GlCommandBase {
 	 */
 	private createErrorContent(metadata: MarkdownContentMetadata): string {
 		const headerContent = getMarkdownHeaderContent(metadata, this.container.telemetry.enabled);
-		return `${headerContent}\n\n---\n\n❌ **Generation Failed**\n\nUnable to generate an explanation for the changes. Please try again.`;
+		return `${headerContent}\n\n---\n\n❌ **生成失败**\n\n无法为变更生成解释。请重试。`;
 	}
 }

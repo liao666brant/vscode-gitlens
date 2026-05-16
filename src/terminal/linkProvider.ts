@@ -68,7 +68,7 @@ export class GitTerminalLinkProvider implements Disposable, TerminalLinkProvider
 				const link: GitTerminalLink<GitWizardCommandArgs> = {
 					startIndex: match.index + git.length,
 					length: command.length,
-					tooltip: 'Open in Git Command Palette',
+					tooltip: '在 Git 命令面板中打开',
 					command: createTerminalLinkCommand<GitWizardCommandArgs>('gitlens.gitCommands', {
 						command: command as GitWizardCommandArgs['command'],
 					}),
@@ -85,7 +85,7 @@ export class GitTerminalLinkProvider implements Disposable, TerminalLinkProvider
 				const link: GitTerminalLink<ShowQuickBranchHistoryCommandArgs> = {
 					startIndex: match.index,
 					length: ref.length,
-					tooltip: 'Show HEAD',
+					tooltip: '显示 HEAD',
 					command: createTerminalLinkCommand<ShowQuickBranchHistoryCommandArgs>(
 						'gitlens.showQuickBranchHistory',
 						{
@@ -110,7 +110,7 @@ export class GitTerminalLinkProvider implements Disposable, TerminalLinkProvider
 				const link: GitTerminalLink<ShowQuickBranchHistoryCommandArgs> = {
 					startIndex: match.index,
 					length: ref.length,
-					tooltip: 'Show Branch',
+					tooltip: '显示分支',
 					command: createTerminalLinkCommand<ShowQuickBranchHistoryCommandArgs>(
 						'gitlens.showQuickBranchHistory',
 						{ repoPath: repoPath, branch: branch.name },
@@ -130,7 +130,7 @@ export class GitTerminalLinkProvider implements Disposable, TerminalLinkProvider
 				const link: GitTerminalLink<ShowQuickBranchHistoryCommandArgs> = {
 					startIndex: match.index,
 					length: ref.length,
-					tooltip: 'Show Tag',
+					tooltip: '显示标签',
 					command: createTerminalLinkCommand<ShowQuickBranchHistoryCommandArgs>(
 						'gitlens.showQuickBranchHistory',
 						{ repoPath: repoPath, tag: tag.name },
@@ -146,7 +146,7 @@ export class GitTerminalLinkProvider implements Disposable, TerminalLinkProvider
 					const link: GitTerminalLink<GitWizardCommandArgs> = {
 						startIndex: match.index,
 						length: ref.length,
-						tooltip: 'Show Commits',
+						tooltip: '显示提交',
 						command: createTerminalLinkCommand<GitWizardCommandArgs>('gitlens.gitCommands', {
 							command: 'log',
 							state: {
@@ -165,7 +165,7 @@ export class GitTerminalLinkProvider implements Disposable, TerminalLinkProvider
 				const link: GitTerminalLink<ShowQuickCommitCommandArgs | InspectCommandArgs> = {
 					startIndex: match.index,
 					length: ref.length,
-					tooltip: 'Show Commit',
+					tooltip: '显示提交',
 					command: showDetailsView
 						? createTerminalLinkCommand<InspectCommandArgs>('gitlens.showInDetailsView', {
 								ref: createReference(ref, repoPath, { refType: 'revision' }),

@@ -74,7 +74,7 @@ export class BrowseRepoAtRevisionCommand extends ActiveEditorCommand {
 			}
 		} catch (ex) {
 			Logger.error(ex, 'BrowseRepoAtRevisionCommand');
-			void showGenericErrorMessage('Unable to open the repository at the specified revision');
+			void showGenericErrorMessage('无法在指定版本打开仓库');
 		}
 	}
 }

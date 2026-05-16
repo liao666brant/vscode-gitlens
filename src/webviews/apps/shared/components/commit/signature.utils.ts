@@ -100,16 +100,16 @@ export function getSignatureStatusInfo(
 		case 'trusted':
 			return {
 				icon: icon,
-				text: 'Signed & Verified',
-				description: 'Trusted',
-				detail: 'Signature is valid and the signer is trusted',
+				text: '已签名并验证',
+				description: '受信任',
+				detail: '签名有效且签名者受信任',
 			};
 		case 'untrusted': {
 			return {
 				icon: icon,
-				text: 'Invalid Signature',
-				description: 'Untrusted',
-				detail: 'Signature does not match the commit contents — this commit may have been tampered with',
+				text: '无效签名',
+				description: '不受信任',
+				detail: '签名与提交内容不匹配 — 此提交可能已被篡改',
 			};
 		}
 		case 'unknown': {
@@ -117,51 +117,49 @@ export function getSignatureStatusInfo(
 				case 'good':
 					return {
 						icon: icon,
-						text: 'Signed',
-						description: 'Unverified Signer',
-						detail: 'Signature is valid, but the signer is not in your trusted keys',
+						text: '已签名',
+						description: '未验证签名者',
+						detail: '签名有效，但签名者不在您的受信任密钥中',
 					};
 				case 'expired':
 					return {
 						icon: icon,
-						text: 'Signed',
-						description: 'Expired',
-						detail: 'Signature was made with an expired key and cannot be verified',
+						text: '已签名',
+						description: '已过期',
+						detail: '签名使用了过期密钥，无法验证',
 					};
 				case 'revoked':
 					return {
 						icon: icon,
-						text: 'Signed',
-						description: 'Revoked',
-						detail: 'Signature was made with a revoked key and should not be trusted',
+						text: '已签名',
+						description: '已撤销',
+						detail: '签名使用了已撤销的密钥，不应被信任',
 					};
 				case 'error': {
 					const isMissingKey = signature.errorMessage ? noPublicKeyRegex.test(signature.errorMessage) : false;
 					if (isMissingKey) {
 						return {
 							icon: icon,
-							text: 'Signed',
-							description: 'Missing Key',
-							detail: 'Signature cannot be verified because the public key is not available',
+							text: '已签名',
+							description: '缺少密钥',
+							detail: '由于公钥不可用，无法验证签名',
 						};
 					}
 
 					return {
 						icon: icon,
-						text: 'Signed',
-						description: 'Failed',
-						detail: signature.errorMessage
-							? `Signature verification failed: ${signature.errorMessage}`
-							: 'Signature verification failed',
+						text: '已签名',
+						description: '失败',
+						detail: signature.errorMessage ? `签名验证失败：${signature.errorMessage}` : '签名验证失败',
 					};
 				}
 				case 'unknown':
 				default:
 					return {
 						icon: icon,
-						text: 'Signed',
-						description: 'Unverified',
-						detail: signature.errorMessage ?? 'Signature could not be verified',
+						text: '已签名',
+						description: '未验证',
+						detail: signature.errorMessage ?? '无法验证签名',
 					};
 			}
 		}

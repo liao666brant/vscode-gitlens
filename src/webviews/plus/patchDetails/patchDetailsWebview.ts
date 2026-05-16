@@ -334,11 +334,11 @@ export class PatchDetailsWebviewProvider implements WebviewProvider<
 
 	private setHostTitle(mode: Mode = this._context.mode) {
 		if (mode === 'create') {
-			this.host.title = 'Create Cloud Patch';
+			this.host.title = '创建 Cloud Patch';
 		} else if (this._context.draft?.draftType === 'cloud' && this._context.draft.type === 'suggested_pr_change') {
-			this.host.title = 'Cloud Suggestion';
+			this.host.title = 'Cloud 建议';
 		} else {
-			this.host.title = 'Cloud Patch Details';
+			this.host.title = 'Cloud Patch 详情';
 		}
 	}
 
@@ -465,8 +465,8 @@ export class PatchDetailsWebviewProvider implements WebviewProvider<
 		}
 
 		const members = await showOrganizationMembersPicker(
-			'Select Collaborators',
-			'Choose collaborators to share this patch with',
+			'选择协作者',
+			'选择要共享此补丁的协作者',
 			this.getOrganizationMembers(),
 			{
 				multiselect: true,
@@ -611,12 +611,12 @@ export class PatchDetailsWebviewProvider implements WebviewProvider<
 			}
 
 			async function showNotification() {
-				const view = { title: 'View Patch' };
-				const copy = { title: 'Copy Link' };
+				const view = { title: '\u67e5\u770b\u8865\u4e01' };
+				const copy = { title: '\u590d\u5236\u94fe\u63a5' };
 				let copied = false;
 				while (true) {
 					const result = await window.showInformationMessage(
-						`Cloud Patch successfully created${copied ? '\u2014 link copied to the clipboard' : ''}`,
+						`Cloud Patch \u5df2\u6210\u529f\u521b\u5efa${copied ? '\u2014 \u94fe\u63a5\u5df2\u590d\u5236\u5230\u526a\u8d34\u677f' : ''}`,
 						view,
 						copy,
 					);
@@ -1379,13 +1379,13 @@ export class PatchDetailsWebviewProvider implements WebviewProvider<
 				} catch (ex) {
 					if (baseRef != null) {
 						// const head = { title: 'HEAD' };
-						const chooseBase = { title: 'Choose Base...' };
-						const cancel = { title: 'Cancel', isCloseAffordance: true };
+						const chooseBase = { title: '选择基准...' };
+						const cancel = { title: '取消', isCloseAffordance: true };
 
 						const result = await window.showErrorMessage(
-							`Unable to apply the patch onto ${
+							`无法将补丁应用到 ${
 								baseRef === 'HEAD' ? 'HEAD' : `'${shortenRevision(baseRef)}'`
-							}.\nDo you want to try again on a different base?`,
+							} 上。\n是否要在不同的基准上重试？`,
 							{ modal: true },
 							chooseBase,
 							cancel,

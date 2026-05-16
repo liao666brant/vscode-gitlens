@@ -88,7 +88,7 @@ export class DiffLineWithPreviousCommand extends ActiveEditorCommand {
 				'DiffLineWithPreviousCommand',
 				`getPreviousLineDiffUris(${gitUri.repoPath}, ${gitUri.fsPath}, ${gitUri.sha})`,
 			);
-			void showGenericErrorMessage('Unable to open compare');
+			void showGenericErrorMessage('无法打开比较');
 		}
 	}
 }

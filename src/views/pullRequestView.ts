@@ -27,7 +27,7 @@ export class PullRequestViewNode extends ViewNode<'pullrequest', PullRequestView
 	}
 
 	getTreeItem(): TreeItem {
-		const item = new TreeItem('Pull Request', TreeItemCollapsibleState.Expanded);
+		const item = new TreeItem('拉取请求', TreeItemCollapsibleState.Expanded);
 		return item;
 	}
 
@@ -52,7 +52,7 @@ export class PullRequestView extends ViewBase<'pullRequest', PullRequestViewNode
 	protected readonly configKey = 'pullRequest';
 
 	constructor(container: Container) {
-		super(container, 'pullRequest', 'Pull Request', 'commitsView');
+		super(container, 'pullRequest', '拉取请求', 'commitsView');
 	}
 
 	override get canReveal(): boolean {

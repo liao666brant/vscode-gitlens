@@ -66,7 +66,7 @@ export async function generateCommitMessage(
 				const messages: AIChatMessage[] = [{ role: 'user', content: prompt }];
 				return messages;
 			},
-			getProgressTitle: m => `Generating commit message with ${m.name}...`,
+			getProgressTitle: m => `正在使用 ${m.name} 生成提交消息...`,
 			getTelemetryInfo: m => ({
 				key: 'ai/generate',
 				data: {
@@ -137,7 +137,7 @@ export async function generateStashMessage(
 				const messages: AIChatMessage[] = [{ role: 'user', content: prompt }];
 				return messages;
 			},
-			getProgressTitle: m => `Generating stash message with ${m.name}...`,
+			getProgressTitle: m => `正在使用 ${m.name} 生成存储消息...`,
 			getTelemetryInfo: m => ({
 				key: 'ai/generate',
 				data: {

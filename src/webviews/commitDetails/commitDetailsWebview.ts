@@ -568,12 +568,12 @@ export class CommitDetailsWebviewProvider implements WebviewProvider<State, Stat
 			);
 
 			async function showNotification() {
-				const view = { title: 'View Code Suggestions' };
-				const copy = { title: 'Copy Link' };
+				const view = { title: '\u67e5\u770b\u4ee3\u7801\u5efa\u8bae' };
+				const copy = { title: '\u590d\u5236\u94fe\u63a5' };
 				let copied = false;
 				while (true) {
 					const result = await window.showInformationMessage(
-						`Code Suggestion successfully created${copied ? '\u2014 link copied to the clipboard' : ''}`,
+						`\u4ee3\u7801\u5efa\u8bae\u5df2\u6210\u529f\u521b\u5efa${copied ? '\u2014 \u94fe\u63a5\u5df2\u590d\u5236\u5230\u526a\u8d34\u677f' : ''}`,
 						view,
 						copy,
 					);
@@ -1117,7 +1117,7 @@ export class CommitDetailsWebviewProvider implements WebviewProvider<State, Stat
 			);
 
 			return {
-				error: { message: 'Failed trying to find branches or tags that contain this commit' },
+				error: { message: '查找包含此提交的分支或标签时失败' },
 				duration: duration,
 			};
 		}

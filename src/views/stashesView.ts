@@ -41,7 +41,7 @@ export class StashesViewNode extends RepositoriesSubscribeableNode<StashesView, 
 
 			const repositories = this.view.getFilteredRepositories();
 			if (!repositories.length) {
-				this.view.message = 'No stashes could be found.';
+				this.view.message = '未找到任何存储。';
 				return [];
 			}
 
@@ -56,7 +56,7 @@ export class StashesViewNode extends RepositoriesSubscribeableNode<StashesView, 
 
 			const stash = await child.repo.git.stash?.getStash();
 			if (!stash?.stashes.size) {
-				this.view.message = 'No stashes could be found.';
+				this.view.message = '未找到任何存储。';
 				void child.ensureSubscription();
 
 				return [];
@@ -71,7 +71,7 @@ export class StashesViewNode extends RepositoriesSubscribeableNode<StashesView, 
 	}
 
 	getTreeItem(): TreeItem {
-		const item = new TreeItem('Stashes', TreeItemCollapsibleState.Expanded);
+		const item = new TreeItem('存储', TreeItemCollapsibleState.Expanded);
 		return item;
 	}
 }
@@ -80,7 +80,7 @@ export class StashesView extends ViewBase<'stashes', StashesViewNode, StashesVie
 	protected readonly configKey = 'stashes';
 
 	constructor(container: Container, grouped?: GroupedViewContext) {
-		super(container, 'stashes', 'Stashes', 'stashesView', grouped);
+		super(container, 'stashes', '存储', 'stashesView', grouped);
 	}
 
 	override get canReveal(): boolean {
@@ -185,10 +185,10 @@ export class StashesView extends ViewBase<'stashes', StashesViewNode, StashesVie
 		return window.withProgress(
 			{
 				location: ProgressLocation.Notification,
-				title: `Revealing ${getReferenceLabel(stash, {
+				title: `正在侧边栏中显示 ${getReferenceLabel(stash, {
 					icon: false,
 					quoted: true,
-				})} in the side bar...`,
+				})}...`,
 				cancellable: true,
 			},
 			async (_progress, token) => {

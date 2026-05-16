@@ -51,7 +51,7 @@ export class RemotesViewNode extends RepositoriesSubscribeableNode<RemotesView, 
 
 			const repositories = this.view.getFilteredRepositories();
 			if (!repositories.length) {
-				this.view.message = 'No remotes could be found.';
+				this.view.message = '未找到任何远程仓库。';
 				return [];
 			}
 
@@ -69,7 +69,7 @@ export class RemotesViewNode extends RepositoriesSubscribeableNode<RemotesView, 
 
 			const remotes = await child.repo.git.remotes.getRemotes();
 			if (!remotes.length) {
-				this.view.message = 'No remotes could be found.';
+				this.view.message = '未找到任何远程仓库。';
 				void child.ensureSubscription();
 
 				return [];
@@ -84,7 +84,7 @@ export class RemotesViewNode extends RepositoriesSubscribeableNode<RemotesView, 
 	}
 
 	getTreeItem(): TreeItem {
-		const item = new TreeItem('Remotes', TreeItemCollapsibleState.Expanded);
+		const item = new TreeItem('远程仓库', TreeItemCollapsibleState.Expanded);
 		return item;
 	}
 }
@@ -93,7 +93,7 @@ export class RemotesView extends ViewBase<'remotes', RemotesViewNode, RemotesVie
 	protected readonly configKey = 'remotes';
 
 	constructor(container: Container, grouped?: GroupedViewContext) {
-		super(container, 'remotes', 'Remotes', 'remotesView', grouped);
+		super(container, 'remotes', '远程仓库', 'remotesView', grouped);
 	}
 
 	override get canReveal(): boolean {
@@ -276,10 +276,10 @@ export class RemotesView extends ViewBase<'remotes', RemotesViewNode, RemotesVie
 		return window.withProgress(
 			{
 				location: ProgressLocation.Notification,
-				title: `Revealing ${getReferenceLabel(branch, {
+				title: `正在侧边栏中显示 ${getReferenceLabel(branch, {
 					icon: false,
 					quoted: true,
-				})} in the side bar...`,
+				})}...`,
 				cancellable: true,
 			},
 			async (_progress, token) => {
@@ -298,10 +298,10 @@ export class RemotesView extends ViewBase<'remotes', RemotesViewNode, RemotesVie
 		return window.withProgress(
 			{
 				location: ProgressLocation.Notification,
-				title: `Revealing ${getReferenceLabel(commit, {
+				title: `正在侧边栏中显示 ${getReferenceLabel(commit, {
 					icon: false,
 					quoted: true,
-				})} in the side bar...`,
+				})}...`,
 				cancellable: true,
 			},
 			async (_progress, token) => {
@@ -320,7 +320,7 @@ export class RemotesView extends ViewBase<'remotes', RemotesViewNode, RemotesVie
 		return window.withProgress(
 			{
 				location: ProgressLocation.Notification,
-				title: `Revealing remote '${remote.name}' in the side bar...`,
+				title: `正在侧边栏中显示远程仓库 '${remote.name}'...`,
 				cancellable: true,
 			},
 			async (_progress, token) => {

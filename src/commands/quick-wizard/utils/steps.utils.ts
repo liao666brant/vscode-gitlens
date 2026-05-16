@@ -220,7 +220,7 @@ export function getValidateGitReferenceFn(
 			if (allowRevs) {
 				quickpick.items = [
 					createDirectiveQuickPickItem(Directive.Noop, true, {
-						label: 'Enter a reference or commit SHA',
+						label: '输入引用或提交 SHA',
 					}),
 				];
 				return true;

@@ -35,7 +35,7 @@ export class DiffWithRevisionFromCommand extends ActiveEditorCommand {
 
 		const gitUri = await GitUri.fromUri(uri);
 		if (!gitUri.repoPath) {
-			void showNoRepositoryWarningMessage('Unable to open file comparison');
+			void showNoRepositoryWarningMessage('无法打开文件比较');
 
 			return;
 		}
@@ -49,13 +49,13 @@ export class DiffWithRevisionFromCommand extends ActiveEditorCommand {
 		let ref;
 		let sha;
 		if (args?.stash) {
-			const title = `Open Changes with Stash${pad(GlyphChars.Dot, 2, 2)}`;
+			const title = `打开与贮藏的更改${pad(GlyphChars.Dot, 2, 2)}`;
 			const pick = await showStashPicker(
 				svc.stash?.getStash(),
 				`${title}${gitUri.getFormattedFileName({ truncateTo: quickPickTitleMaxChars - title.length })}`,
-				'Choose a stash to compare with',
+				'选择要比较的贮藏',
 				{
-					empty: `No stashes with '${gitUri.getFormattedFileName()}' found`,
+					empty: `未找到包含 '${gitUri.getFormattedFileName()}' 的贮藏`,
 					// Stashes should always come with files, so this should be fine (but protect it just in case)
 					filter: c => c.anyFiles?.some(f => f.path === path || f.originalPath === path) ?? true,
 				},
@@ -65,11 +65,11 @@ export class DiffWithRevisionFromCommand extends ActiveEditorCommand {
 			ref = pick.ref;
 			sha = ref;
 		} else {
-			const title = `Open Changes with Branch or Tag${pad(GlyphChars.Dot, 2, 2)}`;
+			const title = `打开与分支或标签的更改${pad(GlyphChars.Dot, 2, 2)}`;
 			const pick = await showReferencePicker(
 				gitUri.repoPath,
 				`${title}${gitUri.getFormattedFileName({ truncateTo: quickPickTitleMaxChars - title.length })}`,
-				'Choose a reference (branch, tag, etc) to compare with',
+				'选择要比较的引用（分支、标签等）',
 				{
 					allowedAdditionalInput: { rev: true },
 				},

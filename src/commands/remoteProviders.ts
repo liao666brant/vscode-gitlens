@@ -73,12 +73,9 @@ export class ConnectRemoteProviderCommand extends GlCommandBase {
 				[repo, remote] = first(repos)!;
 				repoPath = repo.path;
 			} else {
-				const pick = await showRepositoryPicker(
-					this.container,
-					undefined,
-					'Choose which repository to connect to the remote provider',
-					[...repos.keys()],
-				);
+				const pick = await showRepositoryPicker(this.container, undefined, '选择要连接到远程提供程序的仓库', [
+					...repos.keys(),
+				]);
 				if (pick == null) return undefined;
 
 				repoPath = pick.path;
@@ -170,12 +167,9 @@ export class DisconnectRemoteProviderCommand extends GlCommandBase {
 				[repo, remote] = first(repos)!;
 				repoPath = repo.path;
 			} else {
-				const pick = await showRepositoryPicker(
-					this.container,
-					undefined,
-					'Choose which repository to disconnect from the remote provider',
-					[...repos.keys()],
-				);
+				const pick = await showRepositoryPicker(this.container, undefined, '选择要断开远程提供程序连接的仓库', [
+					...repos.keys(),
+				]);
 				if (pick == null) return;
 
 				repoPath = pick.path;

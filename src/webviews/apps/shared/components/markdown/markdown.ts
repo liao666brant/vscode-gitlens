@@ -123,7 +123,7 @@ export class GlMarkdown extends LitElement {
 	inline = false;
 
 	override render(): unknown {
-		return html`${this.markdown ? until(this.renderMarkdown(this.markdown), 'Loading...') : ''}`;
+		return html`${this.markdown ? until(this.renderMarkdown(this.markdown), '加载中...') : ''}`;
 	}
 
 	private async renderMarkdown(markdown: string) {

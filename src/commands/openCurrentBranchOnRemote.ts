@@ -22,12 +22,7 @@ export class OpenCurrentBranchOnRemoteCommand extends ActiveEditorCommand {
 
 		const gitUri = uri != null ? await GitUri.fromUri(uri) : undefined;
 
-		const repository = await getBestRepositoryOrShowPicker(
-			this.container,
-			gitUri,
-			editor,
-			'Open Current Branch Name',
-		);
+		const repository = await getBestRepositoryOrShowPicker(this.container, gitUri, editor, '打开当前分支名称');
 		if (repository == null) return;
 
 		try {
@@ -63,7 +58,7 @@ export class OpenCurrentBranchOnRemoteCommand extends ActiveEditorCommand {
 			}));
 		} catch (ex) {
 			Logger.error(ex, 'OpenCurrentBranchOnRemoteCommand');
-			void showGenericErrorMessage('Unable to open branch on remote provider');
+			void showGenericErrorMessage('无法在远程提供程序上打开分支');
 		}
 	}
 }

@@ -34,7 +34,7 @@ export class ClearFileAnnotationsCommand extends EditorCommand {
 			);
 		} catch (ex) {
 			Logger.error(ex, 'ClearFileAnnotationsCommand');
-			void showGenericErrorMessage('Unable to clear file annotations');
+			void showGenericErrorMessage('无法清除文件注释');
 		}
 	}
 }

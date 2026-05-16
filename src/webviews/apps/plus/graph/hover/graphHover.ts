@@ -99,7 +99,7 @@ export class GlGraphHover extends GlElement {
 			@sl-reposition=${this.onReposition}
 		>
 			<div slot="content">
-				<gl-markdown .markdown=${until(this.markdown ?? 'Loading...', 'Loading...')}></gl-markdown>
+				<gl-markdown .markdown=${until(this.markdown ?? '加载中...', '加载中...')}></gl-markdown>
 			</div>
 		</gl-popover>`;
 	}

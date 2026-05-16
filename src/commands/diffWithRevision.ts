@@ -51,12 +51,12 @@ export class DiffWithRevisionCommand extends ActiveEditorCommand {
 							: undefined),
 				);
 
-			const title = `Open Changes with Revision${pad(GlyphChars.Dot, 2, 2)}`;
+			const title = `打开与历史版本的更改${pad(GlyphChars.Dot, 2, 2)}`;
 			const titleWithContext = `${title}${gitUri.getFormattedFileName({
 				suffix: gitUri.sha ? `:${shortenRevision(gitUri.sha)}` : undefined,
 				truncateTo: quickPickTitleMaxChars - title.length,
 			})}`;
-			const pick = await showCommitPicker(log, titleWithContext, 'Choose a commit to compare with', {
+			const pick = await showCommitPicker(log, titleWithContext, '选择一个提交进行比较', {
 				empty: !gitUri.sha
 					? {
 							getState: async () => {
@@ -89,15 +89,15 @@ export class DiffWithRevisionCommand extends ActiveEditorCommand {
 								let newTitle;
 
 								if (items.length) {
-									newPlaceholder = `${gitUri.getFormattedFileName()} is likely untracked, choose a different file?`;
-									newTitle = `${titleWithContext} (Untracked?)`;
+									newPlaceholder = `${gitUri.getFormattedFileName()} 可能未被跟踪，选择其他文件？`;
+									newTitle = `${titleWithContext} (未跟踪?)`;
 								} else {
-									newPlaceholder = 'No commits found';
+									newPlaceholder = '未找到提交';
 								}
 
 								items.push(
 									createDirectiveQuickPickItem(Directive.Cancel, undefined, {
-										label: items.length ? 'Cancel' : 'OK',
+										label: items.length ? '取消' : '确定',
 									}),
 								);
 
@@ -123,13 +123,9 @@ export class DiffWithRevisionCommand extends ActiveEditorCommand {
 					},
 				},
 				showOtherReferences: [
-					CommandQuickPickItem.fromCommand<[Uri]>(
-						'Choose a Branch or Tag...',
-						'gitlens.diffWithRevisionFrom',
-						[uri],
-					),
+					CommandQuickPickItem.fromCommand<[Uri]>('选择分支或标签...', 'gitlens.diffWithRevisionFrom', [uri]),
 					CommandQuickPickItem.fromCommand<[Uri, DiffWithRevisionFromCommandArgs]>(
-						'Choose a Stash...',
+						'选择贮藏...',
 						'gitlens.diffWithRevisionFrom',
 						[uri, { stash: true }],
 					),
@@ -146,7 +142,7 @@ export class DiffWithRevisionCommand extends ActiveEditorCommand {
 			}));
 		} catch (ex) {
 			Logger.error(ex, 'DiffWithRevisionCommand');
-			void showGenericErrorMessage('Unable to open compare');
+			void showGenericErrorMessage('无法打开比较');
 		}
 	}
 }

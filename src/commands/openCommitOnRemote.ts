@@ -77,7 +77,7 @@ export class OpenCommitOnRemoteCommand extends ActiveEditorCommand {
 				this.container,
 				gitUri,
 				editor,
-				args?.clipboard ? 'Copy Remote Commit URL' : 'Open Commit On Remote',
+				args?.clipboard ? '复制远程提交 URL' : '在远程打开提交',
 			)
 		)?.path;
 		if (!repoPath) return;
@@ -94,9 +94,7 @@ export class OpenCommitOnRemoteCommand extends ActiveEditorCommand {
 				const blame = await this.container.git.getBlameForLine(gitUri, blameLine, editor?.document);
 				if (blame == null) {
 					void showFileNotUnderSourceControlWarningMessage(
-						args?.clipboard
-							? 'Unable to copy the commit SHA'
-							: 'Unable to open the commit on the remote provider',
+						args?.clipboard ? '无法复制提交 SHA' : '无法在远程提供程序上打开提交',
 					);
 
 					return;
@@ -128,7 +126,7 @@ export class OpenCommitOnRemoteCommand extends ActiveEditorCommand {
 			}));
 		} catch (ex) {
 			Logger.error(ex, 'OpenCommitOnRemoteCommand');
-			void showGenericErrorMessage('Unable to open commit on remote provider');
+			void showGenericErrorMessage('无法在远程提供程序上打开提交');
 		}
 	}
 }

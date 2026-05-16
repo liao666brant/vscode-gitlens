@@ -57,7 +57,7 @@ export async function showCommitPicker(
 	}
 
 	if (!log?.commits.size) {
-		quickpick.placeholder = 'No commits found';
+		quickpick.placeholder = '未找到提交';
 
 		if (options?.empty?.getState != null) {
 			const empty = await options.empty.getState();

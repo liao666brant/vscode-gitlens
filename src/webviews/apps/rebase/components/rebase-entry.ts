@@ -258,7 +258,7 @@ export class GlRebaseEntryElement extends LitElement {
 					class="entry-sha"
 					hoist
 					hide-on-click
-					content=${this.revealLocation === 'graph' ? 'Open in Commit Graph' : 'Open in Inspect View'}
+					content=${this.revealLocation === 'graph' ? '在提交图中打开' : '在检查视图中打开'}
 				>
 					<a href="#" class="entry-sha-link" @click=${this.onShaClick}>
 						<code-icon icon="git-commit"></code-icon>

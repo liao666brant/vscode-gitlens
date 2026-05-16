@@ -90,7 +90,7 @@ export class StashListGitCommand extends QuickCommand<State> {
 				const result: StepResult<GitStashCommit> = yield* pickStashStep(state, context, {
 					stash: await state.repo.git.stash?.getStash(),
 					placeholder: (_context, stash) =>
-						stash == null ? `No stashes found in ${state.repo.name}` : 'Choose a stash',
+						stash == null ? `在 ${state.repo.name} 中未找到贮藏` : '选择一个贮藏',
 					picked: state.reference?.ref,
 				});
 				if (result === StepResultBreak) {

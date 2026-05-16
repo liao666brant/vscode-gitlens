@@ -45,9 +45,7 @@ export class OpenRepoOnRemoteCommand extends ActiveEditorCommand {
 				this.container,
 				gitUri,
 				editor,
-				args?.clipboard
-					? 'Choose which repository to copy the url from'
-					: 'Choose which repository to open on remote',
+				args?.clipboard ? '选择要复制 URL 的仓库' : '选择要在远程打开的仓库',
 			)
 		)?.path;
 		if (!repoPath) return;
@@ -63,7 +61,7 @@ export class OpenRepoOnRemoteCommand extends ActiveEditorCommand {
 			}));
 		} catch (ex) {
 			Logger.error(ex, 'OpenRepoOnRemoteCommand');
-			void showGenericErrorMessage('Unable to open repository on remote provider');
+			void showGenericErrorMessage('无法在远程提供程序上打开仓库');
 		}
 	}
 }

@@ -185,7 +185,7 @@ export class DiffWithCommand extends GlCommandBase {
 			);
 		} catch (ex) {
 			Logger.error(ex, 'DiffWithCommand');
-			void showGenericErrorMessage('Unable to open comparison');
+			void showGenericErrorMessage('无法打开比较');
 		}
 	}
 }

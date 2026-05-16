@@ -318,7 +318,7 @@ export class LineAnnotationController implements Disposable {
 						dateFormat: cfg.dateFormat === null ? configuration.get('defaultDateFormat') : cfg.dateFormat,
 						getBranchAndTagTips: getBranchAndTagTips,
 						pullRequest: pr?.value,
-						pullRequestPendingMessage: `PR ${GlyphChars.Ellipsis}`,
+						pullRequestPendingMessage: `拉取请求 ${GlyphChars.Ellipsis}`,
 						source: { source: 'editor:hover' },
 					},
 					fontOptions,

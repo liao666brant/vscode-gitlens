@@ -69,11 +69,11 @@ export async function showReferencePicker2(
 	quickpick.title = title;
 	quickpick.placeholder =
 		allowRanges && allowRevs
-			? `${placeholder} (or enter a range, or a revision prefixed with #)`
+			? `${placeholder}（或输入范围，或输入以 # 为前缀的版本号）`
 			: allowRanges
-				? `${placeholder} (or enter a range)`
+				? `${placeholder}（或输入范围）`
 				: allowRevs
-					? `${placeholder} (or enter a revision prefixed with #)`
+					? `${placeholder}（或输入以 # 为前缀的版本号）`
 					: placeholder;
 	quickpick.matchOnDescription = true;
 	if (options?.allowBack) {

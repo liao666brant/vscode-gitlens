@@ -34,15 +34,13 @@ export class CreatePullRequestOnRemoteCommand extends GlCommandBase {
 		if (args?.repoPath != null) {
 			repo = this.container.git.getRepository(args.repoPath);
 		}
-		repo ??= await getRepositoryOrShowPicker(this.container, 'Create Pull Request', undefined, undefined);
+		repo ??= await getRepositoryOrShowPicker(this.container, '创建拉取请求', undefined, undefined);
 		if (repo == null) return;
 
 		if (args == null) {
 			const branch = await repo.git.branches.getBranch();
 			if (branch?.upstream == null) {
-				void window.showErrorMessage(
-					`Unable to create a pull request for branch \`${branch?.name}\` as it hasn't been published to a remote.`,
-				);
+				void window.showErrorMessage(`无法为分支 \`${branch?.name}\` 创建拉取请求，因为它尚未发布到远程仓库。`);
 				return;
 			}
 
@@ -57,7 +55,7 @@ export class CreatePullRequestOnRemoteCommand extends GlCommandBase {
 		const compareRemote = await repo.git.remotes.getRemote(args.remote);
 		if (compareRemote?.provider == null) {
 			void window.showErrorMessage(
-				`Unable to create a pull request for branch \`${args.compare}\` because it is not associated with a supported remote provider.`,
+				`无法为分支 \`${args.compare}\` 创建拉取请求，因为它未关联受支持的远程提供程序。`,
 			);
 			return;
 		}

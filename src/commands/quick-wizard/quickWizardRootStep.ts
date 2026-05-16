@@ -37,7 +37,7 @@ export class QuickWizardRootStep implements QuickPickStep<QuickCommand> {
 	ignoreFocusOut = false;
 	readonly items: QuickCommand[];
 	readonly matchOnDescription = true;
-	readonly placeholder: string = 'Choose a command';
+	readonly placeholder: string = '选择一个命令';
 	readonly title: string = 'GitLens';
 
 	private readonly hiddenItems: QuickCommand[];
