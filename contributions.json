@@ -19313,7 +19313,7 @@
 	],
 	"views": {
 		"gitlens.views.branches": {
-			"name": "Branches",
+			"name": "分支",
 			"when": "!gitlens:disabled && !(config.gitlens.views.scm.grouped.views.branches || gitlens:views:scm:grouped:views:branches)",
 			"contextualTitle": "GitLens",
 			"icon": "$(gitlens-branches-view)",
@@ -19323,7 +19323,7 @@
 		},
 		"gitlens.views.commitDetails": {
 			"type": "webview",
-			"name": "Inspect",
+			"name": "检查",
 			"when": "!gitlens:disabled",
 			"contextualTitle": "GitLens",
 			"icon": "$(gitlens-commit-view)",
@@ -19333,7 +19333,7 @@
 			"order": 0
 		},
 		"gitlens.views.commits": {
-			"name": "Commits",
+			"name": "提交",
 			"when": "!gitlens:disabled && !(config.gitlens.views.scm.grouped.views.commits || gitlens:views:scm:grouped:views:commits)",
 			"contextualTitle": "GitLens",
 			"icon": "$(gitlens-commits-view)",
@@ -19342,7 +19342,7 @@
 			"order": 1
 		},
 		"gitlens.views.contributors": {
-			"name": "Contributors",
+			"name": "贡献者",
 			"when": "!gitlens:disabled && !(config.gitlens.views.scm.grouped.views.contributors || gitlens:views:scm:grouped:views:contributors)",
 			"contextualTitle": "GitLens",
 			"icon": "$(gitlens-contributors-view)",
@@ -19351,7 +19351,7 @@
 			"order": 7
 		},
 		"gitlens.views.drafts": {
-			"name": "Cloud Patches",
+			"name": "云补丁",
 			"when": "!gitlens:untrusted && !gitlens:hasVirtualFolders && gitlens:gk:organization:drafts:enabled && config.gitlens.cloudPatches.enabled",
 			"contextualTitle": "GitLens",
 			"icon": "$(gitlens-cloud-patch)",
@@ -19361,24 +19361,24 @@
 			"order": 3,
 			"welcomeContent": [
 				{
-					"contents": "Cloud Patches ᴘʀᴇᴠɪᴇᴡ — privately and securely share code with specific teammates and other developers, accessible from anywhere. Enhance collaboration without adding noise to your repositories."
+					"contents": "云补丁 ᴘʀᴇᴠɪᴇᴡ — 私密安全地与特定队友和其他开发者共享代码，随时随地可访问。增强协作而不会给仓库增加噪音。"
 				},
 				{
-					"contents": "[Create Cloud Patch](command:gitlens.views.drafts.create)",
+					"contents": "[创建云补丁](command:gitlens.views.drafts.create)",
 					"when": "gitlens:plus"
 				},
 				{
-					"contents": "[Try GitLens Pro](command:gitlens.plus.signUp?%7B%22source%22%3A%22cloud-patches%22%7D)\n\nGet 14 days of GitLens Pro for free — no credit card required. Or [sign in](command:gitlens.plus.login?%7B%22source%22%3A%22cloud-patches%22%7D).",
+					"contents": "[试用 GitLens Pro](command:gitlens.plus.signUp?%7B%22source%22%3A%22cloud-patches%22%7D)\n\n免费获得 14 天 GitLens Pro 体验 — 无需信用卡。或者[登录](command:gitlens.plus.login?%7B%22source%22%3A%22cloud-patches%22%7D)。",
 					"when": "!gitlens:plus"
 				},
 				{
-					"contents": "An account is required and may require [GitLens Pro](https://help.gitkraken.com/gitlens/gitlens-community-vs-gitlens-pro/) in the future.",
+					"contents": "需要账户，未来可能需要 [GitLens Pro](https://help.gitkraken.com/gitlens/gitlens-community-vs-gitlens-pro/)。",
 					"when": "gitlens:plus:state != 6"
 				}
 			]
 		},
 		"gitlens.views.fileHistory": {
-			"name": "File History",
+			"name": "文件历史",
 			"when": "!gitlens:disabled && !(config.gitlens.views.scm.grouped.views.fileHistory || gitlens:views:scm:grouped:views:fileHistory)",
 			"contextualTitle": "GitLens",
 			"icon": "$(gitlens-history-view)",
@@ -19389,7 +19389,7 @@
 		},
 		"gitlens.views.graph": {
 			"type": "webview",
-			"name": "Graph",
+			"name": "提交图",
 			"when": "!gitlens:disabled && (!gitlens:plus:disabled || gitlens:plus:disabled:view:overrides =~ /(?:^|\\|)gitlens\\.views\\.graph(?:\\||$)/)",
 			"contextualTitle": "GitLens",
 			"icon": "$(gitlens-graph)",
@@ -19400,7 +19400,7 @@
 		},
 		"gitlens.views.graphDetails": {
 			"type": "webview",
-			"name": "Graph Details",
+			"name": "提交图详情",
 			"when": "!gitlens:disabled && !gitlens:plus:disabled",
 			"contextualTitle": "GitLens",
 			"icon": "$(gitlens-commit-view)",
@@ -19411,7 +19411,7 @@
 		},
 		"gitlens.views.home": {
 			"type": "webview",
-			"name": "Home",
+			"name": "主页",
 			"contextualTitle": "GitLens",
 			"icon": "$(gitlens-gitlens)",
 			"initialSize": 6,
@@ -19430,49 +19430,49 @@
 			"order": 2,
 			"welcomeContent": [
 				{
-					"contents": "[Launchpad](command:gitlens.views.launchpad.info \"Learn about Launchpad\") — organizes your pull requests into actionable groups to help you focus and keep your team unblocked.",
+					"contents": "[Launchpad](command:gitlens.views.launchpad.info \"了解 Launchpad\") — 将你的拉取请求组织为可操作的分组，帮助你保持专注并让团队不受阻碍。",
 					"when": "gitlens:walkthroughSupported"
 				},
 				{
-					"contents": "Launchpad — organizes your pull requests into actionable groups to help you focus and keep your team unblocked.",
+					"contents": "Launchpad — 将你的拉取请求组织为可操作的分组，帮助你保持专注并让团队不受阻碍。",
 					"when": "!gitlens:walkthroughSupported"
 				},
 				{
-					"contents": "[Connect an Integration...](command:gitlens.showLaunchpad?%7B%22source%22%3A%22launchpad-view%22%7D)\n\nAllows Launchpad to organize your pull requests into actionable groups and keep your team unblocked.",
+					"contents": "[连接集成...](command:gitlens.showLaunchpad?%7B%22source%22%3A%22launchpad-view%22%7D)\n\n允许 Launchpad 将你的拉取请求组织为可操作的分组并让团队不受阻碍。",
 					"when": "!gitlens:launchpad:connected"
 				},
 				{
-					"contents": "[Resend Verification Email](command:gitlens.plus.resendVerification?%7B%22source%22%3A%22launchpad-view%22%7D)\n\nYou must verify your email before you can continue or [recheck Status](command:gitlens.plus.validate?%7B%22source%22%3A%22launchpad-view%22%7D).",
+					"contents": "[重新发送验证邮件](command:gitlens.plus.resendVerification?%7B%22source%22%3A%22launchpad-view%22%7D)\n\n你必须验证邮箱才能继续，或者[重新检查状态](command:gitlens.plus.validate?%7B%22source%22%3A%22launchpad-view%22%7D)。",
 					"when": "gitlens:launchpad:connected && gitlens:plus:state == -1"
 				},
 				{
-					"contents": "[Try GitLens Pro](command:gitlens.plus.signUp?%7B%22source%22%3A%22launchpad-view%22%7D)\n\nGet 14 days of GitLens Pro for free — no credit card required. Or [sign in](command:gitlens.plus.login?%7B%22source%22%3A%22launchpad-view%22%7D).",
+					"contents": "[试用 GitLens Pro](command:gitlens.plus.signUp?%7B%22source%22%3A%22launchpad-view%22%7D)\n\n免费获得 14 天 GitLens Pro 体验 — 无需信用卡。或者[登录](command:gitlens.plus.login?%7B%22source%22%3A%22launchpad-view%22%7D)。",
 					"when": "gitlens:launchpad:connected && gitlens:plus:state == 0"
 				},
 				{
-					"contents": "[Upgrade to Pro](command:gitlens.plus.upgrade?%7B%22source%22%3A%22launchpad-view%22%7D)",
+					"contents": "[升级到 Pro](command:gitlens.plus.upgrade?%7B%22source%22%3A%22launchpad-view%22%7D)",
 					"when": "gitlens:launchpad:connected && gitlens:plus:state == 4"
 				},
 				{
-					"contents": "Limited-time sale on GitLens Pro.",
+					"contents": "GitLens Pro 限时优惠。",
 					"when": "gitlens:launchpad:connected && gitlens:plus:state == 4 && gitlens:promo && gitlens:promo != pro50"
 				},
 				{
-					"contents": "Save up to 50% on GitLens Pro.",
+					"contents": "GitLens Pro 最高可省 50%。",
 					"when": "gitlens:launchpad:connected && gitlens:plus:state == 4 && gitlens:promo == pro50"
 				},
 				{
-					"contents": "Your Pro trial has ended. Please upgrade for full access to Launchpad and other Pro features.",
+					"contents": "你的 Pro 试用已结束。请升级以获得 Launchpad 和其他 Pro 功能的完整访问权限。",
 					"when": "gitlens:launchpad:connected && gitlens:plus:state == 4"
 				},
 				{
-					"contents": "[Continue](command:gitlens.plus.reactivateProTrial?%7B%22source%22%3A%22launchpad-view%22%7D)\n\nReactivate your Pro trial and experience Launchpad and all the new Pro features — free for another 14 days!",
+					"contents": "[继续](command:gitlens.plus.reactivateProTrial?%7B%22source%22%3A%22launchpad-view%22%7D)\n\n重新激活你的 Pro 试用，体验 Launchpad 和所有新的 Pro 功能 — 再免费使用 14 天！",
 					"when": "gitlens:launchpad:connected && gitlens:plus:state == 5"
 				}
 			]
 		},
 		"gitlens.views.lineHistory": {
-			"name": "Line History",
+			"name": "行历史",
 			"when": "!gitlens:disabled && !gitlens:hasVirtualFolders",
 			"contextualTitle": "GitLens",
 			"icon": "$(gitlens-history-view)",
@@ -19483,7 +19483,7 @@
 		},
 		"gitlens.views.patchDetails": {
 			"type": "webview",
-			"name": "Patch",
+			"name": "补丁",
 			"when": "!gitlens:untrusted && config.gitlens.cloudPatches.enabled && gitlens:views:patchDetails:mode",
 			"contextualTitle": "GitLens",
 			"icon": "$(gitlens-cloud-patch)",
@@ -19492,7 +19492,7 @@
 			"order": 0
 		},
 		"gitlens.views.pullRequest": {
-			"name": "Pull Request",
+			"name": "拉取请求",
 			"when": "!gitlens:disabled && gitlens:views:pullRequest:visible",
 			"contextualTitle": "GitLens",
 			"icon": "$(git-pull-request)",
@@ -19502,7 +19502,7 @@
 			"order": 1
 		},
 		"gitlens.views.remotes": {
-			"name": "Remotes",
+			"name": "远程仓库",
 			"when": "!gitlens:disabled && !(config.gitlens.views.scm.grouped.views.remotes || gitlens:views:scm:grouped:views:remotes)",
 			"contextualTitle": "GitLens",
 			"icon": "$(gitlens-remotes-view)",
@@ -19511,7 +19511,7 @@
 			"order": 3
 		},
 		"gitlens.views.repositories": {
-			"name": "Repositories",
+			"name": "仓库",
 			"when": "!gitlens:disabled && !(config.gitlens.views.scm.grouped.views.repositories || gitlens:views:scm:grouped:views:repositories)",
 			"contextualTitle": "GitLens",
 			"icon": "$(gitlens-repositories-view)",
@@ -19529,117 +19529,117 @@
 			"order": 8,
 			"welcomeContent": [
 				{
-					"contents": "$(loading~spin) Loading...",
+					"contents": "$(loading~spin) 加载中...",
 					"when": "gitlens:views:scm:grouped:loading"
 				},
 				{
-					"contents": "GitLens groups many related views—Commits, Branches, Stashes, etc—here for easier view management.\n\n[Continue](command:gitlens.views.scm.grouped.welcome.dismiss)\n\nUse the tabs above to navigate, or detach the views you want to keep separated. You can regroup them anytime using the 'x' in the view header.",
+					"contents": "GitLens 将许多相关视图（提交、分支、贮藏等）分组在此处，便于视图管理。\n\n[继续](command:gitlens.views.scm.grouped.welcome.dismiss)\n\n使用上方的标签页进行导航，或分离你想保持独立的视图。你可以随时通过视图标题中的 'x' 重新分组。",
 					"when": "!gitlens:views:scm:grouped:loading && gitlens:views:scm:grouped:welcome && gitlens:install:new && !config.gitlens.advanced.skipOnboarding"
 				},
 				{
-					"contents": "GitLens groups many related views—Commits, Branches, Stashes, etc—here for easier view management.\n\n[Continue](command:gitlens.views.scm.grouped.welcome.dismiss)\n\nPrefer them separate? [Restore views to previous locations](command:gitlens.views.scm.grouped.welcome.restore)\n\nUse the tabs above to navigate, or detach the views you want to keep separated. You can regroup them anytime using the 'x' in the view header.",
+					"contents": "GitLens 将许多相关视图（提交、分支、贮藏等）分组在此处，便于视图管理。\n\n[继续](command:gitlens.views.scm.grouped.welcome.dismiss)\n\n更喜欢分开显示？[将视图恢复到之前的位置](command:gitlens.views.scm.grouped.welcome.restore)\n\n使用上方的标签页进行导航，或分离你想保持独立的视图。你可以随时通过视图标题中的 'x' 重新分组。",
 					"when": "!gitlens:views:scm:grouped:loading && gitlens:views:scm:grouped:welcome && !gitlens:install:new && !config.gitlens.advanced.skipOnboarding"
 				},
 				{
-					"contents": "[Launchpad](command:gitlens.views.launchpad.info \"Learn about Launchpad\") — organizes your pull requests into actionable groups to help you focus and keep your team unblocked.",
+					"contents": "[Launchpad](command:gitlens.views.launchpad.info \"了解 Launchpad\") — 将你的拉取请求组织为可操作的分组，帮助你保持专注并让团队不受阻碍。",
 					"when": "!gitlens:views:scm:grouped:loading && gitlens:views:scm:grouped:view == launchpad && gitlens:walkthroughSupported"
 				},
 				{
-					"contents": "Launchpad — organizes your pull requests into actionable groups to help you focus and keep your team unblocked.",
+					"contents": "Launchpad — 将你的拉取请求组织为可操作的分组，帮助你保持专注并让团队不受阻碍。",
 					"when": "!gitlens:views:scm:grouped:loading && gitlens:views:scm:grouped:view == launchpad && !gitlens:walkthroughSupported"
 				},
 				{
-					"contents": "[Connect an Integration...](command:gitlens.showLaunchpad?%7B%22source%22%3A%22launchpad-view%22%7D)\n\nAllows Launchpad to organize your pull requests into actionable groups and keep your team unblocked.",
+					"contents": "[连接集成...](command:gitlens.showLaunchpad?%7B%22source%22%3A%22launchpad-view%22%7D)\n\n允许 Launchpad 将你的拉取请求组织为可操作的分组并让团队不受阻碍。",
 					"when": "!gitlens:views:scm:grouped:loading && gitlens:views:scm:grouped:view == launchpad && !gitlens:launchpad:connected"
 				},
 				{
-					"contents": "[Resend Verification Email](command:gitlens.plus.resendVerification?%7B%22source%22%3A%22launchpad-view%22%7D)\n\nYou must verify your email before you can continue or [recheck Status](command:gitlens.plus.validate?%7B%22source%22%3A%22launchpad-view%22%7D).",
+					"contents": "[重新发送验证邮件](command:gitlens.plus.resendVerification?%7B%22source%22%3A%22launchpad-view%22%7D)\n\n你必须验证邮箱才能继续，或者[重新检查状态](command:gitlens.plus.validate?%7B%22source%22%3A%22launchpad-view%22%7D)。",
 					"when": "!gitlens:views:scm:grouped:loading && gitlens:views:scm:grouped:view == launchpad && gitlens:launchpad:connected && gitlens:plus:state == -1"
 				},
 				{
-					"contents": "[Try GitLens Pro](command:gitlens.plus.signUp?%7B%22source%22%3A%22launchpad-view%22%7D)\n\nGet 14 days of GitLens Pro for free — no credit card required. Or [sign in](command:gitlens.plus.login?%7B%22source%22%3A%22launchpad-view%22%7D).",
+					"contents": "[试用 GitLens Pro](command:gitlens.plus.signUp?%7B%22source%22%3A%22launchpad-view%22%7D)\n\n免费获得 14 天 GitLens Pro 体验 — 无需信用卡。或者[登录](command:gitlens.plus.login?%7B%22source%22%3A%22launchpad-view%22%7D)。",
 					"when": "!gitlens:views:scm:grouped:loading && gitlens:views:scm:grouped:view == launchpad && gitlens:launchpad:connected && gitlens:plus:state == 0"
 				},
 				{
-					"contents": "[Upgrade to Pro](command:gitlens.plus.upgrade?%7B%22source%22%3A%22launchpad-view%22%7D)",
+					"contents": "[升级到 Pro](command:gitlens.plus.upgrade?%7B%22source%22%3A%22launchpad-view%22%7D)",
 					"when": "!gitlens:views:scm:grouped:loading && gitlens:views:scm:grouped:view == launchpad && gitlens:launchpad:connected && gitlens:plus:state == 4"
 				},
 				{
-					"contents": "Limited-time sale on GitLens Pro.",
+					"contents": "GitLens Pro 限时优惠。",
 					"when": "!gitlens:views:scm:grouped:loading && gitlens:views:scm:grouped:view == launchpad && gitlens:launchpad:connected && gitlens:plus:state == 4 && gitlens:promo && gitlens:promo != pro50"
 				},
 				{
-					"contents": "Save up to 50% on GitLens Pro.",
+					"contents": "GitLens Pro 最高可省 50%。",
 					"when": "!gitlens:views:scm:grouped:loading && gitlens:views:scm:grouped:view == launchpad && gitlens:launchpad:connected && gitlens:plus:state == 4 && gitlens:promo == pro50"
 				},
 				{
-					"contents": "Your Pro trial has ended. Please upgrade for full access to Launchpad and other Pro features.",
+					"contents": "你的 Pro 试用已结束。请升级以获得 Launchpad 和其他 Pro 功能的完整访问权限。",
 					"when": "!gitlens:views:scm:grouped:loading && gitlens:views:scm:grouped:view == launchpad && gitlens:launchpad:connected && gitlens:plus:state == 4"
 				},
 				{
-					"contents": "[Continue](command:gitlens.plus.reactivateProTrial?%7B%22source%22%3A%22launchpad-view%22%7D)\n\nReactivate your Pro trial and experience Launchpad and all the new Pro features — free for another 14 days!",
+					"contents": "[继续](command:gitlens.plus.reactivateProTrial?%7B%22source%22%3A%22launchpad-view%22%7D)\n\n重新激活你的 Pro 试用，体验 Launchpad 和所有新的 Pro 功能 — 再免费使用 14 天！",
 					"when": "!gitlens:views:scm:grouped:loading && gitlens:views:scm:grouped:view == launchpad && gitlens:launchpad:connected && gitlens:plus:state == 5"
 				},
 				{
-					"contents": "Search for commits by [message](command:gitlens.views.searchAndCompare.searchCommits?%7B%22search%22%3A%7B%22query%22%3A%22message%3A%22%7D%2C%22prefillOnly%22%3Atrue%7D), [author](command:gitlens.views.searchAndCompare.searchCommits?%7B%22search%22%3A%7B%22query%22%3A%22author%3A%22%7D%2C%22prefillOnly%22%3Atrue%7D), [SHA](command:gitlens.views.searchAndCompare.searchCommits?%7B%22search%22%3A%7B%22query%22%3A%22commit%3A%22%7D%2C%22prefillOnly%22%3Atrue%7D), [file](command:gitlens.views.searchAndCompare.searchCommits?%7B%22search%22%3A%7B%22query%22%3A%22file%3A%22%7D%2C%22prefillOnly%22%3Atrue%7D), or [changes](command:gitlens.views.searchAndCompare.searchCommits?%7B%22search%22%3A%7B%22query%22%3A%22change%3A%22%7D%2C%22prefillOnly%22%3Atrue%7D)\n\n[Search Commits...](command:gitlens.views.searchAndCompare.searchCommits)",
+					"contents": "按[消息](command:gitlens.views.searchAndCompare.searchCommits?%7B%22search%22%3A%7B%22query%22%3A%22message%3A%22%7D%2C%22prefillOnly%22%3Atrue%7D)、[作者](command:gitlens.views.searchAndCompare.searchCommits?%7B%22search%22%3A%7B%22query%22%3A%22author%3A%22%7D%2C%22prefillOnly%22%3Atrue%7D)、[SHA](command:gitlens.views.searchAndCompare.searchCommits?%7B%22search%22%3A%7B%22query%22%3A%22commit%3A%22%7D%2C%22prefillOnly%22%3Atrue%7D)、[文件](command:gitlens.views.searchAndCompare.searchCommits?%7B%22search%22%3A%7B%22query%22%3A%22file%3A%22%7D%2C%22prefillOnly%22%3Atrue%7D)或[变更](command:gitlens.views.searchAndCompare.searchCommits?%7B%22search%22%3A%7B%22query%22%3A%22change%3A%22%7D%2C%22prefillOnly%22%3Atrue%7D)搜索提交\n\n[搜索提交...](command:gitlens.views.searchAndCompare.searchCommits)",
 					"when": "!gitlens:views:scm:grouped:loading && gitlens:views:scm:grouped:view == searchAndCompare && !gitlens:hasVirtualFolders"
 				},
 				{
-					"contents": "Search for commits by [message](command:gitlens.views.searchAndCompare.searchCommits?%7B%22search%22%3A%7B%22query%22%3A%22message%3A%22%7D%2C%22prefillOnly%22%3Atrue%7D), [author](command:gitlens.views.searchAndCompare.searchCommits?%7B%22search%22%3A%7B%22query%22%3A%22author%3A%22%7D%2C%22prefillOnly%22%3Atrue%7D), or [SHA](command:gitlens.views.searchAndCompare.searchCommits?%7B%22search%22%3A%7B%22query%22%3A%22commit%3A%22%7D%2C%22prefillOnly%22%3Atrue%7D)\n\n[Search Commits...](command:gitlens.views.searchAndCompare.searchCommits)",
+					"contents": "按[消息](command:gitlens.views.searchAndCompare.searchCommits?%7B%22search%22%3A%7B%22query%22%3A%22message%3A%22%7D%2C%22prefillOnly%22%3Atrue%7D)、[作者](command:gitlens.views.searchAndCompare.searchCommits?%7B%22search%22%3A%7B%22query%22%3A%22author%3A%22%7D%2C%22prefillOnly%22%3Atrue%7D)或 [SHA](command:gitlens.views.searchAndCompare.searchCommits?%7B%22search%22%3A%7B%22query%22%3A%22commit%3A%22%7D%2C%22prefillOnly%22%3Atrue%7D) 搜索提交\n\n[搜索提交...](command:gitlens.views.searchAndCompare.searchCommits)",
 					"when": "!gitlens:views:scm:grouped:loading && gitlens:views:scm:grouped:view == searchAndCompare && gitlens:hasVirtualFolders"
 				},
 				{
-					"contents": "Compare a <branch, tag, or ref> with another <branch, tag, or ref>\n\n[Compare References...](command:gitlens.views.searchAndCompare.selectForCompare)",
+					"contents": "将一个<分支、标签或引用>与另一个<分支、标签或引用>进行比较\n\n[比较引用...](command:gitlens.views.searchAndCompare.selectForCompare)",
 					"when": "!gitlens:views:scm:grouped:loading && gitlens:views:scm:grouped:view == searchAndCompare && !gitlens:hasVirtualFolders"
 				},
 				{
-					"contents": "[Worktrees](https://help.gitkraken.com/gitlens/side-bar/#worktrees-view-pro) ᴾᴿᴼ — minimize context switching by allowing you to work on multiple branches simultaneously.",
+					"contents": "[Worktrees](https://help.gitkraken.com/gitlens/side-bar/#worktrees-view-pro) ᴾᴿᴼ — 通过同时在多个分支上工作来减少上下文切换。",
 					"when": "!gitlens:views:scm:grouped:loading && gitlens:views:scm:grouped:view == worktrees && !gitlens:hasVirtualFolders"
 				},
 				{
-					"contents": "Unlock this feature for privately hosted repos with [GitLens Pro](https://help.gitkraken.com/gitlens/gitlens-community-vs-gitlens-pro/).",
+					"contents": "使用 [GitLens Pro](https://help.gitkraken.com/gitlens/gitlens-community-vs-gitlens-pro/) 为私有托管仓库解锁此功能。",
 					"when": "!gitlens:views:scm:grouped:loading && gitlens:views:scm:grouped:view == worktrees && gitlens:plus:state != 6"
 				},
 				{
-					"contents": "[Create Worktree...](command:gitlens.views.createWorktree)",
+					"contents": "[创建工作树...](command:gitlens.views.createWorktree)",
 					"when": "!gitlens:views:scm:grouped:loading && gitlens:views:scm:grouped:view == worktrees && !gitlens:plus:required && !gitlens:feature:unsupported:git:worktrees"
 				},
 				{
-					"contents": "[Resend Verification Email](command:gitlens.plus.resendVerification?%7B%22source%22%3A%22worktrees%22%7D)\n\nYou must verify your email before you can continue or [recheck Status](command:gitlens.plus.validate?%7B%22source%22%3A%22worktrees%22%7D).",
+					"contents": "[重新发送验证邮件](command:gitlens.plus.resendVerification?%7B%22source%22%3A%22worktrees%22%7D)\n\n你必须验证邮箱才能继续，或者[重新检查状态](command:gitlens.plus.validate?%7B%22source%22%3A%22worktrees%22%7D)。",
 					"when": "!gitlens:views:scm:grouped:loading && gitlens:views:scm:grouped:view == worktrees && gitlens:plus:state == -1"
 				},
 				{
-					"contents": "[Try GitLens Pro](command:gitlens.plus.signUp?%7B%22source%22%3A%22worktrees%22%7D)\n\nGet 14 days of GitLens Pro for free — no credit card required. Or [sign in](command:gitlens.plus.login?%7B%22source%22%3A%22worktrees%22%7D).",
+					"contents": "[试用 GitLens Pro](command:gitlens.plus.signUp?%7B%22source%22%3A%22worktrees%22%7D)\n\n免费获得 14 天 GitLens Pro 体验 — 无需信用卡。或者[登录](command:gitlens.plus.login?%7B%22source%22%3A%22worktrees%22%7D)。",
 					"when": "!gitlens:views:scm:grouped:loading && gitlens:views:scm:grouped:view == worktrees && gitlens:plus:required && gitlens:plus:state == 0"
 				},
 				{
-					"contents": "[Upgrade to Pro](command:gitlens.plus.upgrade?%7B%22source%22%3A%22worktrees%22%7D)",
+					"contents": "[升级到 Pro](command:gitlens.plus.upgrade?%7B%22source%22%3A%22worktrees%22%7D)",
 					"when": "!gitlens:views:scm:grouped:loading && gitlens:views:scm:grouped:view == worktrees && gitlens:plus:required && gitlens:plus:state == 4"
 				},
 				{
-					"contents": "Limited-time sale on GitLens Pro.",
+					"contents": "GitLens Pro 限时优惠。",
 					"when": "!gitlens:views:scm:grouped:loading && gitlens:views:scm:grouped:view == worktrees && gitlens:plus:required && gitlens:plus:state == 4 && gitlens:promo && gitlens:promo != pro50"
 				},
 				{
-					"contents": "Save up to 50% on GitLens Pro.",
+					"contents": "GitLens Pro 最高可省 50%。",
 					"when": "!gitlens:views:scm:grouped:loading && gitlens:views:scm:grouped:view == worktrees && gitlens:plus:required && gitlens:plus:state == 4 && gitlens:promo == pro50"
 				},
 				{
-					"contents": "Your Pro trial has ended. Please upgrade for full access to Worktrees and other Pro features.",
+					"contents": "你的 Pro 试用已结束。请升级以获得 Worktrees 和其他 Pro 功能的完整访问权限。",
 					"when": "!gitlens:views:scm:grouped:loading && gitlens:views:scm:grouped:view == worktrees && gitlens:plus:required && gitlens:plus:state == 4"
 				},
 				{
-					"contents": "[Continue](command:gitlens.plus.reactivateProTrial?%7B%22source%22%3A%22worktrees%22%7D)\n\nReactivate your Pro trial and experience Worktrees and all the new Pro features — free for another 14 days!",
+					"contents": "[继续](command:gitlens.plus.reactivateProTrial?%7B%22source%22%3A%22worktrees%22%7D)\n\n重新激活你的 Pro 试用，体验 Worktrees 和所有新的 Pro 功能 — 再免费使用 14 天！",
 					"when": "!gitlens:views:scm:grouped:loading && gitlens:views:scm:grouped:view == worktrees && gitlens:plus:required && gitlens:plus:state == 5"
 				},
 				{
-					"contents": "⚠ Worktrees are not supported by your version of Git. Please upgrade to a more recent version.",
+					"contents": "⚠ 你的 Git 版本不支持 Worktrees。请升级到更新的版本。",
 					"when": "!gitlens:views:scm:grouped:loading && gitlens:views:scm:grouped:view == worktrees && !gitlens:plus:required && gitlens:feature:unsupported:git:worktrees"
 				}
 			]
 		},
 		"gitlens.views.searchAndCompare": {
-			"name": "Search & Compare",
+			"name": "搜索与比较",
 			"when": "!gitlens:disabled && !(config.gitlens.views.scm.grouped.views.searchAndCompare || gitlens:views:scm:grouped:views:searchAndCompare)",
 			"contextualTitle": "GitLens",
 			"icon": "$(gitlens-search-view)",
@@ -19649,21 +19649,21 @@
 			"order": 5,
 			"welcomeContent": [
 				{
-					"contents": "Search for commits by [message](command:gitlens.views.searchAndCompare.searchCommits?%7B%22search%22%3A%7B%22query%22%3A%22message%3A%22%7D%2C%22prefillOnly%22%3Atrue%7D), [author](command:gitlens.views.searchAndCompare.searchCommits?%7B%22search%22%3A%7B%22query%22%3A%22author%3A%22%7D%2C%22prefillOnly%22%3Atrue%7D), [SHA](command:gitlens.views.searchAndCompare.searchCommits?%7B%22search%22%3A%7B%22query%22%3A%22commit%3A%22%7D%2C%22prefillOnly%22%3Atrue%7D), [file](command:gitlens.views.searchAndCompare.searchCommits?%7B%22search%22%3A%7B%22query%22%3A%22file%3A%22%7D%2C%22prefillOnly%22%3Atrue%7D), or [changes](command:gitlens.views.searchAndCompare.searchCommits?%7B%22search%22%3A%7B%22query%22%3A%22change%3A%22%7D%2C%22prefillOnly%22%3Atrue%7D)\n\n[Search Commits...](command:gitlens.views.searchAndCompare.searchCommits)",
+					"contents": "按[消息](command:gitlens.views.searchAndCompare.searchCommits?%7B%22search%22%3A%7B%22query%22%3A%22message%3A%22%7D%2C%22prefillOnly%22%3Atrue%7D)、[作者](command:gitlens.views.searchAndCompare.searchCommits?%7B%22search%22%3A%7B%22query%22%3A%22author%3A%22%7D%2C%22prefillOnly%22%3Atrue%7D)、[SHA](command:gitlens.views.searchAndCompare.searchCommits?%7B%22search%22%3A%7B%22query%22%3A%22commit%3A%22%7D%2C%22prefillOnly%22%3Atrue%7D)、[文件](command:gitlens.views.searchAndCompare.searchCommits?%7B%22search%22%3A%7B%22query%22%3A%22file%3A%22%7D%2C%22prefillOnly%22%3Atrue%7D)或[变更](command:gitlens.views.searchAndCompare.searchCommits?%7B%22search%22%3A%7B%22query%22%3A%22change%3A%22%7D%2C%22prefillOnly%22%3Atrue%7D)搜索提交\n\n[搜索提交...](command:gitlens.views.searchAndCompare.searchCommits)",
 					"when": "!gitlens:hasVirtualFolders"
 				},
 				{
-					"contents": "Search for commits by [message](command:gitlens.views.searchAndCompare.searchCommits?%7B%22search%22%3A%7B%22query%22%3A%22message%3A%22%7D%2C%22prefillOnly%22%3Atrue%7D), [author](command:gitlens.views.searchAndCompare.searchCommits?%7B%22search%22%3A%7B%22query%22%3A%22author%3A%22%7D%2C%22prefillOnly%22%3Atrue%7D), or [SHA](command:gitlens.views.searchAndCompare.searchCommits?%7B%22search%22%3A%7B%22query%22%3A%22commit%3A%22%7D%2C%22prefillOnly%22%3Atrue%7D)\n\n[Search Commits...](command:gitlens.views.searchAndCompare.searchCommits)",
+					"contents": "按[消息](command:gitlens.views.searchAndCompare.searchCommits?%7B%22search%22%3A%7B%22query%22%3A%22message%3A%22%7D%2C%22prefillOnly%22%3Atrue%7D)、[作者](command:gitlens.views.searchAndCompare.searchCommits?%7B%22search%22%3A%7B%22query%22%3A%22author%3A%22%7D%2C%22prefillOnly%22%3Atrue%7D)或 [SHA](command:gitlens.views.searchAndCompare.searchCommits?%7B%22search%22%3A%7B%22query%22%3A%22commit%3A%22%7D%2C%22prefillOnly%22%3Atrue%7D) 搜索提交\n\n[搜索提交...](command:gitlens.views.searchAndCompare.searchCommits)",
 					"when": "gitlens:hasVirtualFolders"
 				},
 				{
-					"contents": "Compare a <branch, tag, or ref> with another <branch, tag, or ref>\n\n[Compare References...](command:gitlens.views.searchAndCompare.selectForCompare)",
+					"contents": "将一个<分支、标签或引用>与另一个<分支、标签或引用>进行比较\n\n[比较引用...](command:gitlens.views.searchAndCompare.selectForCompare)",
 					"when": "!gitlens:hasVirtualFolders"
 				}
 			]
 		},
 		"gitlens.views.stashes": {
-			"name": "Stashes",
+			"name": "存储",
 			"when": "!gitlens:disabled && !gitlens:hasVirtualFolders && !(config.gitlens.views.scm.grouped.views.stashes || gitlens:views:scm:grouped:views:stashes)",
 			"contextualTitle": "GitLens",
 			"icon": "$(gitlens-stashes-view)",
@@ -19672,7 +19672,7 @@
 			"order": 4
 		},
 		"gitlens.views.tags": {
-			"name": "Tags",
+			"name": "标签",
 			"when": "!gitlens:disabled && !(config.gitlens.views.scm.grouped.views.tags || gitlens:views:scm:grouped:views:tags)",
 			"contextualTitle": "GitLens",
 			"icon": "$(gitlens-tags-view)",
@@ -19682,7 +19682,7 @@
 		},
 		"gitlens.views.timeline": {
 			"type": "webview",
-			"name": "Visual File History",
+			"name": "可视化文件历史",
 			"when": "!gitlens:disabled && (!gitlens:plus:disabled || gitlens:plus:disabled:view:overrides =~ /(?:^|\\|)gitlens\\.views\\.timeline(?:\\||$)/)",
 			"contextualTitle": "GitLens",
 			"icon": "$(graph-scatter)",
@@ -19693,7 +19693,7 @@
 		},
 		"gitlens.views.welcome": {
 			"type": "webview",
-			"name": "Welcome",
+			"name": "欢迎",
 			"contextualTitle": "GitLens",
 			"icon": "$(gitlens-gitlens)",
 			"initialSize": 1,
@@ -19702,7 +19702,7 @@
 			"order": 0
 		},
 		"gitlens.views.workspaces": {
-			"name": "Cloud Workspaces",
+			"name": "云工作区",
 			"when": "!gitlens:untrusted && !gitlens:hasVirtualFolders",
 			"contextualTitle": "GitLens",
 			"icon": "$(gitlens-workspaces-view)",
@@ -19712,24 +19712,24 @@
 			"order": 4,
 			"welcomeContent": [
 				{
-					"contents": "Workspaces ᴘʀᴇᴠɪᴇᴡ — group and manage multiple repositories together, accessible from anywhere, streamlining your workflow.\n\nCreate workspaces just for yourself or share (coming soon in GitLens) them with your team for faster onboarding and better collaboration."
+					"contents": "工作区 ᴘʀᴇᴠɪᴇᴡ — 将多个仓库分组并统一管理，随时随地可访问，简化你的工作流程。\n\n创建仅供自己使用的工作区，或与团队共享（即将在 GitLens 中推出），加速入职和提升协作效率。"
 				},
 				{
-					"contents": "[Create Cloud Workspace](command:gitlens.views.workspaces.create)",
+					"contents": "[创建云工作区](command:gitlens.views.workspaces.create)",
 					"when": "gitlens:plus"
 				},
 				{
-					"contents": "[Try GitLens Pro](command:gitlens.plus.signUp?%7B%22source%22%3A%22workspaces%22%7D)\n\nGet 14 days of GitLens Pro for free — no credit card required. Or [sign in](command:gitlens.plus.login?%7B%22source%22%3A%22workspaces%22%7D).",
+					"contents": "[试用 GitLens Pro](command:gitlens.plus.signUp?%7B%22source%22%3A%22workspaces%22%7D)\n\n免费获得 14 天 GitLens Pro 体验 — 无需信用卡。或者[登录](command:gitlens.plus.login?%7B%22source%22%3A%22workspaces%22%7D)。",
 					"when": "!gitlens:plus"
 				},
 				{
-					"contents": "An account is required and may require [GitLens Pro](https://help.gitkraken.com/gitlens/gitlens-community-vs-gitlens-pro/) in the future.",
+					"contents": "需要账户，未来可能需要 [GitLens Pro](https://help.gitkraken.com/gitlens/gitlens-community-vs-gitlens-pro/)。",
 					"when": "gitlens:plus:state != 6"
 				}
 			]
 		},
 		"gitlens.views.worktrees": {
-			"name": "Worktrees",
+			"name": "工作树",
 			"when": "!gitlens:disabled && !gitlens:plus:disabled && !gitlens:hasVirtualFolders && !(config.gitlens.views.scm.grouped.views.worktrees || gitlens:views:scm:grouped:views:worktrees)",
 			"contextualTitle": "GitLens",
 			"icon": "$(gitlens-worktrees-view)",
@@ -19738,18 +19738,18 @@
 			"order": 6,
 			"welcomeContent": [
 				{
-					"contents": "[Worktrees](https://help.gitkraken.com/gitlens/side-bar/#worktrees-view-pro) ᴾᴿᴼ — minimize context switching by working on multiple branches simultaneously."
+					"contents": "[Worktrees](https://help.gitkraken.com/gitlens/side-bar/#worktrees-view-pro) ᴾᴿᴼ — 通过同时在多个分支上工作来减少上下文切换。"
 				},
 				{
-					"contents": "Unlock this feature for privately hosted repos with [GitLens Pro](https://help.gitkraken.com/gitlens/gitlens-community-vs-gitlens-pro/).",
+					"contents": "使用 [GitLens Pro](https://help.gitkraken.com/gitlens/gitlens-community-vs-gitlens-pro/) 为私有托管仓库解锁此功能。",
 					"when": "gitlens:plus:state != 6"
 				},
 				{
-					"contents": "[Create Worktree...](command:gitlens.views.createWorktree)",
+					"contents": "[创建工作树...](command:gitlens.views.createWorktree)",
 					"when": "!gitlens:plus:required && !gitlens:feature:unsupported:git:worktrees"
 				},
 				{
-					"contents": "[Resend Verification Email](command:gitlens.plus.resendVerification?%7B%22source%22%3A%22worktrees%22%7D)\n\nYou must verify your email before you can continue or [recheck Status](command:gitlens.plus.validate?%7B%22source%22%3A%22worktrees%22%7D).",
+					"contents": "[重新发送验证邮件](command:gitlens.plus.resendVerification?%7B%22source%22%3A%22worktrees%22%7D)\n\n你必须验证邮箱才能继续，或者[重新检查状态](command:gitlens.plus.validate?%7B%22source%22%3A%22worktrees%22%7D)。",
 					"when": "gitlens:plus:state == -1"
 				},
 				{
@@ -19761,23 +19761,23 @@
 					"when": "gitlens:plus:required && gitlens:plus:state == 4"
 				},
 				{
-					"contents": "Limited-time sale on GitLens Pro.",
+					"contents": "GitLens Pro 限时优惠。",
 					"when": "gitlens:plus:required && gitlens:plus:state == 4 && gitlens:promo && gitlens:promo != pro50"
 				},
 				{
-					"contents": "Save up to 50% on GitLens Pro.",
+					"contents": "GitLens Pro 最高可省 50%。",
 					"when": "gitlens:plus:required && gitlens:plus:state == 4 && gitlens:promo == pro50"
 				},
 				{
-					"contents": "Your Pro trial has ended. Please upgrade for full access to Worktrees and other Pro features.",
+					"contents": "你的 Pro 试用已结束。请升级以获得工作树和其他 Pro 功能的完整访问权限。",
 					"when": "gitlens:plus:required && gitlens:plus:state == 4"
 				},
 				{
-					"contents": "[Continue](command:gitlens.plus.reactivateProTrial?%7B%22source%22%3A%22worktrees%22%7D)\n\nReactivate your Pro trial and experience Worktrees and all the new Pro features — free for another 14 days!",
+					"contents": "[继续](command:gitlens.plus.reactivateProTrial?%7B%22source%22%3A%22worktrees%22%7D)\n\n重新激活你的 Pro 试用，体验工作树和所有新 Pro 功能 — 再免费使用 14 天！",
 					"when": "gitlens:plus:required && gitlens:plus:state == 5"
 				},
 				{
-					"contents": "⚠ Worktrees are not supported by your version of Git. Please upgrade to a more recent version.",
+					"contents": "⚠ 你的 Git 版本不支持工作树。请升级到更新的版本。",
 					"when": "!gitlens:plus:required && gitlens:feature:unsupported:git:worktrees"
 				}
 			]
