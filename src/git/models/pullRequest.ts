@@ -72,19 +72,19 @@ export class PullRequest implements PullRequestShape {
 			: this.formatDateFromNow();
 	}
 
-	@memoize<PullRequest['formatDate']>({ resolver: format => format ?? 'MMMM Do, YYYY h:mma' })
+	@memoize<PullRequest['formatDate']>({ resolver: format => format ?? 'YYYY年M月D日 HH:mm' })
 	formatDate(format?: string | null): string {
-		return formatDate(this.mergedDate ?? this.closedDate ?? this.updatedDate, format ?? 'MMMM Do, YYYY h:mma');
+		return formatDate(this.mergedDate ?? this.closedDate ?? this.updatedDate, format ?? 'YYYY年M月D日 HH:mm');
 	}
 
 	formatDateFromNow(): string {
 		return fromNow(this.mergedDate ?? this.closedDate ?? this.updatedDate);
 	}
 
-	@memoize<PullRequest['formatClosedDate']>({ resolver: format => format ?? 'MMMM Do, YYYY h:mma' })
+	@memoize<PullRequest['formatClosedDate']>({ resolver: format => format ?? 'YYYY年M月D日 HH:mm' })
 	formatClosedDate(format?: string | null): string {
 		if (this.closedDate == null) return '';
-		return formatDate(this.closedDate, format ?? 'MMMM Do, YYYY h:mma');
+		return formatDate(this.closedDate, format ?? 'YYYY年M月D日 HH:mm');
 	}
 
 	formatClosedDateFromNow(): string {
@@ -92,10 +92,10 @@ export class PullRequest implements PullRequestShape {
 		return fromNow(this.closedDate);
 	}
 
-	@memoize<PullRequest['formatMergedDate']>({ resolver: format => format ?? 'MMMM Do, YYYY h:mma' })
+	@memoize<PullRequest['formatMergedDate']>({ resolver: format => format ?? 'YYYY年M月D日 HH:mm' })
 	formatMergedDate(format?: string | null): string {
 		if (this.mergedDate == null) return '';
-		return formatDate(this.mergedDate, format ?? 'MMMM Do, YYYY h:mma') ?? '';
+		return formatDate(this.mergedDate, format ?? 'YYYY年M月D日 HH:mm') ?? '';
 	}
 
 	formatMergedDateFromNow(): string {
@@ -103,9 +103,9 @@ export class PullRequest implements PullRequestShape {
 		return fromNow(this.mergedDate);
 	}
 
-	@memoize<PullRequest['formatUpdatedDate']>({ resolver: format => format ?? 'MMMM Do, YYYY h:mma' })
+	@memoize<PullRequest['formatUpdatedDate']>({ resolver: format => format ?? 'YYYY年M月D日 HH:mm' })
 	formatUpdatedDate(format?: string | null): string {
-		return formatDate(this.updatedDate, format ?? 'MMMM Do, YYYY h:mma') ?? '';
+		return formatDate(this.updatedDate, format ?? 'YYYY年M月D日 HH:mm') ?? '';
 	}
 
 	formatUpdatedDateFromNow(): string {

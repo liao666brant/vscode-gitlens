@@ -824,7 +824,7 @@ export class CommitDetailsWebviewProvider implements WebviewProvider<State, Stat
 		return {
 			pullRequestExpanded: this.container.storage.getWorkspace('views:commitDetails:pullRequestExpanded') ?? true,
 			avatars: configuration.get('views.commitDetails.avatars'),
-			dateFormat: configuration.get('defaultDateFormat') ?? 'MMMM Do, YYYY h:mma',
+			dateFormat: configuration.get('defaultDateFormat') ?? 'YYYY年M月D日 HH:mm',
 			dateStyle: configuration.get('defaultDateStyle') ?? 'relative',
 			files: configuration.get('views.commitDetails.files'),
 			indentGuides: configuration.getCore('workbench.tree.renderIndentGuides') ?? 'onHover',

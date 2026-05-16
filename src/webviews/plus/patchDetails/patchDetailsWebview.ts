@@ -265,7 +265,7 @@ export class PatchDetailsWebviewProvider implements WebviewProvider<
 	private getPreferences(): Preferences {
 		return {
 			avatars: configuration.get('views.patchDetails.avatars'),
-			dateFormat: configuration.get('defaultDateFormat') ?? 'MMMM Do, YYYY h:mma',
+			dateFormat: configuration.get('defaultDateFormat') ?? 'YYYY年M月D日 HH:mm',
 			files: configuration.get('views.patchDetails.files'),
 			indentGuides: configuration.getCore('workbench.tree.renderIndentGuides') ?? 'onHover',
 			indent: configuration.getCore('workbench.tree.indent'),

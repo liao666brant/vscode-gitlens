@@ -794,9 +794,9 @@ export class GitCommitIdentity implements GitCommitIdentityShape {
 		private readonly avatarUrl?: string | undefined,
 	) {}
 
-	@memoize<GitCommitIdentity['formatDate']>({ resolver: format => format ?? 'MMMM Do, YYYY h:mma' })
+	@memoize<GitCommitIdentity['formatDate']>({ resolver: format => format ?? 'YYYY年M月D日 HH:mm' })
 	formatDate(format?: string | null): string {
-		return formatDate(this.date, format ?? 'MMMM Do, YYYY h:mma');
+		return formatDate(this.date, format ?? 'YYYY年M月D日 HH:mm');
 	}
 
 	fromNow(short?: boolean): string {

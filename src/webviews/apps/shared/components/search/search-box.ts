@@ -5,7 +5,6 @@ import { ifDefined } from 'lit/directives/if-defined.js';
 import type { Disposable } from 'vscode';
 import { isMac } from '@env/platform.js';
 import type { SearchQuery } from '../../../../../constants.search.js';
-import { pluralize } from '../../../../../system/string.js';
 import type { AppState } from '../../../plus/graph/context.js';
 import { DOM } from '../../dom.js';
 import { GlElement } from '../element.js';
@@ -303,29 +302,25 @@ export class GlSearchBox extends GlElement {
 
 		if (hasResults) {
 			// We have results - show count (whether searching or complete)
-			const totalFormatted = pluralize(this.resultsLabel, this.total, {
-				infix: this.resultsHasMore ? '+ ' : undefined,
-			});
 			const total = `${this.total}${this.resultsHasMore ? '+' : ''}`;
 
 			if (this.resultHidden) {
 				tooltip = html`该结果已被隐藏，或无法在提交图谱中显示`;
 			} else {
-				tooltip = `${totalFormatted} found`;
+				tooltip = `找到 ${total} 个结果`;
 			}
 
 			countText = html`<span class="${ifDefined(this.resultHidden ? 'sr-hidden' : '')}"
-				><span aria-current="step">${this.step}</span> of <span>${total}</span
-				><span class="sr-only"> ${totalFormatted}</span></span
+				><span aria-current="step">${this.step}</span> / <span>${total}</span
+				><span class="sr-only"> ${total} 个结果</span></span
 			>`;
 		} else if (isComplete) {
 			// Search is complete with 0 results found
-			const totalFormatted = pluralize(this.resultsLabel, 0, { zero: 'No' });
-			tooltip = `${totalFormatted} found`;
-			countText = html`<span>${totalFormatted}</span>`;
+			tooltip = '无结果';
+			countText = html`<span>无结果</span>`;
 		} else if (hasNoSearch) {
 			// No search initiated yet
-			countText = html`<span>${pluralize(this.resultsLabel, 0, { zero: 'No' })}</span>`;
+			countText = html`<span>无结果</span>`;
 		} else {
 			// Searching with no results received yet - show blank
 			countText = html`<span></span>`;

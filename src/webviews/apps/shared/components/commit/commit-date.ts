@@ -25,7 +25,7 @@ export class GlCommitDate extends LitElement {
 	date: Date | undefined;
 
 	@property()
-	dateFormat = 'MMMM Do, YYYY h:mma';
+	dateFormat = 'YYYY年M月D日 HH:mm';
 
 	@property()
 	dateStyle: 'relative' | 'absolute' = 'relative';

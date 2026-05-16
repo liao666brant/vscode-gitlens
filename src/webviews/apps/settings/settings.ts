@@ -649,7 +649,7 @@ export class SettingsApp extends App<State> {
 					value = undefined;
 				}
 
-				const format = this.getSettingValue<string>(el.dataset.settingPreviewDefault!) ?? 'MMMM Do, YYYY h:mma';
+				const format = this.getSettingValue<string>(el.dataset.settingPreviewDefault!) ?? 'YYYY年M月D日 HH:mm';
 				try {
 					el.innerText = formatDate(date, format, value, false);
 				} catch (ex) {

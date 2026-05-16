@@ -44,7 +44,7 @@ export abstract class Formatter<Item = any, Options extends FormatOptions = Form
 
 		options ??= {} as unknown as Options;
 
-		options.dateFormat ??= 'MMMM Do, YYYY h:mma';
+		options.dateFormat ??= 'YYYY年M月D日 HH:mm';
 
 		options.tokenOptions ??= {};
 

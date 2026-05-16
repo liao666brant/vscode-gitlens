@@ -77,7 +77,7 @@ export class CommitIdentity extends LitElement {
 	showAvatar = false;
 
 	@property()
-	dateFormat = 'MMMM Do, YYYY h:mma';
+	dateFormat = 'YYYY年M月D日 HH:mm';
 
 	@property()
 	dateStyle: 'relative' | 'absolute' = 'relative';

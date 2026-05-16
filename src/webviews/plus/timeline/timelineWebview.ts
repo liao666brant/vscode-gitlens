@@ -609,7 +609,7 @@ export class TimelineWebviewProvider implements WebviewProvider<State, State, Ti
 
 	@trace({ args: false })
 	private async getState(context: Context, includeDataset: boolean): Promise<State> {
-		const dateFormat = configuration.get('defaultDateFormat') ?? 'MMMM Do, YYYY h:mma';
+		const dateFormat = configuration.get('defaultDateFormat') ?? 'YYYY年M月D日 HH:mm';
 		const shortDateFormat = configuration.get('defaultDateShortFormat') ?? 'short';
 
 		const { git } = this.container;

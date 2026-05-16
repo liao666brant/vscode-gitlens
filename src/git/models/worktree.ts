@@ -108,9 +108,9 @@ export class GitWorktree {
 		return workspace.getWorkspaceFolder(this.uri);
 	}
 
-	@memoize<GitWorktree['formatDate']>({ resolver: format => format ?? 'MMMM Do, YYYY h:mma' })
+	@memoize<GitWorktree['formatDate']>({ resolver: format => format ?? 'YYYY年M月D日 HH:mm' })
 	formatDate(format?: string | null): string {
-		return this.date != null ? formatDate(this.date, format ?? 'MMMM Do, YYYY h:mma') : '';
+		return this.date != null ? formatDate(this.date, format ?? 'YYYY年M月D日 HH:mm') : '';
 	}
 
 	formatDateFromNow(): string {

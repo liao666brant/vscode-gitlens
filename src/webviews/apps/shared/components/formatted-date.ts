@@ -19,7 +19,7 @@ export class FormattedDate extends LitElement {
 	tooltip = '';
 
 	get absoluteDate(): string {
-		return formatDate(this.date, this.format ?? 'MMMM Do, YYYY h:mma');
+		return formatDate(this.date, this.format ?? 'YYYY年M月D日 HH:mm');
 	}
 
 	get dateLabel(): string {

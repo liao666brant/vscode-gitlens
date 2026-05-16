@@ -209,7 +209,7 @@ export class BranchTrackingStatusNode
 			case 'ahead': {
 				const remote = await this.branch.getRemote();
 
-				label = '传出';
+				label = '待推送';
 				description = `${this.status.upstream!.state.ahead} 个提交要推送到 ${
 					remote?.name ?? getRemoteNameFromBranchName(this.status.upstream!.name)
 				}`;
@@ -234,7 +234,7 @@ export class BranchTrackingStatusNode
 			case 'behind': {
 				const remote = await this.branch.getRemote();
 
-				label = '传入';
+				label = '待拉取';
 				description = `${this.status.upstream!.state.behind} 个提交要从 ${
 					remote?.name ?? getRemoteNameFromBranchName(this.status.upstream!.name)
 				} 拉取`;

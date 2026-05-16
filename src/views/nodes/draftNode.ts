@@ -42,7 +42,7 @@ export class DraftNode extends ViewNode<'draft', ViewsWithCommits | DraftsView> 
 		const label = this.draft.title ?? `草稿 (${this.draft.id})`;
 		const item = new TreeItem(label, TreeItemCollapsibleState.None);
 
-		const dateFormat = configuration.get('defaultDateFormat') ?? 'MMMM Do, YYYY h:mma';
+		const dateFormat = configuration.get('defaultDateFormat') ?? 'YYYY年M月D日 HH:mm';
 
 		// Only show updated time if it is more than a 30s after the created time
 		const showUpdated = this.draft.updatedAt.getTime() - this.draft.createdAt.getTime() >= 30000;

@@ -970,7 +970,7 @@ export class GlGraphMinimap extends GlElement {
 
 						return /*html*/ `<div class="bb-tooltip">
 						<div class="header">
-							<span class="header--title">${formatDate(date, 'MMMM Do, YYYY')}</span>
+							<span class="header--title">${formatDate(date, 'YYYY年M月D日')}</span>
 							<span class="header--description">(${capitalize(fromNow(date))})</span>
 						</div>
 						<div class="changes">

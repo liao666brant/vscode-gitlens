@@ -104,6 +104,38 @@ export interface GraphWrapperEvents {
 	onRowActionHover?: () => void;
 }
 
+const graphTranslations: Record<string, string> = {
+	'CommitDiffSection-FileAdded': '已添加',
+	'CommitDiffSection-FileDeleted': '已删除',
+	'CommitDiffSection-FileModified': '已修改',
+	'CommitDiffSection-FileRenamed': '已重命名',
+	'CommitDiffSection-NFilesAdded': '{0} 个已添加',
+	'CommitDiffSection-NFilesDeleted': '{0} 个已删除',
+	'CommitDiffSection-NFilesModified': '{0} 个已修改',
+	'CommitDiffSection-NFilesRenamed': '{0} 个已重命名',
+	'Graph-IsLoadingRows': '加载中...',
+	'Graph-NoCommits': '无提交',
+	'Graph-WorkInProgress': '进行中的工作',
+	'GraphHeader-BranchTag': '分支 / 标签',
+	'GraphHeader-Changes': '更改',
+	'GraphHeader-CommitAuthor': '作者',
+	'GraphHeader-CommitDateTime': '提交日期 / 时间',
+	'GraphHeader-CommitGraph': '图',
+	'GraphHeader-CommitMessage': '提交消息',
+	'GraphHeader-CommitSha': 'SHA',
+	'GraphHeader-EditColumns': '列设置',
+	'GraphHeader-Filter': '筛选',
+	'GraphHeader-HiddenRefs-btn': '隐藏的分支 / 标签',
+};
+
+function translateGraph(key: string, ...formatArgs: any[]): string {
+	let text = graphTranslations[key] ?? key;
+	for (let i = 0; i < formatArgs.length; i++) {
+		text = text.replace(`{${i}}`, String(formatArgs[i]));
+	}
+	return text;
+}
+
 const getGraphDateFormatter = (config: GraphComponentConfig): OnFormatCommitDateTime => {
 	return (commitDateTime: number, source?: CommitDateTimeSources) =>
 		formatCommitDateTime(commitDateTime, config.dateStyle, config.dateFormat, source);
@@ -872,6 +904,7 @@ export const GlGraphReact = memo((initProps: GraphWrapperInitProps) => {
 			stickyTimeline={config.stickyTimeline}
 			suppressNonRefRowTooltips
 			themeOpacityFactor={props.theming?.themeOpacityFactor}
+			translate={translateGraph}
 			useAuthorInitialsForAvatars={!config.avatars}
 			workDirStats={props.workingTreeStats}
 		/>

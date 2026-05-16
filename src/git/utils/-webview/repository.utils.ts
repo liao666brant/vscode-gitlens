@@ -24,9 +24,7 @@ export function formatLastFetched(lastFetched: number, short: boolean = true): s
 		return formatDate(date, configuration.get('defaultDateShortFormat') ?? 'short');
 	}
 
-	let format =
-		configuration.get('defaultDateFormat') ??
-		`dddd, MMMM Do, YYYY [at] ${configuration.get('defaultTimeFormat') ?? 'h:mma'}`;
+	let format = configuration.get('defaultDateFormat') ?? `YYYY年M月D日 dddd HH:mm`;
 	if (!/[hHm]/.test(format)) {
 		format += ` [at] ${configuration.get('defaultTimeFormat') ?? 'h:mma'}`;
 	}
