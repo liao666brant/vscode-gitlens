@@ -6963,7 +6963,7 @@
 			},
 			{
 				"command": "gitlens.copyRemoteBranchesUrl:graph",
-				"title": "Copy Remote Branches URL",
+				"title": "复制远程分支 URL",
 				"icon": "$(copy)"
 			},
 			{
@@ -7919,11 +7919,6 @@
 				"title": "作为云补丁共享..."
 			},
 			{
-				"command": "gitlens.graph.showInDetailsView",
-				"title": "检查详情",
-				"icon": "$(eye)"
-			},
-			{
 				"command": "gitlens.graph.soloBranch",
 				"title": "仅显示此分支",
 				"category": "GitLens"
@@ -8077,7 +8072,7 @@
 			},
 			{
 				"command": "gitlens.openFileHistory:graphDetails",
-				"title": "打开文件历史",
+				"title": "在视图中打开文件历史",
 				"icon": "$(history)"
 			},
 			{
@@ -8383,7 +8378,7 @@
 			},
 			{
 				"command": "gitlens.plus.simulate.ai",
-				"title": "模拟 AI 提供商（调试）",
+				"title": "模拟 AI 提供者（调试）",
 				"category": "GitLens"
 			},
 			{
@@ -9964,7 +9959,7 @@
 			},
 			{
 				"command": "gitlens.views.graph.openInNewWindow",
-				"title": "Open in New Window",
+				"title": "在新窗口中打开",
 				"icon": "$(empty-window)"
 			},
 			{
@@ -10042,12 +10037,12 @@
 			},
 			{
 				"command": "gitlens.views.launchpad.error.connectIntegrations",
-				"title": "Connect Integration",
+				"title": "连接集成",
 				"icon": "$(plug)"
 			},
 			{
 				"command": "gitlens.views.launchpad.error.openLogs",
-				"title": "Open Logs",
+				"title": "打开日志",
 				"icon": "$(output)"
 			},
 			{
@@ -10207,7 +10202,7 @@
 			},
 			{
 				"command": "gitlens.views.openChangesWithMergeBase:graphDetails",
-				"title": "Open Changes with Common Base"
+				"title": "打开共同基础的更改"
 			},
 			{
 				"command": "gitlens.views.openChangesWithWorking",
@@ -11150,6 +11145,10 @@
 			{
 				"command": "gitlens.views.selectForCompare:graph",
 				"title": "选择用于比较"
+			},
+			{
+				"command": "gitlens.views.setAsDefault",
+				"title": "设为默认"
 			},
 			{
 				"command": "gitlens.views.setBranchComparisonToBranch",
@@ -15926,6 +15925,10 @@
 				},
 				{
 					"command": "gitlens.views.selectForCompare:graph",
+					"when": "false"
+				},
+				{
+					"command": "gitlens.views.setAsDefault",
 					"when": "false"
 				},
 				{
@@ -20924,6 +20927,11 @@
 				},
 				{
 					"command": "gitlens.unsetRemoteAsDefault:views",
+					"when": "viewItem =~ /gitlens:remote\\b(?=.*?\\b\\+default\\b)/ && !listMultiSelection",
+					"group": "8_gitlens_actions@1"
+				},
+				{
+					"command": "gitlens.views.setAsDefault",
 					"when": "viewItem =~ /gitlens:remote\\b(?=.*?\\b\\+default\\b)/ && !listMultiSelection",
 					"group": "8_gitlens_actions@1"
 				},
@@ -27495,7 +27503,7 @@
 			},
 			{
 				"id": "gitlens/webview/folder/history",
-				"label": "文件夹历史"
+				"label": "Folder History"
 			}
 		],
 		"keybindings": [
@@ -28145,12 +28153,12 @@
 			},
 			{
 				"view": "gitlens.views.worktrees",
-				"contents": "[试用 GitLens Pro](command:gitlens.plus.signUp?%7B%22source%22%3A%22worktrees%22%7D)\n\n免费获得 14 天 GitLens Pro 体验 — 无需信用卡。或者[登录](command:gitlens.plus.login?%7B%22source%22%3A%22worktrees%22%7D)。",
+				"contents": "[Try GitLens Pro](command:gitlens.plus.signUp?%7B%22source%22%3A%22worktrees%22%7D)\n\nGet 14 days of GitLens Pro for free — no credit card required. Or [sign in](command:gitlens.plus.login?%7B%22source%22%3A%22worktrees%22%7D).",
 				"when": "gitlens:plus:required && gitlens:plus:state == 0"
 			},
 			{
 				"view": "gitlens.views.worktrees",
-				"contents": "[升级到 Pro](command:gitlens.plus.upgrade?%7B%22source%22%3A%22worktrees%22%7D)",
+				"contents": "[Upgrade to Pro](command:gitlens.plus.upgrade?%7B%22source%22%3A%22worktrees%22%7D)",
 				"when": "gitlens:plus:required && gitlens:plus:state == 4"
 			},
 			{

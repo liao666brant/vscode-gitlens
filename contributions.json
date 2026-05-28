@@ -1198,7 +1198,7 @@
 			"icon": "$(copy)"
 		},
 		"gitlens.copyRemoteBranchesUrl:graph": {
-			"label": "Copy Remote Branches URL",
+			"label": "复制远程分支 URL",
 			"icon": "$(copy)",
 			"menus": {
 				"webview/context": [
@@ -3818,7 +3818,7 @@
 			}
 		},
 		"gitlens.graph.scrollMarkerWipOff": {
-			"label": "Hide Working Tree Markers",
+			"label": "隐藏工作树标记",
 			"menus": {
 				"gitlens/graph/markers": [
 					{
@@ -3830,7 +3830,7 @@
 			}
 		},
 		"gitlens.graph.scrollMarkerWipOn": {
-			"label": "Show Working Tree Markers",
+			"label": "显示工作树标记",
 			"menus": {
 				"gitlens/graph/markers": [
 					{
@@ -6889,7 +6889,7 @@
 			"commandPalette": "gitlens:enabled"
 		},
 		"gitlens.startReview.openInAgent": {
-			"label": "Start PR Review with Agent",
+			"label": "使用 Agent 开始 PR 审查",
 			"icon": "$(git-pull-request)",
 			"commandPalette": "gitlens:enabled && gitlens:gk:organization:ai:enabled"
 		},
@@ -11292,7 +11292,7 @@
 			}
 		},
 		"gitlens.views.graph.openInTab": {
-			"label": "Open in Editor",
+			"label": "在编辑器中打开",
 			"icon": "$(link-external)"
 		},
 		"gitlens.views.graph.refresh": {
@@ -11536,7 +11536,7 @@
 			]
 		},
 		"gitlens.views.launchpad.error.connectIntegrations": {
-			"label": "Connect Integration",
+			"label": "连接集成",
 			"icon": "$(plug)",
 			"menus": {
 				"view/item/context": [
@@ -11548,7 +11548,7 @@
 			}
 		},
 		"gitlens.views.launchpad.error.openLogs": {
-			"label": "Open Logs",
+			"label": "打开日志",
 			"icon": "$(output)",
 			"menus": {
 				"view/item/context": [
@@ -12217,7 +12217,7 @@
 			}
 		},
 		"gitlens.views.openChangesWithMergeBase:graphDetails": {
-			"label": "Open Changes with Common Base",
+			"label": "打开共同基础的更改",
 			"menus": {
 				"gitlens/commit/file/changes": [
 					{

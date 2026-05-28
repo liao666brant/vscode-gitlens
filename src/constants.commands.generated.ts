@@ -768,6 +768,7 @@ export type ContributedCommands =
 	| 'gitlens.views.selectFileForCompare:graphDetails'
 	| 'gitlens.views.selectForCompare'
 	| 'gitlens.views.selectForCompare:graph'
+	| 'gitlens.views.setAsDefault'
 	| 'gitlens.views.setBranchComparisonToBranch'
 	| 'gitlens.views.setBranchComparisonToWorking'
 	| 'gitlens.views.setContributorsStatisticsOff'
