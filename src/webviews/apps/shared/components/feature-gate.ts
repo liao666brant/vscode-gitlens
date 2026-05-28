@@ -4,7 +4,7 @@ import type { SubscriptionState } from '../../../../constants.subscription.js';
 import type { Source } from '../../../../constants.telemetry.js';
 import type { FeaturePreview } from '../../../../features.js';
 import { isSubscriptionTrialOrPaidFromState } from '../../../../plus/gk/utils/subscription.utils.js';
-import { linkStyles } from '../../../plus/shared/components/vscode.css.js';
+import { linkStyles } from '../../plus/shared/components/vscode.css.js';
 
 declare global {
 	interface HTMLElementTagNameMap {

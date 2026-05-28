@@ -331,15 +331,17 @@ export class GlAccountChip extends SignalWatcher(LitElement) {
 	}
 
 	private get planTierLabel() {
-		if (isSubscriptionTrial(this.subscription)) {
-			return this.subscription.plan.effective.id === 'student' ? '学生试用' : 'Pro 试用';
+		const sub = this.subscription;
+		if (sub != null && isSubscriptionTrial(sub)) {
+			return sub.plan.effective.id === 'student' ? '学生试用' : 'Pro 试用';
 		}
 
 		return this.planTier;
 	}
 
 	private get isStudentTrialPlan() {
-		return isSubscriptionTrial(this.subscription) && this.subscription.plan.effective.id === 'student';
+		const sub = this.subscription;
+		return sub != null && isSubscriptionTrial(sub) && sub.plan.effective.id === 'student';
 	}
 
 	@consume({ context: promosContext })

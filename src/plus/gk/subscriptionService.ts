@@ -68,7 +68,7 @@ import { configuration } from '../../system/-webview/configuration.js';
 import { setContext } from '../../system/-webview/context.js';
 import { openUrl } from '../../system/-webview/vscode/uris.js';
 import { gate } from '../../system/decorators/gate.js';
-import { isWalkthroughSupported } from '../../telemetry/walkthroughStateProvider.js';
+import { isWalkthroughSupported } from '../../onboarding/walkthroughStateProvider.js';
 import { LoginUriPathPrefix } from './authenticationConnection.js';
 import { authenticationProviderScopes } from './authenticationProvider.js';
 import type { GKCheckInResponse } from './models/checkin.js';

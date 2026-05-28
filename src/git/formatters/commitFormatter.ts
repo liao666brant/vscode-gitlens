@@ -510,7 +510,7 @@ export class CommitFormatter extends Formatter<GitCommit, CommitFormatOptions> {
 					shortenRevision(isUncommittedStaged(diffUris.current.sha) ? diffUris.current.sha : uncommitted),
 					this._options.tokenOptions.commands,
 				)}\``;
-				commands = shaOrInspectLink(shaText, '检查提交详情');
+				commands = shaOrInspectLink(shaText);
 
 				commands += ` &nbsp;[$(compare-changes)](${DiffWithCommand.createMarkdownCommandLink({
 					lhs: { sha: diffUris.previous.sha ?? '', uri: diffUris.previous.uri },
@@ -531,7 +531,7 @@ export class CommitFormatter extends Formatter<GitCommit, CommitFormatOptions> {
 					shortenRevision(this._item.isUncommittedStaged ? uncommittedStaged : uncommitted),
 					this._options.tokenOptions.commands,
 				)}\``;
-				commands = shaOrInspectLink(shaText, '检查提交详情');
+				commands = shaOrInspectLink(shaText);
 			}
 
 			if (this._options.ai?.enabled && this._options.ai?.allowed) {

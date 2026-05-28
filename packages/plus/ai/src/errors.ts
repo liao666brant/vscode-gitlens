@@ -22,46 +22,46 @@ export class AIError extends Error {
 		let message;
 		switch (reason) {
 			case AIErrorReason.NoEntitlement:
-				message = 'You do not have the required entitlement to use this feature';
+				message = '您没有使用此功能所需的权限';
 				break;
 			case AIErrorReason.RequestTooLarge:
-				message = 'The request is too large';
+				message = '请求过大';
 				break;
 			case AIErrorReason.UserQuotaExceeded:
-				message = 'You have exceeded your user token limit';
+				message = '您已超出用户令牌限制';
 				break;
 			case AIErrorReason.RateLimitExceeded:
-				message = 'Rate limit exceeded';
+				message = '超出速率限制';
 				break;
 			case AIErrorReason.RateLimitOrFundsExceeded:
-				message = 'Rate limit exceeded or your account is out of funds';
+				message = '超出速率限制或账户余额不足';
 				break;
 			case AIErrorReason.ServiceCapacityExceeded:
-				message = 'Service capacity exceeded';
+				message = '服务容量已超出';
 				break;
 			case AIErrorReason.NoNetwork:
-				message = 'Unable to reach the AI service. Please check your internet connection.';
+				message = '无法连接到 AI 服务，请检查网络连接';
 				break;
 			case AIErrorReason.Unreachable:
-				message = 'The AI service is temporarily unreachable.';
+				message = 'AI 服务暂时不可达';
 				break;
 			case AIErrorReason.NoRequestData:
-				message = original?.message ?? 'No data was provided for the request';
+				message = original?.message ?? '未提供请求数据';
 				break;
 			case AIErrorReason.ModelNotSupported:
-				message = 'Model not supported for this request';
+				message = '此请求不支持该模型';
 				break;
 			case AIErrorReason.Unauthorized:
-				message = 'You are not authorized to use the specified provider or model';
+				message = '您无权使用指定的提供商或模型';
 				break;
 			case AIErrorReason.DeniedByOrganization:
-				message = 'Your organization has denied access to the specified provider or model';
+				message = '您的组织已拒绝访问指定的提供商或模型';
 				break;
 			case AIErrorReason.DeniedByUser:
-				message = 'You have denied access to the specified provider or model';
+				message = '您已拒绝访问指定的提供商或模型';
 				break;
 			default:
-				message = original?.message ?? 'An unknown error occurred';
+				message = original?.message ?? '发生未知错误';
 				break;
 		}
 
@@ -75,7 +75,7 @@ export class AIError extends Error {
 
 export class AuthenticationRequiredError extends Error {
 	constructor() {
-		super('Authentication required');
+		super('需要身份验证');
 
 		Error.captureStackTrace?.(this, new.target);
 	}
