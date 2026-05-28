@@ -1,6 +1,6 @@
+import type { GitCommit } from '@gitlens/git/models/commit.js';
 import type { TreeViewNodeTypes } from '../../../../constants.views.js';
 import { treeViewFileNodeTypes, treeViewRefFileNodeTypes, treeViewRefNodeTypes } from '../../../../constants.views.js';
-import type { GitCommit } from '../../../../git/models/commit.js';
 import type { DraftsViewNode } from '../../../draftsView.js';
 import type { LaunchpadItemNode, LaunchpadViewNode } from '../../../launchpadView.js';
 import type { SearchAndCompareViewNode } from '../../../searchAndCompareView.js';
@@ -31,10 +31,9 @@ import type { FolderNode } from '../../folderNode.js';
 import type { GroupingNode } from '../../groupingNode.js';
 import type { LineHistoryNode } from '../../lineHistoryNode.js';
 import type { LineHistoryTrackerNode } from '../../lineHistoryTrackerNode.js';
-import type { MergeConflictCurrentChangesNode } from '../../mergeConflictCurrentChangesNode.js';
+import type { MergeConflictChangesNode } from '../../mergeConflictChangesNode.js';
 import type { MergeConflictFileNode } from '../../mergeConflictFileNode.js';
 import type { MergeConflictFilesNode } from '../../mergeConflictFilesNode.js';
-import type { MergeConflictIncomingChangesNode } from '../../mergeConflictIncomingChangesNode.js';
 import type { PausedOperationStatusNode } from '../../pausedOperationStatusNode.js';
 import type { PullRequestNode } from '../../pullRequestNode.js';
 import type { ReflogNode } from '../../reflogNode.js';
@@ -84,13 +83,13 @@ export type TreeViewNodesByType = {
 		: T extends 'compare-results'
 		? CompareResultsNode
 		: T extends 'conflict-current-changes'
-		? MergeConflictCurrentChangesNode
+		? MergeConflictChangesNode
 		: T extends 'conflict-file'
 		? MergeConflictFileNode
 		: T extends 'conflict-files'
 		? MergeConflictFilesNode
 		: T extends 'conflict-incoming-changes'
-		? MergeConflictIncomingChangesNode
+		? MergeConflictChangesNode
 		: T extends 'contributor'
 		? ContributorNode
 		: T extends 'contributors'
@@ -235,7 +234,6 @@ export function* insertDateMarkers<T extends ViewNode & { commit: GitCommit }>(
 					if (date > nextTime) break;
 
 					index++;
-					time = undefined;
 					[, marker] = markers[index];
 				}
 

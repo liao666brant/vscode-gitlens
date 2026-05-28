@@ -1,19 +1,19 @@
-import type { QuickInputButton, Uri } from 'vscode';
-import { InputBoxValidationSeverity, QuickInputButtons, ThemeIcon, window } from 'vscode';
+import type { Uri } from 'vscode';
+import { InputBoxValidationSeverity, QuickInputButtons, window } from 'vscode';
+import type { AIModel } from '@gitlens/ai/models/model.js';
+import { StashPushError } from '@gitlens/git/errors.js';
+import { uncommitted, uncommittedStaged } from '@gitlens/git/models/revision.js';
+import { getLoggableName, Logger } from '@gitlens/utils/logger.js';
+import { maybeStartScopedLogger } from '@gitlens/utils/logger.scoped.js';
+import { defer } from '@gitlens/utils/promise.js';
+import { pad } from '@gitlens/utils/string.js';
 import { GlyphChars } from '../../../constants.js';
 import type { Container } from '../../../container.js';
-import { StashPushError } from '../../../git/errors.js';
-import type { Repository } from '../../../git/models/repository.js';
-import { uncommitted, uncommittedStaged } from '../../../git/models/revision.js';
+import type { GlRepository } from '../../../git/models/repository.js';
 import { showGitErrorMessage } from '../../../messages.js';
-import type { AIModel } from '../../../plus/ai/models/model.js';
 import type { FlagsQuickPickItem } from '../../../quickpicks/items/flags.js';
 import { createFlagsQuickPickItem } from '../../../quickpicks/items/flags.js';
 import { formatPath } from '../../../system/-webview/formatPath.js';
-import { getLoggableName, Logger } from '../../../system/logger.js';
-import { maybeStartScopedLogger } from '../../../system/logger.scope.js';
-import { defer } from '../../../system/promise.js';
-import { pad } from '../../../system/string.js';
 import type {
 	AsyncStepResultGenerator,
 	PartialStepState,
@@ -24,6 +24,7 @@ import type {
 	StepState,
 } from '../../quick-wizard/models/steps.js';
 import { StepResultBreak } from '../../quick-wizard/models/steps.js';
+import { GenerateStashMessageQuickInputButton } from '../../quick-wizard/quickButtons.js';
 import { QuickCommand } from '../../quick-wizard/quickCommand.js';
 import { pickRepositoryStep } from '../../quick-wizard/steps/repositories.js';
 import { StepsController } from '../../quick-wizard/stepsController.js';
@@ -48,7 +49,7 @@ export type StashPushStepNames = StepNames;
 type Context = StashContext<StepNames>;
 
 type Flags = '--include-untracked' | '--keep-index' | '--staged' | '--snapshot';
-interface State<Repo = string | Repository> {
+interface State<Repo = string | GlRepository> {
 	repo: Repo;
 	message?: string;
 	uris?: Uri[];
@@ -112,7 +113,21 @@ export class StashPushGitCommand extends QuickCommand<State> {
 				}
 			}
 
-			assertStepState<State<Repository>>(state);
+			assertStepState<State<GlRepository>>(state);
+
+			// Skip if the user navigated back to InputMessage — otherwise confirmOverride would trap them in Confirm
+			if (!steps.isAtStep(Steps.InputMessage) && this.confirm(confirmOverride ?? state.confirm)) {
+				using step = steps.enterStep(Steps.Confirm);
+
+				const result = yield* this.confirmStep(state, context);
+				if (result === StepResultBreak) {
+					state.flags = [];
+					if (step.goBack() == null) break;
+					continue;
+				}
+
+				state.flags = result;
+			}
 
 			if (steps.isAtStep(Steps.InputMessage) || state.message == null) {
 				using step = steps.enterStep(Steps.InputMessage);
@@ -124,24 +139,12 @@ export class StashPushGitCommand extends QuickCommand<State> {
 
 				const result = yield* this.inputMessageStep(state, context);
 				if (result === StepResultBreak) {
+					state.message = undefined;
 					if (step.goBack() == null) break;
 					continue;
 				}
 
 				state.message = result;
-			}
-
-			if (this.confirm(confirmOverride ?? state.confirm)) {
-				using step = steps.enterStep(Steps.Confirm);
-
-				const result = yield* this.confirmStep(state, context);
-				if (result === StepResultBreak) {
-					state.flags = [];
-					if (step.goBack() == null) break;
-					continue;
-				}
-
-				state.flags = result;
 			}
 
 			try {
@@ -206,57 +209,75 @@ export class StashPushGitCommand extends QuickCommand<State> {
 	}
 
 	private async *inputMessageStep(
-		state: StepState<State<Repository>>,
+		state: StepState<State<GlRepository>>,
 		context: Context,
 	): AsyncStepResultGenerator<string> {
 		using scope = maybeStartScopedLogger(`${getLoggableName(this)}.inputMessageStep`);
 
-		const generateMessageButton: QuickInputButton = {
-			iconPath: new ThemeIcon('sparkle'),
-			tooltip: '生成存储消息',
-		};
+		const annotations: string[] = [];
+		if (state.uris != null) {
+			annotations.push(
+				state.uris.length === 1 ? formatPath(state.uris[0], { fileOnly: true }) : `${state.uris.length} 个文件`,
+			);
+		}
+
+		let scopeLabel: string | undefined;
+		if (state.flags.includes('--snapshot')) {
+			scopeLabel = '快照';
+		} else if (state.flags.includes('--staged')) {
+			scopeLabel = '已暂存';
+		} else if (state.flags.includes('--keep-index')) {
+			scopeLabel = '保留已暂存';
+		}
+		if (scopeLabel != null) {
+			annotations.push(scopeLabel);
+		}
+		if (state.flags.includes('--include-untracked')) {
+			annotations.push('包含未跟踪文件');
+		}
+
+		const annotation = annotations.length
+			? annotations.map(a => `${pad(GlyphChars.Dot, 2, 2)}${a}`).join('')
+			: undefined;
 
 		const step = createInputStep({
-			title: appendReposToTitle(
-				context.title,
-				state,
-				context,
-				state.uris != null
-					? `${pad(GlyphChars.Dot, 2, 2)}${
-							state.uris.length === 1
-								? formatPath(state.uris[0], { fileOnly: true })
-								: `${state.uris.length} 个文件`
-						}`
-					: undefined,
-			),
+			title: appendReposToTitle(context.title, state, context, annotation),
 			placeholder: '存储消息',
 			value: state.message,
 			prompt: '请输入存储消息',
 			buttons:
 				this.container.ai.enabled && this.container.ai.allowed
-					? [QuickInputButtons.Back, generateMessageButton]
+					? [QuickInputButtons.Back, GenerateStashMessageQuickInputButton]
 					: [QuickInputButtons.Back],
 			validate: (_value: string | undefined): [boolean, string | undefined] => [true, undefined],
 			onDidClickButton: async (input, button) => {
-				if (button === generateMessageButton) {
+				if (button === GenerateStashMessageQuickInputButton) {
 					using resume = step.freeze?.();
 
 					try {
-						let diff = await state.repo.git.diff.getDiff?.(
-							state.flags.includes('--staged') ? uncommittedStaged : uncommitted,
-							undefined,
-							state.uris?.length ? { uris: state.uris } : undefined,
-						);
+						const uris = state.uris?.length ? { uris: state.uris } : undefined;
 
-						if (!diff?.contents && !state.flags.includes('--staged')) {
-							diff = await state.repo.git.diff.getDiff?.(
-								uncommittedStaged,
-								undefined,
-								state.uris?.length ? { uris: state.uris } : undefined,
-							);
+						let contents: string | undefined;
+						if (state.flags.includes('--staged')) {
+							const diff = await state.repo.git.diff.getDiff?.(uncommittedStaged, undefined, uris);
+							contents = diff?.contents;
+						} else {
+							// `git stash push` (without --staged) captures both staged and unstaged tracked changes
+							const [stagedDiff, unstagedDiff] = await Promise.all([
+								state.repo.git.diff.getDiff?.(uncommittedStaged, undefined, uris),
+								state.repo.git.diff.getDiff?.(uncommitted, undefined, uris),
+							]);
+							const parts: string[] = [];
+							if (stagedDiff?.contents) {
+								parts.push(stagedDiff.contents);
+							}
+							if (unstagedDiff?.contents) {
+								parts.push(unstagedDiff.contents);
+							}
+							contents = parts.length ? parts.join('\n') : undefined;
 						}
 
-						if (!diff?.contents) {
+						if (!contents) {
 							void window.showInformationMessage('没有可用于生成存储消息的更改。');
 							return;
 						}
@@ -272,7 +293,7 @@ export class StashPushGitCommand extends QuickCommand<State> {
 						);
 
 						const result = await this.container.ai.actions.generateStashMessage(
-							diff.contents,
+							contents,
 							{ source: 'quick-wizard' },
 							{ generating: generating },
 						);
@@ -305,7 +326,7 @@ export class StashPushGitCommand extends QuickCommand<State> {
 		return value;
 	}
 
-	private *confirmStep(state: StepState<State<Repository>>, context: Context): StepResultGenerator<Flags[]> {
+	private *confirmStep(state: StepState<State<GlRepository>>, context: Context): StepResultGenerator<Flags[]> {
 		const stagedOnly = state.flags.includes('--staged');
 
 		const baseFlags: Flags[] = [];

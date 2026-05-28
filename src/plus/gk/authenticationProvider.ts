@@ -5,13 +5,13 @@ import type {
 	Event,
 } from 'vscode';
 import { Disposable, EventEmitter, window } from 'vscode';
-import { uuid } from '@env/crypto.js';
+import { isCancellationError } from '@gitlens/utils/cancellation.js';
+import { uuid } from '@gitlens/utils/crypto.js';
+import { trace } from '@gitlens/utils/decorators/log.js';
+import { getLoggableName, Logger } from '@gitlens/utils/logger.js';
+import { getScopedLogger, maybeStartScopedLogger } from '@gitlens/utils/logger.scoped.js';
 import type { TrackingContext } from '../../constants.telemetry.js';
 import type { Container, Environment } from '../../container.js';
-import { CancellationError } from '../../errors.js';
-import { trace } from '../../system/decorators/log.js';
-import { getLoggableName, Logger } from '../../system/logger.js';
-import { getScopedLogger, maybeStartScopedLogger } from '../../system/logger.scope.js';
 import { AuthenticationConnection } from './authenticationConnection.js';
 import type { ServerConnection } from './serverConnection.js';
 
@@ -121,7 +121,7 @@ export class AccountAuthenticationProvider implements AuthenticationProvider, Di
 			scope?.error(ex);
 			void window.showErrorMessage(
 				`无法登录 GitKraken：${
-					ex instanceof CancellationError ? '请求超时' : ex
+					isCancellationError(ex) ? '请求超时' : ex
 				}。请重试。若问题持续，请联系支持团队。`,
 			);
 			throw ex;
@@ -199,7 +199,7 @@ export class AccountAuthenticationProvider implements AuthenticationProvider, Di
 			this._onDidChangeSessions.fire({ added: [], removed: removed, changed: [] });
 		} catch (ex) {
 			scope?.error(ex);
-			void window.showErrorMessage(`无法退出 GitKraken：${ex}`);
+			void window.showErrorMessage(`无法退出 GitKraken：${isCancellationError(ex) ? '请求超时' : ex}`);
 			throw ex;
 		}
 	}

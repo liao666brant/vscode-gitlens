@@ -1,4 +1,3 @@
-import { defineGkElement, Menu, MenuItem, Popover } from '@gitkraken/shared-web-components';
 import { html } from 'lit';
 import { customElement, property } from 'lit/decorators.js';
 import { when } from 'lit/directives/when.js';
@@ -58,12 +57,6 @@ export class GlPatchDetailsApp extends GlElement {
 	@property({ attribute: false, type: Object })
 	app?: PatchDetailsApp;
 
-	constructor() {
-		super();
-
-		defineGkElement(Popover, Menu, MenuItem);
-	}
-
 	get wipChangesCount(): number {
 		if (this.state?.create == null) return 0;
 
@@ -102,6 +95,7 @@ export class GlPatchDetailsApp extends GlElement {
 	private updateDocumentProperties() {
 		const preference = this.state?.preferences?.indent;
 		if (preference === this.indentPreference) return;
+
 		this.indentPreference = preference ?? 16;
 
 		const rootStyle = document.documentElement.style;

@@ -1,16 +1,25 @@
+import type { AIProviderAndModel, AIProviders } from '@gitlens/ai/constants.js';
+import type { GitRevisionRangeNotation } from '@gitlens/git/models/revision.js';
 import type { GraphBranchesVisibility, ViewShowBranchComparison } from './config.js';
-import type { AIProviders } from './constants.ai.js';
 import type { IntegrationIds } from './constants.integrations.js';
 import type { SubscriptionState } from './constants.subscription.js';
 import type { TrackedUsage, TrackedUsageKeys } from './constants.telemetry.js';
 import type { GroupableTreeViewTypes, TreeViewTypes } from './constants.views.js';
 import type { Environment } from './container.js';
 import type { FeaturePreviews } from './features.js';
-import type { GitRevisionRangeNotation } from './git/models/revision.js';
+import type { OnboardingStorage } from './onboarding/models/onboarding.js';
 import type { OrganizationSettings } from './plus/gk/models/organization.js';
 import type { PaidSubscriptionPlanIds, Subscription } from './plus/gk/models/subscription.js';
 import type { IntegrationConnectedKey } from './plus/integrations/models/integration.js';
 import type { DeepLinkServiceState } from './uris/deepLinks/deepLink.js';
+import type {
+	GraphDisplayMode,
+	GraphSidebarPanel,
+	GraphTreemapMode,
+	VisualizationMode,
+} from './webviews/plus/graph/protocol.js';
+import type { TimelinePeriod, TimelineSliceBy } from './webviews/plus/timeline/protocol.js';
+import type { OverviewRecentThreshold } from './webviews/shared/overviewBranches.js';
 
 export type SecretKeys =
 	| IntegrationAuthenticationKeys
@@ -56,6 +65,16 @@ export type DeprecatedGlobalStorage = {
 	'views:commitDetails:dismissed': 'sidebar'[];
 	/** @deprecated */
 	'views:welcome:visible': boolean;
+	/** @deprecated Use OnboardingService */
+	'home:walkthrough:dismissed': boolean;
+	/** @deprecated Use OnboardingService */
+	'mcp:banner:dismissed': boolean;
+	/** @deprecated Use OnboardingService */
+	'views:scm:grouped:welcome:dismissed': boolean;
+	/** @deprecated Use OnboardingService dismiss('composer:onboarding') */
+	'composer:onboarding:dismissed': string;
+	/** @deprecated Use OnboardingService setItemState('composer:onboarding', ...) */
+	'composer:onboarding:stepReached': number;
 } & {
 	/** @deprecated */
 	[key in `disallow:connection:${string}`]: any;
@@ -66,6 +85,8 @@ export type DeprecatedGlobalStorage = {
 
 interface GlobalStorageCore {
 	avatars: [string, StoredAvatar][];
+	'ai:scope:compose:model': AIProviderAndModel;
+	'ai:scope:review:model': AIProviderAndModel;
 	'confirm:ai:generateCommits': boolean;
 	'confirm:ai:tos': boolean;
 	repoVisibility: [string, StoredRepoVisibilityInfo][];
@@ -81,20 +102,16 @@ interface GlobalStorageCore {
 	preVersion: string;
 	'product:config': Stored<StoredProductConfig>;
 	'confirm:draft:storage': boolean;
-	// Value based on `currentOnboardingVersion` in composer's protocol
-	'composer:onboarding:dismissed': string;
-	'composer:onboarding:stepReached': number;
 	'home:sections:collapsed': string[];
-	'home:walkthrough:dismissed': boolean;
-	'mcp:banner:dismissed': boolean;
 	'launchpad:groups:collapsed': StoredLaunchpadGroup[];
 	'launchpad:indicator:hasLoaded': boolean;
 	'launchpad:indicator:hasInteracted': string;
 	'launchpadView:groups:expanded': StoredLaunchpadGroup[];
 	'graph:searchMode': StoredGraphSearchMode;
 	'graph:useNaturalLanguageSearch': boolean;
-	'views:scm:grouped:welcome:dismissed': boolean;
 	'integrations:configured': StoredIntegrationConfigurations;
+	/** Unified onboarding/dismissible UI state */
+	'onboarding:state': OnboardingStorage;
 }
 
 type GlobalStorageDynamic = Record<`plus:preview:${FeaturePreviews}:usages`, StoredFeaturePreviewUsagePeriod[]> &
@@ -183,10 +200,16 @@ interface WorkspaceStorageCore {
 	gitPath: string;
 	'graph:columns': Record<string, StoredGraphColumn>;
 	'graph:filtersByRepo': Record<string, StoredGraphFilters>;
-	'remote:default': string;
-	'starred:branches': StoredStarred;
+	'graph:state': StoredGraphState;
+	/** Per-worktree commit draft for the Graph's WIP details panel. Key is the worktree's
+	 *  fsPath — invariant whether the user opens the main repo or the worktree directly. */
+	'graph:wipDrafts': Record<string, StoredGraphWipDraft>;
+	/** Unified onboarding/dismissible UI state (workspace-scoped items) */
+	'onboarding:state': OnboardingStorage;
 	'starred:repositories': StoredStarred;
 	'views:commitDetails:pullRequestExpanded': boolean;
+	'views:commitDetails:showSearchBox': boolean;
+	'views:commitDetails:searchBoxFilter': boolean;
 	'views:repositories:autoRefresh': boolean;
 	'views:searchAndCompare:pinned': StoredSearchAndCompareItems;
 	'views:scm:grouped:selected': GroupableTreeViewTypes;
@@ -356,12 +379,67 @@ export interface StoredDeepLinkContext {
 	prData?: string | undefined;
 	issueData?: string | undefined;
 	instructions?: string | undefined;
+	/** Agent descriptor for Start Work / Start Review with `showOpenInAgent`. Plain JSON shape. */
+	agent?: unknown;
+	/** Worktree path for CLI dispatch `cwd`. */
+	worktreePath?: string | undefined;
 }
 
 export interface StoredGraphColumn {
 	isHidden?: boolean;
 	mode?: string;
 	width?: number;
+}
+
+export interface StoredGraphState {
+	displayMode?: GraphDisplayMode;
+	visualizationMode?: VisualizationMode;
+	panels?: {
+		details?: {
+			visible?: boolean;
+			position?: number;
+			bottomPosition?: number;
+			/** Whether the file-tree search box is visible. */
+			showSearchBox?: boolean;
+			/** How the file-tree search box presents non-matches: `true` hides them (filter), `false` dims them (highlight). */
+			searchBoxFilter?: boolean;
+		};
+		sidebar?: {
+			visible?: boolean;
+			position?: number;
+			activePanel?: GraphSidebarPanel;
+			/** How the sidebar's filter input presents non-matches: `true` hides them (filter), `false` dims them (highlight). */
+			searchBoxFilter?: boolean;
+		};
+		minimap?: {
+			visible?: boolean;
+			position?: number;
+		};
+	};
+	overview?: {
+		recentThreshold?: OverviewRecentThreshold;
+	};
+	timeline?: {
+		period?: TimelinePeriod;
+		sliceBy?: TimelineSliceBy;
+		showAllBranches?: boolean;
+	};
+	treemap?: {
+		mode?: GraphTreemapMode;
+	};
+}
+
+export interface StoredGraphWipDraft {
+	/** The commit message currently in the WIP commit input. */
+	message: string;
+	/** `true` when the message is user-authored (typed, AI-generated, or restored from an undone
+	 *  commit) and must not be dropped by the HEAD-move auto-clear path. Mirrors the in-memory
+	 *  `commitMessageDirty` signal on the details panel. */
+	messageDirty: boolean;
+	/** Present iff amend mode was active when the draft was saved. `baseSha` records the worktree
+	 *  HEAD the amend was bound to so the existing HEAD-move auto-clear (in
+	 *  `gl-graph-details-panel.ts`) can detect a stale amend on restore. */
+	amend?: { baseSha: string };
 }
 
 export type StoredGraphExcludeTypes = 'remotes' | 'stashes' | 'tags';
@@ -371,6 +449,7 @@ export interface StoredGraphFilters {
 	includeOnlyRefs?: Record<string, StoredGraphIncludeOnlyRef>;
 	excludeRefs?: Record<string, StoredGraphExcludedRef>;
 	excludeTypes?: Record<StoredGraphExcludeTypes, boolean>;
+	pinnedRef?: StoredGraphPinnedRef;
 }
 
 export type StoredGraphRefType = 'head' | 'remote' | 'tag';
@@ -396,6 +475,13 @@ export interface StoredGraphExcludedRef {
 }
 
 export interface StoredGraphIncludeOnlyRef {
+	id: string;
+	type: StoredGraphRefType;
+	name: string;
+	owner?: string;
+}
+
+export interface StoredGraphPinnedRef {
 	id: string;
 	type: StoredGraphRefType;
 	name: string;

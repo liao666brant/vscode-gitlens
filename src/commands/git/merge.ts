@@ -1,13 +1,15 @@
 import { ThemeIcon, window } from 'vscode';
+import { MergeError, SigningError } from '@gitlens/git/errors.js';
+import type { GitBranch } from '@gitlens/git/models/branch.js';
+import type { GitLog } from '@gitlens/git/models/log.js';
+import type { ConflictDetectionResult } from '@gitlens/git/models/mergeConflicts.js';
+import type { GitReference } from '@gitlens/git/models/reference.js';
+import { getReferenceLabel, isRevisionReference } from '@gitlens/git/utils/reference.utils.js';
+import { createRevisionRange } from '@gitlens/git/utils/revision.utils.js';
+import { Logger } from '@gitlens/utils/logger.js';
+import { pluralize } from '@gitlens/utils/string.js';
 import type { Container } from '../../container.js';
-import { MergeError } from '../../git/errors.js';
-import type { GitBranch } from '../../git/models/branch.js';
-import type { GitLog } from '../../git/models/log.js';
-import type { ConflictDetectionResult } from '../../git/models/mergeConflicts.js';
-import type { GitReference } from '../../git/models/reference.js';
-import type { Repository } from '../../git/models/repository.js';
-import { getReferenceLabel, isRevisionReference } from '../../git/utils/reference.utils.js';
-import { createRevisionRange } from '../../git/utils/revision.utils.js';
+import type { GlRepository } from '../../git/models/repository.js';
 import { showGitErrorMessage } from '../../messages.js';
 import { isSubscriptionTrialOrPaidFromState } from '../../plus/gk/utils/subscription.utils.js';
 import { createQuickPickSeparator } from '../../quickpicks/items/common.js';
@@ -16,7 +18,6 @@ import { createDirectiveQuickPickItem, Directive } from '../../quickpicks/items/
 import type { FlagsQuickPickItem } from '../../quickpicks/items/flags.js';
 import { createFlagsQuickPickItem } from '../../quickpicks/items/flags.js';
 import { executeCommand } from '../../system/-webview/command.js';
-import { Logger } from '../../system/logger.js';
 import type { ViewsWithRepositoryFolders } from '../../views/viewBase.js';
 import type {
 	AsyncStepResultGenerator,
@@ -46,7 +47,7 @@ const Steps = {
 type StepNames = (typeof Steps)[keyof typeof Steps];
 
 interface Context extends StepsContext<StepNames> {
-	repos: Repository[];
+	repos: GlRepository[];
 	associatedView: ViewsWithRepositoryFolders;
 	cache: Map<string, Promise<GitLog | undefined>>;
 	destination: GitBranch;
@@ -58,7 +59,7 @@ interface Context extends StepsContext<StepNames> {
 }
 
 type Flags = '--ff-only' | '--no-ff' | '--squash' | '--no-commit';
-interface State<Repo = string | Repository> {
+interface State<Repo = string | GlRepository> {
 	repo: Repo;
 	reference: GitReference;
 	flags: Flags[];
@@ -86,7 +87,7 @@ export class MergeGitCommand extends QuickCommand<State> {
 		return false;
 	}
 
-	private async execute(state: StepState<State<Repository>>) {
+	private async execute(state: StepState<State<GlRepository>>) {
 		const options: { fastForward?: boolean | 'only'; noCommit?: boolean; squash?: boolean } = {};
 
 		if (state.flags.includes('--ff-only')) {
@@ -104,7 +105,13 @@ export class MergeGitCommand extends QuickCommand<State> {
 		this.container.telemetry.sendEvent('gitCommand/run', { command: 'merge' });
 
 		try {
-			await state.repo.git.ops?.merge(state.reference.ref, options);
+			const result = await state.repo.git.ops?.merge(state.reference.ref, options);
+			if (result?.conflicted) {
+				void window.showWarningMessage(
+					'Unable to merge due to conflicts. Resolve the conflicts before continuing, or abort the merge.',
+				);
+				void executeCommand('gitlens.showCommitsView');
+			}
 		} catch (ex) {
 			// Don't show an error message if the user intentionally aborted the merge
 			if (MergeError.is(ex, 'aborted')) {
@@ -132,7 +139,7 @@ export class MergeGitCommand extends QuickCommand<State> {
 				return;
 			}
 
-			void showGitErrorMessage(ex, MergeError.is(ex) ? undefined : '无法合并');
+			void showGitErrorMessage(ex, MergeError.is(ex) || SigningError.is(ex) ? undefined : '无法合并');
 		}
 	}
 
@@ -179,7 +186,7 @@ export class MergeGitCommand extends QuickCommand<State> {
 				}
 			}
 
-			assertStepState<State<Repository>>(state);
+			assertStepState<State<GlRepository>>(state);
 
 			if (context.destination == null) {
 				const branch = await state.repo.git.branches.getBranch();
@@ -285,7 +292,7 @@ export class MergeGitCommand extends QuickCommand<State> {
 	}
 
 	private async *confirmStep(
-		state: StepState<State<Repository>>,
+		state: StepState<State<GlRepository>>,
 		context: Context,
 	): AsyncStepResultGenerator<Flags[]> {
 		const counts = await state.repo.git.commits.getLeftRightCommitCount(

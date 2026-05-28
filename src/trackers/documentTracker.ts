@@ -10,6 +10,10 @@ import type {
 	TextLine,
 } from 'vscode';
 import { Disposable, EndOfLine, env, EventEmitter, Uri, window, workspace } from 'vscode';
+import type { Deferrable } from '@gitlens/utils/debounce.js';
+import { debounce } from '@gitlens/utils/debounce.js';
+import { trace } from '@gitlens/utils/decorators/log.js';
+import { once } from '@gitlens/utils/event.js';
 import type { Container } from '../container.js';
 import type { RepositoriesChangeEvent } from '../git/gitProviderService.js';
 import type { GitUri } from '../git/gitUri.js';
@@ -19,10 +23,6 @@ import { configuration } from '../system/-webview/configuration.js';
 import { setContext } from '../system/-webview/context.js';
 import { UriSet } from '../system/-webview/uriMap.js';
 import { getOpenTextDocument, isVisibleTextDocument } from '../system/-webview/vscode/documents.js';
-import { trace } from '../system/decorators/log.js';
-import { once } from '../system/event.js';
-import type { Deferrable } from '../system/function/debounce.js';
-import { debounce } from '../system/function/debounce.js';
 import type { TrackedGitDocument } from './trackedDocument.js';
 import { createTrackedGitDocument } from './trackedDocument.js';
 
@@ -212,6 +212,12 @@ export class GitDocumentTracker implements Disposable {
 		if (docPromise == null) return;
 
 		const doc = await docPromise;
+
+		// Record content changes for in-memory dirty blame (before refresh)
+		if (e.contentChanges.length > 0) {
+			doc.recordContentChanges(e.contentChanges);
+		}
+
 		doc.refresh('changed');
 
 		const dirty = e.document.isDirty;
@@ -252,6 +258,17 @@ export class GitDocumentTracker implements Disposable {
 
 		const doc = await docPromise;
 		doc.refresh('saved');
+
+		// Detect dirty → clean transition on save. VS Code doesn't fire onDidChangeTextDocument
+		// for saves, so the dirty state change is never detected via onTextDocumentChangedCore.
+		// Without this, LineTracker stays suspended after auto-save until the user switches editors.
+		if (doc.dirty && !document.isDirty) {
+			doc.dirty = false;
+			const editor = window.activeTextEditor;
+			if (editor?.document === document) {
+				this._onDidChangeDirtyState.fire({ editor: editor, document: doc, dirty: false });
+			}
+		}
 	}
 
 	private onVisibleTextEditorsChanged(editors: readonly TextEditor[]) {
@@ -374,26 +391,6 @@ export class GitDocumentTracker implements Disposable {
 		return this._documentMap.has(documentOrUri);
 	}
 
-	resetCache(document: TextDocument, affects: 'blame' | 'diff' | 'log'): Promise<void>;
-	resetCache(uri: Uri, affects: 'blame' | 'diff' | 'log'): Promise<void>;
-	@trace()
-	async resetCache(documentOrUri: TextDocument | Uri, affects: 'blame' | 'diff' | 'log'): Promise<void> {
-		const doc = this.get(documentOrUri);
-		if (doc == null) return;
-
-		switch (affects) {
-			case 'blame':
-				(await doc).state?.clearBlame();
-				break;
-			case 'diff':
-				(await doc).state?.clearDiff();
-				break;
-			case 'log':
-				(await doc).state?.clearLog();
-				break;
-		}
-	}
-
 	@trace({ args: (document, _tracked) => ({ document: document }) })
 	private async remove(document: TextDocument, tracked?: TrackedGitDocument): Promise<void> {
 		let docPromise;
@@ -503,6 +500,7 @@ export class GitDocumentTracker implements Disposable {
 }
 
 class EmptyTextDocument implements TextDocument {
+	readonly encoding: string;
 	readonly eol: EndOfLine;
 	readonly fileName: string;
 	readonly isClosed: boolean;
@@ -516,6 +514,7 @@ class EmptyTextDocument implements TextDocument {
 	constructor(public readonly gitUri: GitUri) {
 		this.uri = gitUri.documentUri;
 
+		this.encoding = 'utf-8';
 		this.eol = EndOfLine.LF;
 		this.fileName = this.uri.fsPath;
 		this.isClosed = false;

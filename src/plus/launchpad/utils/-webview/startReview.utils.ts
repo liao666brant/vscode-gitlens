@@ -1,21 +1,22 @@
+import type { GitBranch } from '@gitlens/git/models/branch.js';
+import type { PullRequest, PullRequestShape } from '@gitlens/git/models/pullRequest.js';
+import type { GitBranchReference } from '@gitlens/git/models/reference.js';
+import type { GitWorktree } from '@gitlens/git/models/worktree.js';
+import { serializePullRequest } from '@gitlens/git/utils/pullRequest.utils.js';
+import { createReference } from '@gitlens/git/utils/reference.utils.js';
+import { parseGitRemoteUrl } from '@gitlens/git/utils/remote.utils.js';
+import { defer } from '@gitlens/utils/promise.js';
 import type { WorktreeGitCommandArgs } from '../../../../commands/git/worktree.js';
 import type { OpenChatActionCommandArgs } from '../../../../commands/openChatAction.js';
 import type { SendToChatCommandArgs } from '../../../../commands/sendToChat.js';
 import type { Container } from '../../../../container.js';
-import type { GitBranch } from '../../../../git/models/branch.js';
-import type { PullRequest, PullRequestShape } from '../../../../git/models/pullRequest.js';
-import type { GitBranchReference } from '../../../../git/models/reference.js';
-import type { Repository } from '../../../../git/models/repository.js';
-import type { GitWorktree } from '../../../../git/models/worktree.js';
-import { parseGitRemoteUrl } from '../../../../git/parsers/remoteParser.js';
+import type { GlRepository } from '../../../../git/models/repository.js';
 import { getOrOpenPullRequestRepository } from '../../../../git/utils/-webview/pullRequest.utils.js';
 import { getReferenceFromBranch } from '../../../../git/utils/-webview/reference.utils.js';
 import { getWorktreeForBranch } from '../../../../git/utils/-webview/worktree.utils.js';
-import { serializePullRequest } from '../../../../git/utils/pullRequest.utils.js';
-import { createReference } from '../../../../git/utils/reference.utils.js';
 import { executeCommand } from '../../../../system/-webview/command.js';
 import { openWorkspace } from '../../../../system/-webview/vscode/workspaces.js';
-import { defer } from '../../../../system/promise.js';
+import type { AgentDescriptor } from '../../../agents/agentDescriptor.js';
 import type { StartReviewChatAction } from '../../../chat/chatActions.js';
 import { storeChatActionDeepLink } from '../../../chat/chatActions.js';
 import type { LaunchpadItem } from '../../launchpadProvider.js';
@@ -36,6 +37,7 @@ export async function startReviewFromLaunchpadItem(
 	instructions?: string,
 	openChatOnComplete?: boolean,
 	useDefaults?: boolean,
+	agent?: AgentDescriptor,
 ): Promise<StartReviewResult> {
 	const pr = item.underlyingPullRequest;
 	if (!pr) {
@@ -45,7 +47,12 @@ export async function startReviewFromLaunchpadItem(
 	if (item.openRepository?.localBranch?.current) {
 		if (openChatOnComplete) {
 			void executeCommand('gitlens.openChatAction', {
-				chatAction: { type: 'startReview', pr: serializePullRequest(pr), instructions: instructions },
+				chatAction: {
+					type: 'startReview',
+					pr: serializePullRequest(pr),
+					instructions: instructions,
+					agent: agent,
+				},
 			} as OpenChatActionCommandArgs);
 		}
 
@@ -93,18 +100,33 @@ export async function startReviewFromLaunchpadItem(
 			addRemote,
 			useDefaults,
 			openChatOnComplete
-				? { type: 'startReview', pr: serializePullRequest(pr), instructions: instructions }
+				? { type: 'startReview', pr: serializePullRequest(pr), instructions: instructions, agent: agent }
 				: undefined,
 		);
-	} else {
-		// Worktree already exists - handle chat and workspace opening manually
-		if (openChatOnComplete) {
-			await storeChatActionDeepLink(
-				container,
-				{ type: 'startReview', pr: serializePullRequest(pr), instructions: instructions },
-				worktree.uri.fsPath,
-			);
+	} else if (openChatOnComplete) {
+		// Worktree already exists - handle chat and workspace opening manually.
+		// Agent-aware dispatch mirrors createPullRequestWorktree:
+		//   - CLI agent: dispatch inline in the current window with `cwd = worktree.uri.fsPath`.
+		//     A window switch would tear down the terminal before it can run the prompt.
+		//   - Non-CLI (IDE chat, Claude extension) or legacy: stash the deep link and open the
+		//     new window so the bridge fires on activation.
+		const chatAction: StartReviewChatAction = {
+			type: 'startReview',
+			pr: serializePullRequest(pr),
+			instructions: instructions,
+			agent: agent,
+			worktreePath: worktree.uri.fsPath,
+		};
+
+		if (agent?.kind === 'cli') {
+			void executeCommand('gitlens.openChatAction', {
+				chatAction: chatAction,
+			} as OpenChatActionCommandArgs);
+		} else {
+			await storeChatActionDeepLink(container, chatAction, worktree.uri.fsPath);
+			openWorkspace(worktree.uri, { location: 'newWindow' });
 		}
+	} else {
 		openWorkspace(worktree.uri, { location: 'newWindow' });
 	}
 
@@ -115,7 +137,7 @@ export async function startReviewFromLaunchpadItem(
 }
 
 async function setupPullRequestBranch(
-	repo: Repository,
+	repo: GlRepository,
 	pr: PullRequest,
 ): Promise<{
 	remoteName: string;
@@ -186,7 +208,7 @@ async function setupPullRequestBranch(
 
 async function createPullRequestWorktree(
 	_container: Container,
-	repo: Repository,
+	repo: GlRepository,
 	localBranchName: string,
 	branchRef: GitBranchReference,
 	createBranch: string | undefined,
@@ -211,7 +233,21 @@ async function createPullRequestWorktree(
 			reference: branchRef,
 			createBranch: createBranch,
 			flags: createBranch ? ['-b'] : [],
-			worktreeDefaultOpen: useDefaults ? 'new' : undefined,
+			// Agent-aware post-create open behavior:
+			//   - CLI agent: skip the open step ('none'). The CLI dispatch opens a terminal
+			//     in the current window with `cwd = worktree.uri.fsPath`; a window switch
+			//     would tear down that terminal.
+			//   - Non-CLI agent (IDE chat, Claude extension, legacy): force a new window
+			//     ('new') so the deep-link bridge fires reliably. Without this, the "open
+			//     after create" prompt may default to "don't open" and the agent dispatch
+			//     sits in secret storage until manual window reload.
+			//   - No agent: honor `useDefaults` if set, else fall through to the user's setting.
+			worktreeDefaultOpen:
+				chatAction?.agent?.kind === 'cli'
+					? 'none'
+					: chatAction?.agent != null || useDefaults
+						? 'new'
+						: undefined,
 			result: worktreeResult,
 			chatAction: chatAction,
 		},
@@ -257,5 +293,5 @@ export async function startReviewInChat(
 	return executeCommand('gitlens.sendToChat', {
 		query: prompt,
 		execute: true,
-	} as SendToChatCommandArgs) as Promise<void>;
+	} satisfies SendToChatCommandArgs);
 }

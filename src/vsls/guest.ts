@@ -1,12 +1,10 @@
 import type { CancellationToken, Disposable, Uri } from 'vscode';
 import { window } from 'vscode';
+import type { GitResult, GitRunOptions } from '@gitlens/git/run.types.js';
+import { debug, trace } from '@gitlens/utils/decorators/log.js';
+import { getScopedLogger } from '@gitlens/utils/logger.scoped.js';
 import type { LiveShare, SharedServiceProxy } from '../@types/vsls.d.js';
 import type { Container } from '../container.js';
-// eslint-disable-next-line @typescript-eslint/no-restricted-imports -- Allowed since it is a type import
-import type {} from '../env/node/git/git.js';
-import type { GitExecOptions, GitResult } from '../git/execTypes.js';
-import { debug, trace } from '../system/decorators/log.js';
-import { getScopedLogger } from '../system/logger.scope.js';
 import { VslsHostService } from './host.js';
 import type { RepositoryProxy, RequestType } from './protocol.js';
 import { GetRepositoriesForUriRequestType, GitCommandRequestType } from './protocol.js';
@@ -57,7 +55,7 @@ export class VslsGuestService implements Disposable {
 	}
 
 	@debug()
-	async git<TOut extends string | Buffer>(options: GitExecOptions, ...args: any[]): Promise<GitResult<TOut>> {
+	async git<TOut extends string | Buffer>(options: GitRunOptions, ...args: any[]): Promise<GitResult<TOut>> {
 		const response = await this.sendRequest(GitCommandRequestType, {
 			__type: 'gitlens',
 			options: options,

@@ -1,11 +1,11 @@
 import type { TreeViewVisibilityChangeEvent } from 'vscode';
 import { Disposable } from 'vscode';
+import { trace } from '@gitlens/utils/decorators/log.js';
+import { weakEvent } from '@gitlens/utils/event.js';
+import { getScopedLogger } from '@gitlens/utils/logger.scoped.js';
 import type { TreeViewSubscribableNodeTypes } from '../../../constants.views.js';
 import type { GitUri } from '../../../git/gitUri.js';
 import { gate } from '../../../system/decorators/gate.js';
-import { trace } from '../../../system/decorators/log.js';
-import { weakEvent } from '../../../system/event.js';
-import { getScopedLogger } from '../../../system/logger.scope.js';
 import type { View } from '../../viewBase.js';
 import { CacheableChildrenViewNode } from './cacheableChildrenViewNode.js';
 import type { ViewNode } from './viewNode.js';
@@ -39,7 +39,7 @@ export abstract class SubscribeableViewNode<
 		const getTreeItem = this.getTreeItem;
 		this.getTreeItem = async function (this: SubscribeableViewNode<Type, TView>) {
 			this.loaded = true;
-			this._loadedAt = Date.now();
+			this._loadedAt = performance.now();
 			await this.ensureSubscription(true);
 			return getTreeItem.apply(this);
 		};
@@ -47,7 +47,7 @@ export abstract class SubscribeableViewNode<
 		const getChildren = this.getChildren;
 		this.getChildren = async function (this: SubscribeableViewNode<Type, TView>) {
 			this.loaded = true;
-			this._loadedAt = Date.now();
+			this._loadedAt = performance.now();
 			await this.ensureSubscription(true);
 			return getChildren.apply(this);
 		};
@@ -173,7 +173,7 @@ export abstract class SubscribeableViewNode<
 			// Skip refresh if the node was just loaded (within 500ms) to avoid double refresh.
 			// The visibility event is debounced by 250ms, so if getChildren/getTreeItem was called
 			// after the tree became visible, the refresh would be redundant.
-			const timeSinceLoad = Date.now() - this._loadedAt;
+			const timeSinceLoad = performance.now() - this._loadedAt;
 			if (timeSinceLoad > 500) {
 				scope?.addExitInfo(`triggering refresh; timeSinceLoad=${timeSinceLoad}ms`);
 				void this.triggerChange(this.requiresResetOnVisible);

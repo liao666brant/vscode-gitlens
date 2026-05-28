@@ -1,6 +1,7 @@
 import { css, html, LitElement, nothing } from 'lit';
-import { customElement, property, query, state } from 'lit/decorators.js';
+import { customElement, property, query } from 'lit/decorators.js';
 import { getAltKeySymbol } from '@env/platform.js';
+import { ModifierKeysController } from '../../controllers/modifier-keys.js';
 import { focusOutline } from '../styles/lit/a11y.css.js';
 import '../overlays/tooltip.js';
 import '../code-icon.js';
@@ -26,6 +27,20 @@ export class ActionItem extends LitElement {
 			vertical-align: text-bottom;
 			text-decoration: none;
 			cursor: pointer;
+		}
+
+		.icon-wrapper {
+			position: relative;
+			display: inline-flex;
+			align-items: center;
+			justify-content: center;
+		}
+
+		code-icon[part~='icon-outline'] {
+			position: absolute;
+			inset: 0;
+			display: none;
+			pointer-events: none;
 		}
 
 		:host(:focus-within) {
@@ -81,14 +96,20 @@ export class ActionItem extends LitElement {
 	@property({ attribute: 'alt-icon' })
 	altIcon?: string;
 
+	@property({ attribute: 'outline-icon' })
+	outlineIcon?: string;
+
 	@property({ type: Boolean })
 	disabled = false;
 
 	@query('a')
 	private defaultFocusEl!: HTMLAnchorElement;
 
-	@state()
-	private isAltKeyPressed = false;
+	private readonly _modifiers = new ModifierKeysController(this);
+
+	private get isAltKeyPressed(): boolean {
+		return this._modifiers.altKey || this._modifiers.shiftKey;
+	}
 
 	get effectiveIcon(): string {
 		if (this.isAltKeyPressed && this.altIcon) {
@@ -127,30 +148,9 @@ export class ActionItem extends LitElement {
 		return this.href;
 	}
 
-	override connectedCallback(): void {
-		super.connectedCallback?.();
-		window.addEventListener('keydown', this);
-		window.addEventListener('keyup', this);
-	}
-
-	override disconnectedCallback(): void {
-		super.disconnectedCallback?.();
-		window.removeEventListener('keydown', this);
-		window.removeEventListener('keyup', this);
-	}
-
-	handleEvent(e: KeyboardEvent) {
-		const isAltKey = e.key === 'Alt' || e.altKey;
-		if (e.type === 'keydown') {
-			this.isAltKeyPressed = isAltKey;
-		} else if (e.type === 'keyup' && isAltKey) {
-			this.isAltKeyPressed = false;
-		}
-	}
-
 	override render(): unknown {
 		return html`
-			<gl-tooltip hoist content="${this.effectiveTooltip ?? nothing}">
+			<gl-tooltip content="${this.effectiveTooltip ?? nothing}">
 				<a
 					role="${!this.effectiveHref ? 'button' : nothing}"
 					type="${!this.effectiveHref ? 'button' : nothing}"
@@ -160,7 +160,14 @@ export class ActionItem extends LitElement {
 					tabindex="0"
 					@keydown=${this.handleLinkKeydown}
 				>
-					<code-icon part="icon" icon="${this.effectiveIcon}"></code-icon>
+					<span class="icon-wrapper">
+						<code-icon part="icon" icon="${this.effectiveIcon}"></code-icon>
+						<code-icon
+							part="icon-outline"
+							icon="${this.outlineIcon ?? this.effectiveIcon}"
+							aria-hidden="true"
+						></code-icon>
+					</span>
 				</a>
 			</gl-tooltip>
 		`;

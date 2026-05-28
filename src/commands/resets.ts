@@ -12,14 +12,13 @@ const resetTypes = [
 	'ai',
 	'ai:confirmations',
 	'avatars',
-	'banners',
 	'integrations',
+	'onboarding',
 	'previews',
 	'promoOptIns',
 	'repositoryAccess',
 	'subscription',
 	'suppressedWarnings',
-	'usageTracking',
 	'workspace',
 ] as const;
 type ResetType = 'all' | (typeof resetTypes)[number];
@@ -49,14 +48,14 @@ export class ResetCommand extends GlCommandBase {
 				item: 'avatars',
 			},
 			{
-				label: '横幅通知...',
-				detail: '重置已关闭的横幅/通知',
-				item: 'banners',
-			},
-			{
 				label: '集成（认证）...',
 				detail: '清除本地存储的集成认证信息',
 				item: 'integrations',
+			},
+			{
+				label: '入门引导...',
+				detail: '重置已关闭的横幅/通知和使用跟踪 — 恢复首次体验',
+				item: 'onboarding',
 			},
 			{
 				label: '仓库访问...',
@@ -67,11 +66,6 @@ export class ResetCommand extends GlCommandBase {
 				label: '已抑制警告...',
 				detail: '清除已抑制的警告，例如带有“不要再显示”选项的消息',
 				item: 'suppressedWarnings',
-			},
-			{
-				label: '使用跟踪...',
-				detail: '清除本地记录的使用情况（通常用于首次体验）',
-				item: 'usageTracking',
 			},
 			{
 				label: '工作区存储...',
@@ -137,13 +131,13 @@ export class ResetCommand extends GlCommandBase {
 				confirmationMessage = '您确定要重置头像缓存吗？';
 				confirm.title = '重置头像缓存';
 				break;
-			case 'banners':
-				confirmationMessage = '您确定要重置所有已关闭的横幅/通知吗？';
-				confirm.title = '重置横幅通知';
-				break;
 			case 'integrations':
 				confirmationMessage = '您确定要重置所有已存储的集成信息吗？';
 				confirm.title = '重置集成';
+				break;
+			case 'onboarding':
+				confirmationMessage = '您确定要重置入门引导/首次体验吗？这将清除所有已关闭的横幅/通知和使用跟踪。';
+				confirm.title = '重置入门引导';
 				break;
 			case 'previews':
 				confirmationMessage = '您确定要重置功能预览的已存储状态吗？';
@@ -164,10 +158,6 @@ export class ResetCommand extends GlCommandBase {
 			case 'suppressedWarnings':
 				confirmationMessage = '您确定要重置所有已抑制警告吗？';
 				confirm.title = '重置已抑制警告';
-				break;
-			case 'usageTracking':
-				confirmationMessage = '您确定要重置所有使用跟踪数据吗？';
-				confirm.title = '重置使用跟踪';
 				break;
 			case 'workspace':
 				confirmationMessage = '您确定要重置当前工作区的已存储数据吗？';
@@ -214,18 +204,23 @@ export class ResetCommand extends GlCommandBase {
 				resetAvatarCache('all');
 				break;
 
-			case 'banners':
-				await this.container.storage.delete('home:sections:collapsed');
-				await this.container.storage.delete('home:walkthrough:dismissed');
-				await this.container.storage.delete('mcp:banner:dismissed');
-
-				// Deprecated keys
-				await this.container.storage.delete('home:banners:dismissed');
-				await this.container.storage.delete('home:sections:dismissed');
-				break;
-
 			case 'integrations':
 				await this.container.integrations.reset();
+				break;
+
+			case 'onboarding':
+				await this.container.onboarding.resetAll();
+				await this.container.usage.reset();
+				await this.container.storage.delete('home:sections:collapsed');
+
+				// Deprecated keys — defensive cleanup in case migration didn't run
+				await this.container.storage.delete('home:banners:dismissed');
+				await this.container.storage.delete('home:sections:dismissed');
+				await this.container.storage.delete('home:walkthrough:dismissed');
+				await this.container.storage.delete('mcp:banner:dismissed');
+				await this.container.storage.delete('views:scm:grouped:welcome:dismissed');
+				await this.container.storage.delete('composer:onboarding:dismissed');
+				await this.container.storage.delete('composer:onboarding:stepReached');
 				break;
 
 			case 'promoOptIns':
@@ -238,10 +233,6 @@ export class ResetCommand extends GlCommandBase {
 
 			case 'suppressedWarnings':
 				await configuration.update('advanced.messages', undefined, ConfigurationTarget.Global);
-				break;
-
-			case 'usageTracking':
-				await this.container.usage.reset();
 				break;
 
 			case 'workspace':

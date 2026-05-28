@@ -1,13 +1,14 @@
+import type { ConfigurationChangeEvent } from 'vscode';
 import { commands, Disposable, env } from 'vscode';
+import { RunError } from '@gitlens/git-cli/exec/exec.errors.js';
+import type { Deferrable } from '@gitlens/utils/debounce.js';
+import { debounce } from '@gitlens/utils/debounce.js';
+import { debug, trace } from '@gitlens/utils/decorators/log.js';
+import { getScopedLogger } from '@gitlens/utils/logger.scoped.js';
 import type { Container } from '../../../../container.js';
 import { configuration } from '../../../../system/-webview/configuration.js';
 import type { StorageChangeEvent } from '../../../../system/-webview/storage.js';
 import { getHostAppName } from '../../../../system/-webview/vscode.js';
-import { debug, trace } from '../../../../system/decorators/log.js';
-import type { Deferrable } from '../../../../system/function/debounce.js';
-import { debounce } from '../../../../system/function/debounce.js';
-import { getScopedLogger } from '../../../../system/logger.scope.js';
-import { RunError } from '../../git/shell.errors.js';
 import { runCLICommand, toMcpInstallProvider } from '../cli/utils.js';
 
 const CLIProxyMCPConfigOutputs = {
@@ -24,12 +25,14 @@ export abstract class GkMcpProviderBase implements Disposable {
 	protected _getMcpConfigurationFromCLIPromise: Promise<McpConfiguration | undefined> | undefined;
 	protected _ipcTimeoutId: NodeJS.Timeout | undefined;
 	protected _waitingForIPC: boolean = true;
+	protected _discoveryFilePath: string | undefined;
 
 	constructor(protected readonly container: Container) {
 		this._disposable = Disposable.from(
 			container.storage.onDidChange(e => this.onStorageChanged(e)),
-			container.events.on('gk:cli:ipc:started', () => this.onIpcServerStarted()),
+			container.events.on('gk:cli:ipc:started', e => this.onIpcServerStarted(e.data)),
 			container.events.on('gk:cli:mcp:setup:completed', () => this.onMcpSetupCompleted()),
+			configuration.onDidChange(e => this.onConfigurationChanged(e)),
 		);
 		this._ipcTimeoutId = setTimeout(() => this.onIpcTimeoutExpired(), ipcWaitTime);
 	}
@@ -63,9 +66,17 @@ export abstract class GkMcpProviderBase implements Disposable {
 		this.fireChange();
 	}
 
-	protected onIpcServerStarted(): void {
+	protected onIpcServerStarted(data: { discoveryFilePath: string | undefined }): void {
+		this._discoveryFilePath = data.discoveryFilePath;
 		this.clearIpcTimeout();
 		this.fireChange();
+	}
+
+	protected onConfigurationChanged(e: ConfigurationChangeEvent): void {
+		if (configuration.changed(e, 'gitkraken.mcp.experimental.enabled')) {
+			this._getMcpConfigurationFromCLIPromise = undefined;
+			this.fireChange(true);
+		}
 	}
 
 	protected onMcpSetupCompleted(): void {
@@ -132,10 +143,9 @@ export abstract class GkMcpProviderBase implements Disposable {
 
 		try {
 			const args = ['mcp', 'config', appName, '--source=gitlens', `--scheme=${env.uriScheme}`];
-			if (configuration.get('gitkraken.cli.insiders.enabled')) {
-				args.push('--insiders');
+			if (configuration.get('gitkraken.mcp.experimental.enabled')) {
+				args.push('--experimental');
 			}
-
 			let output = await runCLICommand(args);
 			output = output.replace(CLIProxyMCPConfigOutputs.checkingForUpdates, '').trim();
 
@@ -144,11 +154,14 @@ export abstract class GkMcpProviderBase implements Disposable {
 				config = JSON.parse(output) as McpConfiguration;
 			} catch (parseEx) {
 				// The CLI returned non-JSON output. Log the raw output so the real error is visible.
+				const outputToLog = output.slice(0, 500);
 				scope?.error(
 					parseEx,
-					`MCP config command returned non-JSON output (CLI ${cliInstall.version}): ${output.slice(0, 500)}`,
+					`MCP config command returned non-JSON output (CLI ${cliInstall.version}): ${outputToLog}`,
 				);
-				throw new Error(`Invalid MCP config output from CLI ${cliInstall.version}: ${String(parseEx)}`);
+				throw new Error(`Invalid MCP config output from CLI ${cliInstall.version}: ${outputToLog}`, {
+					cause: parseEx,
+				});
 			}
 
 			if (!config.type || !config.command || !Array.isArray(config.args)) {

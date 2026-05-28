@@ -3,7 +3,7 @@ import { customElement, property, query, state } from 'lit/decorators.js';
 import { repeat } from 'lit/directives/repeat.js';
 import { when } from 'lit/directives/when.js';
 import Sortable from 'sortablejs';
-import type { AIModel } from '../../../../../plus/ai/models/model.js';
+import type { AIModel } from '@gitlens/ai/models/model.js';
 import type { ComposerBaseCommit, ComposerCommit, ComposerHunk } from '../../../../plus/composer/protocol.js';
 import {
 	getCommitChanges,
@@ -299,8 +299,8 @@ export class CommitsPanel extends LitElement {
 			.auto-compose__instructions-input {
 				width: 100%;
 				padding: 0.5rem;
-				border: 1px solid var(--vscode-input-border);
-				border-radius: 3px;
+				border: 1px solid var(--vscode-input-border, transparent);
+				border-radius: var(--gl-input-border-radius);
 				background: var(--vscode-input-background);
 				color: var(--vscode-input-foreground);
 				font-family: inherit;
@@ -381,7 +381,10 @@ export class CommitsPanel extends LitElement {
 	repoName: string | null = null;
 
 	@property({ type: String })
-	customInstructions: string = '';
+	initialCustomInstructions: string = '';
+
+	@state()
+	private customInstructions: string = '';
 
 	@property({ type: Boolean })
 	hasUsedAutoCompose: boolean = false;
@@ -468,6 +471,9 @@ export class CommitsPanel extends LitElement {
 		}
 		if (changedProperties.has('compositionSummarySelected')) {
 			this._compositionSummarySelected = this.compositionSummarySelected;
+		}
+		if (changedProperties.has('initialCustomInstructions')) {
+			this.customInstructions = this.initialCustomInstructions;
 		}
 
 		// Recompute per-commit stats only when the underlying data changes,
@@ -574,6 +580,7 @@ export class CommitsPanel extends LitElement {
 				filter: (_evt, target) => {
 					const commitId = target.dataset.commitId;
 					if (!commitId) return false;
+
 					const commit = this.commits.find(c => c.id === commitId);
 					return commit?.locked === true;
 				},
@@ -645,7 +652,7 @@ export class CommitsPanel extends LitElement {
 		const commitItems = this.shadowRoot?.querySelectorAll('gl-commit-item');
 
 		commitItems?.forEach(commitItem => {
-			this.setupNativeDropZone(commitItem as HTMLElement, 'commit');
+			this.setupNativeDropZone(commitItem, 'commit');
 		});
 	}
 
@@ -1030,6 +1037,7 @@ export class CommitsPanel extends LitElement {
 		const gen = ++this._pendingDispatch;
 		setTimeout(() => {
 			if (gen !== this._pendingDispatch || !this.isConnected) return;
+
 			this.dispatchEvent(event);
 		}, 0);
 	}
@@ -1085,14 +1093,6 @@ export class CommitsPanel extends LitElement {
 	private handleCustomInstructionsChange(e: Event) {
 		const input = e.target as HTMLInputElement;
 		this.customInstructions = input.value;
-
-		// Dispatch event to notify app component of custom instructions change
-		this.dispatchEvent(
-			new CustomEvent('custom-instructions-change', {
-				detail: { customInstructions: this.customInstructions },
-				bubbles: true,
-			}),
-		);
 	}
 
 	private getIncludeButtonText(sectionKey: string): string {

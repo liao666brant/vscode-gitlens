@@ -1,8 +1,8 @@
 import * as assert from 'assert';
-import { isCancellationError } from '../../../errors.js';
+import { isCancellationError } from '@gitlens/utils/cancellation.js';
+import { invalidateMemoized, memoize } from '@gitlens/utils/decorators/memoize.js';
+import { sequentialize } from '@gitlens/utils/decorators/sequentialize.js';
 import { gate } from '../gate.js';
-import { invalidateMemoized, memoize } from '../memoize.js';
-import { sequentialize } from '../sequentialize.js';
 
 suite('Decorator Test Suite', () => {
 	suite('sequentialize', () => {
@@ -565,13 +565,13 @@ suite('Decorator Test Suite', () => {
 			const instance2 = new TestClass();
 
 			// Concurrent calls on different instances should not deduplicate
-			const start = Date.now();
+			const start = performance.now();
 			const p1 = instance1.method('test');
 			const p2 = instance2.method('test');
 			const p3 = instance1.method('test'); // Should dedupe with p1
 
 			const results = await Promise.all([p1, p2, p3]);
-			const totalTime = Date.now() - start;
+			const totalTime = performance.now() - start;
 
 			// Should execute 2 times (instance1: 1, instance2: 1)
 			assert.strictEqual(executionCount, 2);
@@ -608,9 +608,8 @@ suite('Decorator Test Suite', () => {
 
 			// After timeout, the gate should be cleared and new calls allowed
 			// Create a fast-completing method to verify gate is cleared
-			let secondCallStarted = false;
 			const p2 = instance.method();
-			secondCallStarted = true;
+			const secondCallStarted = true;
 
 			// The second call should start (gate cleared), but will also timeout
 			assert.ok(secondCallStarted, 'Second call should start after gate cleared');
@@ -799,6 +798,30 @@ suite('Decorator Test Suite', () => {
 			assert.strictEqual(result1, 1);
 			assert.strictEqual(result2, 1);
 			assert.strictEqual(result3, 1);
+		});
+
+		test('should invalidate versioned getters when version is bumped', () => {
+			let executionCount = 0;
+
+			class TestClass {
+				@memoize({ version: 'providers' })
+				get value(): number {
+					executionCount++;
+					return executionCount;
+				}
+			}
+
+			const instance = new TestClass();
+
+			assert.strictEqual(instance.value, 1);
+			assert.strictEqual(instance.value, 1);
+			assert.strictEqual(executionCount, 1);
+
+			invalidateMemoized('providers');
+
+			assert.strictEqual(instance.value, 2);
+			assert.strictEqual(instance.value, 2);
+			assert.strictEqual(executionCount, 2);
 		});
 
 		test('should cache complex return values', () => {

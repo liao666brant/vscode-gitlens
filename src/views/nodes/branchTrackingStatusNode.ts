@@ -1,18 +1,21 @@
 import { MarkdownString, ThemeColor, ThemeIcon, TreeItem, TreeItemCollapsibleState, window } from 'vscode';
+import type { GitBranch, GitTrackingUpstream } from '@gitlens/git/models/branch.js';
+import { GitCommit } from '@gitlens/git/models/commit.js';
+import type { GitLog } from '@gitlens/git/models/log.js';
+import type { GitRemote } from '@gitlens/git/models/remote.js';
+import { getRemoteNameFromBranchName } from '@gitlens/git/utils/branch.utils.js';
+import { getHighlanderProviders } from '@gitlens/git/utils/remote.utils.js';
+import { createRevisionRange } from '@gitlens/git/utils/revision.utils.js';
+import { getUpstreamStatus } from '@gitlens/git/utils/status.utils.js';
+import { fromNow } from '@gitlens/utils/date.js';
+import { trace } from '@gitlens/utils/decorators/log.js';
+import { first, last, map } from '@gitlens/utils/iterable.js';
+import { pluralize } from '@gitlens/utils/string.js';
 import type { Colors } from '../../constants.colors.js';
 import type { FilesComparison } from '../../git/actions/commit.js';
 import { GitUri } from '../../git/gitUri.js';
-import type { GitBranch, GitTrackingUpstream } from '../../git/models/branch.js';
-import type { GitLog } from '../../git/models/log.js';
-import type { GitRemote } from '../../git/models/remote.js';
-import { getRemoteNameFromBranchName } from '../../git/utils/branch.utils.js';
-import { getHighlanderProviders } from '../../git/utils/remote.utils.js';
-import { createRevisionRange } from '../../git/utils/revision.utils.js';
-import { getUpstreamStatus } from '../../git/utils/status.utils.js';
-import { fromNow } from '../../system/date.js';
+import { getBranchRemote } from '../../git/utils/-webview/branch.utils.js';
 import { gate } from '../../system/decorators/gate.js';
-import { trace } from '../../system/decorators/log.js';
-import { first, last, map } from '../../system/iterable.js';
 import type { ViewsWithCommits } from '../viewBase.js';
 import type { PageableViewNode } from './abstract/viewNode.js';
 import { ContextValues, getViewNodeId, ViewNode } from './abstract/viewNode.js';
@@ -118,7 +121,7 @@ export class BranchTrackingStatusNode
 			// Since the last commit when we are looking 'ahead' can have no previous (because of the range given) -- look it up
 			commits = [...log.commits.values()];
 			const commit = commits.at(-1)!;
-			const previousSha = await commit.getPreviousSha();
+			const previousSha = await GitCommit.getPreviousSha(commit);
 			if (previousSha == null) {
 				const previousLog = await this.view.container.git
 					.getRepositoryService(this.uri.repoPath!)
@@ -207,7 +210,7 @@ export class BranchTrackingStatusNode
 		let tooltip;
 		switch (this.upstreamType) {
 			case 'ahead': {
-				const remote = await this.branch.getRemote();
+				const remote = await getBranchRemote(this.view.container, this.branch);
 
 				label = '待推送';
 				description = `${this.status.upstream!.state.ahead} 个提交要推送到 ${
@@ -232,7 +235,7 @@ export class BranchTrackingStatusNode
 				break;
 			}
 			case 'behind': {
-				const remote = await this.branch.getRemote();
+				const remote = await getBranchRemote(this.view.container, this.branch);
 
 				label = '待拉取';
 				description = `${this.status.upstream!.state.behind} 个提交要从 ${
@@ -257,7 +260,7 @@ export class BranchTrackingStatusNode
 				break;
 			}
 			case 'same': {
-				const remote = await this.branch.getRemote();
+				const remote = await getBranchRemote(this.view.container, this.branch);
 
 				label = `已与 ${remote?.name ?? getRemoteNameFromBranchName(this.status.upstream!.name)}${
 					remote?.provider?.name ? `（${remote.provider.name}）` : ''
@@ -274,7 +277,7 @@ export class BranchTrackingStatusNode
 				break;
 			}
 			case 'missing': {
-				const remote = await this.branch.getRemote();
+				const remote = await getBranchRemote(this.view.container, this.branch);
 
 				label = `缺失上游分支${remote?.provider?.name ? `（${remote.provider.name}）` : ''}`;
 				description = this.status.upstream!.name;

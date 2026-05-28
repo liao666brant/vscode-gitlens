@@ -1,12 +1,14 @@
 import type { Uri } from 'vscode';
+import type { GitCommit } from '@gitlens/git/models/commit.js';
+import { GitFileChange } from '@gitlens/git/models/fileChange.js';
+import { uncommitted } from '@gitlens/git/models/revision.js';
+import { isUncommitted } from '@gitlens/git/utils/revision.utils.js';
 import type { Container } from '../../container.js';
-import type { GitCommit } from '../../git/models/commit.js';
-import type { GitFileChange } from '../../git/models/fileChange.js';
-import { uncommitted } from '../../git/models/revision.js';
-import { isUncommitted } from '../../git/utils/revision.utils.js';
+import { findCommitFile, getCommitForFile } from '../../git/utils/-webview/commit.utils.js';
 import { isWebviewItemContext } from '../../system/webview.js';
 import type {
 	DetailsFileContextValue,
+	DetailsFolderContextValue,
 	DetailsItemContext,
 	DetailsItemTypedContext,
 	DetailsItemTypedContextValue,
@@ -17,11 +19,22 @@ export function isDetailsItemContext(item: unknown): item is DetailsItemContext 
 
 	return (
 		isWebviewItemContext(item) &&
-		(item.webview === 'gitlens.views.commitDetails' || item.webview === 'gitlens.views.graphDetails')
+		(item.webview === 'gitlens.views.commitDetails' ||
+			// The embedded graph details panel lives inside the graph webview,
+			// so VS Code may pass the graph panel/view ID as the webview context
+			item.webview === 'gitlens.graph' ||
+			item.webview === 'gitlens.views.graph')
 	);
 }
 
-export function isDetailsItemTypedContext(item: unknown, type: 'file'): item is DetailsItemTypedContext;
+export function isDetailsItemTypedContext(
+	item: unknown,
+	type: 'file',
+): item is DetailsItemTypedContext<DetailsFileContextValue>;
+export function isDetailsItemTypedContext(
+	item: unknown,
+	type: 'folder',
+): item is DetailsItemTypedContext<DetailsFolderContextValue>;
 export function isDetailsItemTypedContext(
 	item: unknown,
 	type: DetailsItemTypedContextValue['type'],
@@ -33,10 +46,16 @@ export function isDetailsItemTypedContext(
 	);
 }
 
-export function isDetailsFileContext(item: unknown): item is DetailsItemTypedContext {
+export function isDetailsFileContext(item: unknown): item is DetailsItemTypedContext<DetailsFileContextValue> {
 	if (item == null) return false;
 
 	return isDetailsItemTypedContext(item, 'file');
+}
+
+export function isDetailsFolderContext(item: unknown): item is DetailsItemTypedContext<DetailsFolderContextValue> {
+	if (item == null) return false;
+
+	return isDetailsItemTypedContext(item, 'folder');
 }
 
 export function getUriFromContext(container: Container, context: DetailsFileContextValue): Uri | undefined {
@@ -52,31 +71,53 @@ export function getUriFromContext(container: Container, context: DetailsFileCont
 	return uri;
 }
 
+export function getFolderUriFromContext(container: Container, context: DetailsFolderContextValue): Uri {
+	return container.git.getAbsoluteUri(context.path, context.repoPath);
+}
+
+export type ComparisonContext = { sha: string };
+
 export async function getFileCommitFromContext(
 	container: Container,
 	context: DetailsFileContextValue,
-): Promise<[commit: GitCommit, file: GitFileChange] | [commit?: undefined, file?: undefined]> {
-	const { path, repoPath, sha, staged, stashNumber } = context;
+): Promise<
+	| [commit: GitCommit, file: GitFileChange, comparison?: ComparisonContext]
+	| [commit?: undefined, file?: undefined, comparison?: undefined]
+> {
+	const { path, repoPath, sha, comparisonSha, staged, stashNumber } = context;
 	const svc = container.git.getRepositoryService(repoPath);
+	const comparison = comparisonSha != null ? { sha: comparisonSha } : undefined;
 
 	if (stashNumber != null) {
 		const stash = await svc.stash?.getStash();
 		const commit = stash?.stashes.get(sha!);
 		if (commit == null) return [];
 
-		const file = await commit.findFile(path);
-		return commit != null && file != null ? [commit, file] : [];
+		const file = await findCommitFile(commit, path);
+		return commit != null && file != null ? [commit, file, comparison] : [];
 	}
 
 	if (isUncommitted(sha)) {
 		let commit = await svc.commits.getCommit(uncommitted);
-		commit = await commit?.getCommitForFile(path, staged);
-		return commit?.file != null ? [commit, commit.file] : [];
+		commit = commit != null ? await getCommitForFile(commit, path, staged) : undefined;
+		return commit?.file != null ? [commit, commit.file, comparison] : [];
+	}
+
+	// For comparison files, the file may not have been changed in the specific "to" commit —
+	// it may have changed in an intermediate commit. Use getCommit (no file filtering) and
+	// construct the GitFileChange from context data.
+	if (comparison != null) {
+		const commit = await svc.commits.getCommit(sha!);
+		if (commit == null) return [];
+
+		const uri = svc.getRevisionUri(sha!, path);
+		const file = new GitFileChange(repoPath, path, context.status ?? 'M', uri);
+		return [commit, file, comparison];
 	}
 
 	const uri = getUriFromContext(container, context);
 	if (uri == null) return [];
 
 	const commit = await svc.commits.getCommitForFile(uri, sha);
-	return commit?.file != null ? [commit, commit.file] : [];
+	return commit?.file != null ? [commit, commit.file, comparison] : [];
 }

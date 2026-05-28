@@ -1,34 +1,31 @@
-import type { HttpsProxyAgent } from 'https-proxy-agent';
 import type { CancellationToken, Disposable } from 'vscode';
 import { window } from 'vscode';
-import type { RequestInit, Response } from '@env/fetch.js';
-import { fetch, getProxyAgent, wrapForForcedInsecureSSL } from '@env/fetch.js';
-import { isWeb } from '@env/platform.js';
+import { fetch, wrapForForcedInsecureSSL } from '@env/fetch.js';
+import type { Account, CommitAuthor, UnidentifiedAuthor } from '@gitlens/git/models/author.js';
+import type { Issue } from '@gitlens/git/models/issue.js';
+import type { IssueOrPullRequest, IssueOrPullRequestType } from '@gitlens/git/models/issueOrPullRequest.js';
+import type { PullRequest } from '@gitlens/git/models/pullRequest.js';
+import type { Provider } from '@gitlens/git/models/remoteProvider.js';
+import type { RepositoryMetadata } from '@gitlens/git/models/repositoryMetadata.js';
+import { CancellationError } from '@gitlens/utils/cancellation.js';
+import { trace } from '@gitlens/utils/decorators/log.js';
+import { Logger } from '@gitlens/utils/logger.js';
+import type { ScopedLogger } from '@gitlens/utils/logger.scoped.js';
+import { getScopedLogger } from '@gitlens/utils/logger.scoped.js';
+import { maybeStopWatch } from '@gitlens/utils/stopwatch.js';
 import type { Container } from '../../../../container.js';
 import {
 	AuthenticationError,
 	AuthenticationErrorReason,
-	CancellationError,
 	ProviderFetchError,
 	RequestClientError,
 	RequestNotFoundError,
 } from '../../../../errors.js';
-import type { Account, CommitAuthor, UnidentifiedAuthor } from '../../../../git/models/author.js';
-import type { Issue } from '../../../../git/models/issue.js';
-import type { IssueOrPullRequest, IssueOrPullRequestType } from '../../../../git/models/issueOrPullRequest.js';
-import type { PullRequest } from '../../../../git/models/pullRequest.js';
-import type { Provider } from '../../../../git/models/remoteProvider.js';
-import type { RepositoryMetadata } from '../../../../git/models/repositoryMetadata.js';
 import {
 	showBitbucketPRCommitLinksAppNotInstalledWarningMessage,
 	showIntegrationRequestFailed500WarningMessage,
 } from '../../../../messages.js';
 import { configuration } from '../../../../system/-webview/configuration.js';
-import { trace } from '../../../../system/decorators/log.js';
-import { Logger } from '../../../../system/logger.js';
-import type { ScopedLogger } from '../../../../system/logger.scope.js';
-import { getScopedLogger } from '../../../../system/logger.scope.js';
-import { maybeStopWatch } from '../../../../system/stopwatch.js';
 import type { TokenInfo, TokenWithInfo } from '../../authentication/models.js';
 import type { BitbucketServerCommit, BitbucketServerPullRequest } from '../bitbucket-server/models.js';
 import { normalizeBitbucketServerPullRequest } from '../bitbucket-server/models.js';
@@ -46,10 +43,7 @@ export class BitbucketApi implements Disposable {
 
 	constructor(_container: Container) {
 		this._disposable = configuration.onDidChangeAny(e => {
-			if (
-				configuration.changedCore(e, ['http.proxy', 'http.proxyStrictSSL']) ||
-				configuration.changed(e, 'proxy')
-			) {
+			if (configuration.changedCore(e, ['http.proxy', 'http.proxyStrictSSL'])) {
 				this.resetCaches();
 			}
 		});
@@ -59,19 +53,7 @@ export class BitbucketApi implements Disposable {
 		this._disposable.dispose();
 	}
 
-	private _proxyAgent: HttpsProxyAgent | null | undefined = null;
-	private get proxyAgent(): HttpsProxyAgent | undefined {
-		if (isWeb) return undefined;
-
-		if (this._proxyAgent === null) {
-			this._proxyAgent = getProxyAgent();
-		}
-		return this._proxyAgent;
-	}
-
-	private resetCaches(): void {
-		this._proxyAgent = null;
-	}
+	private resetCaches(): void {}
 
 	@trace({
 		args: (provider, token, owner, repo, branch, baseUrl) => ({
@@ -477,6 +459,7 @@ export class BitbucketApi implements Disposable {
 				undefined,
 			);
 			if (!prResponse) return undefined;
+
 			const providersPr = normalizeBitbucketServerPullRequest(prResponse);
 			const gitlensPr = fromProviderPullRequest(providersPr, provider);
 			return gitlensPr;
@@ -549,6 +532,7 @@ export class BitbucketApi implements Disposable {
 					return undefined;
 				}
 			}
+
 			scope?.error(ex);
 			return undefined;
 		}
@@ -698,7 +682,6 @@ export class BitbucketApi implements Disposable {
 		let rsp: Response;
 		try {
 			const sw = maybeStopWatch(`[BITBUCKET] ${options?.method ?? 'GET'} ${url}`, { log: { onlyExit: true } });
-			const agent = this.proxyAgent;
 
 			try {
 				let aborter: AbortController | undefined;
@@ -712,15 +695,13 @@ export class BitbucketApi implements Disposable {
 				rsp = await wrapForForcedInsecureSSL(provider.getIgnoreSSLErrors(), () =>
 					fetch(url, {
 						headers: { Authorization: `Bearer ${accessToken}`, 'Content-Type': 'application/json' },
-						agent: agent,
 						signal: aborter?.signal,
 						...options,
 					}),
 				);
 
 				if (rsp.ok) {
-					const data: T = await rsp.json();
-					return data;
+					return (await rsp.json()) as T;
 				}
 
 				throw new ProviderFetchError('Bitbucket', rsp);

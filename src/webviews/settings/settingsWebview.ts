@@ -1,21 +1,22 @@
 import type { ConfigurationChangeEvent, ViewColumn } from 'vscode';
 import { ConfigurationTarget, Disposable, workspace } from 'vscode';
+import { GitCommit, GitCommitIdentity } from '@gitlens/git/models/commit.js';
+import { GitFileChange } from '@gitlens/git/models/fileChange.js';
+import { GitFileIndexStatus } from '@gitlens/git/models/fileStatus.js';
+import { PullRequest } from '@gitlens/git/models/pullRequest.js';
+import { map } from '@gitlens/utils/iterable.js';
+import { getSettledValue } from '@gitlens/utils/promise.js';
+import { fileUri, joinUriPath } from '@gitlens/utils/uri.js';
 import { IssuesCloudHostIntegrationId } from '../../constants.integrations.js';
 import { extensionPrefix } from '../../constants.js';
 import type { WebviewTelemetryContext } from '../../constants.telemetry.js';
 import type { Container } from '../../container.js';
 import { CommitFormatter } from '../../git/formatters/commitFormatter.js';
-import { GitCommit, GitCommitIdentity } from '../../git/models/commit.js';
-import { GitFileChange } from '../../git/models/fileChange.js';
-import { GitFileIndexStatus } from '../../git/models/fileStatus.js';
-import { PullRequest } from '../../git/models/pullRequest.js';
 import type { SubscriptionChangeEvent } from '../../plus/gk/subscriptionService.js';
 import { isIssueCloudIntegrationId } from '../../plus/integrations/authentication/models.js';
 import type { ConnectionStateChangeEvent } from '../../plus/integrations/integrationService.js';
 import type { ConfigPath, CoreConfigPath } from '../../system/-webview/configuration.js';
 import { configuration } from '../../system/-webview/configuration.js';
-import { map } from '../../system/iterable.js';
-import { getSettledValue } from '../../system/promise.js';
 import type { IpcParams, IpcResponse } from '../ipc/handlerRegistry.js';
 import { ipcCommand, ipcRequest } from '../ipc/handlerRegistry.js';
 import type { CustomConfigPath } from '../protocol.js';
@@ -211,11 +212,22 @@ export class SettingsWebviewProvider implements WebviewProvider<State, State, Se
 			case 'commit':
 			case 'commit-uncommitted': {
 				const commit = new GitCommit(
-					this.container,
 					'~/code/eamodio/vscode-gitlens-demo',
 					'fe26af408293cba5b4bfd77306e1ac9ff7ccaef8',
-					new GitCommitIdentity('You', 'eamodio@gmail.com', new Date('2016-11-12T20:41:00.000Z')),
-					new GitCommitIdentity('You', 'eamodio@gmail.com', new Date('2020-11-01T06:57:21.000Z')),
+					new GitCommitIdentity(
+						'Eric Amodio',
+						'eamodio@gmail.com',
+						new Date('2016-11-12T20:41:00.000Z'),
+						undefined,
+						true,
+					),
+					new GitCommitIdentity(
+						'Eric Amodio',
+						'eamodio@gmail.com',
+						new Date('2020-11-01T06:57:21.000Z'),
+						undefined,
+						true,
+					),
 					params.type === 'commit-uncommitted' ? 'Uncommitted changes' : 'Supercharged',
 					['3ac1d3f51d7cf5f438cc69f25f6740536ad80fef'],
 					params.type === 'commit-uncommitted' ? 'Uncommitted changes' : 'Supercharged',
@@ -224,10 +236,10 @@ export class SettingsWebviewProvider implements WebviewProvider<State, State, Se
 						filtered: {
 							files: [
 								new GitFileChange(
-									this.container,
 									'~/code/eamodio/vscode-gitlens-demo',
 									'code.ts',
 									GitFileIndexStatus.Modified,
+									joinUriPath(fileUri('/code/eamodio/vscode-gitlens-demo'), 'code.ts'),
 								),
 							],
 							pathspec: 'code.ts',

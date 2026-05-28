@@ -2,10 +2,10 @@
 /*global*/
 import './patchDetails.scss';
 import type { TextDocumentShowOptions } from 'vscode';
+import { debounce } from '@gitlens/utils/debounce.js';
 import type { ViewFilesLayout } from '../../../../config.js';
 import type { GlCommands } from '../../../../constants.commands.js';
 import type { DraftPatchFileChange, DraftVisibility } from '../../../../plus/drafts/models/drafts.js';
-import { debounce } from '../../../../system/function/debounce.js';
 import type { Serialized } from '../../../../system/serialize.js';
 import type { IpcMessage } from '../../../ipc/models/ipc.js';
 import type { State, SwitchModeParams } from '../../../plus/patchDetails/protocol.js';
@@ -326,6 +326,7 @@ export class PatchDetailsApp extends App<Serialized<State>> {
 	private onApplyPatch(e: ApplyPatchDetail) {
 		console.log('onApplyPatch', e);
 		if (e.selectedPatches == null || e.selectedPatches.length === 0) return;
+
 		this.sendCommand(ApplyPatchCommand, {
 			details: e.draft,
 			target: e.target ?? 'current',
@@ -436,6 +437,6 @@ export class PatchDetailsApp extends App<Serialized<State>> {
 	private debouncedAttachState = debounce(this.attachState.bind(this), 100);
 }
 
-function assertsSerialized<T>(obj: unknown): asserts obj is Serialized<T> {}
+function assertsSerialized<T>(_obj: unknown): asserts _obj is Serialized<T> {}
 
 new PatchDetailsApp();

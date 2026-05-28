@@ -1,26 +1,27 @@
 import type { QuickInputButton, QuickPickItem } from 'vscode';
 import { ThemeIcon } from 'vscode';
+import type { GitBranch } from '@gitlens/git/models/branch.js';
+import type { GitReference } from '@gitlens/git/models/reference.js';
+import type { GitTag } from '@gitlens/git/models/tag.js';
+import type { GitWorktree } from '@gitlens/git/models/worktree.js';
+import { isBranchReference, isRevisionReference, isTagReference } from '@gitlens/git/utils/reference.utils.js';
+import type { BranchSortOptions, TagSortOptions } from '@gitlens/git/utils/sorting.js';
+import { sortBranches, sortTags } from '@gitlens/git/utils/sorting.js';
+import { intersection } from '@gitlens/utils/array.js';
+import type { PagedResult } from '@gitlens/utils/paging.js';
+import { getSettledValue } from '@gitlens/utils/promise.js';
 import { revealBranch } from '../../../git/actions/branch.js';
 import { showCommitInDetailsView } from '../../../git/actions/commit.js';
 import { revealTag } from '../../../git/actions/tag.js';
-import type { PagedResult } from '../../../git/gitProvider.js';
-import type { GitBranch } from '../../../git/models/branch.js';
-import type { GitReference } from '../../../git/models/reference.js';
-import type { Repository } from '../../../git/models/repository.js';
-import type { GitTag } from '../../../git/models/tag.js';
-import type { GitWorktree } from '../../../git/models/worktree.js';
-import type { BranchSortOptions, TagSortOptions } from '../../../git/utils/-webview/sorting.js';
-import { sortBranches, sortTags } from '../../../git/utils/-webview/sorting.js';
+import type { GlRepository } from '../../../git/models/repository.js';
 import { getWorktreesByBranch } from '../../../git/utils/-webview/worktree.utils.js';
-import { isBranchReference, isRevisionReference, isTagReference } from '../../../git/utils/reference.utils.js';
 import type { LaunchpadCommandArgs } from '../../../plus/launchpad/launchpad.js';
 import { createQuickPickSeparator } from '../../../quickpicks/items/common.js';
 import { createDirectiveQuickPickItem, Directive } from '../../../quickpicks/items/directive.js';
 import type { BranchQuickPickItem, TagQuickPickItem } from '../../../quickpicks/items/gitWizard.js';
 import { createBranchQuickPickItem, createTagQuickPickItem } from '../../../quickpicks/items/gitWizard.js';
 import type { ReferencesQuickPickItem } from '../../../quickpicks/referencePicker.js';
-import { intersection } from '../../../system/array.js';
-import { getSettledValue } from '../../../system/promise.js';
+import { configuration } from '../../../system/-webview/configuration.js';
 import type { CrossCommandReference } from '../models/quickWizard.js';
 import type {
 	PartialStepState,
@@ -31,9 +32,10 @@ import type {
 } from '../models/steps.js';
 import { StepResultBreak } from '../models/steps.js';
 import {
+	createShowTagsToggle,
+	flipToggle,
 	PickCommitQuickInputButton,
 	RevealInSideBarQuickInputButton,
-	ShowTagsToggleQuickInputButton,
 } from '../quickButtons.js';
 import { createCrossCommandReference } from '../utils/quickWizard.utils.js';
 import {
@@ -75,7 +77,7 @@ async function createBranchQuickPickItems<TBranch = GitBranch>(
 }
 
 export async function getBranchesAndOrTags<TBranch = GitBranch, TTag = GitTag>(
-	repos: Repository | Repository[] | undefined,
+	repos: GlRepository | GlRepository[] | undefined,
 	include: ('tags' | 'branches')[],
 	options?: {
 		buttons?: QuickInputButton[];
@@ -141,23 +143,29 @@ export async function getBranchesAndOrTags<TBranch = GitBranch, TTag = GitTag>(
 			branchesByRepoResult.status === 'fulfilled'
 				? branchesByRepoResult.value
 						?.filter((r): r is PromiseFulfilledResult<PagedResult<GitBranch>> => r.status === 'fulfilled')
-						?.map(r => r.value.values)
+						?.map((r): GitBranch[] => r.value.values)
 				: undefined;
 		const tagsByRepo =
 			tagsByRepoResult.status === 'fulfilled'
 				? tagsByRepoResult.value
 						?.filter((r): r is PromiseFulfilledResult<PagedResult<GitTag>> => r.status === 'fulfilled')
-						?.map(r => r.value.values)
+						?.map((r): GitTag[] => r.value.values)
 				: undefined;
 
 		if (include.includes('branches') && branchesByRepo != null) {
 			branches = sortBranches(
 				intersection(branchesByRepo, (b1: GitBranch, b2: GitBranch) => b1.name === b2.name),
+				{ orderBy: configuration.get('sortBranchesBy') },
 			);
 		}
 
 		if (include.includes('tags') && tagsByRepo != null) {
-			tags = sortTags(intersection(tagsByRepo, (t1: GitTag, t2: GitTag) => t1.name === t2.name));
+			tags = sortTags(
+				intersection(tagsByRepo, (t1: GitTag, t2: GitTag) => t1.name === t2.name),
+				{
+					orderBy: configuration.get('sortTagsBy'),
+				},
+			);
 		}
 	}
 
@@ -267,8 +275,8 @@ export async function getBranchesAndOrTags<TBranch = GitBranch, TTag = GitTag>(
 }
 
 export function* pickBranchOrTagStep<
-	State extends PartialStepState & { repo: Repository },
-	Context extends StepsContext<any> & { repos: Repository[]; pickCommitForItem?: boolean; showTags?: boolean },
+	State extends PartialStepState & { repo: GlRepository },
+	Context extends StepsContext<any> & { repos: GlRepository[]; pickCommitForItem?: boolean; showTags?: boolean },
 >(
 	state: State,
 	context: Context,
@@ -284,7 +292,7 @@ export function* pickBranchOrTagStep<
 ): StepResultGenerator<GitReference> {
 	context.showTags = true;
 
-	const showTagsButton = new ShowTagsToggleQuickInputButton(context.showTags);
+	const showTagsButton = createShowTagsToggle(context.showTags);
 
 	const getBranchesAndOrTagsFn = async () => {
 		return getBranchesAndOrTags(state.repo, context.showTags ? ['branches', 'tags'] : ['branches'], {
@@ -340,8 +348,7 @@ export function* pickBranchOrTagStep<
 				quickpick.busy = true;
 
 				try {
-					context.showTags = !context.showTags;
-					showTagsButton.on = context.showTags;
+					context.showTags = flipToggle(button);
 
 					const branchesAndOrTags = await getBranchesAndOrTagsFn();
 					quickpick.placeholder =
@@ -383,8 +390,8 @@ type PickBranchOrTagStepActionResult =
 	| { action: 'create-branch'; name: string };
 
 export function* pickBranchOrTagStepMultiRepo<
-	State extends PartialStepState & { repos: Repository[]; reference?: GitReference },
-	Context extends StepsContext<any> & { allowCreate?: boolean; repos: Repository[]; showTags?: boolean },
+	State extends PartialStepState & { repos: GlRepository[]; reference?: GitReference },
+	Context extends StepsContext<any> & { allowCreate?: boolean; repos: GlRepository[]; showTags?: boolean },
 >(
 	state: State,
 	context: Context,
@@ -399,7 +406,7 @@ export function* pickBranchOrTagStepMultiRepo<
 ): StepResultGenerator<StepPickResult<GitReference, PickBranchOrTagStepActionResult>> {
 	context.showTags = state.repos.length === 1;
 
-	const showTagsButton = new ShowTagsToggleQuickInputButton(context.showTags);
+	const showTagsButton = createShowTagsToggle(context.showTags);
 
 	type ResultItem = StepPickResult<GitReference, PickBranchOrTagStepActionResult>;
 	const mapBranchOrTag = (ref: GitReference): ResultItem => ({ type: 'result', value: ref });
@@ -490,8 +497,7 @@ export function* pickBranchOrTagStepMultiRepo<
 				quickpick.busy = true;
 
 				try {
-					context.showTags = !context.showTags;
-					showTagsButton.on = context.showTags;
+					context.showTags = flipToggle(button);
 
 					const branchesAndOrTags = await getBranchesAndOrTagsFn();
 					quickpick.placeholder =

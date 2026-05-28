@@ -1,27 +1,25 @@
 import type { ConfigurationChangeEvent, MessageItem } from 'vscode';
 import { Disposable, env, ExtensionMode, window } from 'vscode';
-import type { GroupableTreeViewTypes, TreeViewTypes } from '../constants.views.js';
-import type { Container } from '../container.js';
-import type { GitContributor } from '../git/models/contributor.js';
+import type { GitContributor } from '@gitlens/git/models/contributor.js';
 import type {
 	GitBranchReference,
 	GitRevisionReference,
 	GitStashReference,
 	GitTagReference,
-} from '../git/models/reference.js';
-import type { GitRemote } from '../git/models/remote.js';
-import type { GitWorktree } from '../git/models/worktree.js';
+} from '@gitlens/git/models/reference.js';
+import type { GitRemote } from '@gitlens/git/models/remote.js';
+import type { GitWorktree } from '@gitlens/git/models/worktree.js';
+import { once } from '@gitlens/utils/function.js';
+import { first } from '@gitlens/utils/iterable.js';
+import { compare } from '@gitlens/utils/version.js';
+import type { GroupableTreeViewTypes, TreeViewTypes } from '../constants.views.js';
+import { localOnlyGroupedViews } from '../constants.views.js';
+import type { Container } from '../container.js';
 import { executeCommand, executeCoreCommand, registerCommand } from '../system/-webview/command.js';
 import { configuration } from '../system/-webview/configuration.js';
 import { getContext, setContext } from '../system/-webview/context.js';
 import { getViewFocusCommand } from '../system/-webview/vscode/views.js';
-import { once } from '../system/function.js';
-import { first } from '../system/iterable.js';
-import { compare } from '../system/version.js';
-import {
-	registerCommitDetailsWebviewView,
-	registerGraphDetailsWebviewView,
-} from '../webviews/commitDetails/registration.js';
+import { registerCommitDetailsWebviewView } from '../webviews/commitDetails/registration.js';
 import { registerHomeWebviewView } from '../webviews/home/registration.js';
 import { registerGraphWebviewView } from '../webviews/plus/graph/registration.js';
 import { registerPatchDetailsWebviewView } from '../webviews/plus/patchDetails/registration.js';
@@ -101,6 +99,7 @@ export class Views implements Disposable {
 		return this._scmGroupedViews;
 	}
 
+	private _hasVirtualFolders: boolean | undefined;
 	private _welcomeDismissed = false;
 
 	constructor(
@@ -109,13 +108,14 @@ export class Views implements Disposable {
 	) {
 		this._disposable = Disposable.from(
 			configuration.onDidChange(this.onConfigurationChanged, this),
+			container.git.onDidChangeRepositories(this.onRepositoriesChanged, this),
 			new ViewCommands(container),
 			...this.registerViews(),
 			...this.registerWebviewViews(webviews),
 			...this.registerCommands(),
 		);
 
-		this._welcomeDismissed = container.storage.get('views:scm:grouped:welcome:dismissed', false);
+		this._welcomeDismissed = container.onboarding.isDismissed('views:scmGrouped:welcome');
 
 		let newInstall = false;
 		let showGitLensView = false;
@@ -130,7 +130,7 @@ export class Views implements Disposable {
 				}
 			}
 		} else if (!this._welcomeDismissed) {
-			void container.storage.store('views:scm:grouped:welcome:dismissed', true).catch();
+			void container.onboarding.dismiss('views:scmGrouped:welcome').catch();
 			this._welcomeDismissed = true;
 		}
 
@@ -181,6 +181,14 @@ export class Views implements Disposable {
 		}
 
 		if (configuration.changed(e, 'views.scm.grouped.views')) {
+			this.updateScmGroupedViewsRegistration();
+		}
+	}
+
+	private onRepositoriesChanged(): void {
+		const hasVirtualFolders = getContext('gitlens:hasVirtualFolders');
+		if (this._hasVirtualFolders !== hasVirtualFolders) {
+			this._hasVirtualFolders = hasVirtualFolders;
 			this.updateScmGroupedViewsRegistration();
 		}
 	}
@@ -399,12 +407,12 @@ export class Views implements Disposable {
 
 			registerCommand('gitlens.views.scm.grouped.welcome.dismiss', () => {
 				this._welcomeDismissed = true;
-				void this.container.storage.store('views:scm:grouped:welcome:dismissed', true).catch();
+				void this.container.onboarding.dismiss('views:scmGrouped:welcome').catch();
 				this.updateScmGroupedViewsRegistration();
 			}),
 			registerCommand('gitlens.views.scm.grouped.welcome.restore', async () => {
 				this._welcomeDismissed = true;
-				void this.container.storage.store('views:scm:grouped:welcome:dismissed', true).catch();
+				void this.container.onboarding.dismiss('views:scmGrouped:welcome').catch();
 				await updateScmGroupedViewsInConfig(new Set());
 			}),
 		];
@@ -423,7 +431,6 @@ export class Views implements Disposable {
 		return [
 			(this._commitDetailsView = registerCommitDetailsWebviewView(webviews)),
 			(this._graphView = registerGraphWebviewView(webviews)),
-			(this._graphDetailsView = registerGraphDetailsWebviewView(webviews)),
 			(this._homeView = registerHomeWebviewView(webviews)),
 			(this._patchDetailsView = registerPatchDetailsWebviewView(webviews)),
 			(this._timelineView = registerTimelineWebviewView(webviews)),
@@ -515,7 +522,7 @@ export class Views implements Disposable {
 	private async setScmGroupedView<T extends GroupableTreeViewTypes>(type: T, focus?: boolean) {
 		if (this._scmGroupedView != null) {
 			await this._scmGroupedView.clearView(type);
-			return this._scmGroupedView.setView(type, { focus: focus });
+			return this._scmGroupedView.setView(type, { focus: focus, preventReveal: !focus });
 		}
 
 		if (!this.scmGroupedViews?.has(type)) {
@@ -589,6 +596,11 @@ export class Views implements Disposable {
 		void setContext('gitlens:views:scm:grouped:welcome', !this._welcomeDismissed);
 
 		this._scmGroupedViews = getScmGroupedViewsFromConfig();
+		if (getContext('gitlens:hasVirtualFolders')) {
+			for (const view of localOnlyGroupedViews) {
+				this._scmGroupedViews.delete(view);
+			}
+		}
 
 		if (this._scmGroupedViews.size) {
 			if (this._welcomeDismissed || bypassWelcomeView) {
@@ -721,11 +733,6 @@ export class Views implements Disposable {
 	private _graphView!: ReturnType<typeof registerGraphWebviewView>;
 	get graph(): ReturnType<typeof registerGraphWebviewView> {
 		return this._graphView;
-	}
-
-	private _graphDetailsView!: ReturnType<typeof registerGraphDetailsWebviewView>;
-	get graphDetails(): ReturnType<typeof registerGraphDetailsWebviewView> {
-		return this._graphDetailsView;
 	}
 
 	private _homeView!: ReturnType<typeof registerHomeWebviewView>;

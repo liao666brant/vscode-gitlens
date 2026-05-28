@@ -1,20 +1,20 @@
 import type { Event, FileChangeEvent, FileStat, FileSystemProvider, Uri } from 'vscode';
 import { Disposable, EventEmitter, FileSystemError, FileType, workspace } from 'vscode';
 import { isLinux } from '@env/platform.js';
+import { ShowError } from '@gitlens/git/errors.js';
+import { deletedOrMissing } from '@gitlens/git/models/revision.js';
+import type { GitTreeEntry, GitTreeType } from '@gitlens/git/models/tree.js';
+import { trace } from '@gitlens/utils/decorators/log.js';
+import { map } from '@gitlens/utils/iterable.js';
+import { Logger } from '@gitlens/utils/logger.js';
+import { getScopedLogger } from '@gitlens/utils/logger.scoped.js';
+import { normalizePath } from '@gitlens/utils/path.js';
+import { PromiseCache } from '@gitlens/utils/promiseCache.js';
+import { TernarySearchTree } from '@gitlens/utils/searchTree.js';
 import { Schemes } from '../constants.js';
 import type { Container } from '../container.js';
 import { relative } from '../system/-webview/path.js';
-import { trace } from '../system/decorators/log.js';
-import { map } from '../system/iterable.js';
-import { Logger } from '../system/logger.js';
-import { getScopedLogger } from '../system/logger.scope.js';
-import { normalizePath } from '../system/path.js';
-import { PromiseCache } from '../system/promiseCache.js';
-import { TernarySearchTree } from '../system/searchTree.js';
-import { ShowError } from './errors.js';
 import { GitUri, isGitUri } from './gitUri.js';
-import { deletedOrMissing } from './models/revision.js';
-import type { GitTreeEntry, GitTreeType } from './models/tree.js';
 
 const emptyArray = Object.freeze(new Uint8Array(0));
 const emptyDisposable: Disposable = Object.freeze({ dispose: () => {} });
@@ -97,13 +97,13 @@ export class GitFileSystemProvider implements FileSystemProvider, Disposable {
 
 		let data: Uint8Array | undefined;
 		try {
-			data = await svc.revision.getRevisionContent(ref, path);
+			data = await svc.revision.getRevisionContent(path, ref);
 		} catch (ex) {
 			if (ShowError.is(ex, 'invalidObject') || ShowError.is(ex, 'invalidRevision')) {
 				// Check the tree entry to determine if this is a regular file or submodule
 				// For submodules (type 'commit' in git tree), return the standard git submodule diff format
 				// This matches the format Git uses in diff output (see diff.c:show_submodule_diff_summary)
-				const treeEntry = await svc.revision.getTreeEntryForRevision(ref, path);
+				const treeEntry = await svc.revision.getTreeEntryForRevision(path, ref);
 				if (treeEntry?.type === 'commit') {
 					return new TextEncoder().encode(`Subproject commit ${treeEntry.oid}\n`);
 				}
@@ -152,7 +152,7 @@ export class GitFileSystemProvider implements FileSystemProvider, Disposable {
 
 			treeItem = await this.container.git
 				.getRepositoryService(repoPath)
-				.revision.getTreeEntryForRevision(ref, path);
+				.revision.getTreeEntryForRevision(path, ref);
 		}
 
 		if (treeItem == null) {

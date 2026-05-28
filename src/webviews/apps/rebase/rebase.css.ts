@@ -2,13 +2,17 @@ import { css } from 'lit';
 
 /** Rebase webview layout and global styles */
 export const rebaseStyles = css`
+	.clickable {
+		cursor: pointer;
+	}
+
 	/* ==========================================================================
 	   CSS Custom Properties (Theme Variables)
 	   ========================================================================== */
 
 	:host {
 		/* Layout & Typography */
-		--gk-avatar-size: 2.2rem;
+		--gl-avatar-size: 2.2rem;
 		--font-family: var(--vscode-font-family);
 		--font-size: var(--vscode-font-size);
 
@@ -141,9 +145,9 @@ export const rebaseStyles = css`
 		grid-template-areas:
 			'header'
 			'banner'
-			'entries'
+			'content'
 			'footer';
-		grid-template-rows: auto auto 1fr auto;
+		grid-template-rows: auto auto minmax(0, 1fr) auto;
 		grid-template-columns: minmax(0, 1fr);
 		height: 100vh;
 		min-width: 0;
@@ -151,12 +155,25 @@ export const rebaseStyles = css`
 		padding: 0.5rem;
 	}
 
+	.content {
+		grid-area: content;
+		display: flex;
+		flex-direction: column;
+		min-height: 0;
+	}
+
 	/* ==========================================================================
 	   Banners (Preserves Merges)
 	   ========================================================================== */
 
-	.preserves-merges-banner {
+	.banners {
 		grid-area: banner;
+		display: flex;
+		flex-direction: column;
+	}
+
+	.preserves-merges-banner,
+	.close-warning-banner {
 		margin: 0.5rem 1rem;
 		margin-block-end: 0.5rem;
 
@@ -312,11 +329,11 @@ export const rebaseStyles = css`
 	   ========================================================================== */
 
 	.entries {
-		grid-area: entries;
+		flex: 1 1 0;
 		display: block;
 		min-height: 0;
 		overflow-x: hidden !important;
-		overflow-y: visible;
+		overflow-y: auto;
 		outline: none;
 		margin: 0.5rem 1rem;
 		box-sizing: border-box;
@@ -342,7 +359,7 @@ export const rebaseStyles = css`
 	}
 
 	.entries-empty {
-		grid-area: entries;
+		flex: 1 1 0;
 		display: flex;
 		justify-content: center;
 		color: var(--color-foreground--85);
@@ -378,6 +395,75 @@ export const rebaseStyles = css`
 	.entries.ascending gl-rebase-entry[isbase].drag-over::before {
 		top: auto;
 		bottom: 0;
+	}
+
+	/* ==========================================================================
+	   Conflict Split Panel
+	   ========================================================================== */
+
+	.entries-panel {
+		display: flex;
+		flex-direction: column;
+		overflow: hidden;
+
+		> .entries {
+			border-bottom: none;
+		}
+	}
+
+	.conflict-split {
+		flex: 1 1 0;
+		min-height: 0;
+
+		&::part(divider) {
+			background-image: linear-gradient(
+				var(--vscode-sideBarSectionHeader-border, rgba(128, 128, 128, 0.35)),
+				var(--vscode-sideBarSectionHeader-border, rgba(128, 128, 128, 0.35))
+			);
+			background-size: 100% 1px;
+			background-position: center;
+			background-repeat: no-repeat;
+			transition: background-color 0.1s ease-out;
+		}
+
+		&::part(divider):hover,
+		&[dragging]::part(divider) {
+			background-image: linear-gradient(
+				var(--vscode-sash-hoverBorder, var(--vscode-focusBorder)),
+				var(--vscode-sash-hoverBorder, var(--vscode-focusBorder))
+			);
+			background-size: 100% 100%;
+			transition: background-color 0.1s ease-out 0.2s;
+		}
+	}
+
+	.conflict-panel {
+		display: flex;
+		flex-direction: column;
+		overflow: hidden;
+		height: 100%;
+		padding: 0 1rem;
+	}
+
+	.conflict-panel__header {
+		display: flex;
+		align-items: center;
+		gap: 0.4rem;
+		padding: 0.5rem 0;
+		font-weight: 600;
+		color: var(--vscode-editorWarning-foreground, #cca700);
+		flex: none;
+	}
+
+	.conflict-panel__header > span {
+		flex: 1;
+	}
+
+	.conflict-panel__list {
+		flex: 1;
+		min-height: 0;
+		--gl-decoration-before-font-size: 0.8em;
+		--gl-decoration-before-opacity: 0.7;
 	}
 
 	/* ==========================================================================
@@ -447,6 +533,31 @@ export const rebaseStyles = css`
 	gl-rebase-conflict-indicator {
 		margin-right: auto;
 		margin-left: 1.6rem;
+	}
+
+	.conflict-loading {
+		display: inline-flex;
+		align-items: center;
+		margin-left: 0.5rem;
+		color: var(--vscode-foreground);
+		opacity: 0.7;
+	}
+
+	.conflict-summary {
+		display: inline-flex;
+		align-items: center;
+		gap: 0.4rem;
+		margin-left: 0.5rem;
+		padding: 0.2rem 0.6rem;
+		border-radius: 0.3rem;
+		font-size: 1.1rem;
+		font-weight: 500;
+
+		&.warning {
+			background-color: var(--vscode-inputValidation-warningBackground, rgba(200, 140, 0, 0.2));
+			color: var(--vscode-inputValidation-warningForeground, #cca700);
+			border: 1px solid var(--vscode-inputValidation-warningBorder, #cca700);
+		}
 	}
 
 	gl-button .button-shortcut {

@@ -1,16 +1,17 @@
+import type { GitReference } from '@gitlens/git/models/reference.js';
+import type { RemoteProviderId } from '@gitlens/git/models/remoteProvider.js';
+import type { GkProviderId } from '@gitlens/git/models/repositoryIdentities.js';
+import { isGitReference } from '@gitlens/git/utils/reference.utils.js';
+import type { Unbrand } from '@gitlens/utils/brand.js';
+import { getSettledValue } from '@gitlens/utils/promise.js';
 import {
 	GitCloudHostIntegrationId,
 	GitSelfManagedHostIntegrationId,
 	IssuesCloudHostIntegrationId,
 } from '../../../constants.integrations.js';
-import type { GitReference } from '../../../git/models/reference.js';
-import type { Repository } from '../../../git/models/repository.js';
-import type { GkProviderId } from '../../../git/models/repositoryIdentities.js';
-import type { RemoteProviderId } from '../../../git/remotes/remoteProvider.js';
-import { toRepositoryShapeWithProvider } from '../../../git/utils/-webview/repository.utils.js';
-import { isGitReference } from '../../../git/utils/reference.utils.js';
-import type { Unbrand } from '../../../system/brand.js';
-import { getSettledValue } from '../../../system/promise.js';
+import type { GlRepository } from '../../../git/models/repository.js';
+import { remoteSupportsIntegration } from '../../../git/utils/-webview/remote.utils.js';
+import { toRepositoryShape, toRepositoryShapeWithProvider } from '../../../git/utils/-webview/repository.utils.js';
 import { isWebviewItemContext, isWebviewItemGroupContext } from '../../../system/webview.js';
 import type {
 	GraphBranchContextValue,
@@ -26,21 +27,28 @@ import type {
 	GraphItemTypedContext,
 	GraphItemTypedContextValue,
 	GraphPullRequestContextValue,
+	GraphRemoteContextValue,
 	GraphRepository,
 	GraphStashContextValue,
 	GraphTagContextValue,
 	GraphUpstreamStatusContextValue,
 } from './protocol.js';
 
-export async function formatRepositories(repositories: Repository[]): Promise<GraphRepository[]> {
+export async function formatRepositories(repositories: GlRepository[]): Promise<GraphRepository[]> {
 	if (!repositories.length) return [];
 
 	const result = await Promise.allSettled(
 		repositories.map<Promise<GraphRepository>>(async repo => {
-			const remotes = await repo.git.remotes.getBestRemotesWithProviders();
-			const remote = remotes.find(r => r.supportsIntegration()) ?? remotes[0];
+			try {
+				const remotes = await repo.git.remotes.getBestRemotesWithProviders();
+				const remote = remotes.find(r => remoteSupportsIntegration(r)) ?? remotes[0];
 
-			return toRepositoryShapeWithProvider(repo, remote);
+				return await toRepositoryShapeWithProvider(repo, remote);
+			} catch {
+				// If provider info fails (e.g. during integration reconnection),
+				// still return the repo shape without provider details
+				return toRepositoryShape(repo);
+			}
 		}),
 	);
 	return result.map(r => getSettledValue(r)).filter(r => r != null);
@@ -76,6 +84,10 @@ export function isGraphItemTypedContext(
 	item: unknown,
 	type: 'issue',
 ): item is GraphItemTypedContext<GraphIssueContextValue>;
+export function isGraphItemTypedContext(
+	item: unknown,
+	type: 'remote',
+): item is GraphItemTypedContext<GraphRemoteContextValue>;
 export function isGraphItemTypedContext(
 	item: unknown,
 	type: GraphItemTypedContextValue['type'],

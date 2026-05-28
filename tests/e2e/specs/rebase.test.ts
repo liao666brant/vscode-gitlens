@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unsafe-return */
 import * as fs from 'node:fs';
 import * as path from 'node:path';
 import * as process from 'node:process';
@@ -328,8 +327,10 @@ test.describe('Editor — Core', () => {
 				return elements.slice(0, 4).map(el => {
 					const root = el.shadowRoot;
 					if (!root) return '';
+
 					const div = root.querySelector('[role="listitem"]');
 					if (!div) return '';
+
 					const ariaLabel = div.getAttribute('aria-label') || '';
 					const parts = ariaLabel.split(', ');
 					return parts.length >= 2 ? parts.slice(1, -1).join(', ') : '';
@@ -346,8 +347,10 @@ test.describe('Editor — Core', () => {
 				return elements.slice(0, 4).map(el => {
 					const root = el.shadowRoot;
 					if (!root) return '';
+
 					const div = root.querySelector('[role="listitem"]');
 					if (!div) return '';
+
 					const ariaLabel = div.getAttribute('aria-label') || '';
 					const parts = ariaLabel.split(', ');
 					return parts.length >= 2 ? parts.slice(1, -1).join(', ') : '';
@@ -379,8 +382,10 @@ test.describe('Editor — Core', () => {
 				return elements.slice(0, 4).map(el => {
 					const root = el.shadowRoot;
 					if (!root) return '';
+
 					const div = root.querySelector('[role="listitem"]');
 					if (!div) return '';
+
 					const ariaLabel = div.getAttribute('aria-label') || '';
 					const parts = ariaLabel.split(', ');
 					return parts.length >= 2 ? parts.slice(1, -1).join(', ') : '';
@@ -399,8 +404,10 @@ test.describe('Editor — Core', () => {
 				return elements.slice(0, 4).map(el => {
 					const root = el.shadowRoot;
 					if (!root) return '';
+
 					const div = root.querySelector('[role="listitem"]');
 					if (!div) return '';
+
 					const ariaLabel = div.getAttribute('aria-label') || '';
 					const parts = ariaLabel.split(', ');
 					return parts.length >= 2 ? parts.slice(1, -1).join(', ') : '';
@@ -700,8 +707,10 @@ test.describe('Editor — Rebase Merges', () => {
 			return elements.slice(0, 4).map(el => {
 				const root = el.shadowRoot;
 				if (!root) return '';
+
 				const div = root.querySelector('[role="listitem"]');
 				if (!div) return '';
+
 				const ariaLabel = div.getAttribute('aria-label') || '';
 				const parts = ariaLabel.split(', ');
 				return parts.length >= 2 ? parts.slice(1, -1).join(', ') : '';
@@ -765,8 +774,10 @@ test.describe('Editor — Rebase Merges', () => {
 			return elements.slice(0, 3).map(el => {
 				const root = el.shadowRoot;
 				if (!root) return '';
+
 				const div = root.querySelector('[role="listitem"]');
 				if (!div) return '';
+
 				const ariaLabel = div.getAttribute('aria-label') || '';
 				const parts = ariaLabel.split(', ');
 				return parts.length >= 2 ? parts.slice(1, -1).join(', ') : '';
@@ -780,8 +791,10 @@ test.describe('Editor — Rebase Merges', () => {
 			return elements.slice(0, 3).map(el => {
 				const root = el.shadowRoot;
 				if (!root) return '';
+
 				const div = root.querySelector('[role="listitem"]');
 				if (!div) return '';
+
 				const ariaLabel = div.getAttribute('aria-label') || '';
 				const parts = ariaLabel.split(', ');
 				return parts.length >= 2 ? parts.slice(1, -1).join(', ') : '';

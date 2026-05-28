@@ -1,12 +1,12 @@
 /*global window */
 import { inflateSync, strFromU8 } from 'fflate';
-import { getScopedCounter } from '../../../system/counter.js';
-import { debug, logName } from '../../../system/decorators/log.js';
+import { getScopedCounter } from '@gitlens/utils/counter.js';
+import { debug, logName } from '@gitlens/utils/decorators/log.js';
+import { Logger } from '@gitlens/utils/logger.js';
+import { getScopedLogger, maybeStartScopedLogger } from '@gitlens/utils/logger.scoped.js';
+import { maybeStopWatch } from '@gitlens/utils/stopwatch.js';
 import { deserializeIpcData } from '../../../system/ipcSerialize.js';
-import { Logger } from '../../../system/logger.js';
-import { getScopedLogger, maybeStartScopedLogger } from '../../../system/logger.scope.js';
 import type { Serialized } from '../../../system/serialize.js';
-import { maybeStopWatch } from '../../../system/stopwatch.js';
 import type {
 	IpcCallParamsType,
 	IpcCallResponseParamsType,
@@ -15,6 +15,7 @@ import type {
 	IpcRequest,
 } from '../../ipc/models/ipc.js';
 import { IpcPromiseSettled } from '../../protocol.js';
+import { isRpcMessage } from '../../rpc/constants.js';
 import { DOM } from './dom.js';
 import type { Disposable, Event } from './events.js';
 import { Emitter } from './events.js';
@@ -28,8 +29,22 @@ export interface HostIpcApi {
 declare function acquireVsCodeApi(): HostIpcApi;
 
 let _api: HostIpcApi | undefined;
+let _factory: (() => HostIpcApi) | undefined;
+
+/**
+ * Sets a custom factory for the host IPC API.
+ * Call this before any other RPC/IPC initialization when hosting
+ * webviews outside of VS Code.
+ *
+ * @param factory - A function that returns a HostIpcApi implementation
+ */
+export function setHostIpcFactory(factory: () => HostIpcApi): void {
+	_factory = factory;
+	_api = undefined; // Reset cached instance so next call uses the new factory
+}
+
 export function getHostIpcApi(): HostIpcApi {
-	return (_api ??= acquireVsCodeApi());
+	return (_api ??= _factory != null ? _factory() : acquireVsCodeApi());
 }
 
 const ipcSequencer = getScopedCounter();
@@ -37,9 +52,17 @@ function nextIpcId() {
 	return `webview:${ipcSequencer.next()}`;
 }
 
+// Stable per-JS-module-evaluation fingerprint. Two readies with the same `clientId` came from the same iframe; two readies
+// with different `clientId`s came from different iframes (VS Code recreated the iframe).
+const _clientId = `wv-${Math.random().toString(36).slice(2, 10)}`;
+const _clientLoadedAt = Date.now();
+export function getWebviewClientInfo(): { clientId: string; clientLoadedAt: number } {
+	return { clientId: _clientId, clientLoadedAt: _clientLoadedAt };
+}
+
 type PendingHandler = (msg: IpcMessage) => void;
 
-@logName<HostIpc>(c => `${c.appName}(HostIpc)`)
+@logName(c => `${c.appName}(HostIpc)`)
 export class HostIpc implements Disposable {
 	private _onReceiveMessage = new Emitter<IpcMessage>();
 	get onReceiveMessage(): Event<IpcMessage> {
@@ -61,6 +84,9 @@ export class HostIpc implements Disposable {
 
 	@debug({ args: e => ({ e: `${e.data.id}|${e.data.method}` }) })
 	private onMessageReceived(e: MessageEvent) {
+		// Skip RPC transport messages — these are handled by the Supertalk endpoint
+		if (isRpcMessage(e.data)) return;
+
 		const msg = e.data as IpcMessage;
 		using scope = maybeStartScopedLogger(`(e=${msg.id}|${msg.method})`, undefined, {
 			scope: getScopedLogger(),
@@ -208,7 +234,7 @@ export class HostIpc implements Disposable {
 	}
 }
 
-export function assertsSerialized<T>(obj: unknown): asserts obj is Serialized<T> {}
+export function assertsSerialized<T>(_obj: unknown): asserts _obj is Serialized<T> {}
 
 function getQueueKey(method: string, id: string) {
 	return `${method}|${id}`;

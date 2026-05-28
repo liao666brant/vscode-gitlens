@@ -1,5 +1,5 @@
+import { getTimeRemaining } from '@gitlens/utils/date.js';
 import { SubscriptionState } from '../../../constants.subscription.js';
-import { getTimeRemaining } from '../../../system/date.js';
 import type {
 	PaidSubscriptionPlanIds,
 	Subscription,
@@ -28,8 +28,59 @@ export function compareSubscriptionPlans(
 	return getSubscriptionPlanOrder(planA) - getSubscriptionPlanOrder(planB);
 }
 
-export function computeSubscriptionState(_: Optional<Subscription, 'state'>): SubscriptionState {
-	return SubscriptionState.Paid;
+export function computeSubscriptionState(subscription: Optional<Subscription, 'state'>): SubscriptionState {
+	const {
+		account,
+		plan: { actual, effective },
+	} = subscription;
+
+	if (account?.verified === false) return SubscriptionState.VerificationRequired;
+
+	if (actual.id === effective.id || compareSubscriptionPlans(actual.id, effective.id) > 0) {
+		switch (actual.id === effective.id ? effective.id : actual.id) {
+			case 'community':
+				return SubscriptionState.Community;
+
+			case 'community-with-account': {
+				if (effective.nextTrialOptInDate != null && new Date(effective.nextTrialOptInDate) < new Date()) {
+					return SubscriptionState.TrialReactivationEligible;
+				}
+
+				return SubscriptionState.TrialExpired;
+			}
+			case 'student':
+			case 'pro':
+			case 'advanced':
+			case 'teams':
+			case 'enterprise':
+				return SubscriptionState.Paid;
+		}
+	}
+
+	// If you have a paid license, any trial license higher tier than your paid license is considered paid
+	if (compareSubscriptionPlans(actual.id, 'community-with-account') > 0) {
+		return SubscriptionState.Paid;
+	}
+
+	switch (effective.id) {
+		case 'community':
+			return SubscriptionState.Community;
+
+		case 'community-with-account': {
+			if (effective.nextTrialOptInDate != null && new Date(effective.nextTrialOptInDate) < new Date()) {
+				return SubscriptionState.TrialReactivationEligible;
+			}
+
+			return SubscriptionState.TrialExpired;
+		}
+
+		case 'student':
+		case 'pro':
+		case 'advanced':
+		case 'teams':
+		case 'enterprise':
+			return SubscriptionState.Trial;
+	}
 }
 
 export function getSubscriptionNextPaidPlanId(subscription: Optional<Subscription, 'state'>): PaidSubscriptionPlanIds {
@@ -188,8 +239,8 @@ export function isSubscriptionTrialOrPaidFromState(state: SubscriptionState | un
 }
 
 export function assertSubscriptionState(
-	subscription: Optional<Subscription, 'state'>,
-): asserts subscription is Subscription {}
+	_subscription: Optional<Subscription, 'state'>,
+): asserts _subscription is Subscription {}
 
 export function getCommunitySubscription(subscription?: Subscription): Subscription {
 	return {

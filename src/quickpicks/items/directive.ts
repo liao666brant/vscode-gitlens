@@ -1,4 +1,5 @@
 import type { QuickPick, QuickPickItem, ThemeIcon, Uri } from 'vscode';
+import { pluralize } from '@gitlens/utils/string.js';
 import { proTrialLengthInDays } from '../../constants.subscription.js';
 
 export enum Directive {

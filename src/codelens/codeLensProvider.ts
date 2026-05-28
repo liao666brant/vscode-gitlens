@@ -10,6 +10,14 @@ import type {
 	Uri,
 } from 'vscode';
 import { CodeLens, EventEmitter, Location, Position, Range, SymbolInformation, SymbolKind } from 'vscode';
+import type { GitBlame } from '@gitlens/git/models/blame.js';
+import type { GitCommit } from '@gitlens/git/models/commit.js';
+import { RemoteResourceType } from '@gitlens/git/models/remoteResource.js';
+import { is, once } from '@gitlens/utils/function.js';
+import { filterMap, find, first, join, map } from '@gitlens/utils/iterable.js';
+import { getLoggableName, Logger } from '@gitlens/utils/logger.js';
+import { maybeStartScopedLogger } from '@gitlens/utils/logger.scoped.js';
+import { pluralize } from '@gitlens/utils/string.js';
 import type { DiffWithPreviousCommandArgs } from '../commands/diffWithPrevious.js';
 import type { OpenOnRemoteCommandArgs } from '../commands/openOnRemote.js';
 import type { ShowCommitsInViewCommandArgs } from '../commands/showCommitsInView.js';
@@ -22,17 +30,14 @@ import type { GlCommands } from '../constants.commands.js';
 import { trackableSchemes } from '../constants.js';
 import type { Container } from '../container.js';
 import type { GitUri } from '../git/gitUri.js';
-import type { GitBlame } from '../git/models/blame.js';
-import type { GitCommit } from '../git/models/commit.js';
-import { RemoteResourceType } from '../git/models/remoteResource.js';
+import {
+	formatCommitDate,
+	formatIdentityDisplayName,
+	getCommitFormattedDate,
+} from '../git/utils/-webview/commit.utils.js';
 import { createCommand, executeCoreCommand } from '../system/-webview/command.js';
 import { configuration } from '../system/-webview/configuration.js';
 import { isVirtualUri } from '../system/-webview/vscode/uris.js';
-import { is, once } from '../system/function.js';
-import { filterMap, find, first, join, map } from '../system/iterable.js';
-import { getLoggableName, Logger } from '../system/logger.js';
-import { maybeStartScopedLogger } from '../system/logger.scope.js';
-import { pluralize } from '../system/string.js';
 
 class GitRecentChangeCodeLens extends CodeLens {
 	constructor(
@@ -472,8 +477,10 @@ export class GitCodeLensProvider implements CodeLensProvider, Disposable {
 		// 	}
 		// }
 
-		let title = `${recentCommit.author.name}, ${
-			lens.dateFormat == null ? recentCommit.formattedDate : recentCommit.formatDate(lens.dateFormat)
+		let title = `${formatIdentityDisplayName(recentCommit.author)}, ${
+			lens.dateFormat == null
+				? getCommitFormattedDate(recentCommit)
+				: formatCommitDate(recentCommit, lens.dateFormat)
 		}`;
 		if (configuration.get('debug')) {
 			title += ` [${lens.languageId}: ${SymbolKind[lens.symbol.kind]}(${lens.range.start.character}-${
@@ -532,8 +539,9 @@ export class GitCodeLensProvider implements CodeLensProvider, Disposable {
 		if (blame == null) return applyCommandWithNoClickAction('? 位作者（Blame 失败）', lens);
 
 		const count = blame.authors.size;
-		const author = first(blame.authors.values())?.name ?? '未知';
-		const andOthers = count > 1 ? ` 和其他 ${count - 1} 人` : '';
+		const firstAuthor = first(blame.authors.values());
+		const author = firstAuthor != null ? formatIdentityDisplayName(firstAuthor) : '未知';
+		const andOthers = count > 1 ? ` 和 ${pluralize('一人', count - 1, { only: true, plural: '其他人' })}` : '';
 
 		let title = `${count === 0 ? '?' : count} 位作者（${author}${andOthers}）`;
 		if (configuration.get('debug')) {
@@ -544,7 +552,7 @@ export class GitCodeLensProvider implements CodeLensProvider, Disposable {
 					? `|${(lens.symbol as SymbolInformation).containerName}`
 					: ''
 			}), Lines (${lens.blameRange.start.line + 1}-${lens.blameRange.end.line + 1}), Authors (${join(
-				map(blame.authors.values(), a => a.name),
+				map(blame.authors.values(), formatIdentityDisplayName),
 				', ',
 			)})]`;
 		}
@@ -553,7 +561,9 @@ export class GitCodeLensProvider implements CodeLensProvider, Disposable {
 			return applyCommandWithNoClickAction(title, lens);
 		}
 
-		const commit = find(blame.commits.values(), c => c.author.name === author) ?? first(blame.commits.values());
+		const authorRealName = firstAuthor?.name ?? author;
+		const commit =
+			find(blame.commits.values(), c => c.author.name === authorRealName) ?? first(blame.commits.values());
 		if (commit == null) return applyCommandWithNoClickAction(title, lens);
 
 		switch (lens.desiredCommand) {

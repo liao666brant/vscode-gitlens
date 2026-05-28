@@ -11,9 +11,11 @@ import importX from 'eslint-plugin-import-x';
 import { configs as litConfigs } from 'eslint-plugin-lit';
 import { configs as wcConfigs } from 'eslint-plugin-wc';
 import noSrcImports from './scripts/eslint-rules/no-src-imports.mjs';
+import noSelfPackageImports from './scripts/eslint-rules/no-self-package-imports.mjs';
 import noEnvWithoutJs from './scripts/eslint-rules/no-env-without-js.mjs';
 import logScopeUsage from './scripts/eslint-rules/scoped-logger-usage.mjs';
-import reactCompiler from 'eslint-plugin-react-compiler';
+import requireBlockBody from './scripts/eslint-rules/require-block-body.mjs';
+import newlineAfterControlFlow from './scripts/eslint-rules/newline-after-control-flow.mjs';
 import { fileURLToPath } from 'node:url';
 
 /** @type {Awaited<import('typescript-eslint').Config>[number]['languageOptions']} */
@@ -24,11 +26,21 @@ const defaultLanguageOptions = {
 		sourceType: 'module',
 		ecmaFeatures: { impliedStrict: true },
 		projectService: true,
+		tsconfigRootDir: import.meta.dirname,
 	},
 };
 
 /** File patterns for different environments */
 const filePatterns = {
+	packages: [
+		'packages/utils/src/**/*',
+		'packages/ipc/src/**/*',
+		'packages/git/src/**/*',
+		'packages/git-cli/src/**/*',
+		'packages/plus/git-github/src/**/*',
+		'packages/plus/ai/src/**/*',
+		'packages/plus/agents/src/**/*',
+	],
 	src: ['src/**/*'],
 	envNode: ['src/env/node/**/*'],
 	envBrowser: ['src/env/browser/**/*'],
@@ -54,13 +66,21 @@ const filePatterns = {
 		'src/constants.subscription.ts',
 		'src/plus/gk/__debug__accountDebug.ts',
 	],
-	unitTests: ['src/**/__tests__/**/*'],
+	unitTests: ['src/**/__tests__/**/*', 'packages/**/src/**/__tests__/**/*'],
 };
 
 /** Ignore patterns for different contexts */
 const ignorePatterns = {
-	default: ['*.*', 'patches', 'scripts', 'src/@types'],
-	extensionOnly: ['**/-webview/**/*'],
+	default: [
+		'*.*',
+		'patches',
+		'scripts',
+		'src/@types',
+		'packages/core',
+		'packages/git/test-harness',
+		'packages/git-cli/test-harness',
+	],
+	extensionOnly: ['**/-webview/**/*', 'src/git/models/fileChange.ts'],
 	webviewOnly: ['src/**/webview/**/*', 'src/webviews/apps/**/*'],
 	nodeOnly: ['src/env/node/**/*'],
 	browserOnly: ['src/env/browser/**/*'],
@@ -161,7 +181,7 @@ export default defineConfig(
 	e18e.configs.recommended,
 	{
 		name: 'all',
-		files: [...filePatterns.src, ...filePatterns.tests],
+		files: [...filePatterns.src, ...filePatterns.tests, ...filePatterns.packages],
 		languageOptions: { ...defaultLanguageOptions },
 		linterOptions: { reportUnusedDisableDirectives: true },
 		plugins: {
@@ -173,16 +193,22 @@ export default defineConfig(
 			'@gitlens': {
 				rules: {
 					'no-src-imports': noSrcImports,
+					'no-self-package-imports': noSelfPackageImports,
 					'no-env-without-js': noEnvWithoutJs,
 					'scoped-logger-usage': logScopeUsage,
+					'require-block-body': requireBlockBody,
+					'newline-after-control-flow': newlineAfterControlFlow,
 				},
 			},
 		},
 		rules: {
 			// Custom rules
 			'@gitlens/no-src-imports': 'error',
+			'@gitlens/no-self-package-imports': 'error',
 			'@gitlens/no-env-without-js': 'error',
 			'@gitlens/scoped-logger-usage': 'error',
+			'@gitlens/require-block-body': 'error',
+			'@gitlens/newline-after-control-flow': 'warn',
 			'anti-trojan-source/no-bidi': 'error',
 
 			// Core JavaScript rules
@@ -210,7 +236,7 @@ export default defineConfig(
 			'no-restricted-globals': ['error', 'process'],
 			'no-restricted-imports': 'off',
 			'no-return-assign': 'error',
-			'no-return-await': 'warn',
+			'no-return-await': 'off', // Disabled in favor of @typescript-eslint/return-await
 			'no-self-compare': 'error',
 			'no-sequences': 'error',
 			'no-template-curly-in-string': 'warn',
@@ -253,26 +279,8 @@ export default defineConfig(
 			'no-restricted-syntax': [
 				'error',
 				{
-					selector:
-						'IfStatement:not(:has(BlockStatement)):not(:has(ReturnStatement)):not(:has(BreakStatement)):not(:has(ContinueStatement)):not(:has(YieldExpression)):not(:has(ThrowStatement))',
-					message:
-						'Single-line if statements are only allowed for control flow (return, break, continue, throw, yield).',
-				},
-				{
-					selector: 'WhileStatement:not(:has(BlockStatement))',
-					message: 'Single-line while statements are not allowed.',
-				},
-				{
-					selector: 'ForStatement:not(:has(BlockStatement))',
-					message: 'Single-line for statements are not allowed.',
-				},
-				{
-					selector: 'ForInStatement:not(:has(BlockStatement))',
-					message: 'Single-line for-in statements are not allowed.',
-				},
-				{
-					selector: 'ForOfStatement:not(:has(BlockStatement))',
-					message: 'Single-line for-of statements are not allowed.',
+					selector: 'BinaryExpression[operator="instanceof"][right.name="CancellationError"]',
+					message: 'Use `isCancellationError(ex)` instead of `instanceof CancellationError`.',
 				},
 			],
 
@@ -397,6 +405,7 @@ export default defineConfig(
 			'@typescript-eslint/prefer-optional-chain': 'warn',
 			'@typescript-eslint/prefer-promise-reject-errors': ['error', { allowEmptyReject: true }],
 			'@typescript-eslint/prefer-reduce-type-parameter': 'warn',
+			'@typescript-eslint/return-await': ['error', 'error-handling-correctness-only'], // Included in strictTypeChecked, but pinned explicitly to prevent silent loss if the preset changes
 			'@typescript-eslint/restrict-template-expressions': [
 				'error',
 				{ allowAny: true, allowBoolean: true, allowNumber: true, allowNullish: true },
@@ -408,6 +417,11 @@ export default defineConfig(
 			'import-x/extensions': ['.ts', '.tsx'],
 			'import-x/parsers': { '@typescript-eslint/parser': ['.ts', '.tsx'] },
 			'import-x/resolver-next': [createCustomTypeScriptImportResolver()],
+			// Force Node subpath imports (`#...`), the `@env/*` alias, and workspace `@gitlens/*`
+			// packages into the `internal` group so import-x/order is stable regardless of whether
+			// the typescript resolver can locate them (e.g., missing `dist/` or `node_modules`
+			// symlink at lint time).
+			'import-x/internal-regex': '^(#|@env/|@gitlens/)',
 		},
 	},
 
@@ -450,12 +464,7 @@ export default defineConfig(
 		name: 'webviews:apps',
 		files: filePatterns.webviewsApps,
 		ignores: [...ignorePatterns.extensionOnly, ...filePatterns.unitTests],
-		extends: [
-			litConfigs['flat/recommended'],
-			wcConfigs['flat/recommended'],
-			wcConfigs['flat/best-practice'],
-			reactCompiler.configs.recommended,
-		],
+		extends: [litConfigs['flat/recommended'], wcConfigs['flat/recommended'], wcConfigs['flat/best-practice']],
 		languageOptions: { ...defaultLanguageOptions, globals: { ...globals.browser } },
 		rules: {
 			'@typescript-eslint/no-restricted-imports': restrictedImports.webviews,
@@ -487,9 +496,13 @@ export default defineConfig(
 		files: filePatterns.unitTests,
 		languageOptions: { ...defaultLanguageOptions, globals: { ...globals.node } },
 		rules: {
+			'no-restricted-globals': 'off',
 			'no-restricted-imports': 'off',
+			'@typescript-eslint/no-floating-promises': 'off',
 			'@typescript-eslint/no-restricted-imports': 'off',
 			'@typescript-eslint/no-unused-vars': 'off',
+			'@typescript-eslint/require-await': 'off',
+
 			'no-restricted-syntax': [
 				'error',
 				{
@@ -509,5 +522,31 @@ export default defineConfig(
 		name: 'tests:webview',
 		files: ['src/webviews/apps/**/__tests__/**/*'],
 		languageOptions: { ...defaultLanguageOptions, globals: { ...globals.browser } },
+	},
+
+	// Packages boundary enforcement: no vscode or Container imports allowed
+	{
+		name: 'packages',
+		files: filePatterns.packages,
+		languageOptions: { ...defaultLanguageOptions, globals: { ...globals.node } },
+		rules: {
+			'@typescript-eslint/no-restricted-imports': [
+				'error',
+				{
+					paths: [{ name: 'vscode', message: 'Packages must not import vscode' }],
+					patterns: [
+						{
+							group: ['**/container.js', '**/container'],
+							importNames: ['Container'],
+							message: 'Packages must not import Container',
+						},
+						{
+							group: ['**/-webview/**/*'],
+							message: 'Packages must not import -webview modules',
+						},
+					],
+				},
+			],
+		},
 	},
 );

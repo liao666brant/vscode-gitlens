@@ -101,6 +101,7 @@ export class VSCodePage {
 					// Find the file in the workspace
 					const files = await vscode.workspace.findFiles(`**/${file}`, null, 1);
 					if (!files.length) throw new Error(`File not found: ${file}`);
+
 					uri = files[0];
 				}
 
@@ -113,10 +114,11 @@ export class VSCodePage {
 
 	/**
 	 * Reset the UI to a clean state
-	 * Closes all editors, the panel, and sidebars
+	 * Closes all editors, dismisses notifications, and closes the panel and sidebars
 	 */
 	async resetUI(): Promise<void> {
 		await this.closeAllEditors();
+		await this.executeCommand('notifications.clearAll').catch(() => {});
 		await this.panel.close();
 		await this.sidebar.close();
 		await this.secondarySidebar.close();

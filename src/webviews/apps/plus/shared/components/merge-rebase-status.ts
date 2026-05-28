@@ -2,9 +2,9 @@ import { consume } from '@lit/context';
 import { css, html, LitElement, nothing } from 'lit';
 import { customElement, property } from 'lit/decorators.js';
 import { when } from 'lit/directives/when.js';
-import type { GitPausedOperationStatus } from '../../../../../git/models/pausedOperationStatus.js';
-import type { GitReference } from '../../../../../git/models/reference.js';
-import { pausedOperationStatusStringsByType } from '../../../../../git/utils/pausedOperationStatus.utils.js';
+import type { GitPausedOperationStatus } from '@gitlens/git/models/pausedOperationStatus.js';
+import type { GitReference } from '@gitlens/git/models/reference.js';
+import { pausedOperationStatusStringsByType } from '@gitlens/git/utils/pausedOperationStatus.utils.js';
 import { createCommandLink } from '../../../../../system/commands.js';
 import type { ShowInCommitGraphCommandArgs } from '../../../../plus/graph/registration.js';
 import type { WebviewContext } from '../../../shared/contexts/webview.js';
@@ -180,7 +180,7 @@ export class GlMergeConflictWarning extends LitElement {
 				: '在提交图中打开提交';
 		const jumpUrl = this.createJumpUrl(ref);
 
-		return html`<gl-tooltip hoist content=${tooltip}>
+		return html`<gl-tooltip content=${tooltip}>
 			<a href=${jumpUrl} class="ref-link">
 				${isBranch
 					? html`<gl-branch-name .name=${ref.name} .size=${12}></gl-branch-name>`
@@ -213,13 +213,13 @@ export class GlMergeConflictWarning extends LitElement {
 			)}
 			${when(
 				status !== 'revert' && !(status === 'rebase' && this.conflicts),
-				() => html` <action-item label="继续" icon="debug-continue" href=${this.onContinueUrl}></action-item> `,
+				() => html` <action-item label="继续" icon="gl-continue" href=${this.onContinueUrl}></action-item> `,
 			)}
 			${when(
 				status !== 'merge',
-				() => html`<action-item label="跳过" icon="debug-step-over" href=${this.onSkipUrl}></action-item>`,
+				() => html`<action-item label="跳过" icon="gl-skip" href=${this.onSkipUrl}></action-item>`,
 			)}
-			<action-item label="中止" href=${this.onAbortUrl} icon="circle-slash"></action-item>
+			<action-item label="中止" href=${this.onAbortUrl} icon="gl-abort"></action-item>
 		</action-nav>`;
 	}
 }

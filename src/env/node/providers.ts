@@ -1,7 +1,18 @@
+import { dirname, resolve } from 'path';
 import type { Disposable } from 'vscode';
+import { workspace } from 'vscode';
+import { ClaudeCodeProvider } from '@gitlens/agents/providers/claudeCodeProvider.js';
+import type { Cache } from '@gitlens/git/cache.js';
+import type { GitProvider } from '@gitlens/git/providers/provider.js';
+import type { GitResult, GitRunOptions } from '@gitlens/git/run.types.js';
+import { Git } from '@gitlens/git-cli/exec/git.js';
+import { findGitPath } from '@gitlens/git-cli/exec/locator.js';
+import type { UnifiedDisposable } from '@gitlens/utils/disposable.js';
+import { normalizePath } from '@gitlens/utils/path.js';
+import type { AgentSessionProvider } from '../../agents/provider.js';
+import { tryOpenClaudeSession } from '../../agents/utils/-webview/claudeExtension.js';
 import type { Container } from '../../container.js';
-import type { GitExecOptions, GitResult } from '../../git/execTypes.js';
-import type { GitProvider } from '../../git/gitProvider.js';
+import type { GlGitProvider } from '../../git/gitProvider.js';
 import type { RepositoryLocationProvider } from '../../git/location/repositorylocationProvider.js';
 import {
 	mcpRegistrationEnabled,
@@ -11,45 +22,58 @@ import {
 import type { SharedGkStorageLocationProvider } from '../../plus/repos/sharedGkStorageLocationProvider.js';
 import type { GkWorkspacesSharedStorageProvider } from '../../plus/workspaces/workspacesSharedStorageProvider.js';
 import { configuration } from '../../system/-webview/configuration.js';
+import { loadChunk } from '../../system/-webview/loadChunk.js';
 // import { GitHubGitProvider } from '../../plus/github/githubGitProvider';
 import type { TelemetryService } from '../../telemetry/telemetry.js';
-import { Git } from './git/git.js';
-import { LocalGitProvider } from './git/localGitProvider.js';
-import { VslsGit, VslsGitProvider } from './git/vslsGitProvider.js';
+import { GlCliGitProvider } from './git/cliGitProvider.js';
+import { VslsGitProvider } from './git/vslsGitProvider.js';
 import { GkCliIntegrationProvider } from './gk/cli/integration.js';
+import { runCLICommand } from './gk/cli/utils.js';
 import { LocalRepositoryLocationProvider } from './gk/localRepositoryLocationProvider.js';
 import { LocalSharedGkStorageLocationProvider } from './gk/localSharedGkStorageLocationProvider.js';
 import { LocalGkWorkspacesSharedStorageProvider } from './gk/localWorkspacesSharedStorageProvider.js';
 
-let gitInstance: Git | undefined;
-function ensureGit(container: Container) {
-	gitInstance ??= new Git(container);
-	return gitInstance;
+// Lightweight Git instance for VSLS host — only used for Live Share command proxying.
+// The primary Git execution path is inside CliGitProvider (created by LocalGitProvider).
+let vslsGitInstance: Git | undefined;
+function ensureVslsGit() {
+	if (vslsGitInstance == null) {
+		const locator = () => findGitPath(configuration.getCore('git.path'));
+		vslsGitInstance = new Git(locator, {
+			isTrusted: () => workspace.isTrusted,
+		});
+	}
+	return vslsGitInstance;
 }
 
 export function git(
-	container: Container,
-	options: GitExecOptions,
+	_container: Container,
+	options: GitRunOptions,
 	...args: any[]
 ): Promise<GitResult<string | Buffer>> {
-	return ensureGit(container).exec(options, ...args);
+	return ensureVslsGit().run(options, ...args);
 }
 
-export async function getSupportedGitProviders(container: Container): Promise<GitProvider[]> {
-	const git = ensureGit(container);
-
-	const providers: GitProvider[] = [
-		new LocalGitProvider(container, git),
-		new VslsGitProvider(container, new VslsGit(container, git)),
+export async function getSupportedGitProviders(
+	container: Container,
+	cache: Cache,
+	register: (provider: GitProvider, canHandle: (repoPath: string) => boolean) => UnifiedDisposable,
+): Promise<GlGitProvider[]> {
+	const providers: GlGitProvider[] = [
+		new GlCliGitProvider(container, cache, register),
+		new VslsGitProvider(container, cache, register),
 	];
 
 	if (configuration.get('virtualRepositories.enabled')) {
 		providers.push(
 			new (
-				await import(
-					/* webpackChunkName: "integrations" */ '../../plus/integrations/providers/github/githubGitProvider.js'
+				await loadChunk(
+					() =>
+						import(
+							/* webpackChunkName: "integrations" */ '../../plus/integrations/providers/github/githubGitProvider.js'
+						),
 				)
-			).GitHubGitProvider(container),
+			).GlGitHubGitProvider(container, cache, register),
 		);
 	}
 
@@ -78,21 +102,89 @@ export function getGkCliIntegrationProvider(container: Container): GkCliIntegrat
 	return new GkCliIntegrationProvider(container);
 }
 
+export { getClaudeAgent, invalidateAgentsCache } from './gk/cli/agents.js';
+export type { GkAgent } from './gk/cli/agents.js';
+
 export async function getMcpProviders(container: Container): Promise<Disposable[] | undefined> {
 	if (mcpRegistrationEnabled(container)) {
 		if (supportsMcpExtensionRegistration()) {
 			// Older versions of VS Code do not support the classes used in the MCP integration, so we need to dynamically import
-			const mcpModule = await import(/* webpackChunkName: "mcp" */ './gk/mcp/vscodeIntegration.js');
+			const mcpModule = await loadChunk(
+				() => import(/* webpackChunkName: "mcp" */ './gk/mcp/vscodeIntegration.js'),
+			);
 			return [new mcpModule.VSCodeGkMcpProvider(container)];
 		}
 
 		if (supportsCursorMcpRegistration()) {
-			const mcpModule = await import(/* webpackChunkName: "mcp-cursor" */ './gk/mcp/cursorIntegration.js');
+			const mcpModule = await loadChunk(
+				() => import(/* webpackChunkName: "mcp-cursor" */ './gk/mcp/cursorIntegration.js'),
+			);
 			return [new mcpModule.CursorGkMcpProvider(container)];
 		}
 	}
 
 	return undefined;
+}
+
+export function getAgentSessionProviders(container: Container): AgentSessionProvider[] {
+	return [
+		new ClaudeCodeProvider({
+			ipc: container.ipc,
+			onSessionStarted: provider =>
+				container.telemetry.sendEvent('agents/session/started', { 'agent.provider': provider }),
+			onSessionEnded: provider =>
+				container.telemetry.sendEvent('agents/session/ended', { 'agent.provider': provider }),
+			onPermissionResolved: info =>
+				container.telemetry.sendEvent('agents/permission/resolved', {
+					'agent.provider': info.provider,
+					'permission.tool': info.tool,
+					'permission.decision': info.decision,
+				}),
+			onBranchAgentActivity: cwd => {
+				const repo = container.git.getRepository(cwd);
+				if (repo != null) {
+					queueMicrotask(() => repo.git.branches.onCurrentBranchAgentActivity?.());
+				}
+			},
+			runCLICommand: (args, opts) => runCLICommand(args, opts),
+			openSessionInClaudeExtension: async sessionId => {
+				// Shared editor → primaryEditor → sidebar fallback chain so the peer-side open
+				// honors a specific session through the same rungs the local-window path uses.
+				// Throws when all three rungs fail so the IPC handler can report
+				// `{ opened: false }` to the initiating window.
+				if (!(await tryOpenClaudeSession(sessionId))) {
+					throw new Error('Claude Code extension did not respond to any open command');
+				}
+			},
+			resolveGitInfo: async cwd => {
+				// Fast path: cwd is in an already-loaded repo — fully synchronous, no shell calls.
+				const repo = container.git.getRepository(cwd);
+				if (repo != null) {
+					return {
+						repoRoot: repo.isWorktree && repo.commonPath ? repo.commonPath : repo.path,
+						isWorktree: repo.isWorktree,
+						worktreePath: repo.path,
+					};
+				}
+
+				// Cold path: cwd is outside any loaded repo. validateRepo runs ONE combined
+				// `git rev-parse` via the package's `config.getRepositoryInfo`, with no
+				// repo-registration side effects. Routes through the same provider lookup
+				// the rest of the host uses, so safe-path handling is consistent.
+				const info = await container.git.validateRepo(cwd);
+				if (!info.valid || !info.safe) return undefined;
+
+				const isWorktree = info.commonGitDir != null && info.commonGitDir !== info.gitDir;
+				return {
+					repoRoot: normalizePath(
+						isWorktree && info.commonGitDir ? dirname(resolve(cwd, info.commonGitDir)) : info.repoPath,
+					),
+					isWorktree: isWorktree,
+					worktreePath: normalizePath(info.repoPath),
+				};
+			},
+		}),
+	];
 }
 
 let _telemetryService: TelemetryService | undefined;

@@ -1,12 +1,12 @@
 import { window } from 'vscode';
+import { PausedOperationAbortError, PausedOperationContinueError } from '@gitlens/git/errors.js';
+import type { GitPausedOperationStatus } from '@gitlens/git/models/pausedOperationStatus.js';
+import { getReferenceLabel } from '@gitlens/git/utils/reference.utils.js';
 import type { Container } from '../../container.js';
 import { showGitErrorMessage } from '../../messages.js';
 import { executeCommand } from '../../system/-webview/command.js';
-import { PausedOperationAbortError, PausedOperationContinueError } from '../errors.js';
 import type { GitRepositoryService } from '../gitRepositoryService.js';
-import type { GitPausedOperationStatus } from '../models/pausedOperationStatus.js';
 import { openRebaseEditor } from '../utils/-webview/rebase.utils.js';
-import { getReferenceLabel } from '../utils/reference.utils.js';
 
 export async function abortPausedOperation(svc: GitRepositoryService, options?: { quit?: boolean }): Promise<void> {
 	try {
@@ -87,10 +87,11 @@ export async function showPausedOperationStatus(
 	repoPath: string,
 	options?: ShowPausedOperationStatusOptions,
 ): Promise<void> {
-	await container.views.commits.show({ preserveFocus: false });
-	await container.views.commits.revealPausedOperationStatus(repoPath, { focus: true, expand: true, select: true });
-
 	if (options?.openRebaseEditor) {
 		await openRebaseEditor(container, repoPath);
+		return;
 	}
+
+	await container.views.commits.show({ preserveFocus: false });
+	await container.views.commits.revealPausedOperationStatus(repoPath, { focus: true, expand: true, select: true });
 }

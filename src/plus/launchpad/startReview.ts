@@ -1,5 +1,12 @@
 import type { QuickPick } from 'vscode';
 import { Uri, window } from 'vscode';
+import type { GitBranch } from '@gitlens/git/models/branch.js';
+import type { PullRequest } from '@gitlens/git/models/pullRequest.js';
+import type { GitWorktree } from '@gitlens/git/models/worktree.js';
+import { getScopedCounter } from '@gitlens/utils/counter.js';
+import { fromNow } from '@gitlens/utils/date.js';
+import { some } from '@gitlens/utils/iterable.js';
+import type { Deferred } from '@gitlens/utils/promise.js';
 import type { ManageCloudIntegrationsCommandArgs } from '../../commands/cloudIntegrations.js';
 import type {
 	AsyncStepResultGenerator,
@@ -27,20 +34,17 @@ import { GitCloudHostIntegrationId } from '../../constants.integrations.js';
 import { proBadge } from '../../constants.js';
 import type { Source } from '../../constants.telemetry.js';
 import type { Container } from '../../container.js';
-import type { GitBranch } from '../../git/models/branch.js';
-import type { PullRequest } from '../../git/models/pullRequest.js';
-import type { GitWorktree } from '../../git/models/worktree.js';
 import type { QuickPickItemOfT } from '../../quickpicks/items/common.js';
 import { createQuickPickItemOfT } from '../../quickpicks/items/common.js';
 import type { DirectiveQuickPickItem } from '../../quickpicks/items/directive.js';
 import { createDirectiveQuickPickItem, Directive } from '../../quickpicks/items/directive.js';
 import { executeCommand } from '../../system/-webview/command.js';
 import { configuration } from '../../system/-webview/configuration.js';
+import { getContext } from '../../system/-webview/context.js';
 import { openUrl } from '../../system/-webview/vscode/uris.js';
-import { getScopedCounter } from '../../system/counter.js';
-import { fromNow } from '../../system/date.js';
-import { some } from '../../system/iterable.js';
-import type { Deferred } from '../../system/promise.js';
+import type { AgentDescriptor, AgentRoute } from '../agents/agentDescriptor.js';
+import type { ResolveAgentFlowResult } from '../agents/agentPicker.js';
+import { buildAgentResolvedTelemetryData, resolveAgentFlow } from '../agents/agentPicker.js';
 import type { ConnectMoreIntegrationsItem } from '../integrations/utils/-webview/integration.quickPicks.js';
 import {
 	getOpenOnGitProviderQuickInputButtons,
@@ -54,6 +58,7 @@ import { startReviewFromLaunchpadItem } from './utils/-webview/startReview.utils
 export interface StartReviewTelemetryContext {
 	instance: number;
 	'items.count'?: number;
+	'context.showOpenInAgent'?: AgentRoute;
 }
 
 export interface StartReviewCommandArgs {
@@ -68,6 +73,14 @@ export interface StartReviewCommandArgs {
 
 	// Open chat on after branch/worktree is opened
 	openChatOnComplete?: boolean;
+
+	// Activates the manual-vs-agent flow after PR selection:
+	//   - `'ask'`    : defer to the persisted `gitlens.ai.openInAgent` setting (default: pre-picker)
+	//   - `'manual'` : force manual — skip chat hand-off entirely, regardless of persisted setting
+	//   - `'agent'`  : force agent — skip the pre-picker and go straight to the agent picker (or the
+	//                  persisted `gitlens.ai.defaultAgent` if set and available)
+	//   - undefined  : do not run the new flow; legacy `openChatOnComplete` behavior applies
+	showOpenInAgent?: AgentRoute;
 
 	// Instructions to include in the AI prompt
 	instructions?: string;
@@ -114,6 +127,7 @@ interface StartReviewState {
 	instructions?: string;
 	useDefaults?: boolean;
 	openChatOnComplete?: boolean;
+	showOpenInAgent?: AgentRoute;
 	result?: Deferred<{ branch: GitBranch; worktree?: GitWorktree; pr: PullRequest }>;
 }
 
@@ -144,14 +158,17 @@ export class StartReviewCommand extends QuickCommand<StartReviewState> {
 	private readonly telemetryEventKey = 'startReview';
 
 	constructor(container: Container, args?: StartReviewCommandArgs) {
-		super(container, 'startReview', 'startReview', `开始评审\u00a0\u00a0${proBadge}`, {
-			description: '开始评审一个拉取请求',
+		super(container, 'startReview', 'startReview', `\u5f00\u59cb\u8bc4\u5ba1\u00a0\u00a0${proBadge}`, {
+			description: '\u5f00\u59cb\u8bc4\u5ba1\u4e00\u4e2a\u62c9\u53d6\u8bf7\u6c42',
 		});
 
 		this.source = args?.source ?? { source: 'commandPalette' };
 
 		if (this.container.telemetry.enabled) {
-			this.telemetryContext = { instance: instanceCounter.next() };
+			this.telemetryContext = {
+				instance: instanceCounter.next(),
+				'context.showOpenInAgent': args?.showOpenInAgent,
+			};
 
 			this.container.telemetry.sendEvent(
 				`${this.telemetryEventKey}/open`,
@@ -165,6 +182,7 @@ export class StartReviewCommand extends QuickCommand<StartReviewState> {
 			instructions: args?.instructions,
 			useDefaults: args?.useDefaults,
 			openChatOnComplete: args?.openChatOnComplete,
+			showOpenInAgent: args?.showOpenInAgent,
 			result: args?.result,
 		};
 	}
@@ -264,12 +282,19 @@ export class StartReviewCommand extends QuickCommand<StartReviewState> {
 								throw new Error(`未找到匹配的 PR：'${state.prUrl}'`);
 							}
 
+							const agentDispatch = yield* this.resolveAgentDispatch(state, context);
+							if (agentDispatch === StepResultBreak || agentDispatch === 'cancel') {
+								state.result?.cancel(new Error('开始评审已取消'));
+								return;
+							}
+
 							const reviewResult = await startReviewFromLaunchpadItem(
 								this.container,
 								launchpadItem,
 								state.instructions,
-								state.openChatOnComplete,
+								agentDispatch.openChatOnComplete,
 								state.useDefaults,
+								agentDispatch.agent,
 							);
 							state.result?.fulfill(reviewResult);
 							steps.markStepsComplete();
@@ -310,12 +335,19 @@ export class StartReviewCommand extends QuickCommand<StartReviewState> {
 
 				// Execute the review using the LaunchpadItem directly (avoids redundant PR lookup)
 				try {
+					const agentDispatch = yield* this.resolveAgentDispatch(state, context);
+					if (agentDispatch === StepResultBreak || agentDispatch === 'cancel') {
+						state.result?.cancel(new Error('开始评审已取消'));
+						return;
+					}
+
 					const reviewResult = await startReviewFromLaunchpadItem(
 						this.container,
 						state.item.launchpadItem,
 						state.instructions,
-						state.openChatOnComplete,
+						agentDispatch.openChatOnComplete,
 						state.useDefaults,
+						agentDispatch.agent,
 					);
 					state.result?.fulfill(reviewResult);
 				} catch (ex) {
@@ -335,6 +367,59 @@ export class StartReviewCommand extends QuickCommand<StartReviewState> {
 		return steps.isComplete ? undefined : StepResultBreak;
 	}
 
+	/**
+	 * Resolves the manual-vs-agent flow before kicking off the review. When `showOpenInAgent` is set,
+	 * this calls the orchestrator which either dispatches directly (persisted defaults), prompts the
+	 * user (interactive), or falls back to manual (`useDefaults: true` contract).
+	 *
+	 * Returns `'cancel'` when the user backs out of the wizard; otherwise the resolved `agent`
+	 * descriptor (or undefined for manual) along with the effective `openChatOnComplete` flag.
+	 */
+	private async *resolveAgentDispatch(
+		state: StartReviewState,
+		context: StartReviewContext,
+	): AsyncStepResultGenerator<
+		'cancel' | { agent: AgentDescriptor | undefined; openChatOnComplete: boolean | undefined }
+	> {
+		// `state.showOpenInAgent` is the caller-supplied route override:
+		//   undefined → legacy behavior; honor `openChatOnComplete` (sends to host IDE chat)
+		//   'ask' / 'manual' / 'agent' → run the new flow with that route override
+		// Defense-in-depth: skip the agent flow entirely when the org has disabled AI, even if a
+		// caller passed `showOpenInAgent`. UI surfaces should already gate, but the wizard enforces.
+		if (state.showOpenInAgent == null || !getContext('gitlens:gk:organization:ai:enabled', true)) {
+			return { agent: undefined, openChatOnComplete: state.openChatOnComplete };
+		}
+
+		// yield* so the picker steps go through the wizard machinery (avoid collision with the
+		// wizard's still-alive picker from the PR selection step).
+		const flow = yield* resolveAgentFlow(this.container, {
+			useDefaults: state.useDefaults,
+			requestedRoute: state.showOpenInAgent,
+		});
+		if (flow === StepResultBreak) return 'cancel';
+
+		this.sendAgentResolvedTelemetry(flow, context);
+
+		switch (flow.kind) {
+			case 'cancel':
+				return 'cancel';
+			case 'manual':
+				return { agent: undefined, openChatOnComplete: false };
+			case 'agent':
+				return { agent: flow.descriptor, openChatOnComplete: true };
+		}
+	}
+
+	private sendAgentResolvedTelemetry(result: ResolveAgentFlowResult, context: StartReviewContext) {
+		if (!this.container.telemetry.enabled) return;
+
+		this.container.telemetry.sendEvent(
+			`${this.telemetryEventKey}/agent/resolved`,
+			{ ...context.telemetryContext!, connected: true, ...buildAgentResolvedTelemetryData(result) },
+			this.source,
+		);
+	}
+
 	private async ensureIntegrationConnected(id: IntegrationIds) {
 		const integration = await this.container.integrations.get(id);
 		if (integration == null) return false;
@@ -349,7 +434,8 @@ export class StartReviewCommand extends QuickCommand<StartReviewState> {
 
 	private async lookupLaunchpadItem(prUrl: string): Promise<LaunchpadItem | undefined> {
 		const result = await this.container.launchpad.getCategorizedItems({ search: prUrl });
-		if (result.error != null) {
+		// Only throw on total failure (error with no items); partial success still has usable items
+		if (result.error != null && !result.items?.length) {
 			throw new Error(`获取 PR 时出错：${result.error.message}`);
 		}
 
@@ -367,6 +453,7 @@ export class StartReviewCommand extends QuickCommand<StartReviewState> {
 			if (context.connectedIntegrations.get(integration)) {
 				continue;
 			}
+
 			switch (integration) {
 				case GitCloudHostIntegrationId.GitHub:
 					confirmations.push(
@@ -433,8 +520,8 @@ export class StartReviewCommand extends QuickCommand<StartReviewState> {
 				createDirectiveQuickPickItem(Directive.Cancel, false, { label: '取消' }),
 				{
 					placeholder: hasConnectedIntegration
-						? '为“开始评审”连接更多集成'
-						: '连接一个集成以开始使用“开始评审”',
+						? '为"开始评审"连接更多集成'
+						: '连接一个集成以开始使用"开始评审"',
 					buttons: [],
 					ignoreFocusOut: true,
 				},
@@ -592,7 +679,7 @@ export class StartReviewCommand extends QuickCommand<StartReviewState> {
 				if (context.inSearch || this.container.launchpad.isMaybeSupportedLaunchpadPullRequestSearchUrl(value)) {
 					if (!context.inSearch) {
 						// Hide items quickly when entering search mode
-						quickpick.items = [createDirectiveQuickPickItem(Directive.Cancel)] as any;
+						quickpick.items = [createDirectiveQuickPickItem(Directive.Cancel)];
 						context.inSearch = true;
 					}
 
@@ -618,6 +705,7 @@ export class StartReviewCommand extends QuickCommand<StartReviewState> {
 		if (!canPickStepContinue(step, state, selection)) {
 			return StepResultBreak;
 		}
+
 		const element = selection[0];
 		if (isConnectMoreIntegrationsItem(element)) {
 			this.sendTitleActionTelemetry('connect', context);
@@ -642,6 +730,7 @@ export class StartReviewCommand extends QuickCommand<StartReviewState> {
 
 	private open(item: StartReviewItem): void {
 		if (item.launchpadItem.url == null) return;
+
 		void openUrl(item.launchpadItem.url);
 	}
 
@@ -689,7 +778,8 @@ async function updateContextItems(container: Container, context: StartReviewCont
 		? await container.launchpad.getCategorizedItems({ search: options.search })
 		: await container.launchpad.getCategorizedItems();
 
-	if (result.error != null) {
+	// Only treat as total failure when error exists with no items
+	if (result.error != null && !result.items?.length) {
 		if (options?.search) {
 			context.searchResult = { items: [] };
 		} else {

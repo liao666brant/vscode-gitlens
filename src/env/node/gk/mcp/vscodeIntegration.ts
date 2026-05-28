@@ -1,7 +1,7 @@
 import type { Disposable, Event, McpServerDefinition, McpServerDefinitionProvider } from 'vscode';
 import { EventEmitter, lm, McpStdioServerDefinition } from 'vscode';
 import type { Container } from '../../../../container.js';
-import { debug } from '../../../../system/decorators/log.js';
+import { debug } from '@gitlens/utils/decorators/log.js';
 import { GkMcpProviderBase } from './integrationBase.js';
 
 export class VSCodeGkMcpProvider extends GkMcpProviderBase implements McpServerDefinitionProvider {
@@ -33,10 +33,9 @@ export class VSCodeGkMcpProvider extends GkMcpProviderBase implements McpServerD
 
 	@debug({ exit: true })
 	async provideMcpServerDefinitions(): Promise<McpServerDefinition[]> {
-		const { environmentVariableCollection: envVars } = this.container.context;
-		const discoveryFilePath = envVars.get('GK_GL_PATH')?.value;
+		const discoveryFilePath = this._discoveryFilePath;
 
-		// Gives time for the IPC server to start and set the environment variables
+		// Gives time for the IPC server to start and emit the discovery path
 		if (discoveryFilePath != null) {
 			this.clearIpcTimeout();
 		} else if (this._waitingForIPC) {
@@ -63,6 +62,7 @@ export class VSCodeGkMcpProvider extends GkMcpProviderBase implements McpServerD
 			serverEnv,
 			config.version,
 		);
+		serverDefinition.cwd = this.container.context.globalStorageUri;
 
 		return [serverDefinition];
 	}

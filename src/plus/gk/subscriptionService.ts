@@ -20,6 +20,20 @@ import {
 	window,
 } from 'vscode';
 import { getPlatform } from '@env/platform.js';
+import { createFromDateDelta, fromNow } from '@gitlens/utils/date.js';
+import type { Deferrable } from '@gitlens/utils/debounce.js';
+import { debounce } from '@gitlens/utils/debounce.js';
+import { debug, info, trace } from '@gitlens/utils/decorators/log.js';
+import { createDisposable } from '@gitlens/utils/disposable.js';
+import { take } from '@gitlens/utils/event.js';
+import { once } from '@gitlens/utils/function.js';
+import { microhash } from '@gitlens/utils/hash.js';
+import { Logger } from '@gitlens/utils/logger.js';
+import { getScopedLogger } from '@gitlens/utils/logger.scoped.js';
+import { flatten } from '@gitlens/utils/object.js';
+import { pauseOnCancelOrTimeout } from '@gitlens/utils/promise.js';
+import { pluralize } from '@gitlens/utils/string.js';
+import { satisfies } from '@gitlens/utils/version.js';
 import type { OpenWalkthroughCommandArgs } from '../../commands/walkthroughs.js';
 import type { CoreColors } from '../../constants.colors.js';
 import type { GlCommands } from '../../constants.commands.js';
@@ -41,7 +55,11 @@ import type {
 	TrackingContext,
 } from '../../constants.telemetry.js';
 import type { Container } from '../../container.js';
-import { AccountValidationError, RequestsAreBlockedTemporarilyError } from '../../errors.js';
+import {
+	AccountValidationError,
+	AuthenticationRequiredError,
+	RequestsAreBlockedTemporarilyError,
+} from '../../errors.js';
 import type { FeaturePreview, FeaturePreviews } from '../../features.js';
 import { featurePreviews, getFeaturePreviewLabel, getFeaturePreviewStatus } from '../../features.js';
 import type { RepositoriesChangeEvent } from '../../git/gitProviderService.js';
@@ -49,18 +67,7 @@ import { executeCommand, registerCommand } from '../../system/-webview/command.j
 import { configuration } from '../../system/-webview/configuration.js';
 import { setContext } from '../../system/-webview/context.js';
 import { openUrl } from '../../system/-webview/vscode/uris.js';
-import { createFromDateDelta, fromNow } from '../../system/date.js';
 import { gate } from '../../system/decorators/gate.js';
-import { debug, info, trace } from '../../system/decorators/log.js';
-import { take } from '../../system/event.js';
-import type { Deferrable } from '../../system/function/debounce.js';
-import { debounce } from '../../system/function/debounce.js';
-import { once } from '../../system/function.js';
-import { Logger } from '../../system/logger.js';
-import { getScopedLogger } from '../../system/logger.scope.js';
-import { flatten } from '../../system/object.js';
-import { pauseOnCancelOrTimeout } from '../../system/promise.js';
-import { createDisposable } from '../../system/unifiedDisposable.js';
 import { isWalkthroughSupported } from '../../telemetry/walkthroughStateProvider.js';
 import { LoginUriPathPrefix } from './authenticationConnection.js';
 import { authenticationProviderScopes } from './authenticationProvider.js';
@@ -152,6 +159,10 @@ export class SubscriptionService implements Disposable {
 
 		this.changeSubscription(subscription, undefined, { silent: true });
 		setTimeout(() => void this.ensureSession(false, undefined), 10000);
+
+		if (container.previousVersion != null && satisfies(container.previousVersion, '< 18.0.0')) {
+			void this.container.storage.store(`plus:preview:graph:usages`, undefined);
+		}
 	}
 
 	dispose(): void {
@@ -325,6 +336,16 @@ export class SubscriptionService implements Disposable {
 					onDidCheckIn: this._onDidCheckIn,
 					changeSubscription: this.changeSubscription.bind(this),
 					getStoredSubscription: this.getStoredSubscription.bind(this),
+					refireSubscriptionChange: () => {
+						if (this._subscription == null) return;
+
+						this._etag = Date.now();
+						this._onDidChange.fire({
+							current: this._subscription,
+							previous: this._subscription,
+							etag: this._etag,
+						});
+					},
 				});
 			});
 		}
@@ -465,6 +486,7 @@ export class SubscriptionService implements Disposable {
 
 	private async showPlanMessage(source: Source | undefined) {
 		if (!(await this.ensureSession(false, source))) return;
+
 		const {
 			account,
 			plan: { actual, effective },
@@ -558,6 +580,7 @@ export class SubscriptionService implements Disposable {
 
 	async loginWithCode(authentication: { code: string; state?: string }, source?: Source): Promise<boolean> {
 		if (!(await ensurePlusFeaturesEnabled())) return false;
+
 		if (this.container.telemetry.enabled) {
 			this.container.telemetry.sendEvent('subscription/action', { action: 'sign-in' }, source);
 		}
@@ -685,6 +708,8 @@ export class SubscriptionService implements Disposable {
 				return;
 			}
 		} catch (ex) {
+			if (ex instanceof AuthenticationRequiredError) return;
+
 			if (ex instanceof RequestsAreBlockedTemporarilyError) {
 				void window.showErrorMessage('无法重新激活试用：失败请求过多。请重新加载窗口后重试。', '确定');
 				return;
@@ -776,6 +801,8 @@ export class SubscriptionService implements Disposable {
 				return true;
 			}
 		} catch (ex) {
+			if (ex instanceof AuthenticationRequiredError) return false;
+
 			scope?.error(ex);
 			debugger;
 
@@ -941,7 +968,7 @@ export class SubscriptionService implements Disposable {
 		return true;
 	}
 
-	@gate<SubscriptionService['validate']>(o => `${o?.force ?? false}`)
+	@gate(o => `${o?.force ?? false}`)
 	@debug()
 	async validate(options?: { force?: boolean }, source?: Source | undefined): Promise<void> {
 		const scope = getScopedLogger();
@@ -996,7 +1023,7 @@ export class SubscriptionService implements Disposable {
 		return result.value;
 	}
 
-	@gate<SubscriptionService['checkInAndValidateCore']>((s, _, orgId) => `${s.account.id}:${orgId}`)
+	@gate((s, _, orgId) => `${s.account.id}:${orgId}`)
 	@trace({ args: session => ({ session: session?.account?.label }) })
 	private async checkInAndValidateCore(
 		session: AuthenticationSession,
@@ -1035,7 +1062,7 @@ export class SubscriptionService implements Disposable {
 
 			this._onDidCheckIn.fire({ force: force });
 
-			const data: GKCheckInResponse = await rsp.json();
+			const data: GKCheckInResponse = (await rsp.json()) as GKCheckInResponse;
 			this._getCheckInData = () => Promise.resolve(data);
 			this.storeCheckInData(data);
 
@@ -1299,7 +1326,13 @@ export class SubscriptionService implements Disposable {
 		return session;
 	}
 
-	@trace()
+	@trace({
+		args: (subscription, source, options) => ({
+			subscription: redactSubscription(subscription),
+			source: source,
+			options: options,
+		}),
+	})
 	private changeSubscription(
 		subscription: Optional<Subscription, 'state'> | undefined,
 		source: Source | undefined,
@@ -1632,10 +1665,13 @@ export class SubscriptionService implements Disposable {
 	async checkUpdatedSubscription(source: Source | undefined): Promise<SubscriptionState | undefined> {
 		const scope = getScopedLogger();
 		if (this._session == null) return undefined;
+
 		const oldSubscriptionState = this._subscription.state;
 		try {
 			await this.checkInAndValidate(this._session, source, { force: true });
 		} catch (ex) {
+			if (ex instanceof AuthenticationRequiredError) return undefined;
+
 			debugger;
 			scope?.error(ex);
 			return undefined;
@@ -1825,4 +1861,26 @@ function getTrackingContextFromSource(source: Source | undefined): TrackingConte
 	}
 
 	return undefined;
+}
+
+function redactSubscription(
+	subscription: Optional<Subscription, 'state'> | undefined,
+): Optional<Subscription, 'state'> | undefined {
+	if (subscription == null) return subscription;
+
+	const redacted: Mutable<Optional<Subscription, 'state'>> = { ...subscription };
+	if (subscription.account != null) {
+		redacted.account = {
+			...subscription.account,
+			name: `<name:${microhash(subscription.account.name)}>`,
+			email: subscription.account.email != null ? `<email:${microhash(subscription.account.email)}>` : undefined,
+		};
+	}
+	if (subscription.activeOrganization != null) {
+		redacted.activeOrganization = {
+			...subscription.activeOrganization,
+			name: `<name:${microhash(subscription.activeOrganization.name)}>`,
+		};
+	}
+	return redacted;
 }

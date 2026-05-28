@@ -2,6 +2,7 @@ import { consume } from '@lit/context';
 import type { TemplateResult } from 'lit';
 import { css, html, LitElement, nothing, unsafeCSS } from 'lit';
 import { customElement, property } from 'lit/decorators.js';
+import { pluralize } from '@gitlens/utils/string.js';
 import { proTrialLengthInDays, SubscriptionState } from '../../../../constants.subscription.js';
 import type { Source } from '../../../../constants.telemetry.js';
 import type { Subscription, SubscriptionUpgradeCommandArgs } from '../../../../plus/gk/models/subscription.js';
@@ -12,7 +13,6 @@ import {
 	isSubscriptionTrial,
 } from '../../../../plus/gk/utils/subscription.utils.js';
 import { createCommandLink } from '../../../../system/commands.js';
-import { pluralize } from '../../../../system/string.js';
 import type { PromosContext } from '../contexts/promos.js';
 import { promosContext } from '../contexts/promos.js';
 import type { GlPopover } from './overlays/popover.js';
@@ -59,6 +59,7 @@ export class GlFeatureBadge extends LitElement {
 				border-radius: 1rem;
 				padding: 0 0.8rem 0.1rem 0.8rem;
 				white-space: nowrap;
+				display: inline-block;
 			}
 
 			.badge:focus-visible {
@@ -223,7 +224,7 @@ export class GlFeatureBadge extends LitElement {
 			case SubscriptionState.Paid:
 				content = html`<p>
 					Your
-					<gl-tooltip hoist content="Show Account view">
+					<gl-tooltip content="Show Account view">
 						<a href="${createCommandLink('gitlens.showAccountView')}"
 							>${getSubscriptionProductPlanName(this.subscription?.plan.actual.id ?? 'pro')}</a
 						>
@@ -289,7 +290,7 @@ export class GlFeatureBadge extends LitElement {
 			default:
 				content = html`<p>
 						You only have access to
-						<gl-tooltip hoist content="Pro features that do not require an account"
+						<gl-tooltip content="Pro features that do not require an account"
 							><span class="hint">local</span></gl-tooltip
 						>
 						Pro features on publicly-hosted repos.

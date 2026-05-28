@@ -1,7 +1,7 @@
 import { cursor } from 'vscode';
 import type { Container } from '../../../../container.js';
-import { debug } from '../../../../system/decorators/log.js';
-import { getScopedLogger } from '../../../../system/logger.scope.js';
+import { debug } from '@gitlens/utils/decorators/log.js';
+import { getScopedLogger } from '@gitlens/utils/logger.scoped.js';
 import { GkMcpProviderBase } from './integrationBase.js';
 
 export class CursorGkMcpProvider extends GkMcpProviderBase {
@@ -26,10 +26,9 @@ export class CursorGkMcpProvider extends GkMcpProviderBase {
 	private async tryRegister(): Promise<void> {
 		const scope = getScopedLogger();
 
-		const { environmentVariableCollection: envVars } = this.container.context;
-		const discoveryFilePath = envVars.get('GK_GL_PATH')?.value;
+		const discoveryFilePath = this._discoveryFilePath;
 
-		// Gives time for the IPC server to start and set the environment variables
+		// Gives time for the IPC server to start and emit the discovery path
 		if (discoveryFilePath != null) {
 			this.clearIpcTimeout();
 		} else if (this._waitingForIPC) {

@@ -1,11 +1,12 @@
 import { ThemeIcon, TreeItem, TreeItemCollapsibleState } from 'vscode';
+import type { GitBranch } from '@gitlens/git/models/branch.js';
+import { getLocalBranchUpstreamNames } from '@gitlens/git/utils/branch.utils.js';
+import { makeHierarchical } from '@gitlens/utils/array.js';
+import { PageableResult } from '@gitlens/utils/paging.js';
 import { GitUri } from '../../git/gitUri.js';
-import type { GitBranch } from '../../git/models/branch.js';
-import type { Repository } from '../../git/models/repository.js';
+import type { GlRepository } from '../../git/models/repository.js';
 import { getOpenedWorktreesByBranch } from '../../git/utils/-webview/worktree.utils.js';
-import { getLocalBranchUpstreamNames } from '../../git/utils/branch.utils.js';
-import { makeHierarchical } from '../../system/array.js';
-import { PageableResult } from '../../system/paging.js';
+import { configuration } from '../../system/-webview/configuration.js';
 import type { ViewsWithBranchesNode } from '../viewBase.js';
 import { CacheableChildrenViewNode } from './abstract/cacheableChildrenViewNode.js';
 import type { ViewNode } from './abstract/viewNode.js';
@@ -19,7 +20,7 @@ export class BranchesNode extends CacheableChildrenViewNode<'branches', ViewsWit
 		uri: GitUri,
 		view: ViewsWithBranchesNode,
 		protected override readonly parent: ViewNode,
-		public readonly repo: Repository,
+		public readonly repo: GlRepository,
 	) {
 		super('branches', uri, view, parent);
 
@@ -45,14 +46,19 @@ export class BranchesNode extends CacheableChildrenViewNode<'branches', ViewsWit
 			const options: Parameters<(typeof this.repo.git.branches)['getBranches']>['0'] = {
 				// only show local branches or remote branches for the default remote
 				filter: b =>
-					!b.remote || (showRemoteBranches && defaultRemote != null && b.getRemoteName() === defaultRemote),
+					!b.remote || (showRemoteBranches && defaultRemote != null && b.remoteName === defaultRemote),
 				sort: this.view.config.showCurrentBranchOnTop
 					? {
 							current: true,
+							orderBy: configuration.get('sortBranchesBy'),
 							groupByType: defaultRemote == null,
 							openedWorktreesByBranch: getOpenedWorktreesByBranch(this.context.worktreesByBranch),
 						}
-					: { current: false, groupByType: defaultRemote == null },
+					: {
+							current: false,
+							orderBy: configuration.get('sortBranchesBy'),
+							groupByType: defaultRemote == null,
+						},
 			};
 
 			const branches = new PageableResult<GitBranch>(p =>

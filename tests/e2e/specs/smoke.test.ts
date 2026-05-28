@@ -41,8 +41,9 @@ const test = base.extend({
 				await git.stage('stash-test.txt');
 				await git.stash('Test stash');
 
-				// Add a remote (fake URL, just for UI testing)
-				await git.addRemote('origin', 'https://github.com/test/test-repo.git');
+				// Add a remote (fake URL with non-GitHub host — avoids GitLens trying to connect to GitHub
+				// integration, which can cause multi-second network timeouts if VPN is active)
+				await git.addRemote('origin', 'https://example.com/test/test-repo.git');
 
 				return repoDir;
 			},
@@ -50,6 +51,11 @@ const test = base.extend({
 		{ scope: 'worker' },
 	],
 });
+
+// All smoke tests run serially on a single VS Code worker instance.
+// This prevents resource contention when multiple test files run in parallel
+// and ensures consistent teardown/setup across the describe groups.
+test.describe.configure({ mode: 'serial' });
 
 test.describe('Smoke Tests — Core', () => {
 	test.describe.configure({ mode: 'serial' });
@@ -79,13 +85,15 @@ test.describe('Smoke Tests — GitLens views', () => {
 		await vscode.gitlens.showGitLensView();
 
 		// Click continue if present (it might be the welcome view)
-		const continueButton = vscode.page.getByRole('button', { name: 'Continue' });
+		// exact: true avoids strict mode violation when multiple buttons match 'Continue'
+		const continueButton = vscode.page.getByRole('button', { name: 'Continue', exact: true });
 		if (await continueButton.isVisible()) {
 			await continueButton.click();
 		}
 
 		// Check if GitLens section is visible (grouped view)
-		const gitlensSection = vscode.gitlens.sidebar.getSection(/^GitLens/);
+		// .last() ensures we target the correct section when multiple /^GitLens/ sections are present
+		const gitlensSection = vscode.gitlens.sidebar.getSection(/^GitLens/).last();
 		if (await gitlensSection.isVisible()) {
 			await expect(gitlensSection).toBeVisible({ timeout: MaxTimeout });
 
@@ -131,13 +139,15 @@ test.describe('Smoke Tests — GitLens views', () => {
 		await vscode.gitlens.showGitLensView();
 
 		// Click continue if present (it might be the welcome view)
-		const continueButton = vscode.page.getByRole('button', { name: 'Continue' });
+		// exact: true avoids strict mode violation when multiple buttons match 'Continue'
+		const continueButton = vscode.page.getByRole('button', { name: 'Continue', exact: true });
 		if (await continueButton.isVisible()) {
 			await continueButton.click();
 		}
 
 		// Check if GitLens section is visible (grouped view)
-		const gitlensSection = vscode.gitlens.sidebar.getSection(/^GitLens/);
+		// .last() ensures we target the correct section when multiple /^GitLens/ sections are present
+		const gitlensSection = vscode.gitlens.sidebar.getSection(/^GitLens/).last();
 		if (await gitlensSection.isVisible()) {
 			await expect(gitlensSection).toBeVisible({ timeout: MaxTimeout });
 

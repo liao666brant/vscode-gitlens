@@ -1,10 +1,10 @@
 import type { Uri } from 'vscode';
+import type { IssueShape } from '@gitlens/git/models/issue.js';
+import type { PullRequestShape } from '@gitlens/git/models/pullRequest.js';
+import type { GitReference } from '@gitlens/git/models/reference.js';
+import type { GitRemote } from '@gitlens/git/models/remote.js';
 import type { GlCommands } from '../../constants.commands.js';
-import type { IssueShape } from '../../git/models/issue.js';
-import type { PullRequestShape } from '../../git/models/pullRequest.js';
-import type { GitReference } from '../../git/models/reference.js';
-import type { GitRemote } from '../../git/models/remote.js';
-import type { Repository } from '../../git/models/repository.js';
+import type { GlRepository } from '../../git/models/repository.js';
 import type { OpenWorkspaceLocation } from '../../system/-webview/vscode/workspaces.js';
 
 export type UriTypes = 'link';
@@ -163,6 +163,7 @@ export function parseDeepLinkUri(uri: Uri): DeepLink | undefined {
 			if (target === DeepLinkType.Comparison) {
 				const split = joined.split(/(\.\.\.|\.\.)/);
 				if (split.length !== 3) return undefined;
+
 				targetId = split[0];
 				secondaryTargetId = split[2];
 				secondaryRemoteUrl = urlParams.get('prRepoUrl') ?? undefined;
@@ -316,7 +317,7 @@ export interface DeepLinkServiceContext {
 	state: DeepLinkServiceState;
 	url?: string | undefined;
 	mainId?: string | undefined;
-	repo?: Repository | undefined;
+	repo?: GlRepository | undefined;
 	remoteUrl?: string | undefined;
 	remote?: GitRemote | undefined;
 	secondaryRemote?: GitRemote | undefined;
@@ -336,6 +337,10 @@ export interface DeepLinkServiceContext {
 	prData?: PullRequestShape | undefined;
 	issueData?: IssueShape | undefined;
 	instructions?: string | undefined;
+	/** Optional agent descriptor for Start Work / Start Review with `showOpenInAgent`. */
+	agent?: import('../../plus/agents/agentDescriptor.js').AgentDescriptor | undefined;
+	/** Worktree path for CLI dispatch `cwd`. */
+	worktreePath?: string | undefined;
 }
 
 export const deepLinkStateTransitionTable: Record<string, Record<string, DeepLinkServiceState>> = {

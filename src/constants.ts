@@ -10,79 +10,12 @@ export const whitespaceRegex = /\s/;
 
 export type AnnotationStatus = 'computing' | 'computed';
 
-export const enum CharCode {
-	/**
-	 * The `#` character.
-	 */
-	Hash = 35,
-	/**
-	 * The `/` character.
-	 */
-	Slash = 47,
-	Digit0 = 48,
-	Digit1 = 49,
-	Digit2 = 50,
-	Digit3 = 51,
-	Digit4 = 52,
-	Digit5 = 53,
-	Digit6 = 54,
-	Digit7 = 55,
-	Digit8 = 56,
-	Digit9 = 57,
-	/**
-	 * The `\` character.
-	 */
-	Backslash = 92,
-	A = 65,
-	B = 66,
-	C = 67,
-	D = 68,
-	E = 69,
-	F = 70,
-	Z = 90,
-	a = 97,
-	b = 98,
-	c = 99,
-	d = 100,
-	e = 101,
-	f = 102,
-	z = 122,
-}
-
-export type GitCoreConfigKeys =
-	| 'commit.gpgsign'
-	| 'core.excludesFile'
-	| 'diff.guitool'
-	| 'diff.tool'
-	| 'gpg.format'
-	| 'gpg.program'
-	| 'gpg.ssh.program'
-	| 'gpg.ssh.allowedSignersFile'
-	| 'init.defaultBranch'
-	| 'user.signingkey';
-
-export type GitConfigKeys =
-	| GitCoreConfigKeys
-	/** `vscode-merge-base` — value determined by VS Code that is used to determine the merge base for the current branch. Once `gk-merge-base` is determined, we stop using `vscode-merge-base` */
-	| `branch.${string}.vscode-merge-base`
-	/** `github-pr-owner-number` — value determined by VS Code/GitHub PR extension that is used to determine the PR number for the current branch */
-	| `branch.${string}.github-pr-owner-number`;
-
-export type GkConfigKeys =
-	/** `gk-merge-base` — the branch that the current branch was created from (the original base at branch creation time) */
-	| `branch.${string}.gk-merge-base`
-	/** `gk-merge-target` — the auto-detected branch that the current branch will likely be merged into (used for comparisons, PR targets, etc.) */
-	| `branch.${string}.gk-merge-target`
-	/** `gk-merge-target-user` — user-specified merge target branch; takes precedence over auto-detected `gk-merge-target` */
-	| `branch.${string}.gk-merge-target-user`
-	/** `gk-associated-issues` — JSON array of issue/PR entity identifiers linked to this branch */
-	| `branch.${string}.gk-associated-issues`
-	/** `gk-last-accessed` — ISO 8601 timestamp of when the branch was last checked out or viewed */
-	| `branch.${string}.gk-last-accessed`
-	/** `gk-last-modified` — ISO 8601 timestamp of when the branch last received a commit */
-	| `branch.${string}.gk-last-modified`;
-
-export type DeprecatedGkConfigKeys = `branch.${string}.gk-target-base`;
+export type {
+	DeprecatedGkConfigKeys,
+	GitConfigKeys,
+	GitCoreConfigKeys,
+	GkConfigKeys,
+} from '@gitlens/git/providers/config.js';
 
 export const enum GlyphChars {
 	AngleBracketLeftHeavy = '\u2770',
@@ -165,6 +98,7 @@ export const enum Schemes {
 	GitHub = 'github',
 	GitLens = 'gitlens',
 	GitLensAIMarkdown = 'gitlens-ai-markdown',
+	GitLensVirtual = 'gitlens-virtual',
 	PRs = 'pr',
 	Remote = 'vscode-remote',
 	Vsls = 'vsls',
@@ -208,6 +142,7 @@ export const urls = Object.freeze({
 	helpCenterHome: `https://help.gitkraken.com/gitlens/home-view/?${utm}`,
 	helpCenterMCP: `https://help.gitkraken.com/mcp/mcp-getting-started/?${utm}`,
 	releaseNotes: `https://help.gitkraken.com/gitlens/gitlens-release-notes-current/?${utm}`,
+	helpCenterAiHooks: `https://help.gitkraken.com/cli/cli-home/?${utm}#how-to-uninstall-gitkraken-cli-ai-hooks`,
 
 	acceleratePrReviews: `https://help.gitkraken.com/gitlens/gitlens-start-here/?${utm}#accelerate-pr-reviews`,
 	communityVsPro: `https://help.gitkraken.com/gitlens/gitlens-community-vs-gitlens-pro/?${utm}`,

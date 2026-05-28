@@ -1,13 +1,15 @@
 import type { QuickInputButton, QuickPick } from 'vscode';
 import { ThemeIcon, window } from 'vscode';
+import type { GitCommit } from '@gitlens/git/models/commit.js';
+import type { SearchOperators, SearchOperatorsLongForm, SearchQuery } from '@gitlens/git/models/search.js';
+import type { SearchCommitsResult } from '@gitlens/git/providers/commits.js';
+import { getSearchQueryComparisonKey, parseSearchQuery } from '@gitlens/git/utils/search.utils.js';
+import { first, join, map } from '@gitlens/utils/iterable.js';
+import { pluralize } from '@gitlens/utils/string.js';
 import { GlyphChars } from '../../constants.js';
-import type { SearchOperators, SearchOperatorsLongForm, SearchQuery } from '../../constants.search.js';
 import type { Container } from '../../container.js';
 import { showCommitInDetailsView } from '../../git/actions/commit.js';
-import type { SearchCommitsResult } from '../../git/gitProvider.js';
-import type { GitCommit } from '../../git/models/commit.js';
-import type { Repository } from '../../git/models/repository.js';
-import { getSearchQueryComparisonKey, parseSearchQuery } from '../../git/search.js';
+import type { GlRepository } from '../../git/models/repository.js';
 import { showContributorsPicker } from '../../quickpicks/contributorsPicker.js';
 import type { QuickPickItemOfT } from '../../quickpicks/items/common.js';
 import { ActionQuickPickItem, createQuickPickSeparator } from '../../quickpicks/items/common.js';
@@ -15,7 +17,6 @@ import { isDirectiveQuickPickItem } from '../../quickpicks/items/directive.js';
 import { showReferencePicker2 } from '../../quickpicks/referencePicker.js';
 import { configuration } from '../../system/-webview/configuration.js';
 import { getContext } from '../../system/-webview/context.js';
-import { first, join, map } from '../../system/iterable.js';
 import { SearchResultsNode } from '../../views/nodes/searchResultsNode.js';
 import type { ViewsWithRepositoryFolders } from '../../views/viewBase.js';
 import type {
@@ -29,10 +30,11 @@ import type {
 import { StepResultBreak } from '../quick-wizard/models/steps.js';
 import type { QuickPickStep } from '../quick-wizard/models/steps.quickpick.js';
 import {
-	MatchAllToggleQuickInputButton,
-	MatchCaseToggleQuickInputButton,
-	MatchRegexToggleQuickInputButton,
-	MatchWholeWordToggleQuickInputButton,
+	createMatchAllToggle,
+	createMatchCaseToggle,
+	createMatchRegexToggle,
+	createMatchWholeWordToggle,
+	flipToggle,
 	ShowResultsInSideBarQuickInputButton,
 } from '../quick-wizard/quickButtons.js';
 import { QuickCommand } from '../quick-wizard/quickCommand.js';
@@ -77,7 +79,7 @@ type StepNames = (typeof Steps)[keyof typeof Steps];
 
 interface Context extends StepsContext<StepNames> {
 	container: Container;
-	repos: Repository[];
+	repos: GlRepository[];
 	associatedView: ViewsWithRepositoryFolders;
 	commit: GitCommit | undefined;
 	hasVirtualFolders: boolean;
@@ -86,7 +88,7 @@ interface Context extends StepsContext<StepNames> {
 	title: string;
 }
 
-interface State<Repo = string | Repository> extends Required<SearchQuery> {
+interface State<Repo = string | GlRepository> extends Required<SearchQuery> {
 	repo: Repo;
 	openPickInView?: boolean;
 	showResultsInSideBar: boolean | SearchResultsNode;
@@ -191,7 +193,7 @@ export class SearchGitCommand extends QuickCommand<State> {
 				}
 			}
 
-			assertStepState<State<Repository>>(state);
+			assertStepState<State<GlRepository>>(state);
 
 			if (steps.isAtStep(Steps.PickSearchOperator) || state.query == null) {
 				using step = steps.enterStep(Steps.PickSearchOperator);
@@ -217,7 +219,9 @@ export class SearchGitCommand extends QuickCommand<State> {
 			let searchKey = getSearchQueryComparisonKey(search);
 
 			if (context.resultPromise == null || context.resultsKey !== searchKey) {
-				context.resultPromise = state.repo.git.commits.searchCommits(search, { source: 'quick-wizard' });
+				context.resultPromise = state.repo.git.commits.searchCommits(search, {
+					source: { source: 'quick-wizard' },
+				});
 				context.resultsKey = searchKey;
 
 				const result = await context.resultPromise;
@@ -316,7 +320,7 @@ export class SearchGitCommand extends QuickCommand<State> {
 	}
 
 	private *pickSearchOperatorStep(
-		state: StepState<State<Repository>>,
+		state: StepState<State<GlRepository>>,
 		context: Context,
 	): StepResultGenerator<string> {
 		type Items =
@@ -392,10 +396,10 @@ export class SearchGitCommand extends QuickCommand<State> {
 
 		const aiAllowed = this.container.ai.enabled && this.container.ai.allowed;
 
-		const matchCaseButton = new MatchCaseToggleQuickInputButton(state.matchCase);
-		const matchAllButton = new MatchAllToggleQuickInputButton(state.matchAll);
-		const matchRegexButton = new MatchRegexToggleQuickInputButton(state.matchRegex);
-		const matchWholeWordButton = new MatchWholeWordToggleQuickInputButton(state.matchWholeWord);
+		const matchCaseButton = createMatchCaseToggle(state.matchCase);
+		const matchAllButton = createMatchAllToggle(state.matchAll);
+		const matchRegexButton = createMatchRegexToggle(state.matchRegex);
+		const matchWholeWordButton = createMatchWholeWordToggle(state.matchWholeWord);
 
 		const step = createPickStep<(typeof items)[number]>({
 			title: appendReposToTitle(context.title, state, context),
@@ -432,17 +436,13 @@ export class SearchGitCommand extends QuickCommand<State> {
 			},
 			onDidClickButton: (_quickpick, button) => {
 				if (button === matchAllButton) {
-					state.matchAll = !state.matchAll;
-					matchAllButton.on = state.matchAll;
+					state.matchAll = flipToggle(button);
 				} else if (button === matchCaseButton) {
-					state.matchCase = !state.matchCase;
-					matchCaseButton.on = state.matchCase;
+					state.matchCase = flipToggle(button);
 				} else if (button === matchRegexButton) {
-					state.matchRegex = !state.matchRegex;
-					matchRegexButton.on = state.matchRegex;
+					state.matchRegex = flipToggle(button);
 				} else if (button === matchWholeWordButton) {
-					state.matchWholeWord = !state.matchWholeWord;
-					matchWholeWordButton.on = state.matchWholeWord;
+					state.matchWholeWord = flipToggle(button);
 				}
 			},
 			onDidClickItemButton: async function (quickpick, button, item) {
@@ -551,7 +551,7 @@ async function updateSearchQuery(
 	usePickers: { author?: boolean; file?: { type: 'file' | 'folder' }; ref?: boolean },
 	quickpick: QuickPick<any>,
 	step: QuickPickStep,
-	state: StepState<State<Repository>>,
+	state: StepState<State<GlRepository>>,
 	context: Context,
 ) {
 	const { operations: ops } = parseSearchQuery({

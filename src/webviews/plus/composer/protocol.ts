@@ -1,7 +1,7 @@
+import type { AIModel } from '@gitlens/ai/models/model.js';
+import type { GitCommitIdentityShape } from '@gitlens/git/models/commit.js';
 import type { Source, Sources } from '../../../constants.telemetry.js';
-import type { GitCommitIdentityShape } from '../../../git/models/commit.js';
 import type { RepositoryShape } from '../../../git/models/repositoryShape.js';
-import type { AIModel } from '../../../plus/ai/models/model.js';
 import type { IpcScope } from '../../ipc/models/ipc.js';
 import { IpcCommand, IpcNotification } from '../../ipc/models/ipc.js';
 import type { WebviewState } from '../../protocol.js';
@@ -21,7 +21,16 @@ export interface ComposerHunkBase {
 	fileName: string;
 	additions: number;
 	deletions: number;
-	source: 'staged' | 'unstaged' | 'commits' | string; // commit SHA or source type
+	// Known values:
+	//   - 'staged' / 'unstaged' / 'commits' — diff-collection layer (used by the webview composer's
+	//     own `createHunksFromDiffs`)
+	//   - 'unknown' — set when the hunk came from compose-tools, which no longer attaches per-hunk
+	//     source-layer info (combined-diff collection collapses staged/unstaged/untracked/branch
+	//     into one bucket). UI categorizers should treat 'unknown' as "we don't know which layer"
+	//     and avoid asserting staged/unstaged badges off of it.
+	//   - any other string — historically a commit SHA for branch-source hunks. Reserved for the
+	//     non-compose-tools paths; the compose-tools path uses 'unknown' instead.
+	source: 'staged' | 'unstaged' | 'commits' | 'unknown' | string;
 	assigned?: boolean; // True when this hunk's index is in any commit's hunkIndices array
 	isRename?: boolean; // True for rename-only hunks
 	originalFileName?: string; // Original filename for renames
@@ -87,6 +96,12 @@ export interface State extends WebviewState<'gitlens.composer'> {
 		filesChanged: boolean;
 	};
 	generatingCommits: boolean;
+	/**
+	 * Human-readable status of the currently running compose phase (e.g. "Analyzing changes…").
+	 * Emitted by the library route's onProgress hook. Null when no granular progress is available
+	 * (legacy AI path, or before the first phase event arrives).
+	 */
+	generatingCommitsStatus: string | null;
 	generatingCommitMessage: string | null; // commitId of the commit currently generating a message, or null
 	committing: boolean; // true when finish and commit is in progress
 	safetyError: string | null; // error message if safety validation failed, or null
@@ -137,6 +152,7 @@ export const initialState: Omit<State, keyof WebviewState<'gitlens.composer'>> =
 		filesChanged: true,
 	},
 	generatingCommits: false,
+	generatingCommitsStatus: null,
 	generatingCommitMessage: null,
 	committing: false,
 	safetyError: null,
@@ -352,6 +368,16 @@ export const OnResetCommand = new IpcCommand<void>(ipcScope, 'onReset');
 
 // Notifications sent from host to webview
 export const DidStartGeneratingNotification = new IpcNotification<void>(ipcScope, 'didStartGenerating');
+export interface DidProgressGeneratingCommitsParams {
+	/** Machine-identifier for the phase (e.g. 'analyzing', 'grouping', 'ordering'). */
+	phase: string;
+	/** Human-readable label to show in the loading dialog (e.g. 'Analyzing changes…'). */
+	message: string;
+}
+export const DidProgressGeneratingCommitsNotification = new IpcNotification<DidProgressGeneratingCommitsParams>(
+	ipcScope,
+	'didProgressGeneratingCommits',
+);
 export const DidStartGeneratingCommitMessageNotification = new IpcNotification<{ commitId: string }>(
 	ipcScope,
 	'didStartGeneratingCommitMessage',

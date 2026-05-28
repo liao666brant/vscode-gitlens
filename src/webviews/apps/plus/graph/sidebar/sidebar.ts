@@ -1,34 +1,73 @@
 import { consume } from '@lit/context';
-import { Task } from '@lit/task';
 import { SignalWatcher } from '@lit-labs/signals';
+import type { PropertyValues } from 'lit';
 import { css, html, LitElement, nothing } from 'lit';
-import { customElement } from 'lit/decorators.js';
+import { customElement, property } from 'lit/decorators.js';
+import { classMap } from 'lit/directives/class-map.js';
 import { repeat } from 'lit/directives/repeat.js';
-import { DidChangeNotification, GetCountsRequest } from '../../../../plus/graph/protocol.js';
-import { ipcContext } from '../../../shared/contexts/ipc.js';
-import type { Disposable } from '../../../shared/events.js';
-import type { HostIpc } from '../../../shared/ipc.js';
+import type { GraphDisplayMode, GraphSidebarPanel } from '../../../../plus/graph/protocol.js';
 import { emitTelemetrySentEvent } from '../../../shared/telemetry.js';
 import { graphStateContext } from '../context.js';
+import { sidebarActionsContext } from './sidebarContext.js';
+import type { SidebarActions } from './sidebarState.js';
+import '../../../shared/components/button.js';
 import '../../../shared/components/code-icon.js';
 import '../../../shared/components/overlays/tooltip.js';
 
 interface Icon {
 	type: IconTypes;
 	icon: string;
-	command: string;
 	tooltip: string;
 }
-type IconTypes = 'branches' | 'remotes' | 'stashes' | 'tags' | 'worktrees';
+type IconTypes = 'agents' | 'branches' | 'overview' | 'remotes' | 'stashes' | 'tags' | 'worktrees';
 const icons: Icon[] = [
-	{ type: 'branches', icon: 'gl-branches-view', command: 'gitlens.showBranchesView', tooltip: '分支' },
-	{ type: 'remotes', icon: 'gl-remotes-view', command: 'gitlens.showRemotesView', tooltip: '远程' },
-	{ type: 'stashes', icon: 'gl-stashes-view', command: 'gitlens.showStashesView', tooltip: '存储' },
-	{ type: 'tags', icon: 'gl-tags-view', command: 'gitlens.showTagsView', tooltip: '标签' },
-	{ type: 'worktrees', icon: 'gl-worktrees-view', command: 'gitlens.showWorktreesView', tooltip: '工作树' },
+	{ type: 'overview', icon: 'home', tooltip: '概览' },
+	{ type: 'agents', icon: 'robot', tooltip: '智能体' },
+	{ type: 'worktrees', icon: 'gl-worktrees-view', tooltip: '工作树' },
+	{ type: 'branches', icon: 'gl-branches-view', tooltip: '分支' },
+	{ type: 'remotes', icon: 'gl-remotes-view', tooltip: '远程' },
+	{ type: 'stashes', icon: 'gl-stashes-view', tooltip: '存储' },
+	{ type: 'tags', icon: 'gl-tags-view', tooltip: '标签' },
 ];
 
-type Counts = Record<IconTypes, number | undefined>;
+// Bottom-rail display-mode toggles — each button stays on the same icon; the checked state on
+// `<gl-button>` (driven by `aria-checked`) telegraphs "this mode is active" without the icon
+// flipping. Tooltip flips per state so screen-reader users get the action verb.
+interface DisplayModeToggle {
+	mode: Exclude<GraphDisplayMode, 'graph'>;
+	icon: string;
+	activeTooltip: string;
+	inactiveTooltip: string;
+	/** When set, the toggle only renders if the named feature flag on `_state.config` is truthy.
+	 *  Lets us gate experimental modes (kanban) behind a config setting without changing the
+	 *  shape of the bottom-rail render path. */
+	requiresConfigFlag?: 'experimentalKanbanEnabled';
+}
+
+const displayModeToggles: readonly DisplayModeToggle[] = [
+	{
+		mode: 'kanban',
+		icon: 'gl-kanban-view',
+		activeTooltip: '显示提交图',
+		inactiveTooltip: '显示智能体看板',
+		requiresConfigFlag: 'experimentalKanbanEnabled',
+	},
+];
+
+const visualizationsToggle: DisplayModeToggle = {
+	mode: 'visualizations',
+	icon: 'pulse',
+	activeTooltip: '显示提交图',
+	inactiveTooltip: '显示可视化',
+};
+
+export interface GraphSidebarToggleEventDetail {
+	panel: GraphSidebarPanel;
+}
+
+export interface GraphSidebarDisplayModeChangeEventDetail {
+	mode: GraphDisplayMode;
+}
 
 @customElement('gl-graph-sidebar')
 export class GlGraphSideBar extends SignalWatcher(LitElement) {
@@ -41,37 +80,90 @@ export class GlGraphSideBar extends SignalWatcher(LitElement) {
 
 		.sidebar {
 			box-sizing: border-box;
+			position: relative;
 			display: flex;
 			flex-direction: column;
 			align-items: center;
 			gap: 1.4rem;
-			background-color: var(--color-graph-background);
-			color: var(--titlebar-fg);
+			background-color: var(--color-view-background);
+			color: var(--color-view-foreground--65);
 			width: 2.6rem;
 			font-size: 9px;
 			font-weight: 600;
 			height: 100%;
-			padding: 3rem 0;
+			padding: 0.5rem 0;
 			z-index: 1040;
+			border-right: 1px solid transparent;
+			border-color: var(--vscode-sideBar-border, transparent);
+		}
+
+		gl-tooltip {
+			width: 100%;
+		}
+
+		/* Doubles the gap after the last group-1 icon (Agents) so the rail reads as two
+		   groups: Overview/Agents, then the view icons. 1.4rem here + the parent's 1.4rem
+		   flex gap = 2.8rem. (Applied on .item, not gl-tooltip, since gl-tooltip's host is
+		   display: contents and can't take margin.) */
+		.item.group-end {
+			margin-bottom: 1.4rem;
 		}
 
 		.item {
-			color: inherit;
+			position: relative;
+			width: 100%;
+			color: var(--color-view-foreground--65);
 			text-decoration: none;
 			display: flex;
 			flex-direction: column;
 			align-items: center;
 			cursor: pointer;
+			background: none;
+			border: none;
+			padding: 0;
+			font: inherit;
 		}
 
 		.item:hover {
-			color: var(--color-foreground);
+			color: var(--color-view-foreground);
 			text-decoration: none;
 		}
 
+		.item.active {
+			color: var(--color-view-foreground);
+		}
+
+		.item.overview {
+			padding: 0.6rem 0;
+		}
+
+		.indicator {
+			position: absolute;
+			left: 0;
+			top: 0;
+			width: 1px;
+			border-radius: 1px;
+			background-color: var(--color-view-foreground);
+			height: var(--indicator-height, 0px);
+			transform: translateY(var(--indicator-top, 0px));
+			transition:
+				transform 0.25s ease-in-out,
+				height 0.15s ease-in-out;
+			pointer-events: none;
+		}
+
+		.indicator.no-transition {
+			transition: none;
+		}
+
+		@media (prefers-reduced-motion: reduce) {
+			.indicator {
+				transition: none;
+			}
+		}
+
 		.count {
-			color: var(--color-foreground--50);
-			/* color: var(--color-highlight); */
+			color: var(--color-view-foreground--50);
 			margin-top: 0.4rem;
 		}
 
@@ -79,110 +171,256 @@ export class GlGraphSideBar extends SignalWatcher(LitElement) {
 			color: var(--vscode-errorForeground);
 			opacity: 0.6;
 		}
+
+		.spacer {
+			flex: 1 1 auto;
+		}
+
+		.item.dimmed {
+			opacity: 0.4;
+		}
+
+		/* Visualization toggle — uses <gl-button> for the checked/unchecked styling. Sits at the
+		   bottom of the rail; the parent's 1.4rem flex gap is enough to read it as its own group. */
+		.display-mode-toggle {
+			margin: 0 auto;
+			--button-foreground: var(--color-view-foreground--65);
+		}
+
+		.display-mode-toggle:hover {
+			--button-foreground: var(--color-view-foreground);
+		}
+
+		/* Tighten the spacing between consecutive display-mode toggles so they read as one
+		   bottom-rail group (e.g., kanban + visualizations) rather than two unrelated buttons.
+		   Parent .sidebar has flex gap 1.4rem; -1rem margin-top brings the effective gap to 0.4rem.
+		   The first toggle keeps the parent's 1.4rem separation from the spacer above. */
+		.display-mode-toggle + .display-mode-toggle {
+			margin-top: -1rem;
+		}
+
+		/* Pre-interaction discovery callout: paints the toggle with the primary VS Code button
+		   colors so it reads as a "click me" affordance. Once the user clicks it, the host
+		   dismisses the onboarding key and the class drops, reverting to the toolbar appearance.
+		   Overrides the gl-button shadow-DOM custom properties — outer-tree author rules outrank
+		   inner-tree author rules for inherited properties on the host. */
+		gl-button.display-mode-toggle.callout {
+			--button-background: var(--vscode-button-background);
+			--button-foreground: var(--vscode-button-foreground);
+			--button-hover-background: var(--vscode-button-hoverBackground);
+			--button-border: var(--vscode-button-background);
+		}
 	`;
 
 	get include(): undefined | IconTypes[] {
-		const repo = this._state.repositories?.find(item => item.path === this._state.selectedRepository);
-		return repo?.virtual
-			? (['branches', 'remotes', 'tags'] as const)
-			: (['branches', 'remotes', 'tags', 'stashes', 'worktrees'] as const);
+		const repo = this._state.repositories?.find(item => item.id === this._state.selectedRepository);
+		const base: readonly IconTypes[] = repo?.virtual
+			? (['overview', 'agents', 'branches', 'remotes', 'tags'] as const)
+			: (['overview', 'agents', 'branches', 'remotes', 'tags', 'stashes', 'worktrees'] as const);
+
+		return [...base];
 	}
 
-	@consume({ context: ipcContext })
-	private _ipc!: HostIpc;
+	@property({ type: String, attribute: 'active-panel' })
+	activePanel: GraphSidebarPanel | undefined;
+
+	@property({ type: Boolean, attribute: 'sidebar-visible' })
+	sidebarVisible = false;
+
+	@consume({ context: sidebarActionsContext, subscribe: true })
+	private _actions!: SidebarActions;
 
 	@consume({ context: graphStateContext, subscribe: true })
 	private readonly _state!: typeof graphStateContext.__context__;
 
-	private _disposable: Disposable | undefined;
-	private _countsTask = new Task(this, {
-		args: () => [this.fetchCounts()],
-		task: ([counts]) => counts,
-		autoRun: false,
-	});
-
-	override connectedCallback(): void {
-		super.connectedCallback?.();
-
-		this._disposable = this._ipc.onReceiveMessage(msg => {
-			switch (true) {
-				case DidChangeNotification.is(msg):
-					this._counts = undefined;
-					this.requestUpdate();
-					break;
-
-				case GetCountsRequest.response.is(msg):
-					this._counts = Promise.resolve(msg.params as Counts);
-					this.requestUpdate();
-					break;
-			}
-		});
-	}
-
-	override disconnectedCallback(): void {
-		super.disconnectedCallback?.();
-
-		this._disposable?.dispose();
-	}
-
-	private _counts: Promise<Counts | undefined> | undefined;
-	private async fetchCounts() {
-		if (this._counts == null) {
-			const ipc = this._ipc;
-			if (ipc != null) {
-				async function fetch() {
-					const rsp = await ipc.sendRequest(GetCountsRequest, undefined);
-					return rsp as Counts;
-				}
-				this._counts = fetch();
-			} else {
-				this._counts = Promise.resolve(undefined);
-			}
-		}
-		return this._counts;
-	}
+	private _suppressTransition = true;
 
 	override render(): unknown {
-		if (this._counts == null) {
-			void this._countsTask.run();
-		}
-
+		const displayMode: GraphDisplayMode = this._state.displayMode ?? 'graph';
+		const isGraphMode = displayMode === 'graph';
 		return html`<section class="sidebar">
+			${isGraphMode && this.sidebarVisible && this.activePanel != null
+				? html`<div
+						class=${classMap({
+							indicator: true,
+							'no-transition': this._suppressTransition,
+						})}
+					></div>`
+				: nothing}
 			${repeat(
 				icons,
-				i => i,
-				i => this.renderIcon(i),
+				i => i.type,
+				i => this.renderIcon(i, isGraphMode),
 			)}
+			<div class="spacer"></div>
+			${repeat(
+				displayModeToggles.filter(
+					t => t.requiresConfigFlag == null || this._state.config?.[t.requiresConfigFlag],
+				),
+				t => t.mode,
+				t => this.renderDisplayModeToggle(t, displayMode, false),
+			)}
+			${this.renderDisplayModeToggle(visualizationsToggle, displayMode, true)}
 		</section>`;
 	}
 
-	private renderIcon(icon: Icon) {
+	private renderDisplayModeToggle(toggle: DisplayModeToggle, current: GraphDisplayMode, isVisualizations: boolean) {
+		const isActive = current === toggle.mode;
+		const tooltip = isActive ? toggle.activeTooltip : toggle.inactiveTooltip;
+		// Onboarding callout is timeline-specific — only the visualizations toggle gets the painted
+		// "click me" affordance until the user has interacted with it for the first time.
+		const showCallout = isVisualizations && !this._state.visualizationsButtonCalloutDismissed;
+		return html`<gl-button
+			class=${classMap({ 'display-mode-toggle': true, callout: showCallout })}
+			appearance="toolbar"
+			role="switch"
+			aria-checked=${isActive ? 'true' : 'false'}
+			aria-label=${tooltip}
+			tooltip=${tooltip}
+			tooltipPlacement="right"
+			@click=${() => this.handleDisplayModeToggle(toggle)}
+		>
+			<code-icon icon=${toggle.icon}></code-icon>
+		</gl-button>`;
+	}
+
+	private handleDisplayModeToggle(toggle: DisplayModeToggle): void {
+		const current = this._state.displayMode ?? 'graph';
+		// Toggling the active mode returns to the graph; otherwise switch to this toggle's mode.
+		// Each bottom-rail button is independent — clicking kanban while console is active swaps
+		// modes directly without going through 'graph' first.
+		const next: GraphDisplayMode = current === toggle.mode ? 'graph' : toggle.mode;
+
+		this.dispatchEvent(
+			new CustomEvent<GraphSidebarDisplayModeChangeEventDetail>('gl-graph-sidebar-display-mode-change', {
+				detail: { mode: next },
+				bubbles: true,
+				composed: true,
+			}),
+		);
+
+		// Any bottom-rail toggle click is enough evidence the user has discovered the group;
+		// dismiss the visualizations onboarding callout regardless of which button they hit.
+		// Previously only the visualizations toggle dismissed it, so a user who clicked kanban
+		// first kept seeing the "click me" affordance even after interacting with the group.
+		if (!this._state.visualizationsButtonCalloutDismissed) {
+			this.dispatchEvent(
+				new CustomEvent('gl-graph-sidebar-visualizations-callout-dismiss', {
+					bubbles: true,
+					composed: true,
+				}),
+			);
+		}
+
+		emitTelemetrySentEvent<'graph/action/sidebar'>(this, {
+			name: 'graph/action/sidebar',
+			data: { action: `displayMode:${next}` },
+		});
+	}
+
+	override firstUpdated(changedProperties: PropertyValues): void {
+		super.firstUpdated(changedProperties);
+		this._updateIndicator();
+		requestAnimationFrame(() => {
+			this._suppressTransition = false;
+		});
+	}
+
+	override updated(changedProperties: PropertyValues): void {
+		super.updated(changedProperties);
+
+		if (changedProperties.has('activePanel') || changedProperties.has('sidebarVisible')) {
+			const prevActive = changedProperties.has('activePanel')
+				? (changedProperties.get('activePanel') as GraphSidebarPanel | undefined)
+				: this.activePanel;
+			const prevVisible = changedProperties.has('sidebarVisible')
+				? ((changedProperties.get('sidebarVisible') as boolean | undefined) ?? false)
+				: this.sidebarVisible;
+			const wasShowing = prevVisible && prevActive != null;
+			const isShowing = this.sidebarVisible && this.activePanel != null;
+			if (!wasShowing && isShowing) {
+				// Indicator was just created — suppress transition for one frame
+				const indicator = this.renderRoot.querySelector<HTMLElement>('.indicator');
+				if (indicator != null) {
+					indicator.classList.add('no-transition');
+					this._updateIndicator();
+					requestAnimationFrame(() => indicator.classList.remove('no-transition'));
+					return;
+				}
+			}
+		}
+
+		this._updateIndicator();
+	}
+
+	private _updateIndicator(): void {
+		const indicator = this.renderRoot.querySelector<HTMLElement>('.indicator');
+		if (indicator == null) return;
+
+		const activeButton = this.renderRoot.querySelector<HTMLElement>('.item.active');
+		if (activeButton == null) return;
+
+		const sidebar = this.renderRoot.querySelector<HTMLElement>('.sidebar');
+		if (sidebar == null) return;
+
+		const sidebarRect = sidebar.getBoundingClientRect();
+		const targetRect = activeButton.getBoundingClientRect();
+
+		indicator.style.setProperty('--indicator-top', `${targetRect.top - sidebarRect.top}px`);
+		indicator.style.setProperty('--indicator-height', `${targetRect.height}px`);
+	}
+
+	private renderIcon(icon: Icon, enabled: boolean) {
 		if (this.include != null && !this.include.includes(icon.type)) return;
 
+		const isActive = enabled && this.sidebarVisible && this.activePanel === icon.type;
+
 		return html`<gl-tooltip placement="right" content="${icon.tooltip}">
-			<a
-				class="item"
-				href="command:${icon.command}"
-				aria-label=${icon.tooltip}
-				@click=${() => this.sendTelemetry(icon.command)}
+			<button
+				class=${classMap({
+					item: true,
+					active: isActive,
+					overview: icon.type === 'overview',
+					dimmed: !enabled,
+					'group-end': icon.type === 'agents',
+				})}
+				@click=${() => this.handleIconClick(icon)}
+				?disabled=${!enabled}
+				aria-pressed=${isActive}
 			>
 				<code-icon icon="${icon.icon}"></code-icon>
-				${this._countsTask.render({
-					pending: () =>
-						html`<span class="count"
-							><code-icon icon="loading" modifier="spin" size="9"></code-icon
-						></span>`,
-					complete: c => renderCount(c?.[icon.type]),
-					error: () => html`<span class="count error"><code-icon icon="warning" size="9"></code-icon></span>`,
-				})}
-			</a>
+				${this.renderIconCount(icon)}
+			</button>
 		</gl-tooltip>`;
 	}
 
-	private sendTelemetry(command: string) {
+	private renderIconCount(icon: Icon) {
+		if (icon.type === 'overview') return nothing;
+		// Agents flow through reactive state, not the host counts IPC — read directly so the
+		// badge updates without paying the round-trip and skips the loading/error states.
+		if (icon.type === 'agents') return renderCount(this._state.agentSessions?.length || undefined);
+
+		if (this._actions?.state.countsLoading.get()) {
+			return html`<span class="count"><code-icon icon="loading" modifier="spin" size="9"></code-icon> </span>`;
+		}
+		if (this._actions?.state.countsError.get()) {
+			return html`<span class="count error"><code-icon icon="warning" size="9"></code-icon></span>`;
+		}
+		return renderCount(this._actions?.state.counts.get()?.[icon.type]);
+	}
+
+	private handleIconClick(icon: Icon) {
+		this.dispatchEvent(
+			new CustomEvent<GraphSidebarToggleEventDetail>('gl-graph-sidebar-toggle', {
+				detail: { panel: icon.type },
+				bubbles: true,
+				composed: true,
+			}),
+		);
+
 		emitTelemetrySentEvent<'graph/action/sidebar'>(this, {
 			name: 'graph/action/sidebar',
-			data: { action: command },
+			data: { action: icon.type },
 		});
 	}
 }

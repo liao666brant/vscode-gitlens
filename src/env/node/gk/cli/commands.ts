@@ -1,13 +1,17 @@
 /* eslint-disable @typescript-eslint/require-await */
+import type { Account } from '@gitkraken/provider-apis';
 import type { Disposable } from 'vscode';
+import type { Account as AuthorAccount } from '@gitlens/git/models/author.js';
+import type { GitBranch } from '@gitlens/git/models/branch.js';
+import type { PullRequest } from '@gitlens/git/models/pullRequest.js';
+import type { GitWorktree } from '@gitlens/git/models/worktree.js';
+import { serializePullRequest } from '@gitlens/git/utils/pullRequest.utils.js';
+import type { UnifiedDisposable } from '@gitlens/utils/disposable.js';
+import { defer } from '@gitlens/utils/promise.js';
 import type { CompareWithCommandArgs } from '../../../../commands/compareWith.js';
 import type { Container } from '../../../../container.js';
 import { cherryPick, merge, rebase } from '../../../../git/actions/repository.js';
-import type { GitBranch } from '../../../../git/models/branch.js';
-import type { PullRequest } from '../../../../git/models/pullRequest.js';
-import type { Repository } from '../../../../git/models/repository.js';
-import type { GitWorktree } from '../../../../git/models/worktree.js';
-import { serializePullRequest } from '../../../../git/utils/pullRequest.utils.js';
+import type { GlRepository } from '../../../../git/models/repository.js';
 import type { LaunchpadCategorizedResult, LaunchpadItem } from '../../../../plus/launchpad/launchpadProvider.js';
 import { getLaunchpadItemGroups } from '../../../../plus/launchpad/launchpadProvider.js';
 import { launchpadCategoryToGroupMap } from '../../../../plus/launchpad/models/launchpad.js';
@@ -15,15 +19,15 @@ import type { StartReviewCommandArgs } from '../../../../plus/launchpad/startRev
 import type { StartWorkCommandArgs } from '../../../../plus/startWork/startWork.js';
 import { executeCommand } from '../../../../system/-webview/command.js';
 import { createCommandDecorator } from '../../../../system/decorators/command.js';
-import { defer } from '../../../../system/promise.js';
 import type { ComposerWebviewShowingArgs } from '../../../../webviews/plus/composer/registration.js';
 import type { WebviewPanelShowCommandArgs } from '../../../../webviews/webviewsController.js';
-import type { CliCommandRequest, CliCommandResponse, CliIpcServer } from './integration.js';
+import type { CliCommandRequest, CliCommandResponse } from './integration.js';
 
 type CliCommand =
 	| 'cherry-pick'
 	| 'compare'
 	| 'graph'
+	| 'ping'
 	| 'rebase'
 	| 'mcp/launchpad/item'
 	| 'mcp/launchpad/list'
@@ -33,26 +37,40 @@ type CliCommand =
 	| 'merge';
 type CliCommandHandler = (
 	request: CliCommandRequest | undefined,
-	repo?: Repository | undefined,
+	repo?: GlRepository | undefined,
 ) => Promise<CliCommandResponse>;
 
 const { command, getCommands } = createCommandDecorator<CliCommand, CliCommandHandler>();
 
 export class CliCommandHandlers implements Disposable {
-	constructor(
-		private readonly container: Container,
-		private readonly server: CliIpcServer,
-	) {
+	private readonly _registrations: UnifiedDisposable[] = [];
+
+	constructor(private readonly container: Container) {
 		for (const { command, handler } of getCommands()) {
-			this.server.registerHandler(command, rq => this.wrapHandler(command, rq, handler));
+			this._registrations.push(
+				this.container.ipc.registerHandler<CliCommandRequest, CliCommandResponse>(command, rq =>
+					this.wrapHandler(command, rq, handler),
+				),
+			);
 		}
 	}
 
-	dispose(): void {}
+	dispose(): void {
+		for (const d of this._registrations) {
+			d.dispose();
+		}
+		this._registrations.length = 0;
+	}
+
+	@command('ping')
+	async handlePingCommand(): Promise<CliCommandResponse> {
+		return { stdout: JSON.stringify({ version: this.container.version }) };
+	}
 
 	private wrapHandler(command: CliCommand, request: CliCommandRequest | undefined, handler: CliCommandHandler) {
-		let repo: Repository | undefined;
-		if (request?.cwd) {
+		let repo: GlRepository | undefined;
+		// `ping` is a liveness check; skip repo lookup so it stays cheap.
+		if (request?.cwd && command !== 'ping') {
 			repo = this.container.git.getRepository(request.cwd);
 		}
 
@@ -67,7 +85,7 @@ export class CliCommandHandlers implements Disposable {
 	@command('cherry-pick')
 	async handleCherryPickCommand(
 		_request: CliCommandRequest | undefined,
-		repo?: Repository | undefined,
+		repo?: GlRepository | undefined,
 	): Promise<CliCommandResponse> {
 		void cherryPick(repo);
 	}
@@ -75,7 +93,7 @@ export class CliCommandHandlers implements Disposable {
 	@command('compare')
 	async handleCompareCommand(
 		request: CliCommandRequest | undefined,
-		repo?: Repository | undefined,
+		repo?: GlRepository | undefined,
 	): Promise<CliCommandResponse> {
 		if (!repo || !request?.args?.length) {
 			void executeCommand('gitlens.compareWith');
@@ -108,7 +126,7 @@ export class CliCommandHandlers implements Disposable {
 	@command('graph')
 	async handleGraphCommand(
 		request: CliCommandRequest | undefined,
-		repo?: Repository | undefined,
+		repo?: GlRepository | undefined,
 	): Promise<CliCommandResponse> {
 		if (!repo || !request?.args?.length) {
 			void executeCommand('gitlens.showGraphView');
@@ -128,7 +146,7 @@ export class CliCommandHandlers implements Disposable {
 	@command('merge')
 	async handleMergeCommand(
 		request: CliCommandRequest | undefined,
-		repo?: Repository | undefined,
+		repo?: GlRepository | undefined,
 	): Promise<CliCommandResponse> {
 		if (!repo || !request?.args?.length) return merge(repo);
 
@@ -145,7 +163,7 @@ export class CliCommandHandlers implements Disposable {
 	@command('rebase')
 	async handleRebaseCommand(
 		request: CliCommandRequest | undefined,
-		repo?: Repository | undefined,
+		repo?: GlRepository | undefined,
 	): Promise<CliCommandResponse> {
 		if (!repo || !request?.args?.length) return rebase(repo);
 
@@ -162,8 +180,12 @@ export class CliCommandHandlers implements Disposable {
 	@command('mcp/wip/compose/open')
 	async handleComposeCommand(
 		request: CliCommandRequest | undefined,
-		repo?: Repository | undefined,
+		repo?: GlRepository | undefined,
 	): Promise<CliCommandResponse> {
+		if (request?.cwd && repo == null) {
+			return { stderr: `'${request.cwd}' is an invalid or non-Git directory` };
+		}
+
 		const instructions = request?.args?.[0];
 
 		void executeCommand<WebviewPanelShowCommandArgs<ComposerWebviewShowingArgs>>(
@@ -180,9 +202,10 @@ export class CliCommandHandlers implements Disposable {
 	@command('mcp/pr/review/start')
 	async handleStartReviewCommand(
 		request: CliCommandRequest | undefined,
-		_repo?: Repository | undefined,
+		_repo?: GlRepository | undefined,
 	): Promise<CliCommandResponse> {
 		if (!request?.args?.length) return { stderr: 'No Pull Request provided' };
+
 		const [prUrl, instructions] = request.args;
 
 		try {
@@ -216,9 +239,10 @@ export class CliCommandHandlers implements Disposable {
 	@command('mcp/issue/start')
 	async handleStartWorkCommand(
 		request: CliCommandRequest | undefined,
-		_repo?: Repository | undefined,
+		_repo?: GlRepository | undefined,
 	): Promise<CliCommandResponse> {
 		if (!request?.args?.length) return { stderr: 'No issue identifier provided' };
+
 		const [issueUrl, instructions] = request.args;
 
 		try {
@@ -260,7 +284,9 @@ export class CliCommandHandlers implements Disposable {
 		const result = await this.container.launchpad.getCategorizedItems(
 			prSearch != null ? { search: prSearch } : undefined,
 		);
-		if (result.error != null) {
+
+		// Only throw on total failure (error with no items); partial success returns items alongside the error
+		if (result.error != null && !result.items?.length) {
 			throw new Error(`Error fetching Launchpad: ${result.error.message}`);
 		}
 
@@ -270,9 +296,10 @@ export class CliCommandHandlers implements Disposable {
 	@command('mcp/launchpad/item')
 	async handleGetLaunchpadInfoCommand(
 		request: CliCommandRequest | undefined,
-		_repo?: Repository | undefined,
+		_repo?: GlRepository | undefined,
 	): Promise<CliCommandResponse> {
 		if (!request?.args?.length) return { stderr: 'No Launchpad item identifier provided' };
+
 		const [prSearch] = request.args;
 
 		let result: LaunchpadCategorizedResult;
@@ -292,7 +319,11 @@ export class CliCommandHandlers implements Disposable {
 
 		try {
 			const serializedResponse = serializeLaunchpadItem(item);
-			return { stdout: JSON.stringify({ item: serializedResponse }) };
+			const response: Record<string, unknown> = { item: serializedResponse };
+			if (result.error != null) {
+				response.warning = `Some integrations failed to load: ${result.error.message}`;
+			}
+			return { stdout: JSON.stringify(response) };
 		} catch (ex) {
 			return { stderr: `Error sending Launchpad item data: ${ex}` };
 		}
@@ -301,7 +332,7 @@ export class CliCommandHandlers implements Disposable {
 	@command('mcp/launchpad/list')
 	async handleGetLaunchpadCommand(
 		_request: CliCommandRequest | undefined,
-		_repo?: Repository | undefined,
+		_repo?: GlRepository | undefined,
 	): Promise<CliCommandResponse> {
 		let result: LaunchpadCategorizedResult;
 		try {
@@ -317,7 +348,11 @@ export class CliCommandHandlers implements Disposable {
 
 		try {
 			const serializedItems = items.map(serializeLaunchpadItem);
-			return { stdout: JSON.stringify({ items: serializedItems }) };
+			const response: Record<string, unknown> = { items: serializedItems };
+			if (result.error != null) {
+				response.warning = `Some integrations failed to load: ${result.error.message}`;
+			}
+			return { stdout: JSON.stringify(response) };
 		} catch (ex) {
 			return { stderr: `Error sending Launchpad data: ${ex}` };
 		}
@@ -325,7 +360,7 @@ export class CliCommandHandlers implements Disposable {
 }
 
 function serializeLaunchpadItem(item: LaunchpadItem): Record<string, unknown> {
-	const toSafeAccount = (account: any) => {
+	const toSafeAccount = (account: Account | AuthorAccount | null) => {
 		if (!account) return undefined;
 		return {
 			id: account.id,

@@ -1,14 +1,21 @@
 import { ThemeIcon, window } from 'vscode';
+import { RebaseError, SigningError } from '@gitlens/git/errors.js';
+import type { GitBranch } from '@gitlens/git/models/branch.js';
+import type { GitLog } from '@gitlens/git/models/log.js';
+import type { ConflictDetectionResult } from '@gitlens/git/models/mergeConflicts.js';
+import type { GitReference } from '@gitlens/git/models/reference.js';
+import { getReferenceLabel, isRevisionReference } from '@gitlens/git/utils/reference.utils.js';
+import { createRevisionRange } from '@gitlens/git/utils/revision.utils.js';
+import { createDisposable } from '@gitlens/utils/disposable.js';
+import { Logger } from '@gitlens/utils/logger.js';
+import { pluralize } from '@gitlens/utils/string.js';
 import type { Container } from '../../container.js';
-import { RebaseError } from '../../git/errors.js';
-import type { GitBranch } from '../../git/models/branch.js';
-import type { GitLog } from '../../git/models/log.js';
-import type { ConflictDetectionResult } from '../../git/models/mergeConflicts.js';
-import type { GitReference } from '../../git/models/reference.js';
-import type { Repository } from '../../git/models/repository.js';
-import { isRebaseTodoEditorEnabled, reopenRebaseTodoEditor } from '../../git/utils/-webview/rebase.utils.js';
-import { getReferenceLabel, isRevisionReference } from '../../git/utils/reference.utils.js';
-import { createRevisionRange } from '../../git/utils/revision.utils.js';
+import type { GlRepository } from '../../git/models/repository.js';
+import {
+	isRebaseTodoEditorEnabled,
+	openRebaseEditor,
+	reopenRebaseTodoEditor,
+} from '../../git/utils/-webview/rebase.utils.js';
 import { showGitErrorMessage } from '../../messages.js';
 import { isSubscriptionTrialOrPaidFromState } from '../../plus/gk/utils/subscription.utils.js';
 import { createQuickPickSeparator } from '../../quickpicks/items/common.js';
@@ -17,8 +24,7 @@ import { createDirectiveQuickPickItem, Directive } from '../../quickpicks/items/
 import type { FlagsQuickPickItem } from '../../quickpicks/items/flags.js';
 import { createFlagsQuickPickItem } from '../../quickpicks/items/flags.js';
 import { executeCommand } from '../../system/-webview/command.js';
-import { Logger } from '../../system/logger.js';
-import { createDisposable } from '../../system/unifiedDisposable.js';
+import { getHostEditorCommand } from '../../system/-webview/vscode.js';
 import type { ViewsWithRepositoryFolders } from '../../views/viewBase.js';
 import type {
 	AsyncStepResultGenerator,
@@ -47,7 +53,7 @@ const Steps = {
 type StepNames = (typeof Steps)[keyof typeof Steps];
 
 interface Context extends StepsContext<StepNames> {
-	repos: Repository[];
+	repos: GlRepository[];
 	associatedView: ViewsWithRepositoryFolders;
 	cache: Map<string, Promise<GitLog | undefined>>;
 	branch: GitBranch;
@@ -59,7 +65,7 @@ interface Context extends StepsContext<StepNames> {
 }
 
 type Flags = '--interactive' | '--update-refs';
-interface State<Repo = string | Repository> {
+interface State<Repo = string | GlRepository> {
 	repo: Repo;
 	destination: GitReference;
 	flags: Flags[];
@@ -87,7 +93,7 @@ export class RebaseGitCommand extends QuickCommand<State> {
 		return false;
 	}
 
-	private async execute(state: StepState<State<Repository>>) {
+	private async execute(state: StepState<State<GlRepository>>) {
 		const interactive = state.flags.includes('--interactive');
 		const updateRefs = state.flags.includes('--update-refs');
 
@@ -107,10 +113,25 @@ export class RebaseGitCommand extends QuickCommand<State> {
 		this.container.telemetry.sendEvent('gitCommand/run', { command: 'rebase' });
 
 		try {
-			await state.repo.git.ops?.rebase?.(state.destination.ref, {
+			const result = await state.repo.git.ops?.rebase(state.destination.ref, {
+				editor: interactive ? await getHostEditorCommand(true) : undefined,
 				interactive: interactive,
 				updateRefs: updateRefs,
 			});
+			if (result?.conflicted) {
+				const openEditor = { title: 'Open Rebase Editor' };
+				void window
+					.showWarningMessage(
+						'Unable to rebase due to conflicts. Resolve the conflicts before continuing, or abort the rebase.',
+						openEditor,
+					)
+					.then(r => {
+						if (r === openEditor) {
+							void openRebaseEditor(this.container, state.repo.path);
+						}
+					});
+				void executeCommand('gitlens.showCommitsView');
+			}
 		} catch (ex) {
 			// Don't show an error message if the user intentionally aborted the rebase
 			if (RebaseError.is(ex, 'aborted')) {
@@ -134,13 +155,19 @@ export class RebaseGitCommand extends QuickCommand<State> {
 			}
 
 			if (RebaseError.is(ex, 'alreadyInProgress')) {
-				void window.showWarningMessage('无法变基。当前已有变基正在进行。请先继续或中止当前变基。');
-				// TODO: open the rebase editor, if its not already open?
+				const openEditor = { title: '打开变基编辑器' };
+				void window
+					.showWarningMessage('无法变基。当前已有变基正在进行。请先继续或中止当前变基。', openEditor)
+					.then(result => {
+						if (result === openEditor) {
+							void openRebaseEditor(this.container, state.repo.path);
+						}
+					});
 				void executeCommand('gitlens.showCommitsView');
 				return;
 			}
 
-			void showGitErrorMessage(ex, RebaseError.is(ex) ? undefined : '无法变基');
+			void showGitErrorMessage(ex, RebaseError.is(ex) || SigningError.is(ex) ? undefined : '无法变基');
 		}
 	}
 
@@ -187,7 +214,7 @@ export class RebaseGitCommand extends QuickCommand<State> {
 				}
 			}
 
-			assertStepState<State<Repository>>(state);
+			assertStepState<State<GlRepository>>(state);
 
 			if (context.branch == null) {
 				const branch = await state.repo.git.branches.getBranch();
@@ -292,7 +319,7 @@ export class RebaseGitCommand extends QuickCommand<State> {
 	}
 
 	private async *confirmStep(
-		state: StepState<State<Repository>>,
+		state: StepState<State<GlRepository>>,
 		context: Context,
 	): AsyncStepResultGenerator<Flags[]> {
 		const counts = await state.repo.git.commits.getLeftRightCommitCount(

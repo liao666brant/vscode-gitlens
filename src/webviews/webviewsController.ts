@@ -1,6 +1,10 @@
 import type { CancellationToken, WebviewPanel, WebviewView, WebviewViewResolveContext } from 'vscode';
 import { Disposable, Uri, ViewColumn, window } from 'vscode';
-import { uuid } from '@env/crypto.js';
+import { uuid } from '@gitlens/utils/crypto.js';
+import { trace } from '@gitlens/utils/decorators/log.js';
+import { find, first, map } from '@gitlens/utils/iterable.js';
+import { Logger } from '@gitlens/utils/logger.js';
+import { maybeStartScopedLogger } from '@gitlens/utils/logger.scoped.js';
 import type { GlCommands } from '../constants.commands.js';
 import type { Source } from '../constants.telemetry.js';
 import type { WebviewPanelIds, WebviewViewIds } from '../constants.views.js';
@@ -8,9 +12,6 @@ import type { Container } from '../container.js';
 import { executeCoreCommand, registerCommand } from '../system/-webview/command.js';
 import { addToContextDelimitedString, getContext } from '../system/-webview/context.js';
 import { getViewFocusCommand } from '../system/-webview/vscode/views.js';
-import { trace } from '../system/decorators/log.js';
-import { find, first, map } from '../system/iterable.js';
-import { maybeStartScopedLogger } from '../system/logger.scope.js';
 import type { WebviewCommandRegistrar } from './webviewCommandRegistrar.js';
 import { WebviewController } from './webviewController.js';
 import type { WebviewPanelDescriptor, WebviewViewDescriptor } from './webviewDescriptors.js';
@@ -140,6 +141,10 @@ export class WebviewsController implements Disposable {
 						const instanceId = uuid();
 
 						scope?.trace(`Resolving view (${instanceId})`);
+
+						Logger.info(
+							`WebviewsController.resolveWebviewView(${descriptor.id}|${instanceId}): hasRestoreState=${isSerializedState<State>(context)}, parentVisible=${webviewView.visible}`,
+						);
 
 						webviewView.webview.options = {
 							enableCommandUris: true,

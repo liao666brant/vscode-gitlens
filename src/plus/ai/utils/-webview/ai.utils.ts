@@ -1,25 +1,27 @@
 import type { CancellationToken, Disposable, QuickInputButton } from 'vscode';
 import { env, ThemeIcon, Uri, window } from 'vscode';
-import type { AIProviders } from '../../../../constants.ai.js';
+import type { AIProviders } from '@gitlens/ai/constants.js';
+import type { AIModel } from '@gitlens/ai/models/model.js';
+import { getValidatedTemperature as _getValidatedTemperature } from '@gitlens/ai/utils/ai.utils.js';
+import { decodeGitLensRevisionUriAuthority } from '@gitlens/git/utils/uriAuthority.js';
+import { CancellationError } from '@gitlens/utils/cancellation.js';
+import { formatNumeric } from '@gitlens/utils/date.js';
+import { Logger } from '@gitlens/utils/logger.js';
+import { getSettledValue } from '@gitlens/utils/promise.js';
+import { getPossessiveForm, pluralize } from '@gitlens/utils/string.js';
 import { Schemes } from '../../../../constants.js';
 import type { Source } from '../../../../constants.telemetry.js';
 import type { Container } from '../../../../container.js';
 import type { MarkdownContentMetadata } from '../../../../documents/markdown.js';
-import { CancellationError } from '../../../../errors.js';
 import type { GitRepositoryService } from '../../../../git/gitRepositoryService.js';
-import { decodeGitLensRevisionUriAuthority } from '../../../../git/gitUri.authority.js';
+import { getCommitDate } from '../../../../git/utils/-webview/commit.utils.js';
 import { createDirectiveQuickPickItem, Directive } from '../../../../quickpicks/items/directive.js';
 import { configuration } from '../../../../system/-webview/configuration.js';
 import { getContext } from '../../../../system/-webview/context.js';
 import { openSettingsEditor } from '../../../../system/-webview/vscode/editors.js';
-import { formatNumeric } from '../../../../system/date.js';
-import { Logger } from '../../../../system/logger.js';
-import { getSettledValue } from '../../../../system/promise.js';
-import { getPossessiveForm } from '../../../../system/string.js';
 import type { OrgAIConfig, OrgAIProvider } from '../../../gk/models/organization.js';
 import { ensureAccountQuickPick } from '../../../gk/utils/-webview/acount.utils.js';
 import type { AIResponse, AIResultContext } from '../../aiProviderService.js';
-import type { AIActionType, AIModel } from '../../models/model.js';
 
 export async function ensureAccount(container: Container, silent: boolean): Promise<boolean> {
 	const result = await ensureAccountQuickPick(
@@ -32,37 +34,10 @@ export async function ensureAccount(container: Container, silent: boolean): Prom
 		silent,
 	);
 
-	if (!result && !silent) {
-		throw new CancellationError();
-	}
+	if (!result && !silent) throw new CancellationError();
 
 	return result;
 }
-
-export function getActionName(action: AIActionType): string {
-	switch (action) {
-		case 'explain-changes':
-			return '解释变更';
-		case 'generate-commitMessage':
-			return '生成提交信息';
-		case 'generate-stashMessage':
-			return '生成暂存消息';
-		case 'generate-changelog':
-			return '生成变更日志（预览）';
-		case 'generate-create-cloudPatch':
-			return '创建 Cloud Patch 详情';
-		case 'generate-create-codeSuggestion':
-			return '创建代码建议详情';
-		case 'generate-create-pullRequest':
-			return '创建拉取请求详情（预览）';
-		case 'generate-commits':
-			return '生成提交（预览）';
-		case 'generate-searchQuery':
-			return '生成搜索查询（预览）';
-	}
-}
-
-export const estimatedCharactersPerToken = 2.8;
 
 export async function getOrPromptApiKey(
 	container: Container,
@@ -103,6 +78,7 @@ export async function getOrPromptApiKey(
 						input.validationMessage = `请输入有效的 ${provider.name} API 密钥`;
 						return;
 					}
+
 					input.validationMessage = undefined;
 				}),
 				input.onDidAccept(() => {
@@ -148,48 +124,7 @@ export async function getOrPromptApiKey(
 }
 
 export function getValidatedTemperature(model: AIModel, modelTemperature?: number | null): number | undefined {
-	if (modelTemperature === null) return undefined;
-	// GPT5 doesn't support anything but the default temperature
-	if (model.id.startsWith('gpt-5')) return undefined;
-
-	modelTemperature ??= Math.max(0, Math.min(configuration.get('ai.modelOptions.temperature'), 2));
-	return modelTemperature;
-}
-
-/**
- * Calculates the reduced max input tokens for retry attempts when context length is exceeded.
- *
- * If `estimatedTokens` is provided, calculates based on the actual overage ratio.
- * Otherwise, uses a hybrid strategy: conservative fixed reduction, then escalating percentages.
- *
- * @param maxInputTokens - Current max input tokens limit
- * @param retryCount - Current retry attempt (1-based, use value after incrementing)
- * @param estimatedTokens - Optional: estimated tokens in the prompt (if known)
- * @returns New max input tokens value
- */
-export function getReducedMaxInputTokens(maxInputTokens: number, retryCount: number, estimatedTokens?: number): number {
-	// If we know the estimated tokens, calculate reduction based on overage
-	if (estimatedTokens != null && estimatedTokens > maxInputTokens) {
-		const overageRatio = estimatedTokens / maxInputTokens;
-		// Target below the limit with some buffer (5-15% below based on retry)
-		const bufferPercent = 0.05 + retryCount * 0.05;
-		const targetRatio = 1 / overageRatio - bufferPercent;
-		return Math.floor(maxInputTokens * Math.max(0.5, targetRatio));
-	}
-
-	// Fallback: progressive reduction without knowing exact overage
-	switch (retryCount) {
-		case 1:
-			// Conservative fixed reduction for small overages
-			return maxInputTokens - 1000;
-		case 2:
-			// Moderate percentage-based reduction
-			return Math.floor(maxInputTokens * 0.9);
-		case 3:
-		default:
-			// Aggressive percentage-based reduction
-			return Math.floor(maxInputTokens * 0.75);
-	}
+	return _getValidatedTemperature(model, modelTemperature, configuration.get('ai.modelOptions.temperature'));
 }
 
 export async function showLargePromptWarning(estimatedTokens: number, threshold: number): Promise<boolean> {
@@ -216,10 +151,6 @@ export function showPromptTruncationWarning(model: AIModel): void {
 	void window.showWarningMessage(`提示词已被截断，以满足 ${getPossessiveForm(model.provider.name)} 的限制。`);
 }
 
-export function isAzureUrl(url: string): boolean {
-	return url.includes('.azure.com');
-}
-
 export function getOrgAIConfig(): OrgAIConfig {
 	return {
 		aiEnabled: getContext('gitlens:gk:organization:ai:enabled', true),
@@ -237,16 +168,6 @@ export function getOrgAIProviderOfType(type: AIProviders, orgAIConfig?: OrgAICon
 
 export function isProviderEnabledByOrg(type: AIProviders, orgAIConfig?: OrgAIConfig): boolean {
 	return getOrgAIProviderOfType(type, orgAIConfig).enabled;
-}
-
-/**
- * If the input value (userUrl) matches to the org configuration it returns it.
- */
-export function ensureOrgConfiguredUrl(type: AIProviders, userUrl: null | undefined | string): string | undefined {
-	const provider = getOrgAIProviderOfType(type);
-	if (!provider.enabled) return undefined;
-
-	return provider.url || userUrl || undefined;
 }
 
 export async function ensureAccess(
@@ -398,11 +319,13 @@ export async function prepareCompareDataForAIRequest(
 	if (cancellation?.isCancellationRequested) throw new CancellationError();
 
 	const commitMessages: string[] = [];
-	for (const commit of [...log.commits.values()].sort((a, b) => a.date.getTime() - b.date.getTime())) {
+	for (const commit of [...log.commits.values()].sort(
+		(a, b) => getCommitDate(a).getTime() - getCommitDate(b).getTime(),
+	)) {
 		const message = commit.message ?? commit.summary;
 		if (message) {
 			commitMessages.push(
-				`<commit-message ${commit.date.toISOString()}>\n${commit.message ?? commit.summary}\n<end-of-commit-message>`,
+				`<commit-message ${getCommitDate(commit).toISOString()}>\n${commit.message ?? commit.summary}\n<end-of-commit-message>`,
 			);
 		}
 	}

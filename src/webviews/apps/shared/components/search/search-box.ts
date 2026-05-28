@@ -2,9 +2,11 @@ import type { TemplateResult } from 'lit';
 import { css, html } from 'lit';
 import { customElement, property, query, state } from 'lit/decorators.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
+import { when } from 'lit/directives/when.js';
 import type { Disposable } from 'vscode';
 import { isMac } from '@env/platform.js';
-import type { SearchQuery } from '../../../../../constants.search.js';
+import type { SearchQuery } from '@gitlens/git/models/search.js';
+import { pluralize } from '@gitlens/utils/string.js';
 import type { AppState } from '../../../plus/graph/context.js';
 import { DOM } from '../../dom.js';
 import { GlElement } from '../element.js';
@@ -37,7 +39,8 @@ export class GlSearchBox extends GlElement {
 			align-items: center;
 			gap: 0.8rem;
 			color: var(--color-foreground);
-			flex: auto 1 1;
+			flex: 1 100 auto;
+			min-width: 16rem;
 			position: relative;
 		}
 		:host(:focus) {
@@ -56,10 +59,14 @@ export class GlSearchBox extends GlElement {
 		}
 
 		.count {
-			flex: none;
+			flex: 0 1 auto;
 			margin-right: 0.4rem;
 			font-size: 1.2rem;
-			min-width: 10ch;
+			min-width: 0;
+			max-width: 12ch;
+			white-space: nowrap;
+			overflow: hidden;
+			text-overflow: ellipsis;
 		}
 
 		.count.error {
@@ -185,6 +192,7 @@ export class GlSearchBox extends GlElement {
 	}
 	set value(value: string) {
 		if (this._value !== undefined) return;
+
 		this._value = value;
 	}
 
@@ -248,6 +256,22 @@ export class GlSearchBox extends GlElement {
 		this.searchInput?.setExternalSearchQuery(search);
 	}
 
+	async pickAuthors(): Promise<void> {
+		await this.searchInput?.pickAuthors();
+	}
+
+	async pickRefs(): Promise<void> {
+		await this.searchInput?.pickRefs();
+	}
+
+	async pickFiles(): Promise<void> {
+		await this.searchInput?.pickFiles();
+	}
+
+	insertSearchOperator(operator: string): void {
+		this.searchInput?.insertSearchOperator(operator);
+	}
+
 	private handleShortcutKeys(e: KeyboardEvent) {
 		if (e.altKey) return;
 
@@ -286,7 +310,9 @@ export class GlSearchBox extends GlElement {
 	private handleCancel(e: Event) {
 		e.preventDefault();
 		e.stopPropagation();
-		this.emit('gl-search-cancel', { preserveResults: true });
+		// Preserve results (pause) when we have results worth keeping;
+		// hard cancel when there are no results (e.g., error state, still waiting)
+		this.emit('gl-search-cancel', { preserveResults: this.total > 0 });
 	}
 
 	private get resultsHtml() {
@@ -338,7 +364,6 @@ export class GlSearchBox extends GlElement {
 					<code-icon class="search-button__stop" icon="stop-circle"></code-icon>
 				</gl-button>
 				<gl-tooltip
-					hoist
 					placement="top"
 					?disabled="${!tooltip}"
 					class="count${!hasResults && this.valid && isComplete ? ' error' : ''}"
@@ -358,7 +383,6 @@ export class GlSearchBox extends GlElement {
 					<code-icon icon="play-circle"></code-icon>
 				</gl-button>
 				<gl-tooltip
-					hoist
 					placement="top"
 					?disabled="${!tooltip}"
 					class="count${!hasResults && this.valid && isComplete ? ' error' : ''}"
@@ -368,7 +392,6 @@ export class GlSearchBox extends GlElement {
 
 		// Not searching - just show results
 		return html`<gl-tooltip
-			hoist
 			placement="top"
 			?disabled="${!tooltip}"
 			class="count${!hasResults && this.valid && isComplete ? ' error' : ''}"
@@ -404,46 +427,50 @@ export class GlSearchBox extends GlElement {
 					this.emit('gl-search-pause');
 				}}"
 			></gl-search-input>
-			<div class="search-navigation" aria-label="搜索导航">
-				${this.resultsHtml}
-				<gl-tooltip hoist>
-					<button
-						type="button"
-						class="button ${this.navigating === 'previous' ? 'navigating' : ''}"
-						?disabled="${!this.hasResults || this.isAtFirstResult}"
-						@click="${this.handlePrevious}"
-					>
-						<code-icon
-							icon="arrow-up"
-							aria-label="上一个匹配项（Shift+Enter）&#10;第一个匹配项（Shift+点击）"
-						></code-icon>
-					</button>
-					<span slot="content">上一个匹配项（Shift+Enter）<br />第一个匹配项（Shift+点击）</span>
-				</gl-tooltip>
-				<gl-tooltip hoist>
-					<button
-						type="button"
-						class="button ${this.navigating === 'next' ? 'navigating' : ''}"
-						?disabled="${!this.hasResults || this.isAtLastResult}"
-						@click="${this.handleNext}"
-					>
-						<code-icon
-							icon="arrow-down"
-							aria-label="下一个匹配项（Enter）&#10;最后一个匹配项（Shift+点击）"
-						></code-icon>
-					</button>
-					<span slot="content">下一个匹配项（Enter）<br />最后一个匹配项（Shift+点击）</span>
-				</gl-tooltip>
-				<gl-tooltip hoist content="在侧边栏显示结果">
-					<button
-						type="button"
-						class="button"
-						?disabled="${!this.hasResults}"
-						@click="${this.handleOpenInView}"
-					>
-						<code-icon icon="link-external" aria-label="在侧边栏显示结果"></code-icon>
-					</button>
-				</gl-tooltip>
-			</div>`;
+			${when(
+				this.resultsLoaded || this.searching,
+				() =>
+					html`<div class="search-navigation" aria-label="搜索导航">
+						${this.resultsHtml}
+						<gl-tooltip>
+							<button
+								type="button"
+								class="button ${this.navigating === 'previous' ? 'navigating' : ''}"
+								?disabled="${!this.hasResults || this.isAtFirstResult}"
+								@click="${this.handlePrevious}"
+							>
+								<code-icon
+									icon="arrow-up"
+									aria-label="上一个匹配项（Shift+Enter）&#10;第一个匹配项（Shift+点击）"
+								></code-icon>
+							</button>
+							<span slot="content">上一个匹配项（Shift+Enter）<br />第一个匹配项（Shift+点击）</span>
+						</gl-tooltip>
+						<gl-tooltip>
+							<button
+								type="button"
+								class="button ${this.navigating === 'next' ? 'navigating' : ''}"
+								?disabled="${!this.hasResults || this.isAtLastResult}"
+								@click="${this.handleNext}"
+							>
+								<code-icon
+									icon="arrow-down"
+									aria-label="下一个匹配项（Enter）&#10;最后一个匹配项（Shift+点击）"
+								></code-icon>
+							</button>
+							<span slot="content">下一个匹配项（Enter）<br />最后一个匹配项（Shift+点击）</span>
+						</gl-tooltip>
+						<gl-tooltip content="在侧边栏显示结果">
+							<button
+								type="button"
+								class="button"
+								?disabled="${!this.hasResults}"
+								@click="${this.handleOpenInView}"
+							>
+								<code-icon icon="link-external" aria-label="在侧边栏显示结果"></code-icon>
+							</button>
+						</gl-tooltip>
+					</div>`,
+			)}`;
 	}
 }

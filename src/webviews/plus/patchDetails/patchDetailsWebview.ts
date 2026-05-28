@@ -1,23 +1,33 @@
 import type { ConfigurationChangeEvent } from 'vscode';
 import { Disposable, env, Uri, window } from 'vscode';
+import { ApplyPatchCommitError } from '@gitlens/git/errors.js';
+import type { GitCommit } from '@gitlens/git/models/commit.js';
+import { GitFileChange } from '@gitlens/git/models/fileChange.js';
+import type { PatchRevisionRange } from '@gitlens/git/models/patch.js';
+import type { GkRepositoryId } from '@gitlens/git/models/repositoryIdentities.js';
+import { uncommitted, uncommittedStaged } from '@gitlens/git/models/revision.js';
+import { createReference } from '@gitlens/git/utils/reference.utils.js';
+import { shortenRevision } from '@gitlens/git/utils/revision.utils.js';
+import { CancellationError, isCancellationError } from '@gitlens/utils/cancellation.js';
+import type { Deferrable } from '@gitlens/utils/debounce.js';
+import { debounce } from '@gitlens/utils/debounce.js';
+import { trace } from '@gitlens/utils/decorators/log.js';
+import { find, some } from '@gitlens/utils/iterable.js';
+import { basename } from '@gitlens/utils/path.js';
+import { fileUri, joinUriPath } from '@gitlens/utils/uri.js';
 import { getAvatarUri } from '../../../avatars.js';
 import type { ContextKeys } from '../../../constants.context.js';
 import { GlyphChars, previewBadge } from '../../../constants.js';
 import type { Sources, WebviewTelemetryContext } from '../../../constants.telemetry.js';
 import type { Container } from '../../../container.js';
-import { CancellationError } from '../../../errors.js';
 import { openChanges, openChangesWithWorking, openFile } from '../../../git/actions/commit.js';
-import { ApplyPatchCommitError } from '../../../git/errors.js';
 import type { RepositoriesChangeEvent } from '../../../git/gitProviderService.js';
-import type { GitCommit } from '../../../git/models/commit.js';
-import { GitFileChange } from '../../../git/models/fileChange.js';
-import type { PatchRevisionRange } from '../../../git/models/patch.js';
-import type { Repository } from '../../../git/models/repository.js';
-import { isRepository } from '../../../git/models/repository.js';
-import type { GkRepositoryId } from '../../../git/models/repositoryIdentities.js';
-import { uncommitted, uncommittedStaged } from '../../../git/models/revision.js';
-import { createReference } from '../../../git/utils/reference.utils.js';
-import { shortenRevision } from '../../../git/utils/revision.utils.js';
+import { GlRepository } from '../../../git/models/repository.js';
+import {
+	formatCurrentUserDisplayName,
+	getCommitForFile,
+	getCommitRepository,
+} from '../../../git/utils/-webview/commit.utils.js';
 import { showGitErrorMessage } from '../../../messages.js';
 import { showPatchesView } from '../../../plus/drafts/actions.js';
 import { getDraftEntityIdentifier } from '../../../plus/drafts/draftsService.js';
@@ -41,11 +51,6 @@ import { executeCommand, registerCommand } from '../../../system/-webview/comman
 import { configuration } from '../../../system/-webview/configuration.js';
 import { getContext, onDidChangeContext, setContext } from '../../../system/-webview/context.js';
 import { gate } from '../../../system/decorators/gate.js';
-import { trace } from '../../../system/decorators/log.js';
-import type { Deferrable } from '../../../system/function/debounce.js';
-import { debounce } from '../../../system/function/debounce.js';
-import { find, some } from '../../../system/iterable.js';
-import { basename } from '../../../system/path.js';
 import type { Serialized } from '../../../system/serialize.js';
 import { serialize } from '../../../system/serialize.js';
 import { showInspectView } from '../../commitDetails/actions.js';
@@ -376,7 +381,7 @@ export class PatchDetailsWebviewProvider implements WebviewProvider<
 					| undefined = undefined;
 
 				if (shouldPickBranch) {
-					const repo = commit.getRepository();
+					const repo = getCommitRepository(commit.repoPath);
 					const branch = await showNewOrSelectBranchPicker(
 						`Select a Branch ${GlyphChars.Dot} ${repo?.name}`,
 						// 'Choose a branch to apply the Cloud Patch to',
@@ -397,15 +402,31 @@ export class PatchDetailsWebviewProvider implements WebviewProvider<
 					};
 				}
 
-				await this.container.git
-					.getRepositoryService(commit.repoPath)
-					.patch?.applyUnreachableCommitForPatch(commit.ref, {
-						stash: 'prompt',
-						...options,
-					});
+				const svc = this.container.git.getRepositoryService(commit.repoPath);
+
+				// Check for working changes and prompt before applying
+				let shouldStash = false;
+				if (await svc.status?.hasWorkingChanges()) {
+					const confirm = { title: 'Stash Changes' };
+					const cancel = { title: 'Cancel', isCloseAffordance: true };
+					const result = await window.showWarningMessage(
+						'You have changes in your working tree.\nDo you want to stash them before applying the patch?',
+						{ modal: true },
+						confirm,
+						cancel,
+					);
+					if (result !== confirm) throw new CancellationError();
+
+					shouldStash = true;
+				}
+
+				await svc.patch?.applyUnreachableCommitForPatch(commit.ref, {
+					stash: shouldStash,
+					...options,
+				});
 				void window.showInformationMessage(`Patch applied successfully`);
 			} catch (ex) {
-				if (ex instanceof CancellationError) return;
+				if (isCancellationError(ex)) return;
 
 				if (ApplyPatchCommitError.is(ex, 'appliedWithConflicts')) {
 					void window.showWarningMessage('Patch applied with conflicts');
@@ -428,7 +449,9 @@ export class PatchDetailsWebviewProvider implements WebviewProvider<
 				const repositoryOrIdentity = this._context.draft.changesets?.[0].patches[0].repository;
 				void showInspectView({
 					type: 'wip',
-					repository: isRepoLocated(repositoryOrIdentity) ? (repositoryOrIdentity as Repository) : undefined,
+					repository: isRepoLocated(repositoryOrIdentity)
+						? (repositoryOrIdentity as GlRepository)
+						: undefined,
 					source: 'patchDetails',
 				});
 			} else {
@@ -527,10 +550,12 @@ export class PatchDetailsWebviewProvider implements WebviewProvider<
 			if (params.role === 'remove') {
 				const selection = userSelections.findIndex(u => u.member.id === params.selection.member.id);
 				if (selection === -1) return;
+
 				userSelections.splice(selection, 1);
 			} else {
 				const selection = userSelections.find(u => u.member.id === params.selection.member.id);
 				if (selection == null) return;
+
 				selection.pendingRole = params.role;
 			}
 
@@ -705,7 +730,7 @@ export class PatchDetailsWebviewProvider implements WebviewProvider<
 		const patch = draft.changesets?.[0].patches.find(p => isRepoLocated(p.repository));
 
 		let repoPrivacy;
-		if (isRepository(patch?.repository)) {
+		if (GlRepository.is(patch?.repository)) {
 			repoPrivacy = await this.container.git.visibility(patch.repository.uri);
 		}
 
@@ -763,7 +788,7 @@ export class PatchDetailsWebviewProvider implements WebviewProvider<
 
 	@ipcRequest(GenerateRequest)
 	private async onGenerateDetails(): Promise<IpcResponse<typeof GenerateRequest>> {
-		let repo: Repository | undefined;
+		let repo: GlRepository | undefined;
 		if (this._context.create?.changes != null) {
 			for (const change of this._context.create.changes.values()) {
 				if (change.repository) {
@@ -895,6 +920,7 @@ export class PatchDetailsWebviewProvider implements WebviewProvider<
 		if (changes.length === 0 && adds.length === 0) {
 			return;
 		}
+
 		if (changes.length !== 0) {
 			const results = await Promise.all(changes);
 			console.log(results);
@@ -1003,6 +1029,7 @@ export class PatchDetailsWebviewProvider implements WebviewProvider<
 			if (updated.size !== changesetByRepo.size) {
 				for (const [uri, repoChange] of changesetByRepo) {
 					if (updated.has(uri)) continue;
+
 					repoChange.checked = false;
 				}
 			}
@@ -1076,7 +1103,7 @@ export class PatchDetailsWebviewProvider implements WebviewProvider<
 		const patch = draft.changesets?.[0].patches.find(p => isRepoLocated(p.repository));
 
 		let repoPrivacy;
-		if (isRepository(patch?.repository)) {
+		if (GlRepository.is(patch?.repository)) {
 			repoPrivacy = await this.container.git.visibility(patch.repository.uri);
 		}
 
@@ -1151,7 +1178,7 @@ export class PatchDetailsWebviewProvider implements WebviewProvider<
 				updatedAt: draft.updatedAt.getTime(),
 				author: {
 					id: draft.author.id,
-					name: draft.author.name,
+					name: draft.isMine ? formatCurrentUserDisplayName(draft.author.name) : draft.author.name,
 					email: draft.author.email,
 					avatar: draft.author.avatarUri?.toString(),
 				},
@@ -1188,6 +1215,7 @@ export class PatchDetailsWebviewProvider implements WebviewProvider<
 		if (this._context.draftUserState != null && options?.force !== true) {
 			return;
 		}
+
 		// try to create the state if it doesn't exist
 		try {
 			const draftUsers = await this.container.drafts.getDraftUsers(draft.id);
@@ -1289,11 +1317,14 @@ export class PatchDetailsWebviewProvider implements WebviewProvider<
 			return [
 				commit,
 				new GitFileChange(
-					this.container,
 					params.repoPath,
 					params.path,
 					params.status,
+					joinUriPath(fileUri(params.repoPath), params.path),
 					params.originalPath,
+					params.originalPath != null
+						? joinUriPath(fileUri(params.repoPath), params.originalPath)
+						: undefined,
 					undefined,
 					undefined,
 					params.staged,
@@ -1304,7 +1335,7 @@ export class PatchDetailsWebviewProvider implements WebviewProvider<
 			];
 		}
 
-		commit = await commit?.getCommitForFile(params.path, params.staged);
+		commit = commit != null ? await getCommitForFile(commit, params.path, params.staged) : undefined;
 		return commit != null ? [commit, commit.file!, revision] : undefined;
 	}
 
@@ -1497,8 +1528,8 @@ export class PatchDetailsWebviewProvider implements WebviewProvider<
 	private async getOrLocatePatchRepository(
 		patch: DraftPatch,
 		options?: { notifyOnLocation?: boolean; prompt?: boolean },
-	): Promise<Repository | undefined> {
-		if (patch.repository == null || isRepository(patch.repository)) {
+	): Promise<GlRepository | undefined> {
+		if (patch.repository == null || GlRepository.is(patch.repository)) {
 			return patch.repository;
 		}
 
@@ -1520,7 +1551,7 @@ export class PatchDetailsWebviewProvider implements WebviewProvider<
 	}
 
 	// Ensures that changesets arent mutated twice on the same draft
-	@gate<PatchDetailsWebviewProvider['ensureChangesets']>(d => d.id)
+	@gate(d => d.id)
 	private async ensureChangesets(draft: Draft) {
 		draft.changesets ??= await this.container.drafts.getChangesets(draft.id);
 		return draft.changesets;
@@ -1568,7 +1599,7 @@ function isDraftMissingContent(draft: Draft): boolean {
 }
 
 function isRepoLocated(repo: DraftPatch['repository']): boolean {
-	return repo != null && isRepository(repo);
+	return repo != null && GlRepository.is(repo);
 }
 
 function toDraftUserSelection(

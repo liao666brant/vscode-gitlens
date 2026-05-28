@@ -1,26 +1,28 @@
 import { window } from 'vscode';
-import type { Container } from '../../../container.js';
-import { BranchError } from '../../../git/errors.js';
-import type { GitBranch } from '../../../git/models/branch.js';
-import type { IssueShape } from '../../../git/models/issue.js';
-import type { GitReference } from '../../../git/models/reference.js';
-import type { Repository } from '../../../git/models/repository.js';
-import type { GitWorktree } from '../../../git/models/worktree.js';
-import { addAssociatedIssueToBranch } from '../../../git/utils/-webview/branch.issue.utils.js';
+import { BranchError } from '@gitlens/git/errors.js';
+import type { GitBranch } from '@gitlens/git/models/branch.js';
+import type { IssueShape } from '@gitlens/git/models/issue.js';
+import type { GitReference } from '@gitlens/git/models/reference.js';
+import type { GitWorktree } from '@gitlens/git/models/worktree.js';
 import {
 	getReferenceLabel,
 	getReferenceNameWithoutRemote,
 	isBranchReference,
 	isRevisionReference,
-} from '../../../git/utils/reference.utils.js';
+} from '@gitlens/git/utils/reference.utils.js';
+import { Logger } from '@gitlens/utils/logger.js';
+import type { Deferred } from '@gitlens/utils/promise.js';
+import { defer } from '@gitlens/utils/promise.js';
+import type { Container } from '../../../container.js';
+import type { GlRepository } from '../../../git/models/repository.js';
+import { addAssociatedIssueToBranch } from '../../../git/utils/-webview/branch.issue.utils.js';
 import { showGitErrorMessage } from '../../../messages.js';
-import type { ChatActions } from '../../../plus/chat/chatActions.js';
+import type { StartReviewChatAction, StartWorkChatAction } from '../../../plus/chat/chatActions.js';
 import { getIssueOwner } from '../../../plus/integrations/providers/utils.js';
 import type { FlagsQuickPickItem } from '../../../quickpicks/items/flags.js';
 import { createFlagsQuickPickItem } from '../../../quickpicks/items/flags.js';
-import { Logger } from '../../../system/logger.js';
-import type { Deferred } from '../../../system/promise.js';
-import { defer } from '../../../system/promise.js';
+import { executeCommand } from '../../../system/-webview/command.js';
+import type { OpenChatActionCommandArgs } from '../../openChatAction.js';
 import type {
 	PartialStepState,
 	StepGenerator,
@@ -58,7 +60,7 @@ export type BranchCreateStepNames = StepNames;
 type Context = BranchContext<StepNames>;
 
 type Flags = '--switch' | '--worktree';
-interface State<Repo = string | Repository> {
+interface State<Repo = string | GlRepository> {
 	repo: Repo;
 	suggestedRepo?: Repo;
 	reference: GitReference;
@@ -70,13 +72,13 @@ interface State<Repo = string | Repository> {
 	associateWithIssue?: IssueShape;
 
 	// Pass through to worktree command
-	worktreeDefaultOpen?: 'new' | 'current';
+	worktreeDefaultOpen?: 'new' | 'current' | 'none';
 
 	// Result tracking
 	result?: Deferred<{ branch: GitBranch; worktree?: GitWorktree }>;
 
 	// Chat action for deeplink storage
-	chatAction?: ChatActions;
+	chatAction?: StartWorkChatAction | StartReviewChatAction;
 }
 export type BranchCreateState = State;
 
@@ -134,7 +136,7 @@ export class BranchCreateGitCommand extends QuickCommand<State> {
 					}
 				}
 
-				assertStepState<State<Repository>>(state);
+				assertStepState<State<GlRepository>>(state);
 
 				if (steps.isAtStep(Steps.PickRef) || state.reference == null) {
 					using step = steps.enterStep(Steps.PickRef);
@@ -185,6 +187,7 @@ export class BranchCreateGitCommand extends QuickCommand<State> {
 				}
 
 				if (!steps.isAtStepOrUnset(Steps.Confirm)) continue;
+
 				if (this.confirm(state.confirm)) {
 					using step = steps.enterStep(Steps.Confirm);
 
@@ -257,7 +260,7 @@ export class BranchCreateGitCommand extends QuickCommand<State> {
 				steps.markStepsComplete();
 
 				if (state.flags.includes('--switch')) {
-					await state.repo.switch(state.reference.ref, { createBranch: state.name });
+					await state.repo.git.switch(state.reference.ref, { createBranch: state.name });
 				} else {
 					try {
 						await state.repo.git.branches.createBranch?.(
@@ -302,6 +305,17 @@ export class BranchCreateGitCommand extends QuickCommand<State> {
 						state.result.cancel();
 					}
 				}
+
+				// Non-worktree paths don't go through the deep-link bridge (which only fires on
+				// new-window worktree open). When `chatAction.agent` is set, the user explicitly
+				// chose an agent — fire the dispatch inline in the current window so the agent
+				// actually launches. Without this, picking `--switch` (no worktree) silently
+				// drops the agent dispatch.
+				if (state.chatAction?.agent != null && !state.flags.includes('--worktree')) {
+					void executeCommand('gitlens.openChatAction', {
+						chatAction: state.chatAction,
+					} as OpenChatActionCommandArgs);
+				}
 			}
 		} finally {
 			if (state.result?.pending) {
@@ -312,7 +326,7 @@ export class BranchCreateGitCommand extends QuickCommand<State> {
 		return steps.isComplete ? undefined : StepResultBreak;
 	}
 
-	private *confirmStep(state: StepState<State<Repository>>, context: BranchContext): StepResultGenerator<Flags[]> {
+	private *confirmStep(state: StepState<State<GlRepository>>, context: BranchContext): StepResultGenerator<Flags[]> {
 		const confirmItems = [];
 		if (!state.confirmOptions) {
 			confirmItems.push(

@@ -1,12 +1,13 @@
 import type { ConfigurationChangeEvent } from 'vscode';
 import { Disposable, languages } from 'vscode';
+import { debug } from '@gitlens/utils/decorators/log.js';
+import { once } from '@gitlens/utils/event.js';
+import { getLoggableName } from '@gitlens/utils/logger.js';
+import { getScopedLogger, maybeStartScopedLogger } from '@gitlens/utils/logger.scoped.js';
 import type { Container } from '../container.js';
 import { configuration } from '../system/-webview/configuration.js';
 import { setContext } from '../system/-webview/context.js';
-import { debug } from '../system/decorators/log.js';
-import { once } from '../system/event.js';
-import { getLoggableName } from '../system/logger.js';
-import { getScopedLogger, maybeStartScopedLogger } from '../system/logger.scope.js';
+import { loadChunk } from '../system/-webview/loadChunk.js';
 import type { DocumentBlameStateChangeEvent, DocumentDirtyIdleTriggerEvent } from '../trackers/documentTracker.js';
 import type { GitCodeLensProvider } from './codeLensProvider.js';
 
@@ -35,7 +36,15 @@ export class GitCodeLensController implements Disposable {
 	private onConfigurationChanged(e?: ConfigurationChangeEvent) {
 		using scope = maybeStartScopedLogger(`${getLoggableName(this)}.onConfigurationChanged`);
 
-		if (configuration.changed(e, ['codeLens', 'defaultDateFormat', 'defaultDateSource', 'defaultDateStyle'])) {
+		if (
+			configuration.changed(e, [
+				'codeLens',
+				'defaultCurrentUserNameStyle',
+				'defaultDateFormat',
+				'defaultDateSource',
+				'defaultDateStyle',
+			])
+		) {
 			if (e != null) {
 				scope?.debug('resetting CodeLens provider');
 			}
@@ -105,7 +114,9 @@ export class GitCodeLensController implements Disposable {
 
 		this._providerDisposable?.dispose();
 
-		const { GitCodeLensProvider } = await import(/* webpackChunkName: "codelens" */ './codeLensProvider.js');
+		const { GitCodeLensProvider } = await loadChunk(
+			() => import(/* webpackChunkName: "codelens" */ './codeLensProvider.js'),
+		);
 
 		this._provider = new GitCodeLensProvider(this.container);
 		this._providerDisposable = Disposable.from(

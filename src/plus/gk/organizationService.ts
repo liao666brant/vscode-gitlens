@@ -1,10 +1,11 @@
 import { Disposable, window } from 'vscode';
+import { debug } from '@gitlens/utils/decorators/log.js';
+import { once } from '@gitlens/utils/function.js';
+import { getScopedLogger } from '@gitlens/utils/logger.scoped.js';
 import type { Container } from '../../container.js';
+import { AuthenticationRequiredError, getPresentableErrorMessage } from '../../errors.js';
 import { setContext } from '../../system/-webview/context.js';
 import { gate } from '../../system/decorators/gate.js';
-import { debug } from '../../system/decorators/log.js';
-import { once } from '../../system/function.js';
-import { getScopedLogger } from '../../system/logger.scope.js';
 import type {
 	Organization,
 	OrganizationMember,
@@ -73,10 +74,18 @@ export class OrganizationService implements Disposable {
 					{ token: options?.accessToken },
 				);
 			} catch (ex) {
+				if (ex instanceof AuthenticationRequiredError) {
+					this.updateOrganizations(undefined);
+					return this._organizations;
+				}
+
 				debugger;
 				scope?.error(ex);
 
-				void window.showErrorMessage(`Unable to get organizations due to error: ${ex}`, 'OK');
+				void window.showErrorMessage(
+					`Unable to get organizations due to error: ${getPresentableErrorMessage(ex)}`,
+					'OK',
+				);
 				this.updateOrganizations(undefined);
 				return this._organizations;
 			}
@@ -110,6 +119,7 @@ export class OrganizationService implements Disposable {
 	private loadStoredOrganizations(userId: string): void {
 		const storedOrganizations = this.container.storage.get(`gk:${userId}:organizations`);
 		if (storedOrganizations == null) return;
+
 		const { timestamp, data: organizations } = storedOrganizations;
 		if (timestamp == null || Date.now() - timestamp > organizationsCacheExpiration) {
 			return;
@@ -188,7 +198,16 @@ export class OrganizationService implements Disposable {
 			type MemberResponse = {
 				members: OrganizationMember[];
 			};
-			const rsp = await this.connection.fetchGkApi(`organization/${id}/members`, { method: 'GET' });
+			let rsp;
+			try {
+				rsp = await this.connection.fetchGkApi(`organization/${id}/members`, { method: 'GET' });
+			} catch (ex) {
+				if (ex instanceof AuthenticationRequiredError) return [];
+
+				debugger;
+				scope?.error(ex);
+				return [];
+			}
 			if (!rsp.ok) {
 				scope?.error(
 					undefined,
@@ -256,11 +275,20 @@ export class OrganizationService implements Disposable {
 
 		if (!this._organizationSettings?.has(id) || options?.force === true) {
 			await this.deleteStoredOrganizationSettings(id);
-			const rsp = await this.connection.fetchGkApi(
-				`v1/organizations/settings`,
-				{ method: 'GET' },
-				{ organizationId: id },
-			);
+			let rsp;
+			try {
+				rsp = await this.connection.fetchGkApi(
+					`v1/organizations/settings`,
+					{ method: 'GET' },
+					{ organizationId: id },
+				);
+			} catch (ex) {
+				if (ex instanceof AuthenticationRequiredError) return undefined;
+
+				debugger;
+				scope?.error(ex);
+				return undefined;
+			}
 			if (!rsp.ok) {
 				scope?.error(
 					undefined,

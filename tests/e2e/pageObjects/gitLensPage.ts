@@ -24,11 +24,11 @@ export class GitLensPage extends VSCodePage {
 	async startSubscriptionSimulation(
 		state: SimulationState = { state: 6 /*SubscriptionState.Paid*/, planId: 'pro' },
 	): Promise<{ success: boolean } & Disposable> {
-		if (!(await this.waitForCommand('gitlens.plus.simulateSubscription'))) {
-			throw new Error('gitlens.plus.simulateSubscription command not found');
+		if (!(await this.waitForCommand('gitlens.plus.simulate.subscription'))) {
+			throw new Error('gitlens.plus.simulate.subscription command not found');
 		}
 
-		const success = await this.executeCommand<boolean>('gitlens.plus.simulateSubscription', state);
+		const success = await this.executeCommand<boolean>('gitlens.plus.simulate.subscription', state);
 		// Wait for the subscription change event to propagate through the system
 		await this.page.waitForTimeout(ShortTimeout);
 		return {
@@ -40,7 +40,7 @@ export class GitLensPage extends VSCodePage {
 	}
 
 	async stopSubscriptionSimulation(): Promise<void> {
-		await this.executeCommand('gitlens.plus.simulateSubscription', { state: null });
+		await this.executeCommand('gitlens.plus.simulate.subscription', { state: null });
 	}
 
 	/**
@@ -284,6 +284,45 @@ export class GitLensPage extends VSCodePage {
 
 	// ============================================================================
 	// GitLens Webviews
+	// ============================================================================
+
+	// ============================================================================
+	// Blame Annotations
+	// ============================================================================
+
+	/**
+	 * Toggle file blame annotations on the active editor.
+	 */
+	async toggleFileBlame(): Promise<void> {
+		await this.executeCommand('gitlens.toggleFileBlame');
+	}
+
+	/**
+	 * Check if blame annotations are currently visible in the active editor.
+	 *
+	 * VS Code renders GitLens gutter blame decorations as CSS `::before`
+	 * pseudo-elements on `<span>` elements within `.view-lines`. The decoration
+	 * class names contain the `ced-` prefix (content editor decoration).
+	 *
+	 * @param expectedText — Text to search for in `::before` content (e.g. commit message or date pattern)
+	 */
+	async hasBlameAnnotations(expectedText: string): Promise<boolean> {
+		return this.page.evaluate((pattern: string) => {
+			// Blame decorations live on <span> elements inside .view-lines with ced-* classes
+			const candidates = document.querySelectorAll('.monaco-editor .view-lines span[class*="ced-"]');
+			for (const el of candidates) {
+				const content = window.getComputedStyle(el, '::before').getPropertyValue('content');
+				if (content && content !== 'none' && content !== '""') {
+					const text = content.replace(/^"|"$/g, '');
+					if (text.includes(pattern)) return true;
+				}
+			}
+			return false;
+		}, expectedText);
+	}
+
+	// ============================================================================
+	// Webviews
 	// ============================================================================
 
 	async getRebaseWebview(): Promise<FrameLocator | null> {

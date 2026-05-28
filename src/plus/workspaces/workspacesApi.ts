@@ -1,7 +1,6 @@
-import type { RequestInit } from '@env/fetch.js';
+import { debug } from '@gitlens/utils/decorators/log.js';
+import { Logger } from '@gitlens/utils/logger.js';
 import type { Container } from '../../container.js';
-import { debug } from '../../system/decorators/log.js';
-import { Logger } from '../../system/logger.js';
 import type { GraphQLRequest, ServerConnection } from '../gk/serverConnection.js';
 import type { CloudWorkspaceData } from './models/cloudWorkspace.js';
 import { CloudWorkspaceProviderInputType } from './models/cloudWorkspace.js';
@@ -179,12 +178,15 @@ export class WorkspacesApi {
 		}
 
 		const addedWorkspaceIds = new Set<string>();
-		const json: { data: Record<string, CloudWorkspaceConnection<CloudWorkspaceData> | null> } | undefined =
-			await rsp.json();
+		const json = (await rsp.json()) as
+			| { data: Record<string, CloudWorkspaceConnection<CloudWorkspaceData> | null> }
+			| undefined;
 		if (json?.data == null) return undefined;
+
 		let outputData: WorkspacesResponse | undefined;
 		for (const workspaceData of Object.values(json.data)) {
 			if (workspaceData == null) continue;
+
 			if (outputData == null) {
 				outputData = { data: { projects: workspaceData } };
 				for (const node of workspaceData.nodes) {
@@ -193,6 +195,7 @@ export class WorkspacesApi {
 			} else {
 				for (const node of workspaceData.nodes) {
 					if (addedWorkspaceIds.has(node.id)) continue;
+
 					addedWorkspaceIds.add(node.id);
 					outputData.data.projects.nodes.push(node);
 				}
@@ -376,7 +379,7 @@ export class WorkspacesApi {
 		let count = 1;
 		const reposReturnQuery = repos
 			.map(
-				r => `Repository${count++}: repository(provider_organization_id: "${r.owner}", name: "${r.repoName}") {
+				r => `GlRepository${count++}: repository(provider_organization_id: "${r.owner}", name: "${r.repoName}") {
 			id
 			name
 			repository_id

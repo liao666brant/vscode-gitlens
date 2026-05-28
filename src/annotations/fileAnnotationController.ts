@@ -21,6 +21,14 @@ import {
 	window,
 	workspace,
 } from 'vscode';
+import type { Deferrable } from '@gitlens/utils/debounce.js';
+import { debounce } from '@gitlens/utils/debounce.js';
+import { debug, trace } from '@gitlens/utils/decorators/log.js';
+import { once } from '@gitlens/utils/event.js';
+import { find } from '@gitlens/utils/iterable.js';
+import { basename } from '@gitlens/utils/path.js';
+import type { TokenOptions } from '@gitlens/utils/string.js';
+import { getTokensFromTemplate } from '@gitlens/utils/string.js';
 import type { AnnotationsToggleMode, FileAnnotationType } from '../config.js';
 import type { Colors, CoreColors } from '../constants.colors.js';
 import type { AnnotationStatus } from '../constants.js';
@@ -29,14 +37,9 @@ import { registerCommand } from '../system/-webview/command.js';
 import { configuration } from '../system/-webview/configuration.js';
 import { setContext } from '../system/-webview/context.js';
 import type { KeyboardScope } from '../system/-webview/keyboard.js';
+import { loadChunk } from '../system/-webview/loadChunk.js';
 import { UriSet } from '../system/-webview/uriMap.js';
 import { isTrackableTextEditor } from '../system/-webview/vscode/editors.js';
-import { debug, trace } from '../system/decorators/log.js';
-import { once } from '../system/event.js';
-import type { Deferrable } from '../system/function/debounce.js';
-import { debounce } from '../system/function/debounce.js';
-import { find } from '../system/iterable.js';
-import { basename } from '../system/path.js';
 import type {
 	DocumentBlameStateChangeEvent,
 	DocumentDirtyIdleTriggerEvent,
@@ -44,13 +47,13 @@ import type {
 } from '../trackers/documentTracker.js';
 import type { AnnotationContext, AnnotationProviderBase, TextEditorCorrelationKey } from './annotationProvider.js';
 import { getEditorCorrelationKey, getEditorCorrelationKeyFromTab } from './annotationProvider.js';
+import type { BlameDecorationOptions } from './annotations.js';
+import { getBlameDecorationBaseOptions } from './annotations.js';
 import type { ChangesAnnotationContext } from './gutterChangesAnnotationProvider.js';
 
 export const Decorations = {
-	gutterBlameAnnotation: window.createTextEditorDecorationType({
-		rangeBehavior: DecorationRangeBehavior.OpenOpen,
-		textDecoration: 'none',
-	}),
+	gutterBlameAnnotation: undefined as TextEditorDecorationType | undefined,
+	gutterBlameCompact: undefined as TextEditorDecorationType | undefined,
 	gutterBlameHighlight: undefined as TextEditorDecorationType | undefined,
 	changesLineChangedAnnotation: undefined as TextEditorDecorationType | undefined,
 	changesLineAddedAnnotation: undefined as TextEditorDecorationType | undefined,
@@ -86,6 +89,7 @@ export class FileAnnotationController implements Disposable {
 		void this.clearAll();
 
 		Decorations.gutterBlameAnnotation?.dispose();
+		Decorations.gutterBlameCompact?.dispose();
 		Decorations.gutterBlameHighlight?.dispose();
 		Decorations.changesLineChangedAnnotation?.dispose();
 		Decorations.changesLineAddedAnnotation?.dispose();
@@ -103,6 +107,24 @@ export class FileAnnotationController implements Disposable {
 
 		if (configuration.changed(e, ['blame.highlight', 'changes.locations'])) {
 			this.updateDecorations(false);
+		}
+
+		// Blame decoration types carry base CSS (width, padding, font, heatmap border)
+		// that depends on these settings, so recreate them when any of these change
+		if (
+			configuration.changed(e, [
+				'blame.avatars',
+				'blame.compact',
+				'blame.format',
+				'blame.heatmap',
+				'blame.separateLines',
+				'blame.fontFamily',
+				'blame.fontSize',
+				'blame.fontStyle',
+				'blame.fontWeight',
+			])
+		) {
+			this.updateBlameDecorations();
 		}
 
 		if (configuration.changed(e, 'fileAnnotations.dismissOnEscape')) {
@@ -148,6 +170,7 @@ export class FileAnnotationController implements Disposable {
 				'changes',
 				'heatmap',
 				'hovers',
+				'defaultCurrentUserNameStyle',
 				'defaultDateFormat',
 				'defaultDateSource',
 				'defaultDateStyle',
@@ -456,6 +479,7 @@ export class FileAnnotationController implements Disposable {
 		}
 
 		if (editor == null) return false; // || editor.viewColumn == null) return false;
+
 		this._editor = editor;
 
 		const trackedDocument = await this.container.documentTracker.getOrAdd(editor.document);
@@ -632,8 +656,8 @@ export class FileAnnotationController implements Disposable {
 		let provider: AnnotationProviderBase | undefined = undefined;
 		switch (type) {
 			case 'blame': {
-				const { GutterBlameAnnotationProvider } = await import(
-					/* webpackChunkName: "annotations" */ './gutterBlameAnnotationProvider.js'
+				const { GutterBlameAnnotationProvider } = await loadChunk(
+					() => import(/* webpackChunkName: "annotations" */ './gutterBlameAnnotationProvider.js'),
 				);
 				provider = new GutterBlameAnnotationProvider(
 					this.container,
@@ -644,8 +668,8 @@ export class FileAnnotationController implements Disposable {
 				break;
 			}
 			case 'changes': {
-				const { GutterChangesAnnotationProvider } = await import(
-					/* webpackChunkName: "annotations" */ './gutterChangesAnnotationProvider.js'
+				const { GutterChangesAnnotationProvider } = await loadChunk(
+					() => import(/* webpackChunkName: "annotations" */ './gutterChangesAnnotationProvider.js'),
 				);
 				provider = new GutterChangesAnnotationProvider(
 					this.container,
@@ -656,8 +680,8 @@ export class FileAnnotationController implements Disposable {
 				break;
 			}
 			case 'heatmap': {
-				const { GutterHeatmapBlameAnnotationProvider } = await import(
-					/* webpackChunkName: "annotations" */ './gutterHeatmapBlameAnnotationProvider.js'
+				const { GutterHeatmapBlameAnnotationProvider } = await loadChunk(
+					() => import(/* webpackChunkName: "annotations" */ './gutterHeatmapBlameAnnotationProvider.js'),
 				);
 				provider = new GutterHeatmapBlameAnnotationProvider(
 					this.container,
@@ -724,6 +748,7 @@ export class FileAnnotationController implements Disposable {
 	private updateDecorations(refresh: boolean) {
 		const previous = refresh ? Object.entries(Decorations) : (undefined! as []);
 
+		this.updateBlameDecorations();
 		this.updateHighlightDecoration();
 		this.updateChangedDecorations();
 
@@ -832,6 +857,48 @@ export class FileAnnotationController implements Disposable {
 			overviewRulerColor: locations.includes('overview')
 				? new ThemeColor('editorOverviewRuler.deletedForeground' satisfies CoreColors)
 				: undefined,
+		});
+	}
+
+	private updateBlameDecorations(): void {
+		Decorations.gutterBlameAnnotation?.dispose();
+		Decorations.gutterBlameCompact?.dispose();
+
+		const cfg = configuration.get('blame');
+		const tokenOptions = getTokensFromTemplate(cfg.format).reduce<Record<string, TokenOptions | undefined>>(
+			(map, token) => {
+				map[token.key] = token.options;
+				return map;
+			},
+			Object.create(null),
+		);
+
+		const options: BlameDecorationOptions = {
+			avatars: cfg.avatars,
+			compact: cfg.compact,
+			fontFamily: configuration.get('blame.fontFamily') || undefined,
+			fontSize: configuration.get('blame.fontSize') || undefined,
+			fontStyle: configuration.get('blame.fontStyle') || undefined,
+			fontWeight: configuration.get('blame.fontWeight') || undefined,
+			format: cfg.format,
+			formatOptions: {
+				dateFormat: cfg.dateFormat === null ? configuration.get('defaultDateFormat') : cfg.dateFormat,
+				tokenOptions: tokenOptions,
+				source: { source: 'editor:hover' },
+			},
+			heatmapEnabled: cfg.heatmap.enabled,
+			heatmapLocation: cfg.heatmap.location,
+			separateLines: cfg.separateLines,
+		};
+
+		Decorations.gutterBlameAnnotation = window.createTextEditorDecorationType({
+			rangeBehavior: DecorationRangeBehavior.OpenOpen,
+			before: getBlameDecorationBaseOptions(options, cfg.separateLines),
+		});
+
+		Decorations.gutterBlameCompact = window.createTextEditorDecorationType({
+			rangeBehavior: DecorationRangeBehavior.OpenOpen,
+			before: getBlameDecorationBaseOptions(options, false),
 		});
 	}
 

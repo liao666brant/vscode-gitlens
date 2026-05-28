@@ -1,11 +1,11 @@
 import type { Range, TextEditor, Uri } from 'vscode';
+import type { GitBranch } from '@gitlens/git/models/branch.js';
+import type { GitLog } from '@gitlens/git/models/log.js';
+import type { GitReference } from '@gitlens/git/models/reference.js';
+import type { GitTag } from '@gitlens/git/models/tag.js';
 import type { Container } from '../container.js';
 import { executeGitCommand } from '../git/actions.js';
 import { GitUri } from '../git/gitUri.js';
-import type { GitBranch } from '../git/models/branch.js';
-import type { GitLog } from '../git/models/log.js';
-import type { GitReference } from '../git/models/reference.js';
-import type { GitTag } from '../git/models/tag.js';
 import type { CommandQuickPickItem } from '../quickpicks/items/common.js';
 import { command } from '../system/-webview/command.js';
 import { getScmResourceFolderUri } from '../system/-webview/scm.js';
@@ -64,7 +64,7 @@ export class ShowQuickFileHistoryCommand extends ActiveEditorCachedCommand {
 		const gitUri = await GitUri.fromUri(uri);
 
 		if (args?.showInSideBar) {
-			await this.container.views.fileHistory.showHistoryForUri(gitUri);
+			await this.container.views.fileHistory.showHistoryForUri(gitUri, args.reference?.sha);
 
 			return;
 		}

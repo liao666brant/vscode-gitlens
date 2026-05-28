@@ -1,6 +1,6 @@
-import type { AIProviderAndModel, SupportedAIModels } from './constants.ai.js';
+import type { AIProviderAndModel, SupportedAIModels } from '@gitlens/ai/constants.js';
+import type { DateTimeFormat } from '@gitlens/utils/date.js';
 import type { GroupableTreeViewTypes } from './constants.views.js';
-import type { DateTimeFormat } from './system/date.js';
 
 export interface Config {
 	readonly advanced: AdvancedConfig;
@@ -14,6 +14,7 @@ export interface Config {
 	readonly currentLine: CurrentLineConfig;
 	readonly debug: boolean;
 	readonly deepLinks: DeepLinksConfig;
+	readonly defaultCurrentUserNameStyle: CurrentUserNameStyle;
 	readonly defaultDateFormat: DateTimeFormat | (string & object) | null;
 	readonly defaultDateLocale: string | null;
 	readonly defaultDateShortFormat: DateTimeFormat | (string & object) | null;
@@ -27,7 +28,6 @@ export interface Config {
 	readonly gitkraken: GitKrakenConfig;
 	readonly graph: GraphConfig;
 	readonly heatmap: HeatmapConfig;
-	readonly home: HomeConfig;
 	readonly hovers: HoversConfig;
 	readonly integrations: IntegrationsConfig;
 	readonly keymap: KeyMap;
@@ -38,7 +38,6 @@ export interface Config {
 	readonly modes: ModesConfig | null;
 	readonly partners: PartnersConfig | null;
 	readonly plusFeatures: PlusFeaturesConfig;
-	readonly proxy: ProxyConfig | null;
 	readonly rebaseEditor: RebaseEditorConfig;
 	readonly remotes: RemotesConfig[] | null;
 	readonly showWhatsNewAfterUpgrades: boolean;
@@ -63,6 +62,7 @@ export type AnnotationsToggleMode = 'file' | 'window';
 export type BlameHighlightLocations = 'gutter' | 'line' | 'overview';
 export type BranchSorting = 'date:desc' | 'date:asc' | 'name:asc' | 'name:desc';
 export type ChangesLocations = 'gutter' | 'line' | 'overview';
+export type CurrentUserNameStyle = 'you' | 'name' | 'nameAndYou';
 
 export type CodeLensCommands =
 	| 'gitlens.copyRemoteCommitUrl'
@@ -108,20 +108,22 @@ export type DateSource = 'authored' | 'committed';
 export type DateStyle = 'absolute' | 'relative';
 export type FileAnnotationType = 'blame' | 'changes' | 'heatmap';
 export type GitCommandSorting = 'name' | 'usage';
-export type GraphBranchesVisibility = 'all' | 'smart' | 'current' | 'favorited';
+export type GraphBranchesVisibility = 'all' | 'smart' | 'current' | 'favorited' | 'agents';
 export type GraphMultiSelectionMode = boolean | 'topological';
 export type GraphScrollMarkersAdditionalTypes =
 	| 'localBranches'
 	| 'remoteBranches'
 	| 'stashes'
 	| 'tags'
-	| 'pullRequests';
+	| 'pullRequests'
+	| 'wip';
 export type GraphMinimapMarkersAdditionalTypes =
 	| 'localBranches'
 	| 'remoteBranches'
 	| 'stashes'
 	| 'tags'
-	| 'pullRequests';
+	| 'pullRequests'
+	| 'worktree';
 export type GravatarDefaultStyle = 'wavatar' | 'identicon' | 'monsterid' | 'mp' | 'retro' | 'robohash';
 export type HeatmapLocations = 'gutter' | 'line' | 'overview';
 export type KeyMap = 'alternate' | 'chorded' | 'none';
@@ -212,19 +214,19 @@ export interface AdvancedConfig {
 
 interface AIConfig {
 	readonly enabled: boolean;
+	readonly openInAgent: 'ask' | 'manual' | 'agent';
+	readonly defaultAgent: string | null;
 	readonly exclude: {
 		/** Glob patterns for files to exclude from AI prompts (like files.exclude). May be undefined on extension upgrade due to VS Code bug. */
 		readonly files: Record<string, boolean> | undefined;
-	};
-	readonly experimental: {
-		readonly composer: {
-			readonly enabled: boolean;
-		};
 	};
 	readonly azure: {
 		readonly url: string | null;
 	};
 	readonly explainChanges: {
+		readonly customInstructions: string;
+	};
+	readonly reviewChanges: {
 		readonly customInstructions: string;
 	};
 	readonly generateChangelog: {
@@ -397,29 +399,40 @@ interface GitKrakenConfig {
 }
 
 interface GitKrakenCliConfig {
-	readonly integration: {
-		readonly enabled: boolean;
-	};
+	readonly localPath: string | null;
 	readonly insiders: {
-		readonly enabled: boolean;
+		readonly enabled: boolean | null;
 	};
 }
 
 interface GitKrakenMcpConfig {
 	readonly autoEnabled: boolean;
+	readonly experimental: {
+		readonly enabled: boolean;
+	};
 }
 
 export interface GraphConfig {
 	readonly allowMultiple: boolean;
+	readonly autoFetch: {
+		readonly enabled: boolean;
+	};
 	readonly avatars: boolean;
 	readonly branchesVisibility: GraphBranchesVisibility;
 	readonly commitOrdering: 'date' | 'author-date' | 'topo';
 	readonly dateFormat: DateTimeFormat | string | null;
 	readonly dateStyle: DateStyle | null;
 	readonly defaultItemLimit: number;
+	readonly details: {
+		readonly location: 'right' | 'bottom';
+	};
 	readonly dimMergeCommits: boolean;
+	readonly editorOpeningBehavior: 'auto' | 'active';
 	readonly experimental: {
-		readonly renderer: {
+		readonly kanban: {
+			readonly enabled: boolean;
+		};
+		readonly visualizations: {
 			readonly enabled: boolean;
 		};
 	};
@@ -433,6 +446,7 @@ export interface GraphConfig {
 		readonly enabled: boolean;
 		readonly dataType: 'commits' | 'lines';
 		readonly additionalTypes: GraphMinimapMarkersAdditionalTypes[];
+		readonly reversed: boolean;
 	};
 	readonly multiselect: GraphMultiSelectionMode;
 	readonly onlyFollowFirstParent: boolean;
@@ -446,12 +460,13 @@ export interface GraphConfig {
 	};
 	readonly scrollRowPadding: number;
 	readonly searchItemLimit: number;
-	readonly showDetailsView: 'open' | 'selection' | false;
 	readonly showGhostRefsOnRowHover: boolean;
 	readonly showRemoteNames: boolean;
 	readonly showUpstreamStatus: boolean;
+	readonly showWorktreeWipStats: boolean;
 	readonly sidebar: {
 		readonly enabled: boolean;
+		readonly pinned: boolean;
 	};
 	readonly statusBar: {
 		readonly enabled: boolean;
@@ -466,12 +481,6 @@ interface HeatmapConfig {
 	readonly fadeLines: boolean;
 	readonly locations: HeatmapLocations[];
 	/*readonly*/ toggleMode: AnnotationsToggleMode;
-}
-
-interface HomeConfig {
-	readonly preview: {
-		readonly enabled: boolean;
-	};
 }
 
 interface HoversConfig {
@@ -662,13 +671,9 @@ interface PlusFeaturesConfig {
 	readonly enabled: boolean;
 }
 
-interface ProxyConfig {
-	readonly url: string | null;
-	readonly strictSSL: boolean;
-}
-
 interface RebaseEditorConfig {
 	readonly density: 'compact' | 'comfortable';
+	readonly openBehavior: 'auto' | 'beside';
 	readonly openOnPausedRebase: boolean | 'interactive';
 	readonly ordering: 'asc' | 'desc';
 	readonly revealLocation: 'graph' | 'inspect';
@@ -1082,6 +1087,7 @@ interface VirtualRepositoriesConfig {
 
 interface VisualHistoryConfig {
 	readonly allowMultiple: boolean;
+	readonly editorOpeningBehavior: 'auto' | 'active';
 	readonly queryLimit: number;
 }
 
@@ -1103,6 +1109,7 @@ export type CoreConfig = {
 		readonly autoRepositoryDetection: boolean | 'subFolders' | 'openEditors';
 		readonly enabled: boolean;
 		readonly enableCommitSigning: boolean;
+		readonly enableSmartCommit: boolean;
 		readonly fetchOnPull: boolean;
 		readonly path: string | string[] | null;
 		readonly pullTags: boolean;

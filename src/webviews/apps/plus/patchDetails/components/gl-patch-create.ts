@@ -1,15 +1,14 @@
-import { Avatar, Button, defineGkElement, Menu, MenuItem, Popover } from '@gitkraken/shared-web-components';
 import { html } from 'lit';
 import { customElement, property, query, state } from 'lit/decorators.js';
 import { map } from 'lit/directives/map.js';
 import { repeat } from 'lit/directives/repeat.js';
 import { when } from 'lit/directives/when.js';
+import type { GitFileChangeShape } from '@gitlens/git/models/fileChange.js';
+import { debounce } from '@gitlens/utils/debounce.js';
+import { flatCount } from '@gitlens/utils/iterable.js';
 import type { ViewFilesLayout } from '../../../../../config.js';
 import { urls } from '../../../../../constants.js';
-import type { GitFileChangeShape } from '../../../../../git/models/fileChange.js';
 import type { DraftRole, DraftVisibility } from '../../../../../plus/drafts/models/drafts.js';
-import { debounce } from '../../../../../system/function/debounce.js';
-import { flatCount } from '../../../../../system/iterable.js';
 import type { Serialized } from '../../../../../system/serialize.js';
 import type {
 	Change,
@@ -17,6 +16,7 @@ import type {
 	ExecuteFileActionParams,
 	State,
 } from '../../../../plus/patchDetails/protocol.js';
+import type { GlPopover } from '../../../shared/components/overlays/popover.js';
 import type {
 	TreeItemActionDetail,
 	TreeItemBase,
@@ -26,9 +26,13 @@ import type {
 } from '../../../shared/components/tree/base.js';
 import { GlTreeBase } from './gl-tree-base.js';
 import '../../../shared/components/actions/action-nav.js';
+import '../../../shared/components/avatar/avatar.js';
 import '../../../shared/components/button.js';
 import '../../../shared/components/code-icon.js';
 import '../../../shared/components/commit/commit-stats.js';
+import '../../../shared/components/menu/menu-item.js';
+import '../../../shared/components/menu/menu-list.js';
+import '../../../shared/components/overlays/popover.js';
 import '../../../shared/components/webview-pane.js';
 
 export interface CreatePatchEventDetail {
@@ -140,12 +144,6 @@ export class GlPatchCreate extends GlTreeBase {
 		return this.state?.create?.visibility ?? 'public';
 	}
 
-	constructor() {
-		super();
-
-		defineGkElement(Avatar, Button, Menu, MenuItem, Popover);
-	}
-
 	override updated(changedProperties: Map<string, any>): void {
 		if (changedProperties.has('state')) {
 			this.creationBusy = false;
@@ -173,7 +171,7 @@ export class GlPatchCreate extends GlTreeBase {
 		return html`
 			<div class="user-selection">
 				<div class="user-selection__avatar">
-					<gk-avatar .src=${userSelection.avatarUrl}></gk-avatar>
+					<gl-avatar .src=${userSelection.avatarUrl}></gl-avatar>
 				</div>
 				<div class="user-selection__info">
 					<div class="user-selection__name">
@@ -181,13 +179,13 @@ export class GlPatchCreate extends GlTreeBase {
 					</div>
 				</div>
 				<div class="user-selection__actions">
-					<gk-popover>
-						<gk-button slot="trigger">${roleLabel} <code-icon icon="chevron-down"></code-icon></gk-button>
-						<gk-menu>
+					<gl-popover trigger="click" appearance="menu" ?arrow=${false}>
+						<gl-button slot="anchor">${roleLabel} <code-icon icon="chevron-down"></code-icon></gl-button>
+						<menu-list slot="content">
 							${map(
 								options,
 								([value, label]) =>
-									html`<gk-menu-item
+									html`<menu-item
 										@click=${(e: MouseEvent) =>
 											this.onChangeSelectionRole(
 												e,
@@ -200,10 +198,10 @@ export class GlPatchCreate extends GlTreeBase {
 											class="user-selection__check ${role === value ? 'is-active' : ''}"
 										></code-icon>
 										${label}
-									</gk-menu-item>`,
+									</menu-item>`,
 							)}
-						</gk-menu>
-					</gk-popover>
+						</menu-list>
+					</gl-popover>
 				</div>
 			</div>
 		`;
@@ -485,17 +483,7 @@ export class GlPatchCreate extends GlTreeBase {
 
 	private renderTreeViewWithModel() {
 		if (this.createChanges == null || this.createChanges.length === 0) {
-			return this.renderTreeView([
-				{
-					label: '没有更改',
-					path: '',
-					level: 1,
-					branch: false,
-					checkable: false,
-					expanded: true,
-					checked: false,
-				},
-			]);
+			return this.renderTreeView([], 'none', '没有更改');
 		}
 
 		const treeModel: TreeModel[] = [];
@@ -518,7 +506,7 @@ export class GlPatchCreate extends GlTreeBase {
 				treeModel.push(...tree);
 			}
 		}
-		return this.renderTreeView(treeModel, this.state?.preferences?.indentGuides);
+		return this.renderTreeView(treeModel, this.state?.preferences?.indentGuides, 'No changes');
 	}
 
 	private getTreeForChange(change: Change, isMulti = false, isTree = false, compact = true): TreeModel[] | undefined {
@@ -611,6 +599,7 @@ export class GlPatchCreate extends GlTreeBase {
 			}
 			return;
 		}
+
 		this.validityMessage = undefined;
 		this.titleInput.setCustomValidity('');
 
@@ -639,10 +628,11 @@ export class GlPatchCreate extends GlTreeBase {
 		if (!this.state?.create) {
 			return;
 		}
+
 		this.creationBusy = true;
 	}
 
-	private onSelectCreateOption(_e: CustomEvent<{ target: MenuItem }>) {
+	private onSelectCreateOption(_e: CustomEvent) {
 		// const target = e.detail?.target;
 		// const value = target?.dataset?.value as 'staged' | 'unstaged' | undefined;
 		// const currentChange = this.create.[0];
@@ -716,8 +706,8 @@ export class GlPatchCreate extends GlTreeBase {
 	) {
 		this.emit('gl-patch-create-update-selection', { selection: selection, role: role });
 
-		const popoverEl: Popover | null = (e.target as HTMLElement)?.closest('gk-popover');
-		popoverEl?.hidePopover();
+		const popoverEl: GlPopover | null = (e.target as HTMLElement)?.closest('gl-popover');
+		void popoverEl?.hide();
 	}
 
 	private onVisibilityChange(e: Event) {
@@ -826,9 +816,8 @@ export class GlPatchCreate extends GlTreeBase {
 			action: 'file-open',
 		};
 
-		if (this.review) {
-			return [openFile];
-		}
+		if (this.review) return [openFile];
+
 		if (file.staged === true) {
 			return [openFile, { icon: 'remove', label: '取消暂存更改', action: 'file-unstage' }];
 		}

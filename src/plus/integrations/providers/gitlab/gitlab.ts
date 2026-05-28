@@ -1,37 +1,35 @@
-import type { HttpsProxyAgent } from 'https-proxy-agent';
 import type { CancellationToken, Disposable } from 'vscode';
 import { Uri, window } from 'vscode';
-import type { RequestInit, Response } from '@env/fetch.js';
-import { fetch, getProxyAgent, wrapForForcedInsecureSSL } from '@env/fetch.js';
-import { isWeb } from '@env/platform.js';
+import { fetch, wrapForForcedInsecureSSL } from '@env/fetch.js';
+import type { Account } from '@gitlens/git/models/author.js';
+import type { DefaultBranch } from '@gitlens/git/models/defaultBranch.js';
+import type { IssueOrPullRequest } from '@gitlens/git/models/issueOrPullRequest.js';
+import { PullRequest } from '@gitlens/git/models/pullRequest.js';
+import type { Provider } from '@gitlens/git/models/remoteProvider.js';
+import type { RepositoryMetadata } from '@gitlens/git/models/repositoryMetadata.js';
+import { CancellationError } from '@gitlens/utils/cancellation.js';
+import { trace } from '@gitlens/utils/decorators/log.js';
+import { Logger } from '@gitlens/utils/logger.js';
+import type { ScopedLogger } from '@gitlens/utils/logger.scoped.js';
+import { getScopedLogger } from '@gitlens/utils/logger.scoped.js';
+import { maybeStopWatch } from '@gitlens/utils/stopwatch.js';
+import { equalsIgnoreCase } from '@gitlens/utils/string.js';
 import type { Container } from '../../../../container.js';
 import {
 	AuthenticationError,
 	AuthenticationErrorReason,
-	CancellationError,
 	ProviderFetchError,
 	RequestClientError,
 	RequestNotFoundError,
 	RequestRateLimitError,
 } from '../../../../errors.js';
-import type { Account } from '../../../../git/models/author.js';
-import type { DefaultBranch } from '../../../../git/models/defaultBranch.js';
-import type { IssueOrPullRequest } from '../../../../git/models/issueOrPullRequest.js';
-import { PullRequest } from '../../../../git/models/pullRequest.js';
-import type { Provider } from '../../../../git/models/remoteProvider.js';
-import type { RepositoryMetadata } from '../../../../git/models/repositoryMetadata.js';
 import {
 	showIntegrationRequestFailed500WarningMessage,
 	showIntegrationRequestTimedOutWarningMessage,
 } from '../../../../messages.js';
 import { configuration } from '../../../../system/-webview/configuration.js';
-import { trace } from '../../../../system/decorators/log.js';
-import { Logger } from '../../../../system/logger.js';
-import type { ScopedLogger } from '../../../../system/logger.scope.js';
-import { getScopedLogger } from '../../../../system/logger.scope.js';
-import { maybeStopWatch } from '../../../../system/stopwatch.js';
-import { equalsIgnoreCase } from '../../../../system/string.js';
 import type { TokenWithInfo } from '../../authentication/models.js';
+import { selectGitLabUserForCommit } from './gitlab.utils.js';
 import type {
 	GitLabCommit,
 	GitLabIssue,
@@ -62,7 +60,7 @@ export class GitLabApi implements Disposable {
 		this._disposable = configuration.onDidChangeAny(e => {
 			if (
 				configuration.changedCore(e, ['http.proxy', 'http.proxyStrictSSL']) ||
-				configuration.changed(e, ['proxy', 'remotes'])
+				configuration.changed(e, 'remotes')
 			) {
 				this.resetCaches();
 			}
@@ -75,21 +73,6 @@ export class GitLabApi implements Disposable {
 
 	private resetCaches(): void {
 		this._projectIds.clear();
-		this._proxyAgents.clear();
-	}
-
-	private _proxyAgents = new Map<string, HttpsProxyAgent | null | undefined>();
-	private getProxyAgent(provider: Provider): HttpsProxyAgent | undefined {
-		if (isWeb) return undefined;
-
-		let proxyAgent = this._proxyAgents.get(provider.id);
-		if (proxyAgent === undefined) {
-			const ignoreSSLErrors = provider.getIgnoreSSLErrors();
-			proxyAgent = getProxyAgent(ignoreSSLErrors === true || ignoreSSLErrors === 'force' ? false : undefined);
-			this._proxyAgents.set(provider.id, proxyAgent ?? null);
-		}
-
-		return proxyAgent ?? undefined;
 	}
 
 	@trace({
@@ -132,18 +115,16 @@ export class GitLabApi implements Disposable {
 				scope,
 			);
 
-			let user: GitLabUser | undefined;
+			let users = await this.findUser(provider, token, commit.author_name, options, cancellation);
+			let user = selectGitLabUserForCommit(users, commit.author_name, commit.author_email);
 
-			const users = await this.findUser(provider, token, commit.author_name, options);
-			for (const u of users) {
-				if (u.name === commit.author_name || (u.publicEmail && u.publicEmail === commit.author_email)) {
-					user = u;
-					if (u.state === 'active') break;
-				} else if (
-					equalsIgnoreCase(u.name, commit.author_name) ||
-					(u.publicEmail && equalsIgnoreCase(u.publicEmail, commit.author_email))
-				) {
-					user = u;
+			// If the name search was ambiguous (multiple users share the name), try an email-scoped search to
+			// disambiguate before giving up — otherwise we'd show a stranger's avatar (see #2205)
+			if (user == null && commit.author_email) {
+				const exactNameMatches = users.filter(u => equalsIgnoreCase(u.name, commit.author_name)).length;
+				if (exactNameMatches > 1) {
+					users = await this.findUser(provider, token, commit.author_email, options, cancellation);
+					user = selectGitLabUserForCommit(users, commit.author_name, commit.author_email);
 				}
 			}
 
@@ -789,6 +770,7 @@ export class GitLabApi implements Disposable {
 		if (!search) {
 			return [];
 		}
+
 		try {
 			const perPageLimit = 20; // with bigger amount we exceed the max GraphQL complexity in the next query
 			const restPRs = await this.request<GitLabMergeRequestREST[]>(
@@ -1057,7 +1039,6 @@ $search: String!
 		let rsp: Response;
 		try {
 			const sw = maybeStopWatch(`[GITLAB] POST ${baseUrl}`, { log: { onlyExit: true } });
-			const agent = this.getProxyAgent(provider);
 
 			try {
 				let aborter: AbortController | undefined;
@@ -1072,14 +1053,13 @@ $search: String!
 					fetch(`${baseUrl ?? 'https://gitlab.com/api'}/graphql`, {
 						method: 'POST',
 						headers: { Authorization: `Bearer ${accessToken}`, 'Content-Type': 'application/json' },
-						agent: agent,
 						signal: aborter?.signal,
 						body: JSON.stringify({ query: query, variables: variables }),
 					}),
 				);
 
 				if (rsp.ok) {
-					const data: T | { errors: { message: string }[] } = await rsp.json();
+					const data = (await rsp.json()) as T | { errors: { message: string }[] };
 
 					if ('errors' in data) throw new ProviderFetchError('GitLab', rsp, data.errors);
 					return data;
@@ -1118,7 +1098,6 @@ $search: String!
 		let rsp: Response;
 		try {
 			const sw = maybeStopWatch(`[GITLAB] ${options?.method ?? 'GET'} ${url}`, { log: { onlyExit: true } });
-			const agent = this.getProxyAgent(provider);
 
 			try {
 				let aborter: AbortController | undefined;
@@ -1132,15 +1111,13 @@ $search: String!
 				rsp = await wrapForForcedInsecureSSL(provider.getIgnoreSSLErrors(), () =>
 					fetch(url, {
 						headers: { Authorization: `Bearer ${accessToken}`, 'Content-Type': 'application/json' },
-						agent: agent,
 						signal: aborter?.signal,
 						...options,
 					}),
 				);
 
 				if (rsp.ok) {
-					const data: T = await rsp.json();
-					return data;
+					return (await rsp.json()) as T;
 				}
 
 				throw new ProviderFetchError('GitLab', rsp);

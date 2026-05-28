@@ -1,14 +1,19 @@
 import type { ConfigurationChangeEvent, Disposable, Event, ExtensionContext } from 'vscode';
 import { EventEmitter, ExtensionMode } from 'vscode';
+import { IpcService } from '@env/ipc/ipcService.js';
 import {
+	getAgentSessionProviders,
 	getGkCliIntegrationProvider,
 	getMcpProviders,
 	getSharedGKStorageLocationProvider,
-	getSupportedGitProviders,
 	getSupportedRepositoryLocationProvider,
 	getSupportedWorkspacesStorageProvider,
 	setTelemetryService,
 } from '@env/providers.js';
+import { debug } from '@gitlens/utils/decorators/log.js';
+import { memoize } from '@gitlens/utils/decorators/memoize.js';
+import { Logger } from '@gitlens/utils/logger.js';
+import { AgentStatusService } from './agents/agentStatusService.js';
 import { FileAnnotationController } from './annotations/fileAnnotationController.js';
 import { LineAnnotationController } from './annotations/lineAnnotationController.js';
 import { ActionRunners } from './api/actionRunners.js';
@@ -17,7 +22,7 @@ import { setDefaultGravatarsStyle } from './avatars.js';
 import { CacheProvider } from './cache.js';
 import { GitCodeLensController } from './codelens/codeLensController.js';
 import type { ToggleFileAnnotationCommandArgs } from './commands/toggleFileAnnotations.js';
-import type { DateSource, DateStyle, FileAnnotationType, Mode } from './config.js';
+import type { DateSource, DateStyle, Mode } from './config.js';
 import type { GlCommands } from './constants.commands.js';
 import { extensionPrefix } from './constants.js';
 import { MarkdownContentProvider } from './documents/markdown.js';
@@ -25,7 +30,11 @@ import { EventBus } from './eventBus.js';
 import { GitFileSystemProvider } from './git/fsProvider.js';
 import { GitProviderService } from './git/gitProviderService.js';
 import type { RepositoryLocationProvider } from './git/location/repositorylocationProvider.js';
+import { registerPublishListener } from './git/publishListener.js';
 import { LineHoverController } from './hovers/lineHoverController.js';
+import { OnboardingService } from './onboarding/onboardingService.js';
+import { UsageTracker } from './onboarding/usageTracker.js';
+import { WalkthroughStateProvider } from './onboarding/walkthroughStateProvider.js';
 import { AIProviderService } from './plus/ai/aiProviderService.js';
 import { DraftService } from './plus/drafts/draftsService.js';
 import { AccountAuthenticationProvider } from './plus/gk/authenticationProvider.js';
@@ -53,22 +62,21 @@ import { scheduleAddMissingCurrentWorkspaceRepos, WorkspacesService } from './pl
 import { StatusBarController } from './statusbar/statusBarController.js';
 import { executeCommand } from './system/-webview/command.js';
 import { configuration } from './system/-webview/configuration.js';
+import { onDidChangeContext, setContext } from './system/-webview/context.js';
 import { Keyboard } from './system/-webview/keyboard.js';
+import { loadChunk } from './system/-webview/loadChunk.js';
 import type { Storage } from './system/-webview/storage.js';
-import { debug } from './system/decorators/log.js';
-import { memoize } from './system/decorators/memoize.js';
-import { Logger } from './system/logger.js';
 import { AIFeedbackProvider } from './telemetry/aiFeedbackProvider.js';
 import { TelemetryService } from './telemetry/telemetry.js';
-import { UsageTracker } from './telemetry/usageTracker.js';
-import { WalkthroughStateProvider } from './telemetry/walkthroughStateProvider.js';
 import { GitTerminalLinkProvider } from './terminal/linkProvider.js';
 import { GitDocumentTracker } from './trackers/documentTracker.js';
 import { LineTracker } from './trackers/lineTracker.js';
+import { TreemapAggregatorService } from './treemap/treemapAggregatorService.js';
 import { DeepLinkService } from './uris/deepLinks/deepLinkService.js';
 import { UriService } from './uris/uriService.js';
 import { ViewFileDecorationProvider } from './views/viewDecorationProvider.js';
 import { Views } from './views/views.js';
+import { VirtualFileSystemService } from './virtual/virtualFileSystemService.js';
 import { VslsController } from './vsls/vsls.js';
 import {
 	registerComposerWebviewCommands,
@@ -186,6 +194,16 @@ export class Container {
 		},
 	};
 
+	private _agentStatusService: AgentStatusService | undefined;
+
+	get agentStatus(): AgentStatusService | undefined {
+		return this._agentStatusService;
+	}
+
+	private readonly _onDidChangeAgentStatus = new EventEmitter<void>();
+	get onDidChangeAgentStatus(): Event<void> {
+		return this._onDidChangeAgentStatus.event;
+	}
 	private readonly _connection: ServerConnection;
 	private _disposables: Disposable[];
 	private _terminalLinks: GitTerminalLinkProvider | undefined;
@@ -207,6 +225,7 @@ export class Container {
 		this._disposables = [
 			configuration,
 			(this._storage = storage),
+			(this._onboarding = new OnboardingService(storage, version)),
 			(this._telemetry = new TelemetryService(this)),
 			(this._usage = new UsageTracker(this, storage)),
 			configuration.onDidChangeAny(this.onAnyConfigurationChanged, this),
@@ -224,17 +243,20 @@ export class Container {
 		this._disposables.push((this._walkthrough = new WalkthroughStateProvider(this)));
 		this._disposables.push((this._organizations = new OrganizationService(this, this._connection)));
 
+		this._disposables.push((this._eventBus = new EventBus()));
+		this._disposables.push((this._ipc = new IpcService(this)));
 		this._disposables.push((this._git = new GitProviderService(this)));
 		this._disposables.push(new GitFileSystemProvider(this));
+		this._disposables.push((this._virtualFs = new VirtualFileSystemService(this)));
 
 		this._disposables.push((this._deepLinks = new DeepLinkService(this)));
 
 		this._disposables.push((this._actionRunners = new ActionRunners(this)));
+		this._disposables.push(registerPublishListener(this));
 		this._disposables.push((this._documentTracker = new GitDocumentTracker(this)));
 		this._disposables.push((this._lineTracker = new LineTracker(this, this._documentTracker)));
 		this._disposables.push((this._keyboard = new Keyboard()));
 		this._disposables.push((this._vsls = new VslsController(this)));
-		this._disposables.push((this._eventBus = new EventBus()));
 		this._disposables.push((this._launchpadProvider = new LaunchpadProvider(this)));
 		this._disposables.push((this._markdownProvider = new MarkdownContentProvider(this)));
 
@@ -279,6 +301,11 @@ export class Container {
 			this._disposables.push((this._launchpadIndicator = new LaunchpadIndicator(this, this._launchpadProvider)));
 		}
 
+		this._disposables.push(this._onDidChangeAgentStatus, {
+			dispose: () => this._agentStatusService?.dispose(),
+		});
+		this.updateAgentStatusService();
+
 		if (configuration.get('terminalLinks.enabled')) {
 			this._disposables.push((this._terminalLinks = new GitTerminalLinkProvider(this)));
 		}
@@ -310,6 +337,15 @@ export class Container {
 						);
 					}
 				}
+
+				if (configuration.changed(e, 'ai.enabled')) {
+					this.updateAgentStatusService();
+				}
+			}),
+			onDidChangeContext(key => {
+				if (key === 'gitlens:gk:organization:ai:enabled') {
+					this.updateAgentStatusService();
+				}
 			}),
 		);
 
@@ -330,25 +366,24 @@ export class Container {
 	}
 
 	private _ready: boolean = false;
+	private _readyAt: number | undefined;
+	/** Timestamp (ms since epoch) when the container transitioned to ready, or `undefined` if not yet ready. */
+	get readyAt(): number | undefined {
+		return this._readyAt;
+	}
 
 	async ready(): Promise<void> {
 		if (this._ready) throw new Error('Container is already ready');
 
 		this._ready = true;
-		await this.registerGitProviders();
-		await this.registerMcpProviders();
+		this._readyAt = Date.now();
+		await Promise.allSettled([this.registerGitProviders(), this.registerMcpProviders()]);
 		queueMicrotask(() => this._onReady.fire());
 	}
 
 	@debug()
 	private async registerGitProviders(): Promise<void> {
-		const providers = await getSupportedGitProviders(this);
-		for (const provider of providers) {
-			this._disposables.push(this._git.register(provider.descriptor.id, provider));
-		}
-
-		// Don't wait here otherwise will we deadlock in certain places
-		void this._git.registrationComplete();
+		await this._git.registerProviders();
 	}
 
 	@debug()
@@ -356,6 +391,23 @@ export class Container {
 		const mcpProviders = await getMcpProviders(this);
 		if (mcpProviders != null) {
 			this._disposables.push(...mcpProviders);
+		}
+	}
+
+	private updateAgentStatusService(): void {
+		const enabled = this.ai.enabled && this.ai.allowed;
+		const providers = enabled ? getAgentSessionProviders(this) : [];
+		const canEnable = enabled && providers.length > 0;
+
+		void setContext('gitlens:agents:enabled', canEnable);
+
+		if (canEnable && this._agentStatusService == null) {
+			this._agentStatusService = new AgentStatusService(this, providers);
+			this._onDidChangeAgentStatus.fire();
+		} else if (!canEnable && this._agentStatusService != null) {
+			this._agentStatusService.dispose();
+			this._agentStatusService = undefined;
+			this._onDidChangeAgentStatus.fire();
 		}
 	}
 
@@ -423,8 +475,11 @@ export class Container {
 			async function load(this: Container) {
 				try {
 					const cloudIntegrations = new (
-						await import(
-							/* webpackChunkName: "integrations" */ './plus/integrations/authentication/cloudIntegrationService.js'
+						await loadChunk(
+							() =>
+								import(
+									/* webpackChunkName: "integrations" */ './plus/integrations/authentication/cloudIntegrationService.js'
+								),
 						)
 					).CloudIntegrationService(this, this._connection);
 					return cloudIntegrations;
@@ -498,6 +553,11 @@ export class Container {
 		return this._eventBus;
 	}
 
+	private readonly _ipc: IpcService;
+	get ipc(): IpcService {
+		return this._ipc;
+	}
+
 	get extensionMode(): ExtensionMode {
 		return this._context.extensionMode;
 	}
@@ -517,6 +577,11 @@ export class Container {
 		return this._markdownProvider;
 	}
 
+	private readonly _virtualFs: VirtualFileSystemService;
+	get virtualFs(): VirtualFileSystemService {
+		return this._virtualFs;
+	}
+
 	private readonly _git: GitProviderService;
 	get git(): GitProviderService {
 		return this._git;
@@ -528,8 +593,11 @@ export class Container {
 			async function load(this: Container) {
 				try {
 					const azure = new (
-						await import(
-							/* webpackChunkName: "integrations" */ './plus/integrations/providers/azure/azure.js'
+						await loadChunk(
+							() =>
+								import(
+									/* webpackChunkName: "integrations" */ './plus/integrations/providers/azure/azure.js'
+								),
 						)
 					).AzureDevOpsApi(this);
 					this._disposables.push(azure);
@@ -552,8 +620,11 @@ export class Container {
 			async function load(this: Container) {
 				try {
 					const bitbucket = new (
-						await import(
-							/* webpackChunkName: "integrations" */ './plus/integrations/providers/bitbucket/bitbucket.js'
+						await loadChunk(
+							() =>
+								import(
+									/* webpackChunkName: "integrations" */ './plus/integrations/providers/bitbucket/bitbucket.js'
+								),
 						)
 					).BitbucketApi(this);
 					this._disposables.push(bitbucket);
@@ -575,11 +646,13 @@ export class Container {
 		if (this._github == null) {
 			async function load(this: Container) {
 				try {
-					const github = new (
-						await import(
-							/* webpackChunkName: "integrations" */ './plus/integrations/providers/github/github.js'
-						)
-					).GitHubApi(this);
+					const { createGitHubApi } = await loadChunk(
+						() =>
+							import(
+								/* webpackChunkName: "integrations" */ './plus/integrations/providers/github/github.js'
+							),
+					);
+					const github = createGitHubApi();
 					this._disposables.push(github);
 					return github;
 				} catch (ex) {
@@ -600,8 +673,11 @@ export class Container {
 			async function load(this: Container) {
 				try {
 					const gitlab = new (
-						await import(
-							/* webpackChunkName: "integrations" */ './plus/integrations/providers/gitlab/gitlab.js'
+						await loadChunk(
+							() =>
+								import(
+									/* webpackChunkName: "integrations" */ './plus/integrations/providers/gitlab/gitlab.js'
+								),
 						)
 					).GitLabApi(this);
 					this._disposables.push(gitlab);
@@ -728,6 +804,11 @@ export class Container {
 		return this._storage;
 	}
 
+	private readonly _onboarding: OnboardingService;
+	get onboarding(): OnboardingService {
+		return this._onboarding;
+	}
+
 	private _subscription: SubscriptionService;
 	get subscription(): SubscriptionService {
 		return this._subscription;
@@ -736,6 +817,14 @@ export class Container {
 	private readonly _telemetry: TelemetryService;
 	get telemetry(): TelemetryService {
 		return this._telemetry;
+	}
+
+	private _treemapAggregator: TreemapAggregatorService | undefined;
+	get treemapAggregator(): TreemapAggregatorService {
+		if (this._treemapAggregator == null) {
+			this._disposables.push((this._treemapAggregator = new TreemapAggregatorService(this)));
+		}
+		return this._treemapAggregator;
 	}
 
 	private readonly _uri: UriService;
@@ -816,10 +905,7 @@ export class Container {
 			}
 
 			if (command != null) {
-				const commandArgs: ToggleFileAnnotationCommandArgs = {
-					type: mode.annotations as FileAnnotationType,
-					on: true,
-				};
+				const commandArgs: ToggleFileAnnotationCommandArgs = { type: mode.annotations, on: true };
 				// Make sure to delay the execution by a bit so that the configuration changes get propagated first
 				setTimeout(executeCommand, 50, command, commandArgs);
 			}

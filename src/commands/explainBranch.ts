@@ -1,12 +1,12 @@
 import type { TextEditor, Uri } from 'vscode';
 import { ProgressLocation } from 'vscode';
+import { Logger } from '@gitlens/utils/logger.js';
 import type { Container } from '../container.js';
 import { getBranchMergeTargetName } from '../git/utils/-webview/branch.utils.js';
 import { showGenericErrorMessage } from '../messages.js';
 import { prepareCompareDataForAIRequest } from '../plus/ai/utils/-webview/ai.utils.js';
 import { showReferencePicker2 } from '../quickpicks/referencePicker.js';
 import { command } from '../system/-webview/command.js';
-import { Logger } from '../system/logger.js';
 import { getNodeRepoPath } from '../views/nodes/abstract/viewNode.js';
 import type { CommandContext } from './commandContext.js';
 import { isCommandContextViewNodeHasBranch } from './commandContext.utils.js';
@@ -56,6 +56,7 @@ export class ExplainBranchCommand extends ExplainCommandBase {
 					sort: { branches: { current: true } },
 				});
 				if (result.value?.ref == null) return;
+
 				args.ref = result.value.ref;
 			}
 

@@ -2,19 +2,19 @@ import { consume } from '@lit/context';
 import { SignalWatcher } from '@lit-labs/signals';
 import type { TemplateResult } from 'lit';
 import { css, html, LitElement, nothing } from 'lit';
-import { customElement, state } from 'lit/decorators.js';
+import { customElement } from 'lit/decorators.js';
+import { pluralize } from '@gitlens/utils/string.js';
 import type { ConnectCloudIntegrationsCommandArgs } from '../../../../../commands/cloudIntegrations.js';
 import type { LaunchpadCommandArgs } from '../../../../../plus/launchpad/launchpad.js';
 import { createCommandLink } from '../../../../../system/commands.js';
-import type { GetLaunchpadSummaryResponse, State } from '../../../../home/protocol.js';
-import { DidChangeLaunchpad, GetLaunchpadSummary } from '../../../../home/protocol.js';
-import { stateContext } from '../../../home/context.js';
-import { AsyncComputedState } from '../../../shared/components/signal-utils.js';
-import { ipcContext } from '../../../shared/contexts/ipc.js';
+import type { GetLaunchpadSummaryResponse } from '../../../../home/protocol.js';
+import { fetchLaunchpadSummary } from '../../../home/actions.js';
+import type { IntegrationsState } from '../../../shared/contexts/integrations.js';
+import { integrationsContext } from '../../../shared/contexts/integrations.js';
+import type { LaunchpadState } from '../../../shared/contexts/launchpad.js';
+import { launchpadContext } from '../../../shared/contexts/launchpad.js';
 import type { WebviewContext } from '../../../shared/contexts/webview.js';
 import { webviewContext } from '../../../shared/contexts/webview.js';
-import type { Disposable } from '../../../shared/events.js';
-import type { HostIpc } from '../../../shared/ipc.js';
 import { linkStyles } from '../../shared/components/vscode.css.js';
 import '../../../shared/components/button.js';
 import '../../../shared/components/button-container.js';
@@ -67,7 +67,7 @@ export class GlLaunchpad extends SignalWatcher(LitElement) {
 				text-decoration: none;
 			}
 
-			.launchpad-action:hover span {
+			.launchpad-action:hover:not(span) span {
 				text-decoration: underline;
 			}
 
@@ -99,27 +99,45 @@ export class GlLaunchpad extends SignalWatcher(LitElement) {
 				flex-direction: column;
 				gap: 0.4rem;
 			}
+
+			.section-heading-actions {
+				flex: none;
+				display: flex;
+				align-items: center;
+			}
+
+			.section-heading-action {
+				--button-padding: 0.2rem;
+				--button-line-height: 1.2rem;
+			}
 		`,
 	];
 
-	@consume<State>({ context: stateContext, subscribe: true })
-	@state()
-	private _homeState!: State;
+	@consume({ context: launchpadContext })
+	private _launchpad!: LaunchpadState;
 
-	@consume({ context: ipcContext })
-	private _ipc!: HostIpc;
+	@consume({ context: integrationsContext })
+	private _integrations!: IntegrationsState;
 
 	@consume({ context: webviewContext })
 	private _webview!: WebviewContext;
 
-	private _disposable: Disposable[] = [];
+	override connectedCallback(): void {
+		super.connectedCallback?.();
 
-	// private _summary = signal<GetLaunchpadSummaryResponse | undefined>(undefined);
+		// Fetch launchpad summary on mount — deferred from initial state load
+		const launchpad = this._launchpad.service;
+		if (launchpad != null) {
+			void fetchLaunchpadSummary(this._launchpad, launchpad);
+		}
+	}
 
-	private _summaryState = new AsyncComputedState<LaunchpadSummary>(async _abortSignal => {
-		const rsp = await this._ipc.sendRequest(GetLaunchpadSummary, {});
-		return rsp;
-	});
+	private onRefreshClicked = (): void => {
+		const launchpad = this._launchpad.service;
+		if (launchpad == null) return;
+
+		void fetchLaunchpadSummary(this._launchpad, launchpad);
+	};
 
 	get startWorkCommand(): string {
 		return this._webview.createCommandLink('gitlens.startWork:');
@@ -129,32 +147,22 @@ export class GlLaunchpad extends SignalWatcher(LitElement) {
 		return this._webview.createCommandLink('gitlens.createBranch:');
 	}
 
-	override connectedCallback(): void {
-		super.connectedCallback?.();
-
-		this._disposable.push(
-			this._ipc.onReceiveMessage(msg => {
-				switch (true) {
-					case DidChangeLaunchpad.is(msg):
-						this._summaryState.run(true);
-						break;
-				}
-			}),
-		);
-
-		this._summaryState.run();
-	}
-
-	override disconnectedCallback(): void {
-		super.disconnectedCallback?.();
-
-		this._disposable.forEach(d => d.dispose());
-	}
-
 	override render(): unknown {
+		const isLoading = this._launchpad.launchpadLoading.get();
 		return html`
-			<gl-section ?loading=${this._summaryState.computed.status === 'pending'}>
+			<gl-section ?loading=${isLoading}>
 				<span slot="heading">启动台</span>
+				<span class="section-heading-actions" slot="heading-actions">
+					<gl-button
+						aria-busy=${isLoading ? 'true' : 'false'}
+						?disabled=${isLoading}
+						class="section-heading-action"
+						appearance="toolbar"
+						tooltip="刷新启动台"
+						@click=${this.onRefreshClicked}
+						><code-icon icon="refresh"></code-icon
+					></gl-button>
+				</span>
 				<div class="summary">${this.renderSummaryResult()}</div>
 				<button-container grouping="gap-wide">
 					<gl-button full class="start-work" href=${this.startWorkCommand}>开始处理问题</gl-button>
@@ -173,7 +181,7 @@ export class GlLaunchpad extends SignalWatcher(LitElement) {
 	}
 
 	private renderSummaryResult() {
-		if (this._homeState.hasAnyIntegrationConnected === false) {
+		if (this._integrations.hasAnyIntegrationConnected.get() === false) {
 			return html`<ul class="menu">
 				<li>
 					<a
@@ -190,50 +198,62 @@ export class GlLaunchpad extends SignalWatcher(LitElement) {
 			</ul>`;
 		}
 
-		return this._summaryState.render({
-			pending: () => this.renderPending(),
-			complete: summary => this.renderSummary(summary),
-			error: () =>
-				html`<ul class="menu">
-					<li>加载摘要时出错</li>
-				</ul>`,
-		});
+		const summary = this._launchpad.launchpadSummary.get();
+		if (summary == null) {
+			return this.renderPending();
+		}
+		return this.renderSummary(summary);
 	}
 
 	private renderPending() {
-		if (this._summaryState.state == null) {
-			return html`
-				<div class="loader">
-					<skeleton-loader lines="1"></skeleton-loader>
-					<skeleton-loader lines="1"></skeleton-loader>
-				</div>
-			`;
-		}
-		return this.renderSummary(this._summaryState.state);
+		return html`
+			<div class="loader">
+				<skeleton-loader lines="1"></skeleton-loader>
+				<skeleton-loader lines="1"></skeleton-loader>
+			</div>
+		`;
 	}
 
 	private renderSummary(summary: LaunchpadSummary | undefined) {
 		if (summary == null) return nothing;
 
-		if ('error' in summary) {
+		// Total failure: error-only object with no summary data
+		if (!('total' in summary)) {
 			return html`<ul class="menu">
 				<li>无法加载项目</li>
 			</ul>`;
 		}
 
+		const result: TemplateResult[] = [];
+
+		// Partial success: some integrations failed but items were still loaded
+		if (summary.error != null) {
+			result.push(
+				html`<li>
+					<span class="launchpad-action">
+						<code-icon class="launchpad-action__icon" icon="warning"></code-icon>
+						<span>部分集成加载失败</span>
+					</span>
+				</li>`,
+			);
+		}
+
 		if (summary.total === 0) {
+			result.push(html`<li>你已全部处理完毕！</li>`);
 			return html`<ul class="menu">
-				<li>你已全部处理完毕！</li>
+				${result}
 			</ul>`;
 		}
 		if (!summary.hasGroupedItems) {
+			result.push(
+				html`<li>没有需要你关注的拉取请求</li>
+					<li>（另外还有 ${summary.total} 个拉取请求）</li>`,
+			);
 			return html`<ul class="menu">
-				<li>没有需要你关注的拉取请求</li>
-				<li>（另外还有 ${summary.total} 个拉取请求）</li>
+				${result}
 			</ul>`;
 		}
 
-		const result: TemplateResult[] = [];
 		for (const group of summary.groups) {
 			let total;
 			switch (group) {

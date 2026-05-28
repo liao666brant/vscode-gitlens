@@ -1,9 +1,9 @@
 import type { QuickInputButton } from 'vscode';
+import type { GitTagReference } from '@gitlens/git/models/reference.js';
+import type { GitTag } from '@gitlens/git/models/tag.js';
+import type { TagSortOptions } from '@gitlens/git/utils/sorting.js';
 import { revealTag } from '../../../git/actions/tag.js';
-import type { GitTagReference } from '../../../git/models/reference.js';
-import type { Repository } from '../../../git/models/repository.js';
-import type { GitTag } from '../../../git/models/tag.js';
-import type { TagSortOptions } from '../../../git/utils/-webview/sorting.js';
+import type { GlRepository } from '../../../git/models/repository.js';
 import { createDirectiveQuickPickItem, Directive } from '../../../quickpicks/items/directive.js';
 import type { TagQuickPickItem } from '../../../quickpicks/items/gitWizard.js';
 import type {
@@ -26,7 +26,7 @@ import {
 import { getBranchesAndOrTags } from './references.js';
 
 export async function getTags(
-	repo: Repository,
+	repo: GlRepository,
 	options?: {
 		buttons?: QuickInputButton[];
 		filter?: (t: GitTag) => boolean;
@@ -39,12 +39,12 @@ export async function getTags(
 		filter: options?.filter != null ? { tags: options.filter } : undefined,
 		picked: options?.picked,
 		sort: options?.sort != null ? { tags: options.sort } : true,
-	}) as Promise<TagQuickPickItem[]>;
+	});
 }
 
 export async function* inputTagNameStep<
-	State extends PartialStepState & ({ repo: Repository } | { repos: Repository[] }),
-	Context extends StepsContext<any> & { repos: Repository[]; showTags?: boolean },
+	State extends PartialStepState & ({ repo: GlRepository } | { repos: GlRepository[] }),
+	Context extends StepsContext<any> & { repos: GlRepository[]; showTags?: boolean },
 >(
 	state: State,
 	context: Context,
@@ -72,10 +72,8 @@ export async function* inputTagNameStep<
 				return [true, undefined];
 			}
 
-			let valid = true;
-
 			for (const repo of state.repos) {
-				valid = await repo.git.refs.checkIfCouldBeValidBranchOrTagName(value);
+				const valid = await repo.git.refs.checkIfCouldBeValidBranchOrTagName(value);
 				if (!valid) return [false, `'${value}' isn't a valid tag name`];
 
 				const alreadyExists = await repo.git.tags.getTag(value);
@@ -95,8 +93,8 @@ export async function* inputTagNameStep<
 }
 
 export function* pickTagsStep<
-	State extends PartialStepState & { repo: Repository },
-	Context extends StepsContext<any> & { repos: Repository[]; showTags?: boolean },
+	State extends PartialStepState & { repo: GlRepository },
+	Context extends StepsContext<any> & { repos: GlRepository[]; showTags?: boolean },
 >(
 	state: State,
 	context: Context,

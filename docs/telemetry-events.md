@@ -108,6 +108,58 @@
 }
 ```
 
+### agents/hookInstalled
+
+> Sent when an agent hook is installed
+
+```typescript
+{
+  'agent.provider': string
+}
+```
+
+### agents/hookUninstalled
+
+> Sent when an agent hook is uninstalled
+
+```typescript
+{
+  'agent.provider': string
+}
+```
+
+### agents/permission/resolved
+
+> Sent when a permission request is resolved
+
+```typescript
+{
+  'agent.provider': string,
+  'permission.decision': string,
+  'permission.tool': string
+}
+```
+
+### agents/session/ended
+
+> Sent when an agent session ends
+
+```typescript
+{
+  'agent.provider': string
+}
+```
+
+### agents/session/started
+
+> Sent when an agent session starts
+
+```typescript
+{
+  'agent.provider': string
+}
+```
+
 ### ai/enabled
 
 > Sent when AI is enabled
@@ -122,7 +174,7 @@ void
 
 ```typescript
 {
-  'changeType': 'wip' | 'stash' | 'commit' | 'branch' | 'draft-stash' | 'draft-patch' | 'draft-suggested_pr_change',
+  'changeType': 'wip' | 'stash' | 'commit' | 'branch' | 'compare' | 'draft-stash' | 'draft-patch' | 'draft-suggested_pr_change',
   'config.largePromptThreshold': number,
   'config.usedCustomInstructions': boolean,
   'correlationId': string,
@@ -145,7 +197,7 @@ void
   'id': string,
   'input.length': number,
   'model.id': string,
-  'model.provider.id': 'anthropic' | 'azure' | 'deepseek' | 'gemini' | 'github' | 'gitkraken' | 'huggingface' | 'mistral' | 'ollama' | 'openai' | 'openaicompatible' | 'openrouter' | 'vscode' | 'xai',
+  'model.provider.id': 'anthropic' | 'azure' | 'deepseek' | 'gemini' | 'github' | 'gitkraken' | 'huggingface' | 'mistral' | 'ollama' | 'openai' | 'openaicompatible' | 'openrouter' | 'simulator' | 'vscode' | 'xai',
   'model.provider.name': string,
   'output.length': number,
   'retry.count': number,
@@ -170,11 +222,11 @@ void
   'feature': string,
   'id': string,
   'model.id': string,
-  'model.provider.id': 'anthropic' | 'azure' | 'deepseek' | 'gemini' | 'github' | 'gitkraken' | 'huggingface' | 'mistral' | 'ollama' | 'openai' | 'openaicompatible' | 'openrouter' | 'vscode' | 'xai',
+  'model.provider.id': 'anthropic' | 'azure' | 'deepseek' | 'gemini' | 'github' | 'gitkraken' | 'huggingface' | 'mistral' | 'ollama' | 'openai' | 'openaicompatible' | 'openrouter' | 'simulator' | 'vscode' | 'xai',
   'model.provider.name': string,
   'sentiment': 'helpful' | 'unhelpful',
   // The AI feature that feedback was submitted for
-  'type': 'explain-changes' | 'generate-commitMessage' | 'generate-stashMessage' | 'generate-changelog' | 'generate-create-cloudPatch' | 'generate-create-codeSuggestion' | 'generate-create-pullRequest' | 'generate-commits' | 'generate-searchQuery',
+  'type': 'explain-changes' | 'review-changes' | 'generate-commitMessage' | 'generate-stashMessage' | 'generate-changelog' | 'generate-create-cloudPatch' | 'generate-create-codeSuggestion' | 'generate-create-pullRequest' | 'generate-commits' | 'generate-searchQuery',
   // Custom feedback provided (if any)
   'unhelpful.custom': string,
   // Unhelpful reasons selected (if any) - comma-separated list of AIFeedbackUnhelpfulReasons values
@@ -216,7 +268,7 @@ void
   'id': string,
   'input.length': number,
   'model.id': string,
-  'model.provider.id': 'anthropic' | 'azure' | 'deepseek' | 'gemini' | 'github' | 'gitkraken' | 'huggingface' | 'mistral' | 'ollama' | 'openai' | 'openaicompatible' | 'openrouter' | 'vscode' | 'xai',
+  'model.provider.id': 'anthropic' | 'azure' | 'deepseek' | 'gemini' | 'github' | 'gitkraken' | 'huggingface' | 'mistral' | 'ollama' | 'openai' | 'openaicompatible' | 'openrouter' | 'simulator' | 'vscode' | 'xai',
   'model.provider.name': string,
   'output.length': number,
   'retry.count': number,
@@ -258,7 +310,7 @@ or
   'id': string,
   'input.length': number,
   'model.id': string,
-  'model.provider.id': 'anthropic' | 'azure' | 'deepseek' | 'gemini' | 'github' | 'gitkraken' | 'huggingface' | 'mistral' | 'ollama' | 'openai' | 'openaicompatible' | 'openrouter' | 'vscode' | 'xai',
+  'model.provider.id': 'anthropic' | 'azure' | 'deepseek' | 'gemini' | 'github' | 'gitkraken' | 'huggingface' | 'mistral' | 'ollama' | 'openai' | 'openaicompatible' | 'openrouter' | 'simulator' | 'vscode' | 'xai',
   'model.provider.name': string,
   'output.length': number,
   'retry.count': number,
@@ -301,7 +353,7 @@ or
   'id': string,
   'input.length': number,
   'model.id': string,
-  'model.provider.id': 'anthropic' | 'azure' | 'deepseek' | 'gemini' | 'github' | 'gitkraken' | 'huggingface' | 'mistral' | 'ollama' | 'openai' | 'openaicompatible' | 'openrouter' | 'vscode' | 'xai',
+  'model.provider.id': 'anthropic' | 'azure' | 'deepseek' | 'gemini' | 'github' | 'gitkraken' | 'huggingface' | 'mistral' | 'ollama' | 'openai' | 'openaicompatible' | 'openrouter' | 'simulator' | 'vscode' | 'xai',
   'model.provider.name': string,
   'output.length': number,
   'retry.count': number,
@@ -343,7 +395,7 @@ or
   'id': string,
   'input.length': number,
   'model.id': string,
-  'model.provider.id': 'anthropic' | 'azure' | 'deepseek' | 'gemini' | 'github' | 'gitkraken' | 'huggingface' | 'mistral' | 'ollama' | 'openai' | 'openaicompatible' | 'openrouter' | 'vscode' | 'xai',
+  'model.provider.id': 'anthropic' | 'azure' | 'deepseek' | 'gemini' | 'github' | 'gitkraken' | 'huggingface' | 'mistral' | 'ollama' | 'openai' | 'openaicompatible' | 'openrouter' | 'simulator' | 'vscode' | 'xai',
   'model.provider.name': string,
   'output.length': number,
   'retry.count': number,
@@ -385,7 +437,7 @@ or
   'id': string,
   'input.length': number,
   'model.id': string,
-  'model.provider.id': 'anthropic' | 'azure' | 'deepseek' | 'gemini' | 'github' | 'gitkraken' | 'huggingface' | 'mistral' | 'ollama' | 'openai' | 'openaicompatible' | 'openrouter' | 'vscode' | 'xai',
+  'model.provider.id': 'anthropic' | 'azure' | 'deepseek' | 'gemini' | 'github' | 'gitkraken' | 'huggingface' | 'mistral' | 'ollama' | 'openai' | 'openaicompatible' | 'openrouter' | 'simulator' | 'vscode' | 'xai',
   'model.provider.name': string,
   'output.length': number,
   'retry.count': number,
@@ -427,7 +479,7 @@ or
   'id': string,
   'input.length': number,
   'model.id': string,
-  'model.provider.id': 'anthropic' | 'azure' | 'deepseek' | 'gemini' | 'github' | 'gitkraken' | 'huggingface' | 'mistral' | 'ollama' | 'openai' | 'openaicompatible' | 'openrouter' | 'vscode' | 'xai',
+  'model.provider.id': 'anthropic' | 'azure' | 'deepseek' | 'gemini' | 'github' | 'gitkraken' | 'huggingface' | 'mistral' | 'ollama' | 'openai' | 'openaicompatible' | 'openrouter' | 'simulator' | 'vscode' | 'xai',
   'model.provider.name': string,
   'output.length': number,
   'retry.count': number,
@@ -469,11 +521,57 @@ or
   'id': string,
   'input.length': number,
   'model.id': string,
-  'model.provider.id': 'anthropic' | 'azure' | 'deepseek' | 'gemini' | 'github' | 'gitkraken' | 'huggingface' | 'mistral' | 'ollama' | 'openai' | 'openaicompatible' | 'openrouter' | 'vscode' | 'xai',
+  'model.provider.id': 'anthropic' | 'azure' | 'deepseek' | 'gemini' | 'github' | 'gitkraken' | 'huggingface' | 'mistral' | 'ollama' | 'openai' | 'openaicompatible' | 'openrouter' | 'simulator' | 'vscode' | 'xai',
   'model.provider.name': string,
   'output.length': number,
   'retry.count': number,
   'type': 'stashMessage',
+  'usage.completionTokens': number,
+  'usage.limits.limit': number,
+  'usage.limits.resetsOn': string,
+  'usage.limits.used': number,
+  'usage.promptTokens': number,
+  'usage.totalTokens': number,
+  'warning.exceededLargePromptThreshold': boolean,
+  'warning.promptTruncated': boolean
+}
+```
+
+### ai/review
+
+> Sent when reviewing changes from wip, commits, or commit ranges
+
+```typescript
+{
+  'config.largePromptThreshold': number,
+  'config.usedCustomInstructions': boolean,
+  'correlationId': string,
+  'customInstructions.commitMessage.setting.length': number,
+  'customInstructions.commitMessage.setting.used': boolean,
+  'customInstructions.length': number,
+  'customInstructions.setting.length': number,
+  'customInstructions.setting.used': boolean,
+  'customInstructions.used': boolean,
+  'diff.files.count': number,
+  'diff.hash': string,
+  'diff.hunks.count': number,
+  'diff.lines.count': number,
+  'duration': number,
+  'failed': boolean,
+  'failed.cancelled.reason': 'large-prompt',
+  'failed.error': string,
+  'failed.error.detail': string,
+  'failed.reason': 'user-declined' | 'user-cancelled' | 'error',
+  'id': string,
+  'input.length': number,
+  'model.id': string,
+  'model.provider.id': 'anthropic' | 'azure' | 'deepseek' | 'gemini' | 'github' | 'gitkraken' | 'huggingface' | 'mistral' | 'ollama' | 'openai' | 'openaicompatible' | 'openrouter' | 'simulator' | 'vscode' | 'xai',
+  'model.provider.name': string,
+  'output.length': number,
+  'retry.count': number,
+  'reviewMode': 'single-pass' | 'two-pass',
+  'reviewType': 'wip' | 'commit' | 'compare',
+  'type': 'review',
   'usage.completionTokens': number,
   'usage.limits.limit': number,
   'usage.limits.resetsOn': string,
@@ -492,7 +590,7 @@ or
 ```typescript
 {
   'model.id': string,
-  'model.provider.id': 'anthropic' | 'azure' | 'deepseek' | 'gemini' | 'github' | 'gitkraken' | 'huggingface' | 'mistral' | 'ollama' | 'openai' | 'openaicompatible' | 'openrouter' | 'vscode' | 'xai',
+  'model.provider.id': 'anthropic' | 'azure' | 'deepseek' | 'gemini' | 'github' | 'gitkraken' | 'huggingface' | 'mistral' | 'ollama' | 'openai' | 'openaicompatible' | 'openrouter' | 'simulator' | 'vscode' | 'xai',
   'model.provider.name': string
 }
 ```
@@ -538,6 +636,8 @@ void
   'instance': number,
   'action': 'manage' | 'connect',
   'connected': boolean,
+  // Route requested by the caller for the manual-vs-agent flow; `undefined` when the caller didn't opt in.
+  'context.showOpenInAgent': 'ask' | 'manual' | 'agent',
   'items.count': number
 }
 ```
@@ -551,6 +651,8 @@ void
   'instance': number,
   'action': 'soft-open',
   'connected': boolean,
+  // Route requested by the caller for the manual-vs-agent flow; `undefined` when the caller didn't opt in.
+  'context.showOpenInAgent': 'ask' | 'manual' | 'agent',
   [`item.${string}`]: string | number | boolean,
   'items.count': number
 }
@@ -564,6 +666,8 @@ void
 {
   'instance': number,
   'connected': boolean,
+  // Route requested by the caller for the manual-vs-agent flow; `undefined` when the caller didn't opt in.
+  'context.showOpenInAgent': 'ask' | 'manual' | 'agent',
   [`item.${string}`]: string | number | boolean,
   'items.count': number
 }
@@ -575,7 +679,9 @@ void
 
 ```typescript
 {
-  'instance': number
+  'instance': number,
+  // Route requested by the caller for the manual-vs-agent flow; `undefined` when the caller didn't opt in.
+  'context.showOpenInAgent': 'ask' | 'manual' | 'agent'
 }
 ```
 
@@ -587,6 +693,8 @@ void
 {
   'instance': number,
   'connected': boolean,
+  // Route requested by the caller for the manual-vs-agent flow; `undefined` when the caller didn't opt in.
+  'context.showOpenInAgent': 'ask' | 'manual' | 'agent',
   'items.count': number
 }
 ```
@@ -599,6 +707,8 @@ void
 {
   'instance': number,
   'connected': boolean,
+  // Route requested by the caller for the manual-vs-agent flow; `undefined` when the caller didn't opt in.
+  'context.showOpenInAgent': 'ask' | 'manual' | 'agent',
   'items.count': number
 }
 ```
@@ -611,6 +721,8 @@ void
 {
   'instance': number,
   'connected': boolean,
+  // Route requested by the caller for the manual-vs-agent flow; `undefined` when the caller didn't opt in.
+  'context.showOpenInAgent': 'ask' | 'manual' | 'agent',
   'items.count': number
 }
 ```
@@ -624,7 +736,19 @@ void
   'instance': number,
   'action': 'connect',
   'connected': boolean,
+  // Route requested by the caller for the manual-vs-agent flow; `undefined` when the caller didn't opt in.
+  'context.showOpenInAgent': 'ask' | 'manual' | 'agent',
   'items.count': number
+}
+```
+
+### cli/discoveryFile/failed
+
+> Sent when the CLI integration discovery file fails to be created
+
+```typescript
+{
+  'error.message': string
 }
 ```
 
@@ -638,7 +762,7 @@ void
   'autoInstall': boolean,
   'error.message': string,
   'insiders': boolean,
-  'source': 'account' | 'subscription' | 'graph' | 'composer' | 'patchDetails' | 'settings' | 'timeline' | 'home' | 'welcome' | 'rebaseEditor' | 'ai' | 'ai:markdown-preview' | 'ai:markdown-editor' | 'ai:picker' | 'associateIssueWithBranch' | 'cloud-patches' | 'code-suggest' | 'commandPalette' | 'deeplink' | 'editor:hover' | 'feature-badge' | 'feature-gate' | 'gk-cli-integration' | 'gk-mcp-provider' | 'graph-details' | 'inspect' | 'inspect-overview' | 'integrations' | 'launchpad' | 'launchpad-indicator' | 'launchpad-view' | 'mcp' | 'mcp-welcome-message' | 'merge-target' | 'notification' | 'prompt' | 'quick-wizard' | 'remoteProvider' | 'scm' | 'scm-input' | 'startReview' | 'startWork' | 'statusbar:hover' | 'trial-indicator' | 'view' | 'view:hover' | 'walkthrough' | 'whatsnew' | 'worktrees'
+  'source': 'account' | 'subscription' | 'graph' | 'composer' | 'patchDetails' | 'settings' | 'timeline' | 'home' | 'welcome' | 'rebaseEditor' | 'ai' | 'ai:markdown-preview' | 'ai:markdown-editor' | 'ai:picker' | 'associateIssueWithBranch' | 'cloud-patches' | 'code-suggest' | 'commandPalette' | 'deeplink' | 'editor:hover' | 'feature-badge' | 'feature-gate' | 'gk-cli-integration' | 'gk-mcp-provider' | 'graph-details' | 'graph-header' | 'graph-kanban' | 'graph-sidebar' | 'graph-treemap' | 'inspect' | 'inspect-overview' | 'integrations' | 'launchpad' | 'launchpad-indicator' | 'launchpad-view' | 'mcp' | 'mcp-welcome-message' | 'merge-target' | 'notification' | 'prompt' | 'quick-wizard' | 'remoteProvider' | 'scm' | 'scm-input' | 'startReview' | 'startWork' | 'statusbar:hover' | 'trial-indicator' | 'view' | 'view:hover' | 'walkthrough' | 'whatsnew' | 'worktrees'
 }
 ```
 
@@ -651,7 +775,7 @@ void
   'attempts': number,
   'autoInstall': boolean,
   'insiders': boolean,
-  'source': 'account' | 'subscription' | 'graph' | 'composer' | 'patchDetails' | 'settings' | 'timeline' | 'home' | 'welcome' | 'rebaseEditor' | 'ai' | 'ai:markdown-preview' | 'ai:markdown-editor' | 'ai:picker' | 'associateIssueWithBranch' | 'cloud-patches' | 'code-suggest' | 'commandPalette' | 'deeplink' | 'editor:hover' | 'feature-badge' | 'feature-gate' | 'gk-cli-integration' | 'gk-mcp-provider' | 'graph-details' | 'inspect' | 'inspect-overview' | 'integrations' | 'launchpad' | 'launchpad-indicator' | 'launchpad-view' | 'mcp' | 'mcp-welcome-message' | 'merge-target' | 'notification' | 'prompt' | 'quick-wizard' | 'remoteProvider' | 'scm' | 'scm-input' | 'startReview' | 'startWork' | 'statusbar:hover' | 'trial-indicator' | 'view' | 'view:hover' | 'walkthrough' | 'whatsnew' | 'worktrees'
+  'source': 'account' | 'subscription' | 'graph' | 'composer' | 'patchDetails' | 'settings' | 'timeline' | 'home' | 'welcome' | 'rebaseEditor' | 'ai' | 'ai:markdown-preview' | 'ai:markdown-editor' | 'ai:picker' | 'associateIssueWithBranch' | 'cloud-patches' | 'code-suggest' | 'commandPalette' | 'deeplink' | 'editor:hover' | 'feature-badge' | 'feature-gate' | 'gk-cli-integration' | 'gk-mcp-provider' | 'graph-details' | 'graph-header' | 'graph-kanban' | 'graph-sidebar' | 'graph-treemap' | 'inspect' | 'inspect-overview' | 'integrations' | 'launchpad' | 'launchpad-indicator' | 'launchpad-view' | 'mcp' | 'mcp-welcome-message' | 'merge-target' | 'notification' | 'prompt' | 'quick-wizard' | 'remoteProvider' | 'scm' | 'scm-input' | 'startReview' | 'startWork' | 'statusbar:hover' | 'trial-indicator' | 'view' | 'view:hover' | 'walkthrough' | 'whatsnew' | 'worktrees'
 }
 ```
 
@@ -664,8 +788,40 @@ void
   'attempts': number,
   'autoInstall': boolean,
   'insiders': boolean,
-  'source': 'account' | 'subscription' | 'graph' | 'composer' | 'patchDetails' | 'settings' | 'timeline' | 'home' | 'welcome' | 'rebaseEditor' | 'ai' | 'ai:markdown-preview' | 'ai:markdown-editor' | 'ai:picker' | 'associateIssueWithBranch' | 'cloud-patches' | 'code-suggest' | 'commandPalette' | 'deeplink' | 'editor:hover' | 'feature-badge' | 'feature-gate' | 'gk-cli-integration' | 'gk-mcp-provider' | 'graph-details' | 'inspect' | 'inspect-overview' | 'integrations' | 'launchpad' | 'launchpad-indicator' | 'launchpad-view' | 'mcp' | 'mcp-welcome-message' | 'merge-target' | 'notification' | 'prompt' | 'quick-wizard' | 'remoteProvider' | 'scm' | 'scm-input' | 'startReview' | 'startWork' | 'statusbar:hover' | 'trial-indicator' | 'view' | 'view:hover' | 'walkthrough' | 'whatsnew' | 'worktrees',
+  'source': 'account' | 'subscription' | 'graph' | 'composer' | 'patchDetails' | 'settings' | 'timeline' | 'home' | 'welcome' | 'rebaseEditor' | 'ai' | 'ai:markdown-preview' | 'ai:markdown-editor' | 'ai:picker' | 'associateIssueWithBranch' | 'cloud-patches' | 'code-suggest' | 'commandPalette' | 'deeplink' | 'editor:hover' | 'feature-badge' | 'feature-gate' | 'gk-cli-integration' | 'gk-mcp-provider' | 'graph-details' | 'graph-header' | 'graph-kanban' | 'graph-sidebar' | 'graph-treemap' | 'inspect' | 'inspect-overview' | 'integrations' | 'launchpad' | 'launchpad-indicator' | 'launchpad-view' | 'mcp' | 'mcp-welcome-message' | 'merge-target' | 'notification' | 'prompt' | 'quick-wizard' | 'remoteProvider' | 'scm' | 'scm-input' | 'startReview' | 'startWork' | 'statusbar:hover' | 'trial-indicator' | 'view' | 'view:hover' | 'walkthrough' | 'whatsnew' | 'worktrees',
   'version': string
+}
+```
+
+### cli/ipc/failed
+
+> Sent when the CLI integration IPC server fails to start
+
+```typescript
+{
+  'error.message': string
+}
+```
+
+### cli/updateCore/completed
+
+> Sent when a CLI update succeeds
+
+```typescript
+{
+  'current': string,
+  'previous': string
+}
+```
+
+### cli/updateCore/failed
+
+> Sent when a CLI update fails
+
+```typescript
+{
+  'error.message': string,
+  'previous': string
 }
 ```
 
@@ -936,7 +1092,7 @@ or
 ```typescript
 {
   [`context.${string}`]: string | number | boolean,
-  'context.webview.host': 'view' | 'editor',
+  'context.webview.host': 'view' | 'editor' | 'panel',
   'context.webview.id': string,
   'context.webview.instanceId': string,
   'context.webview.type': string
@@ -949,7 +1105,6 @@ or
 
 ```typescript
 {
-  'context.attachedTo': 'graph' | 'default',
   'context.autolinks': number,
   'context.codeSuggestions': number,
   'context.inReview': boolean,
@@ -959,7 +1114,7 @@ or
   'context.repository.id': string,
   'context.repository.provider.id': string,
   'context.repository.scheme': string,
-  'context.webview.host': 'view' | 'editor',
+  'context.webview.host': 'view' | 'editor' | 'panel',
   'context.webview.id': string,
   'context.webview.instanceId': string,
   'context.webview.type': string,
@@ -972,13 +1127,12 @@ or
 
 ```typescript
 {
-  'context.attachedTo': 'graph' | 'default',
   'context.autolinks': number,
   'context.mode': 'commit',
   'context.pinned': boolean,
   'context.type': 'stash' | 'commit',
   'context.uncommitted': boolean,
-  'context.webview.host': 'view' | 'editor',
+  'context.webview.host': 'view' | 'editor' | 'panel',
   'context.webview.id': string,
   'context.webview.instanceId': string,
   'context.webview.type': string,
@@ -1014,7 +1168,7 @@ or
 
 ```typescript
 {
-  'context.webview.host': 'view' | 'editor',
+  'context.webview.host': 'view' | 'editor' | 'panel',
   'context.webview.id': string,
   'context.webview.instanceId': string,
   'context.webview.type': string,
@@ -1029,7 +1183,6 @@ or
 
 ```typescript
 {
-  'context.attachedTo': 'graph' | 'default',
   'context.autolinks': number,
   'context.codeSuggestions': number,
   'context.config.autolinks.enabled': boolean,
@@ -1047,7 +1200,7 @@ or
   'context.repository.id': string,
   'context.repository.provider.id': string,
   'context.repository.scheme': string,
-  'context.webview.host': 'view' | 'editor',
+  'context.webview.host': 'view' | 'editor' | 'panel',
   'context.webview.id': string,
   'context.webview.instanceId': string,
   'context.webview.type': string,
@@ -1060,7 +1213,6 @@ or
 
 ```typescript
 {
-  'context.attachedTo': 'graph' | 'default',
   'context.autolinks': number,
   'context.config.autolinks.enabled': boolean,
   'context.config.autolinks.enhanced': boolean,
@@ -1074,7 +1226,7 @@ or
   'context.pinned': boolean,
   'context.type': 'stash' | 'commit',
   'context.uncommitted': boolean,
-  'context.webview.host': 'view' | 'editor',
+  'context.webview.host': 'view' | 'editor' | 'panel',
   'context.webview.id': string,
   'context.webview.instanceId': string,
   'context.webview.type': string,
@@ -1097,7 +1249,7 @@ or
   'context.ai.model.maxTokens.input': number,
   'context.ai.model.maxTokens.output': number,
   'context.ai.model.name': string,
-  'context.ai.model.provider.id': 'anthropic' | 'azure' | 'deepseek' | 'gemini' | 'github' | 'gitkraken' | 'huggingface' | 'mistral' | 'ollama' | 'openai' | 'openaicompatible' | 'openrouter' | 'vscode' | 'xai',
+  'context.ai.model.provider.id': 'anthropic' | 'azure' | 'deepseek' | 'gemini' | 'github' | 'gitkraken' | 'huggingface' | 'mistral' | 'ollama' | 'openai' | 'openaicompatible' | 'openrouter' | 'simulator' | 'vscode' | 'xai',
   'context.ai.model.temperature': number,
   'context.commits.autoComposedCount': number,
   'context.commits.composedCount': number,
@@ -1129,10 +1281,10 @@ or
   'context.operations.undo.count': number,
   'context.session.duration': number,
   'context.session.start': string,
-  'context.source': 'account' | 'subscription' | 'graph' | 'composer' | 'patchDetails' | 'settings' | 'timeline' | 'home' | 'welcome' | 'rebaseEditor' | 'ai' | 'ai:markdown-preview' | 'ai:markdown-editor' | 'ai:picker' | 'associateIssueWithBranch' | 'cloud-patches' | 'code-suggest' | 'commandPalette' | 'deeplink' | 'editor:hover' | 'feature-badge' | 'feature-gate' | 'gk-cli-integration' | 'gk-mcp-provider' | 'graph-details' | 'inspect' | 'inspect-overview' | 'integrations' | 'launchpad' | 'launchpad-indicator' | 'launchpad-view' | 'mcp' | 'mcp-welcome-message' | 'merge-target' | 'notification' | 'prompt' | 'quick-wizard' | 'remoteProvider' | 'scm' | 'scm-input' | 'startReview' | 'startWork' | 'statusbar:hover' | 'trial-indicator' | 'view' | 'view:hover' | 'walkthrough' | 'whatsnew' | 'worktrees',
+  'context.source': 'account' | 'subscription' | 'graph' | 'composer' | 'patchDetails' | 'settings' | 'timeline' | 'home' | 'welcome' | 'rebaseEditor' | 'ai' | 'ai:markdown-preview' | 'ai:markdown-editor' | 'ai:picker' | 'associateIssueWithBranch' | 'cloud-patches' | 'code-suggest' | 'commandPalette' | 'deeplink' | 'editor:hover' | 'feature-badge' | 'feature-gate' | 'gk-cli-integration' | 'gk-mcp-provider' | 'graph-details' | 'graph-header' | 'graph-kanban' | 'graph-sidebar' | 'graph-treemap' | 'inspect' | 'inspect-overview' | 'integrations' | 'launchpad' | 'launchpad-indicator' | 'launchpad-view' | 'mcp' | 'mcp-welcome-message' | 'merge-target' | 'notification' | 'prompt' | 'quick-wizard' | 'remoteProvider' | 'scm' | 'scm-input' | 'startReview' | 'startWork' | 'statusbar:hover' | 'trial-indicator' | 'view' | 'view:hover' | 'walkthrough' | 'whatsnew' | 'worktrees',
   'context.warnings.indexChanged': boolean,
   'context.warnings.workingDirectoryChanged': boolean,
-  'context.webview.host': 'view' | 'editor',
+  'context.webview.host': 'view' | 'editor' | 'panel',
   'context.webview.id': string,
   'context.webview.instanceId': string,
   'context.webview.type': string
@@ -1153,7 +1305,7 @@ or
   'context.ai.model.maxTokens.input': number,
   'context.ai.model.maxTokens.output': number,
   'context.ai.model.name': string,
-  'context.ai.model.provider.id': 'anthropic' | 'azure' | 'deepseek' | 'gemini' | 'github' | 'gitkraken' | 'huggingface' | 'mistral' | 'ollama' | 'openai' | 'openaicompatible' | 'openrouter' | 'vscode' | 'xai',
+  'context.ai.model.provider.id': 'anthropic' | 'azure' | 'deepseek' | 'gemini' | 'github' | 'gitkraken' | 'huggingface' | 'mistral' | 'ollama' | 'openai' | 'openaicompatible' | 'openrouter' | 'simulator' | 'vscode' | 'xai',
   'context.ai.model.temperature': number,
   'context.commits.autoComposedCount': number,
   'context.commits.composedCount': number,
@@ -1185,10 +1337,10 @@ or
   'context.operations.undo.count': number,
   'context.session.duration': number,
   'context.session.start': string,
-  'context.source': 'account' | 'subscription' | 'graph' | 'composer' | 'patchDetails' | 'settings' | 'timeline' | 'home' | 'welcome' | 'rebaseEditor' | 'ai' | 'ai:markdown-preview' | 'ai:markdown-editor' | 'ai:picker' | 'associateIssueWithBranch' | 'cloud-patches' | 'code-suggest' | 'commandPalette' | 'deeplink' | 'editor:hover' | 'feature-badge' | 'feature-gate' | 'gk-cli-integration' | 'gk-mcp-provider' | 'graph-details' | 'inspect' | 'inspect-overview' | 'integrations' | 'launchpad' | 'launchpad-indicator' | 'launchpad-view' | 'mcp' | 'mcp-welcome-message' | 'merge-target' | 'notification' | 'prompt' | 'quick-wizard' | 'remoteProvider' | 'scm' | 'scm-input' | 'startReview' | 'startWork' | 'statusbar:hover' | 'trial-indicator' | 'view' | 'view:hover' | 'walkthrough' | 'whatsnew' | 'worktrees',
+  'context.source': 'account' | 'subscription' | 'graph' | 'composer' | 'patchDetails' | 'settings' | 'timeline' | 'home' | 'welcome' | 'rebaseEditor' | 'ai' | 'ai:markdown-preview' | 'ai:markdown-editor' | 'ai:picker' | 'associateIssueWithBranch' | 'cloud-patches' | 'code-suggest' | 'commandPalette' | 'deeplink' | 'editor:hover' | 'feature-badge' | 'feature-gate' | 'gk-cli-integration' | 'gk-mcp-provider' | 'graph-details' | 'graph-header' | 'graph-kanban' | 'graph-sidebar' | 'graph-treemap' | 'inspect' | 'inspect-overview' | 'integrations' | 'launchpad' | 'launchpad-indicator' | 'launchpad-view' | 'mcp' | 'mcp-welcome-message' | 'merge-target' | 'notification' | 'prompt' | 'quick-wizard' | 'remoteProvider' | 'scm' | 'scm-input' | 'startReview' | 'startWork' | 'statusbar:hover' | 'trial-indicator' | 'view' | 'view:hover' | 'walkthrough' | 'whatsnew' | 'worktrees',
   'context.warnings.indexChanged': boolean,
   'context.warnings.workingDirectoryChanged': boolean,
-  'context.webview.host': 'view' | 'editor',
+  'context.webview.host': 'view' | 'editor' | 'panel',
   'context.webview.id': string,
   'context.webview.instanceId': string,
   'context.webview.type': string,
@@ -1216,7 +1368,7 @@ or
   'context.ai.model.maxTokens.input': number,
   'context.ai.model.maxTokens.output': number,
   'context.ai.model.name': string,
-  'context.ai.model.provider.id': 'anthropic' | 'azure' | 'deepseek' | 'gemini' | 'github' | 'gitkraken' | 'huggingface' | 'mistral' | 'ollama' | 'openai' | 'openaicompatible' | 'openrouter' | 'vscode' | 'xai',
+  'context.ai.model.provider.id': 'anthropic' | 'azure' | 'deepseek' | 'gemini' | 'github' | 'gitkraken' | 'huggingface' | 'mistral' | 'ollama' | 'openai' | 'openaicompatible' | 'openrouter' | 'simulator' | 'vscode' | 'xai',
   'context.ai.model.temperature': number,
   'context.commits.autoComposedCount': number,
   'context.commits.composedCount': number,
@@ -1248,10 +1400,10 @@ or
   'context.operations.undo.count': number,
   'context.session.duration': number,
   'context.session.start': string,
-  'context.source': 'account' | 'subscription' | 'graph' | 'composer' | 'patchDetails' | 'settings' | 'timeline' | 'home' | 'welcome' | 'rebaseEditor' | 'ai' | 'ai:markdown-preview' | 'ai:markdown-editor' | 'ai:picker' | 'associateIssueWithBranch' | 'cloud-patches' | 'code-suggest' | 'commandPalette' | 'deeplink' | 'editor:hover' | 'feature-badge' | 'feature-gate' | 'gk-cli-integration' | 'gk-mcp-provider' | 'graph-details' | 'inspect' | 'inspect-overview' | 'integrations' | 'launchpad' | 'launchpad-indicator' | 'launchpad-view' | 'mcp' | 'mcp-welcome-message' | 'merge-target' | 'notification' | 'prompt' | 'quick-wizard' | 'remoteProvider' | 'scm' | 'scm-input' | 'startReview' | 'startWork' | 'statusbar:hover' | 'trial-indicator' | 'view' | 'view:hover' | 'walkthrough' | 'whatsnew' | 'worktrees',
+  'context.source': 'account' | 'subscription' | 'graph' | 'composer' | 'patchDetails' | 'settings' | 'timeline' | 'home' | 'welcome' | 'rebaseEditor' | 'ai' | 'ai:markdown-preview' | 'ai:markdown-editor' | 'ai:picker' | 'associateIssueWithBranch' | 'cloud-patches' | 'code-suggest' | 'commandPalette' | 'deeplink' | 'editor:hover' | 'feature-badge' | 'feature-gate' | 'gk-cli-integration' | 'gk-mcp-provider' | 'graph-details' | 'graph-header' | 'graph-kanban' | 'graph-sidebar' | 'graph-treemap' | 'inspect' | 'inspect-overview' | 'integrations' | 'launchpad' | 'launchpad-indicator' | 'launchpad-view' | 'mcp' | 'mcp-welcome-message' | 'merge-target' | 'notification' | 'prompt' | 'quick-wizard' | 'remoteProvider' | 'scm' | 'scm-input' | 'startReview' | 'startWork' | 'statusbar:hover' | 'trial-indicator' | 'view' | 'view:hover' | 'walkthrough' | 'whatsnew' | 'worktrees',
   'context.warnings.indexChanged': boolean,
   'context.warnings.workingDirectoryChanged': boolean,
-  'context.webview.host': 'view' | 'editor',
+  'context.webview.host': 'view' | 'editor' | 'panel',
   'context.webview.id': string,
   'context.webview.instanceId': string,
   'context.webview.type': string,
@@ -1278,7 +1430,7 @@ or
   'context.ai.model.maxTokens.input': number,
   'context.ai.model.maxTokens.output': number,
   'context.ai.model.name': string,
-  'context.ai.model.provider.id': 'anthropic' | 'azure' | 'deepseek' | 'gemini' | 'github' | 'gitkraken' | 'huggingface' | 'mistral' | 'ollama' | 'openai' | 'openaicompatible' | 'openrouter' | 'vscode' | 'xai',
+  'context.ai.model.provider.id': 'anthropic' | 'azure' | 'deepseek' | 'gemini' | 'github' | 'gitkraken' | 'huggingface' | 'mistral' | 'ollama' | 'openai' | 'openaicompatible' | 'openrouter' | 'simulator' | 'vscode' | 'xai',
   'context.ai.model.temperature': number,
   'context.commits.autoComposedCount': number,
   'context.commits.composedCount': number,
@@ -1310,10 +1462,10 @@ or
   'context.operations.undo.count': number,
   'context.session.duration': number,
   'context.session.start': string,
-  'context.source': 'account' | 'subscription' | 'graph' | 'composer' | 'patchDetails' | 'settings' | 'timeline' | 'home' | 'welcome' | 'rebaseEditor' | 'ai' | 'ai:markdown-preview' | 'ai:markdown-editor' | 'ai:picker' | 'associateIssueWithBranch' | 'cloud-patches' | 'code-suggest' | 'commandPalette' | 'deeplink' | 'editor:hover' | 'feature-badge' | 'feature-gate' | 'gk-cli-integration' | 'gk-mcp-provider' | 'graph-details' | 'inspect' | 'inspect-overview' | 'integrations' | 'launchpad' | 'launchpad-indicator' | 'launchpad-view' | 'mcp' | 'mcp-welcome-message' | 'merge-target' | 'notification' | 'prompt' | 'quick-wizard' | 'remoteProvider' | 'scm' | 'scm-input' | 'startReview' | 'startWork' | 'statusbar:hover' | 'trial-indicator' | 'view' | 'view:hover' | 'walkthrough' | 'whatsnew' | 'worktrees',
+  'context.source': 'account' | 'subscription' | 'graph' | 'composer' | 'patchDetails' | 'settings' | 'timeline' | 'home' | 'welcome' | 'rebaseEditor' | 'ai' | 'ai:markdown-preview' | 'ai:markdown-editor' | 'ai:picker' | 'associateIssueWithBranch' | 'cloud-patches' | 'code-suggest' | 'commandPalette' | 'deeplink' | 'editor:hover' | 'feature-badge' | 'feature-gate' | 'gk-cli-integration' | 'gk-mcp-provider' | 'graph-details' | 'graph-header' | 'graph-kanban' | 'graph-sidebar' | 'graph-treemap' | 'inspect' | 'inspect-overview' | 'integrations' | 'launchpad' | 'launchpad-indicator' | 'launchpad-view' | 'mcp' | 'mcp-welcome-message' | 'merge-target' | 'notification' | 'prompt' | 'quick-wizard' | 'remoteProvider' | 'scm' | 'scm-input' | 'startReview' | 'startWork' | 'statusbar:hover' | 'trial-indicator' | 'view' | 'view:hover' | 'walkthrough' | 'whatsnew' | 'worktrees',
   'context.warnings.indexChanged': boolean,
   'context.warnings.workingDirectoryChanged': boolean,
-  'context.webview.host': 'view' | 'editor',
+  'context.webview.host': 'view' | 'editor' | 'panel',
   'context.webview.id': string,
   'context.webview.instanceId': string,
   'context.webview.type': string,
@@ -1343,7 +1495,7 @@ or
   'context.ai.model.maxTokens.input': number,
   'context.ai.model.maxTokens.output': number,
   'context.ai.model.name': string,
-  'context.ai.model.provider.id': 'anthropic' | 'azure' | 'deepseek' | 'gemini' | 'github' | 'gitkraken' | 'huggingface' | 'mistral' | 'ollama' | 'openai' | 'openaicompatible' | 'openrouter' | 'vscode' | 'xai',
+  'context.ai.model.provider.id': 'anthropic' | 'azure' | 'deepseek' | 'gemini' | 'github' | 'gitkraken' | 'huggingface' | 'mistral' | 'ollama' | 'openai' | 'openaicompatible' | 'openrouter' | 'simulator' | 'vscode' | 'xai',
   'context.ai.model.temperature': number,
   'context.commits.autoComposedCount': number,
   'context.commits.composedCount': number,
@@ -1375,10 +1527,10 @@ or
   'context.operations.undo.count': number,
   'context.session.duration': number,
   'context.session.start': string,
-  'context.source': 'account' | 'subscription' | 'graph' | 'composer' | 'patchDetails' | 'settings' | 'timeline' | 'home' | 'welcome' | 'rebaseEditor' | 'ai' | 'ai:markdown-preview' | 'ai:markdown-editor' | 'ai:picker' | 'associateIssueWithBranch' | 'cloud-patches' | 'code-suggest' | 'commandPalette' | 'deeplink' | 'editor:hover' | 'feature-badge' | 'feature-gate' | 'gk-cli-integration' | 'gk-mcp-provider' | 'graph-details' | 'inspect' | 'inspect-overview' | 'integrations' | 'launchpad' | 'launchpad-indicator' | 'launchpad-view' | 'mcp' | 'mcp-welcome-message' | 'merge-target' | 'notification' | 'prompt' | 'quick-wizard' | 'remoteProvider' | 'scm' | 'scm-input' | 'startReview' | 'startWork' | 'statusbar:hover' | 'trial-indicator' | 'view' | 'view:hover' | 'walkthrough' | 'whatsnew' | 'worktrees',
+  'context.source': 'account' | 'subscription' | 'graph' | 'composer' | 'patchDetails' | 'settings' | 'timeline' | 'home' | 'welcome' | 'rebaseEditor' | 'ai' | 'ai:markdown-preview' | 'ai:markdown-editor' | 'ai:picker' | 'associateIssueWithBranch' | 'cloud-patches' | 'code-suggest' | 'commandPalette' | 'deeplink' | 'editor:hover' | 'feature-badge' | 'feature-gate' | 'gk-cli-integration' | 'gk-mcp-provider' | 'graph-details' | 'graph-header' | 'graph-kanban' | 'graph-sidebar' | 'graph-treemap' | 'inspect' | 'inspect-overview' | 'integrations' | 'launchpad' | 'launchpad-indicator' | 'launchpad-view' | 'mcp' | 'mcp-welcome-message' | 'merge-target' | 'notification' | 'prompt' | 'quick-wizard' | 'remoteProvider' | 'scm' | 'scm-input' | 'startReview' | 'startWork' | 'statusbar:hover' | 'trial-indicator' | 'view' | 'view:hover' | 'walkthrough' | 'whatsnew' | 'worktrees',
   'context.warnings.indexChanged': boolean,
   'context.warnings.workingDirectoryChanged': boolean,
-  'context.webview.host': 'view' | 'editor',
+  'context.webview.host': 'view' | 'editor' | 'panel',
   'context.webview.id': string,
   'context.webview.instanceId': string,
   'context.webview.type': string
@@ -1399,7 +1551,7 @@ or
   'context.ai.model.maxTokens.input': number,
   'context.ai.model.maxTokens.output': number,
   'context.ai.model.name': string,
-  'context.ai.model.provider.id': 'anthropic' | 'azure' | 'deepseek' | 'gemini' | 'github' | 'gitkraken' | 'huggingface' | 'mistral' | 'ollama' | 'openai' | 'openaicompatible' | 'openrouter' | 'vscode' | 'xai',
+  'context.ai.model.provider.id': 'anthropic' | 'azure' | 'deepseek' | 'gemini' | 'github' | 'gitkraken' | 'huggingface' | 'mistral' | 'ollama' | 'openai' | 'openaicompatible' | 'openrouter' | 'simulator' | 'vscode' | 'xai',
   'context.ai.model.temperature': number,
   'context.commits.autoComposedCount': number,
   'context.commits.composedCount': number,
@@ -1431,10 +1583,10 @@ or
   'context.operations.undo.count': number,
   'context.session.duration': number,
   'context.session.start': string,
-  'context.source': 'account' | 'subscription' | 'graph' | 'composer' | 'patchDetails' | 'settings' | 'timeline' | 'home' | 'welcome' | 'rebaseEditor' | 'ai' | 'ai:markdown-preview' | 'ai:markdown-editor' | 'ai:picker' | 'associateIssueWithBranch' | 'cloud-patches' | 'code-suggest' | 'commandPalette' | 'deeplink' | 'editor:hover' | 'feature-badge' | 'feature-gate' | 'gk-cli-integration' | 'gk-mcp-provider' | 'graph-details' | 'inspect' | 'inspect-overview' | 'integrations' | 'launchpad' | 'launchpad-indicator' | 'launchpad-view' | 'mcp' | 'mcp-welcome-message' | 'merge-target' | 'notification' | 'prompt' | 'quick-wizard' | 'remoteProvider' | 'scm' | 'scm-input' | 'startReview' | 'startWork' | 'statusbar:hover' | 'trial-indicator' | 'view' | 'view:hover' | 'walkthrough' | 'whatsnew' | 'worktrees',
+  'context.source': 'account' | 'subscription' | 'graph' | 'composer' | 'patchDetails' | 'settings' | 'timeline' | 'home' | 'welcome' | 'rebaseEditor' | 'ai' | 'ai:markdown-preview' | 'ai:markdown-editor' | 'ai:picker' | 'associateIssueWithBranch' | 'cloud-patches' | 'code-suggest' | 'commandPalette' | 'deeplink' | 'editor:hover' | 'feature-badge' | 'feature-gate' | 'gk-cli-integration' | 'gk-mcp-provider' | 'graph-details' | 'graph-header' | 'graph-kanban' | 'graph-sidebar' | 'graph-treemap' | 'inspect' | 'inspect-overview' | 'integrations' | 'launchpad' | 'launchpad-indicator' | 'launchpad-view' | 'mcp' | 'mcp-welcome-message' | 'merge-target' | 'notification' | 'prompt' | 'quick-wizard' | 'remoteProvider' | 'scm' | 'scm-input' | 'startReview' | 'startWork' | 'statusbar:hover' | 'trial-indicator' | 'view' | 'view:hover' | 'walkthrough' | 'whatsnew' | 'worktrees',
   'context.warnings.indexChanged': boolean,
   'context.warnings.workingDirectoryChanged': boolean,
-  'context.webview.host': 'view' | 'editor',
+  'context.webview.host': 'view' | 'editor' | 'panel',
   'context.webview.id': string,
   'context.webview.instanceId': string,
   'context.webview.type': string,
@@ -1457,7 +1609,7 @@ or
   'context.ai.model.maxTokens.input': number,
   'context.ai.model.maxTokens.output': number,
   'context.ai.model.name': string,
-  'context.ai.model.provider.id': 'anthropic' | 'azure' | 'deepseek' | 'gemini' | 'github' | 'gitkraken' | 'huggingface' | 'mistral' | 'ollama' | 'openai' | 'openaicompatible' | 'openrouter' | 'vscode' | 'xai',
+  'context.ai.model.provider.id': 'anthropic' | 'azure' | 'deepseek' | 'gemini' | 'github' | 'gitkraken' | 'huggingface' | 'mistral' | 'ollama' | 'openai' | 'openaicompatible' | 'openrouter' | 'simulator' | 'vscode' | 'xai',
   'context.ai.model.temperature': number,
   'context.commits.autoComposedCount': number,
   'context.commits.composedCount': number,
@@ -1489,10 +1641,10 @@ or
   'context.operations.undo.count': number,
   'context.session.duration': number,
   'context.session.start': string,
-  'context.source': 'account' | 'subscription' | 'graph' | 'composer' | 'patchDetails' | 'settings' | 'timeline' | 'home' | 'welcome' | 'rebaseEditor' | 'ai' | 'ai:markdown-preview' | 'ai:markdown-editor' | 'ai:picker' | 'associateIssueWithBranch' | 'cloud-patches' | 'code-suggest' | 'commandPalette' | 'deeplink' | 'editor:hover' | 'feature-badge' | 'feature-gate' | 'gk-cli-integration' | 'gk-mcp-provider' | 'graph-details' | 'inspect' | 'inspect-overview' | 'integrations' | 'launchpad' | 'launchpad-indicator' | 'launchpad-view' | 'mcp' | 'mcp-welcome-message' | 'merge-target' | 'notification' | 'prompt' | 'quick-wizard' | 'remoteProvider' | 'scm' | 'scm-input' | 'startReview' | 'startWork' | 'statusbar:hover' | 'trial-indicator' | 'view' | 'view:hover' | 'walkthrough' | 'whatsnew' | 'worktrees',
+  'context.source': 'account' | 'subscription' | 'graph' | 'composer' | 'patchDetails' | 'settings' | 'timeline' | 'home' | 'welcome' | 'rebaseEditor' | 'ai' | 'ai:markdown-preview' | 'ai:markdown-editor' | 'ai:picker' | 'associateIssueWithBranch' | 'cloud-patches' | 'code-suggest' | 'commandPalette' | 'deeplink' | 'editor:hover' | 'feature-badge' | 'feature-gate' | 'gk-cli-integration' | 'gk-mcp-provider' | 'graph-details' | 'graph-header' | 'graph-kanban' | 'graph-sidebar' | 'graph-treemap' | 'inspect' | 'inspect-overview' | 'integrations' | 'launchpad' | 'launchpad-indicator' | 'launchpad-view' | 'mcp' | 'mcp-welcome-message' | 'merge-target' | 'notification' | 'prompt' | 'quick-wizard' | 'remoteProvider' | 'scm' | 'scm-input' | 'startReview' | 'startWork' | 'statusbar:hover' | 'trial-indicator' | 'view' | 'view:hover' | 'walkthrough' | 'whatsnew' | 'worktrees',
   'context.warnings.indexChanged': boolean,
   'context.warnings.workingDirectoryChanged': boolean,
-  'context.webview.host': 'view' | 'editor',
+  'context.webview.host': 'view' | 'editor' | 'panel',
   'context.webview.id': string,
   'context.webview.instanceId': string,
   'context.webview.type': string,
@@ -1516,7 +1668,7 @@ or
   'context.ai.model.maxTokens.input': number,
   'context.ai.model.maxTokens.output': number,
   'context.ai.model.name': string,
-  'context.ai.model.provider.id': 'anthropic' | 'azure' | 'deepseek' | 'gemini' | 'github' | 'gitkraken' | 'huggingface' | 'mistral' | 'ollama' | 'openai' | 'openaicompatible' | 'openrouter' | 'vscode' | 'xai',
+  'context.ai.model.provider.id': 'anthropic' | 'azure' | 'deepseek' | 'gemini' | 'github' | 'gitkraken' | 'huggingface' | 'mistral' | 'ollama' | 'openai' | 'openaicompatible' | 'openrouter' | 'simulator' | 'vscode' | 'xai',
   'context.ai.model.temperature': number,
   'context.commits.autoComposedCount': number,
   'context.commits.composedCount': number,
@@ -1548,10 +1700,10 @@ or
   'context.operations.undo.count': number,
   'context.session.duration': number,
   'context.session.start': string,
-  'context.source': 'account' | 'subscription' | 'graph' | 'composer' | 'patchDetails' | 'settings' | 'timeline' | 'home' | 'welcome' | 'rebaseEditor' | 'ai' | 'ai:markdown-preview' | 'ai:markdown-editor' | 'ai:picker' | 'associateIssueWithBranch' | 'cloud-patches' | 'code-suggest' | 'commandPalette' | 'deeplink' | 'editor:hover' | 'feature-badge' | 'feature-gate' | 'gk-cli-integration' | 'gk-mcp-provider' | 'graph-details' | 'inspect' | 'inspect-overview' | 'integrations' | 'launchpad' | 'launchpad-indicator' | 'launchpad-view' | 'mcp' | 'mcp-welcome-message' | 'merge-target' | 'notification' | 'prompt' | 'quick-wizard' | 'remoteProvider' | 'scm' | 'scm-input' | 'startReview' | 'startWork' | 'statusbar:hover' | 'trial-indicator' | 'view' | 'view:hover' | 'walkthrough' | 'whatsnew' | 'worktrees',
+  'context.source': 'account' | 'subscription' | 'graph' | 'composer' | 'patchDetails' | 'settings' | 'timeline' | 'home' | 'welcome' | 'rebaseEditor' | 'ai' | 'ai:markdown-preview' | 'ai:markdown-editor' | 'ai:picker' | 'associateIssueWithBranch' | 'cloud-patches' | 'code-suggest' | 'commandPalette' | 'deeplink' | 'editor:hover' | 'feature-badge' | 'feature-gate' | 'gk-cli-integration' | 'gk-mcp-provider' | 'graph-details' | 'graph-header' | 'graph-kanban' | 'graph-sidebar' | 'graph-treemap' | 'inspect' | 'inspect-overview' | 'integrations' | 'launchpad' | 'launchpad-indicator' | 'launchpad-view' | 'mcp' | 'mcp-welcome-message' | 'merge-target' | 'notification' | 'prompt' | 'quick-wizard' | 'remoteProvider' | 'scm' | 'scm-input' | 'startReview' | 'startWork' | 'statusbar:hover' | 'trial-indicator' | 'view' | 'view:hover' | 'walkthrough' | 'whatsnew' | 'worktrees',
   'context.warnings.indexChanged': boolean,
   'context.warnings.workingDirectoryChanged': boolean,
-  'context.webview.host': 'view' | 'editor',
+  'context.webview.host': 'view' | 'editor' | 'panel',
   'context.webview.id': string,
   'context.webview.instanceId': string,
   'context.webview.type': string,
@@ -1574,7 +1726,7 @@ or
   'context.ai.model.maxTokens.input': number,
   'context.ai.model.maxTokens.output': number,
   'context.ai.model.name': string,
-  'context.ai.model.provider.id': 'anthropic' | 'azure' | 'deepseek' | 'gemini' | 'github' | 'gitkraken' | 'huggingface' | 'mistral' | 'ollama' | 'openai' | 'openaicompatible' | 'openrouter' | 'vscode' | 'xai',
+  'context.ai.model.provider.id': 'anthropic' | 'azure' | 'deepseek' | 'gemini' | 'github' | 'gitkraken' | 'huggingface' | 'mistral' | 'ollama' | 'openai' | 'openaicompatible' | 'openrouter' | 'simulator' | 'vscode' | 'xai',
   'context.ai.model.temperature': number,
   'context.commits.autoComposedCount': number,
   'context.commits.composedCount': number,
@@ -1606,10 +1758,10 @@ or
   'context.operations.undo.count': number,
   'context.session.duration': number,
   'context.session.start': string,
-  'context.source': 'account' | 'subscription' | 'graph' | 'composer' | 'patchDetails' | 'settings' | 'timeline' | 'home' | 'welcome' | 'rebaseEditor' | 'ai' | 'ai:markdown-preview' | 'ai:markdown-editor' | 'ai:picker' | 'associateIssueWithBranch' | 'cloud-patches' | 'code-suggest' | 'commandPalette' | 'deeplink' | 'editor:hover' | 'feature-badge' | 'feature-gate' | 'gk-cli-integration' | 'gk-mcp-provider' | 'graph-details' | 'inspect' | 'inspect-overview' | 'integrations' | 'launchpad' | 'launchpad-indicator' | 'launchpad-view' | 'mcp' | 'mcp-welcome-message' | 'merge-target' | 'notification' | 'prompt' | 'quick-wizard' | 'remoteProvider' | 'scm' | 'scm-input' | 'startReview' | 'startWork' | 'statusbar:hover' | 'trial-indicator' | 'view' | 'view:hover' | 'walkthrough' | 'whatsnew' | 'worktrees',
+  'context.source': 'account' | 'subscription' | 'graph' | 'composer' | 'patchDetails' | 'settings' | 'timeline' | 'home' | 'welcome' | 'rebaseEditor' | 'ai' | 'ai:markdown-preview' | 'ai:markdown-editor' | 'ai:picker' | 'associateIssueWithBranch' | 'cloud-patches' | 'code-suggest' | 'commandPalette' | 'deeplink' | 'editor:hover' | 'feature-badge' | 'feature-gate' | 'gk-cli-integration' | 'gk-mcp-provider' | 'graph-details' | 'graph-header' | 'graph-kanban' | 'graph-sidebar' | 'graph-treemap' | 'inspect' | 'inspect-overview' | 'integrations' | 'launchpad' | 'launchpad-indicator' | 'launchpad-view' | 'mcp' | 'mcp-welcome-message' | 'merge-target' | 'notification' | 'prompt' | 'quick-wizard' | 'remoteProvider' | 'scm' | 'scm-input' | 'startReview' | 'startWork' | 'statusbar:hover' | 'trial-indicator' | 'view' | 'view:hover' | 'walkthrough' | 'whatsnew' | 'worktrees',
   'context.warnings.indexChanged': boolean,
   'context.warnings.workingDirectoryChanged': boolean,
-  'context.webview.host': 'view' | 'editor',
+  'context.webview.host': 'view' | 'editor' | 'panel',
   'context.webview.id': string,
   'context.webview.instanceId': string,
   'context.webview.type': string,
@@ -1635,7 +1787,7 @@ or
   'context.ai.model.maxTokens.input': number,
   'context.ai.model.maxTokens.output': number,
   'context.ai.model.name': string,
-  'context.ai.model.provider.id': 'anthropic' | 'azure' | 'deepseek' | 'gemini' | 'github' | 'gitkraken' | 'huggingface' | 'mistral' | 'ollama' | 'openai' | 'openaicompatible' | 'openrouter' | 'vscode' | 'xai',
+  'context.ai.model.provider.id': 'anthropic' | 'azure' | 'deepseek' | 'gemini' | 'github' | 'gitkraken' | 'huggingface' | 'mistral' | 'ollama' | 'openai' | 'openaicompatible' | 'openrouter' | 'simulator' | 'vscode' | 'xai',
   'context.ai.model.temperature': number,
   'context.commits.autoComposedCount': number,
   'context.commits.composedCount': number,
@@ -1667,10 +1819,10 @@ or
   'context.operations.undo.count': number,
   'context.session.duration': number,
   'context.session.start': string,
-  'context.source': 'account' | 'subscription' | 'graph' | 'composer' | 'patchDetails' | 'settings' | 'timeline' | 'home' | 'welcome' | 'rebaseEditor' | 'ai' | 'ai:markdown-preview' | 'ai:markdown-editor' | 'ai:picker' | 'associateIssueWithBranch' | 'cloud-patches' | 'code-suggest' | 'commandPalette' | 'deeplink' | 'editor:hover' | 'feature-badge' | 'feature-gate' | 'gk-cli-integration' | 'gk-mcp-provider' | 'graph-details' | 'inspect' | 'inspect-overview' | 'integrations' | 'launchpad' | 'launchpad-indicator' | 'launchpad-view' | 'mcp' | 'mcp-welcome-message' | 'merge-target' | 'notification' | 'prompt' | 'quick-wizard' | 'remoteProvider' | 'scm' | 'scm-input' | 'startReview' | 'startWork' | 'statusbar:hover' | 'trial-indicator' | 'view' | 'view:hover' | 'walkthrough' | 'whatsnew' | 'worktrees',
+  'context.source': 'account' | 'subscription' | 'graph' | 'composer' | 'patchDetails' | 'settings' | 'timeline' | 'home' | 'welcome' | 'rebaseEditor' | 'ai' | 'ai:markdown-preview' | 'ai:markdown-editor' | 'ai:picker' | 'associateIssueWithBranch' | 'cloud-patches' | 'code-suggest' | 'commandPalette' | 'deeplink' | 'editor:hover' | 'feature-badge' | 'feature-gate' | 'gk-cli-integration' | 'gk-mcp-provider' | 'graph-details' | 'graph-header' | 'graph-kanban' | 'graph-sidebar' | 'graph-treemap' | 'inspect' | 'inspect-overview' | 'integrations' | 'launchpad' | 'launchpad-indicator' | 'launchpad-view' | 'mcp' | 'mcp-welcome-message' | 'merge-target' | 'notification' | 'prompt' | 'quick-wizard' | 'remoteProvider' | 'scm' | 'scm-input' | 'startReview' | 'startWork' | 'statusbar:hover' | 'trial-indicator' | 'view' | 'view:hover' | 'walkthrough' | 'whatsnew' | 'worktrees',
   'context.warnings.indexChanged': boolean,
   'context.warnings.workingDirectoryChanged': boolean,
-  'context.webview.host': 'view' | 'editor',
+  'context.webview.host': 'view' | 'editor' | 'panel',
   'context.webview.id': string,
   'context.webview.instanceId': string,
   'context.webview.type': string
@@ -1691,7 +1843,7 @@ or
   'context.ai.model.maxTokens.input': number,
   'context.ai.model.maxTokens.output': number,
   'context.ai.model.name': string,
-  'context.ai.model.provider.id': 'anthropic' | 'azure' | 'deepseek' | 'gemini' | 'github' | 'gitkraken' | 'huggingface' | 'mistral' | 'ollama' | 'openai' | 'openaicompatible' | 'openrouter' | 'vscode' | 'xai',
+  'context.ai.model.provider.id': 'anthropic' | 'azure' | 'deepseek' | 'gemini' | 'github' | 'gitkraken' | 'huggingface' | 'mistral' | 'ollama' | 'openai' | 'openaicompatible' | 'openrouter' | 'simulator' | 'vscode' | 'xai',
   'context.ai.model.temperature': number,
   'context.commits.autoComposedCount': number,
   'context.commits.composedCount': number,
@@ -1723,10 +1875,10 @@ or
   'context.operations.undo.count': number,
   'context.session.duration': number,
   'context.session.start': string,
-  'context.source': 'account' | 'subscription' | 'graph' | 'composer' | 'patchDetails' | 'settings' | 'timeline' | 'home' | 'welcome' | 'rebaseEditor' | 'ai' | 'ai:markdown-preview' | 'ai:markdown-editor' | 'ai:picker' | 'associateIssueWithBranch' | 'cloud-patches' | 'code-suggest' | 'commandPalette' | 'deeplink' | 'editor:hover' | 'feature-badge' | 'feature-gate' | 'gk-cli-integration' | 'gk-mcp-provider' | 'graph-details' | 'inspect' | 'inspect-overview' | 'integrations' | 'launchpad' | 'launchpad-indicator' | 'launchpad-view' | 'mcp' | 'mcp-welcome-message' | 'merge-target' | 'notification' | 'prompt' | 'quick-wizard' | 'remoteProvider' | 'scm' | 'scm-input' | 'startReview' | 'startWork' | 'statusbar:hover' | 'trial-indicator' | 'view' | 'view:hover' | 'walkthrough' | 'whatsnew' | 'worktrees',
+  'context.source': 'account' | 'subscription' | 'graph' | 'composer' | 'patchDetails' | 'settings' | 'timeline' | 'home' | 'welcome' | 'rebaseEditor' | 'ai' | 'ai:markdown-preview' | 'ai:markdown-editor' | 'ai:picker' | 'associateIssueWithBranch' | 'cloud-patches' | 'code-suggest' | 'commandPalette' | 'deeplink' | 'editor:hover' | 'feature-badge' | 'feature-gate' | 'gk-cli-integration' | 'gk-mcp-provider' | 'graph-details' | 'graph-header' | 'graph-kanban' | 'graph-sidebar' | 'graph-treemap' | 'inspect' | 'inspect-overview' | 'integrations' | 'launchpad' | 'launchpad-indicator' | 'launchpad-view' | 'mcp' | 'mcp-welcome-message' | 'merge-target' | 'notification' | 'prompt' | 'quick-wizard' | 'remoteProvider' | 'scm' | 'scm-input' | 'startReview' | 'startWork' | 'statusbar:hover' | 'trial-indicator' | 'view' | 'view:hover' | 'walkthrough' | 'whatsnew' | 'worktrees',
   'context.warnings.indexChanged': boolean,
   'context.warnings.workingDirectoryChanged': boolean,
-  'context.webview.host': 'view' | 'editor',
+  'context.webview.host': 'view' | 'editor' | 'panel',
   'context.webview.id': string,
   'context.webview.instanceId': string,
   'context.webview.type': string,
@@ -1754,7 +1906,7 @@ or
   'context.ai.model.maxTokens.input': number,
   'context.ai.model.maxTokens.output': number,
   'context.ai.model.name': string,
-  'context.ai.model.provider.id': 'anthropic' | 'azure' | 'deepseek' | 'gemini' | 'github' | 'gitkraken' | 'huggingface' | 'mistral' | 'ollama' | 'openai' | 'openaicompatible' | 'openrouter' | 'vscode' | 'xai',
+  'context.ai.model.provider.id': 'anthropic' | 'azure' | 'deepseek' | 'gemini' | 'github' | 'gitkraken' | 'huggingface' | 'mistral' | 'ollama' | 'openai' | 'openaicompatible' | 'openrouter' | 'simulator' | 'vscode' | 'xai',
   'context.ai.model.temperature': number,
   'context.commits.autoComposedCount': number,
   'context.commits.composedCount': number,
@@ -1786,10 +1938,10 @@ or
   'context.operations.undo.count': number,
   'context.session.duration': number,
   'context.session.start': string,
-  'context.source': 'account' | 'subscription' | 'graph' | 'composer' | 'patchDetails' | 'settings' | 'timeline' | 'home' | 'welcome' | 'rebaseEditor' | 'ai' | 'ai:markdown-preview' | 'ai:markdown-editor' | 'ai:picker' | 'associateIssueWithBranch' | 'cloud-patches' | 'code-suggest' | 'commandPalette' | 'deeplink' | 'editor:hover' | 'feature-badge' | 'feature-gate' | 'gk-cli-integration' | 'gk-mcp-provider' | 'graph-details' | 'inspect' | 'inspect-overview' | 'integrations' | 'launchpad' | 'launchpad-indicator' | 'launchpad-view' | 'mcp' | 'mcp-welcome-message' | 'merge-target' | 'notification' | 'prompt' | 'quick-wizard' | 'remoteProvider' | 'scm' | 'scm-input' | 'startReview' | 'startWork' | 'statusbar:hover' | 'trial-indicator' | 'view' | 'view:hover' | 'walkthrough' | 'whatsnew' | 'worktrees',
+  'context.source': 'account' | 'subscription' | 'graph' | 'composer' | 'patchDetails' | 'settings' | 'timeline' | 'home' | 'welcome' | 'rebaseEditor' | 'ai' | 'ai:markdown-preview' | 'ai:markdown-editor' | 'ai:picker' | 'associateIssueWithBranch' | 'cloud-patches' | 'code-suggest' | 'commandPalette' | 'deeplink' | 'editor:hover' | 'feature-badge' | 'feature-gate' | 'gk-cli-integration' | 'gk-mcp-provider' | 'graph-details' | 'graph-header' | 'graph-kanban' | 'graph-sidebar' | 'graph-treemap' | 'inspect' | 'inspect-overview' | 'integrations' | 'launchpad' | 'launchpad-indicator' | 'launchpad-view' | 'mcp' | 'mcp-welcome-message' | 'merge-target' | 'notification' | 'prompt' | 'quick-wizard' | 'remoteProvider' | 'scm' | 'scm-input' | 'startReview' | 'startWork' | 'statusbar:hover' | 'trial-indicator' | 'view' | 'view:hover' | 'walkthrough' | 'whatsnew' | 'worktrees',
   'context.warnings.indexChanged': boolean,
   'context.warnings.workingDirectoryChanged': boolean,
-  'context.webview.host': 'view' | 'editor',
+  'context.webview.host': 'view' | 'editor' | 'panel',
   'context.webview.id': string,
   'context.webview.instanceId': string,
   'context.webview.type': string,
@@ -1816,7 +1968,7 @@ or
   'context.ai.model.maxTokens.input': number,
   'context.ai.model.maxTokens.output': number,
   'context.ai.model.name': string,
-  'context.ai.model.provider.id': 'anthropic' | 'azure' | 'deepseek' | 'gemini' | 'github' | 'gitkraken' | 'huggingface' | 'mistral' | 'ollama' | 'openai' | 'openaicompatible' | 'openrouter' | 'vscode' | 'xai',
+  'context.ai.model.provider.id': 'anthropic' | 'azure' | 'deepseek' | 'gemini' | 'github' | 'gitkraken' | 'huggingface' | 'mistral' | 'ollama' | 'openai' | 'openaicompatible' | 'openrouter' | 'simulator' | 'vscode' | 'xai',
   'context.ai.model.temperature': number,
   'context.commits.autoComposedCount': number,
   'context.commits.composedCount': number,
@@ -1848,10 +2000,10 @@ or
   'context.operations.undo.count': number,
   'context.session.duration': number,
   'context.session.start': string,
-  'context.source': 'account' | 'subscription' | 'graph' | 'composer' | 'patchDetails' | 'settings' | 'timeline' | 'home' | 'welcome' | 'rebaseEditor' | 'ai' | 'ai:markdown-preview' | 'ai:markdown-editor' | 'ai:picker' | 'associateIssueWithBranch' | 'cloud-patches' | 'code-suggest' | 'commandPalette' | 'deeplink' | 'editor:hover' | 'feature-badge' | 'feature-gate' | 'gk-cli-integration' | 'gk-mcp-provider' | 'graph-details' | 'inspect' | 'inspect-overview' | 'integrations' | 'launchpad' | 'launchpad-indicator' | 'launchpad-view' | 'mcp' | 'mcp-welcome-message' | 'merge-target' | 'notification' | 'prompt' | 'quick-wizard' | 'remoteProvider' | 'scm' | 'scm-input' | 'startReview' | 'startWork' | 'statusbar:hover' | 'trial-indicator' | 'view' | 'view:hover' | 'walkthrough' | 'whatsnew' | 'worktrees',
+  'context.source': 'account' | 'subscription' | 'graph' | 'composer' | 'patchDetails' | 'settings' | 'timeline' | 'home' | 'welcome' | 'rebaseEditor' | 'ai' | 'ai:markdown-preview' | 'ai:markdown-editor' | 'ai:picker' | 'associateIssueWithBranch' | 'cloud-patches' | 'code-suggest' | 'commandPalette' | 'deeplink' | 'editor:hover' | 'feature-badge' | 'feature-gate' | 'gk-cli-integration' | 'gk-mcp-provider' | 'graph-details' | 'graph-header' | 'graph-kanban' | 'graph-sidebar' | 'graph-treemap' | 'inspect' | 'inspect-overview' | 'integrations' | 'launchpad' | 'launchpad-indicator' | 'launchpad-view' | 'mcp' | 'mcp-welcome-message' | 'merge-target' | 'notification' | 'prompt' | 'quick-wizard' | 'remoteProvider' | 'scm' | 'scm-input' | 'startReview' | 'startWork' | 'statusbar:hover' | 'trial-indicator' | 'view' | 'view:hover' | 'walkthrough' | 'whatsnew' | 'worktrees',
   'context.warnings.indexChanged': boolean,
   'context.warnings.workingDirectoryChanged': boolean,
-  'context.webview.host': 'view' | 'editor',
+  'context.webview.host': 'view' | 'editor' | 'panel',
   'context.webview.id': string,
   'context.webview.instanceId': string,
   'context.webview.type': string,
@@ -1881,7 +2033,7 @@ or
   'context.ai.model.maxTokens.input': number,
   'context.ai.model.maxTokens.output': number,
   'context.ai.model.name': string,
-  'context.ai.model.provider.id': 'anthropic' | 'azure' | 'deepseek' | 'gemini' | 'github' | 'gitkraken' | 'huggingface' | 'mistral' | 'ollama' | 'openai' | 'openaicompatible' | 'openrouter' | 'vscode' | 'xai',
+  'context.ai.model.provider.id': 'anthropic' | 'azure' | 'deepseek' | 'gemini' | 'github' | 'gitkraken' | 'huggingface' | 'mistral' | 'ollama' | 'openai' | 'openaicompatible' | 'openrouter' | 'simulator' | 'vscode' | 'xai',
   'context.ai.model.temperature': number,
   'context.commits.autoComposedCount': number,
   'context.commits.composedCount': number,
@@ -1913,10 +2065,10 @@ or
   'context.operations.undo.count': number,
   'context.session.duration': number,
   'context.session.start': string,
-  'context.source': 'account' | 'subscription' | 'graph' | 'composer' | 'patchDetails' | 'settings' | 'timeline' | 'home' | 'welcome' | 'rebaseEditor' | 'ai' | 'ai:markdown-preview' | 'ai:markdown-editor' | 'ai:picker' | 'associateIssueWithBranch' | 'cloud-patches' | 'code-suggest' | 'commandPalette' | 'deeplink' | 'editor:hover' | 'feature-badge' | 'feature-gate' | 'gk-cli-integration' | 'gk-mcp-provider' | 'graph-details' | 'inspect' | 'inspect-overview' | 'integrations' | 'launchpad' | 'launchpad-indicator' | 'launchpad-view' | 'mcp' | 'mcp-welcome-message' | 'merge-target' | 'notification' | 'prompt' | 'quick-wizard' | 'remoteProvider' | 'scm' | 'scm-input' | 'startReview' | 'startWork' | 'statusbar:hover' | 'trial-indicator' | 'view' | 'view:hover' | 'walkthrough' | 'whatsnew' | 'worktrees',
+  'context.source': 'account' | 'subscription' | 'graph' | 'composer' | 'patchDetails' | 'settings' | 'timeline' | 'home' | 'welcome' | 'rebaseEditor' | 'ai' | 'ai:markdown-preview' | 'ai:markdown-editor' | 'ai:picker' | 'associateIssueWithBranch' | 'cloud-patches' | 'code-suggest' | 'commandPalette' | 'deeplink' | 'editor:hover' | 'feature-badge' | 'feature-gate' | 'gk-cli-integration' | 'gk-mcp-provider' | 'graph-details' | 'graph-header' | 'graph-kanban' | 'graph-sidebar' | 'graph-treemap' | 'inspect' | 'inspect-overview' | 'integrations' | 'launchpad' | 'launchpad-indicator' | 'launchpad-view' | 'mcp' | 'mcp-welcome-message' | 'merge-target' | 'notification' | 'prompt' | 'quick-wizard' | 'remoteProvider' | 'scm' | 'scm-input' | 'startReview' | 'startWork' | 'statusbar:hover' | 'trial-indicator' | 'view' | 'view:hover' | 'walkthrough' | 'whatsnew' | 'worktrees',
   'context.warnings.indexChanged': boolean,
   'context.warnings.workingDirectoryChanged': boolean,
-  'context.webview.host': 'view' | 'editor',
+  'context.webview.host': 'view' | 'editor' | 'panel',
   'context.webview.id': string,
   'context.webview.instanceId': string,
   'context.webview.type': string
@@ -1937,7 +2089,7 @@ or
   'context.ai.model.maxTokens.input': number,
   'context.ai.model.maxTokens.output': number,
   'context.ai.model.name': string,
-  'context.ai.model.provider.id': 'anthropic' | 'azure' | 'deepseek' | 'gemini' | 'github' | 'gitkraken' | 'huggingface' | 'mistral' | 'ollama' | 'openai' | 'openaicompatible' | 'openrouter' | 'vscode' | 'xai',
+  'context.ai.model.provider.id': 'anthropic' | 'azure' | 'deepseek' | 'gemini' | 'github' | 'gitkraken' | 'huggingface' | 'mistral' | 'ollama' | 'openai' | 'openaicompatible' | 'openrouter' | 'simulator' | 'vscode' | 'xai',
   'context.ai.model.temperature': number,
   'context.commits.autoComposedCount': number,
   'context.commits.composedCount': number,
@@ -1969,10 +2121,10 @@ or
   'context.operations.undo.count': number,
   'context.session.duration': number,
   'context.session.start': string,
-  'context.source': 'account' | 'subscription' | 'graph' | 'composer' | 'patchDetails' | 'settings' | 'timeline' | 'home' | 'welcome' | 'rebaseEditor' | 'ai' | 'ai:markdown-preview' | 'ai:markdown-editor' | 'ai:picker' | 'associateIssueWithBranch' | 'cloud-patches' | 'code-suggest' | 'commandPalette' | 'deeplink' | 'editor:hover' | 'feature-badge' | 'feature-gate' | 'gk-cli-integration' | 'gk-mcp-provider' | 'graph-details' | 'inspect' | 'inspect-overview' | 'integrations' | 'launchpad' | 'launchpad-indicator' | 'launchpad-view' | 'mcp' | 'mcp-welcome-message' | 'merge-target' | 'notification' | 'prompt' | 'quick-wizard' | 'remoteProvider' | 'scm' | 'scm-input' | 'startReview' | 'startWork' | 'statusbar:hover' | 'trial-indicator' | 'view' | 'view:hover' | 'walkthrough' | 'whatsnew' | 'worktrees',
+  'context.source': 'account' | 'subscription' | 'graph' | 'composer' | 'patchDetails' | 'settings' | 'timeline' | 'home' | 'welcome' | 'rebaseEditor' | 'ai' | 'ai:markdown-preview' | 'ai:markdown-editor' | 'ai:picker' | 'associateIssueWithBranch' | 'cloud-patches' | 'code-suggest' | 'commandPalette' | 'deeplink' | 'editor:hover' | 'feature-badge' | 'feature-gate' | 'gk-cli-integration' | 'gk-mcp-provider' | 'graph-details' | 'graph-header' | 'graph-kanban' | 'graph-sidebar' | 'graph-treemap' | 'inspect' | 'inspect-overview' | 'integrations' | 'launchpad' | 'launchpad-indicator' | 'launchpad-view' | 'mcp' | 'mcp-welcome-message' | 'merge-target' | 'notification' | 'prompt' | 'quick-wizard' | 'remoteProvider' | 'scm' | 'scm-input' | 'startReview' | 'startWork' | 'statusbar:hover' | 'trial-indicator' | 'view' | 'view:hover' | 'walkthrough' | 'whatsnew' | 'worktrees',
   'context.warnings.indexChanged': boolean,
   'context.warnings.workingDirectoryChanged': boolean,
-  'context.webview.host': 'view' | 'editor',
+  'context.webview.host': 'view' | 'editor' | 'panel',
   'context.webview.id': string,
   'context.webview.instanceId': string,
   'context.webview.type': string
@@ -1984,7 +2136,7 @@ or
 ```typescript
 {
   [`context.${string}`]: string | number | boolean,
-  'context.webview.host': 'view' | 'editor',
+  'context.webview.host': 'view' | 'editor' | 'panel',
   'context.webview.id': string,
   'context.webview.instanceId': string,
   'context.webview.type': string
@@ -2005,7 +2157,7 @@ or
   'context.ai.model.maxTokens.input': number,
   'context.ai.model.maxTokens.output': number,
   'context.ai.model.name': string,
-  'context.ai.model.provider.id': 'anthropic' | 'azure' | 'deepseek' | 'gemini' | 'github' | 'gitkraken' | 'huggingface' | 'mistral' | 'ollama' | 'openai' | 'openaicompatible' | 'openrouter' | 'vscode' | 'xai',
+  'context.ai.model.provider.id': 'anthropic' | 'azure' | 'deepseek' | 'gemini' | 'github' | 'gitkraken' | 'huggingface' | 'mistral' | 'ollama' | 'openai' | 'openaicompatible' | 'openrouter' | 'simulator' | 'vscode' | 'xai',
   'context.ai.model.temperature': number,
   'context.commits.autoComposedCount': number,
   'context.commits.composedCount': number,
@@ -2037,10 +2189,10 @@ or
   'context.operations.undo.count': number,
   'context.session.duration': number,
   'context.session.start': string,
-  'context.source': 'account' | 'subscription' | 'graph' | 'composer' | 'patchDetails' | 'settings' | 'timeline' | 'home' | 'welcome' | 'rebaseEditor' | 'ai' | 'ai:markdown-preview' | 'ai:markdown-editor' | 'ai:picker' | 'associateIssueWithBranch' | 'cloud-patches' | 'code-suggest' | 'commandPalette' | 'deeplink' | 'editor:hover' | 'feature-badge' | 'feature-gate' | 'gk-cli-integration' | 'gk-mcp-provider' | 'graph-details' | 'inspect' | 'inspect-overview' | 'integrations' | 'launchpad' | 'launchpad-indicator' | 'launchpad-view' | 'mcp' | 'mcp-welcome-message' | 'merge-target' | 'notification' | 'prompt' | 'quick-wizard' | 'remoteProvider' | 'scm' | 'scm-input' | 'startReview' | 'startWork' | 'statusbar:hover' | 'trial-indicator' | 'view' | 'view:hover' | 'walkthrough' | 'whatsnew' | 'worktrees',
+  'context.source': 'account' | 'subscription' | 'graph' | 'composer' | 'patchDetails' | 'settings' | 'timeline' | 'home' | 'welcome' | 'rebaseEditor' | 'ai' | 'ai:markdown-preview' | 'ai:markdown-editor' | 'ai:picker' | 'associateIssueWithBranch' | 'cloud-patches' | 'code-suggest' | 'commandPalette' | 'deeplink' | 'editor:hover' | 'feature-badge' | 'feature-gate' | 'gk-cli-integration' | 'gk-mcp-provider' | 'graph-details' | 'graph-header' | 'graph-kanban' | 'graph-sidebar' | 'graph-treemap' | 'inspect' | 'inspect-overview' | 'integrations' | 'launchpad' | 'launchpad-indicator' | 'launchpad-view' | 'mcp' | 'mcp-welcome-message' | 'merge-target' | 'notification' | 'prompt' | 'quick-wizard' | 'remoteProvider' | 'scm' | 'scm-input' | 'startReview' | 'startWork' | 'statusbar:hover' | 'trial-indicator' | 'view' | 'view:hover' | 'walkthrough' | 'whatsnew' | 'worktrees',
   'context.warnings.indexChanged': boolean,
   'context.warnings.workingDirectoryChanged': boolean,
-  'context.webview.host': 'view' | 'editor',
+  'context.webview.host': 'view' | 'editor' | 'panel',
   'context.webview.id': string,
   'context.webview.instanceId': string,
   'context.webview.type': string,
@@ -2063,7 +2215,7 @@ or
   'context.ai.model.maxTokens.input': number,
   'context.ai.model.maxTokens.output': number,
   'context.ai.model.name': string,
-  'context.ai.model.provider.id': 'anthropic' | 'azure' | 'deepseek' | 'gemini' | 'github' | 'gitkraken' | 'huggingface' | 'mistral' | 'ollama' | 'openai' | 'openaicompatible' | 'openrouter' | 'vscode' | 'xai',
+  'context.ai.model.provider.id': 'anthropic' | 'azure' | 'deepseek' | 'gemini' | 'github' | 'gitkraken' | 'huggingface' | 'mistral' | 'ollama' | 'openai' | 'openaicompatible' | 'openrouter' | 'simulator' | 'vscode' | 'xai',
   'context.ai.model.temperature': number,
   'context.commits.autoComposedCount': number,
   'context.commits.composedCount': number,
@@ -2095,10 +2247,10 @@ or
   'context.operations.undo.count': number,
   'context.session.duration': number,
   'context.session.start': string,
-  'context.source': 'account' | 'subscription' | 'graph' | 'composer' | 'patchDetails' | 'settings' | 'timeline' | 'home' | 'welcome' | 'rebaseEditor' | 'ai' | 'ai:markdown-preview' | 'ai:markdown-editor' | 'ai:picker' | 'associateIssueWithBranch' | 'cloud-patches' | 'code-suggest' | 'commandPalette' | 'deeplink' | 'editor:hover' | 'feature-badge' | 'feature-gate' | 'gk-cli-integration' | 'gk-mcp-provider' | 'graph-details' | 'inspect' | 'inspect-overview' | 'integrations' | 'launchpad' | 'launchpad-indicator' | 'launchpad-view' | 'mcp' | 'mcp-welcome-message' | 'merge-target' | 'notification' | 'prompt' | 'quick-wizard' | 'remoteProvider' | 'scm' | 'scm-input' | 'startReview' | 'startWork' | 'statusbar:hover' | 'trial-indicator' | 'view' | 'view:hover' | 'walkthrough' | 'whatsnew' | 'worktrees',
+  'context.source': 'account' | 'subscription' | 'graph' | 'composer' | 'patchDetails' | 'settings' | 'timeline' | 'home' | 'welcome' | 'rebaseEditor' | 'ai' | 'ai:markdown-preview' | 'ai:markdown-editor' | 'ai:picker' | 'associateIssueWithBranch' | 'cloud-patches' | 'code-suggest' | 'commandPalette' | 'deeplink' | 'editor:hover' | 'feature-badge' | 'feature-gate' | 'gk-cli-integration' | 'gk-mcp-provider' | 'graph-details' | 'graph-header' | 'graph-kanban' | 'graph-sidebar' | 'graph-treemap' | 'inspect' | 'inspect-overview' | 'integrations' | 'launchpad' | 'launchpad-indicator' | 'launchpad-view' | 'mcp' | 'mcp-welcome-message' | 'merge-target' | 'notification' | 'prompt' | 'quick-wizard' | 'remoteProvider' | 'scm' | 'scm-input' | 'startReview' | 'startWork' | 'statusbar:hover' | 'trial-indicator' | 'view' | 'view:hover' | 'walkthrough' | 'whatsnew' | 'worktrees',
   'context.warnings.indexChanged': boolean,
   'context.warnings.workingDirectoryChanged': boolean,
-  'context.webview.host': 'view' | 'editor',
+  'context.webview.host': 'view' | 'editor' | 'panel',
   'context.webview.id': string,
   'context.webview.instanceId': string,
   'context.webview.type': string,
@@ -2111,7 +2263,7 @@ or
 
 ```typescript
 {
-  'context.webview.host': 'view' | 'editor',
+  'context.webview.host': 'view' | 'editor' | 'panel',
   'context.webview.id': string,
   'context.webview.instanceId': string,
   'context.webview.type': string,
@@ -2125,7 +2277,7 @@ or
 ```typescript
 {
   [`context.${string}`]: string | number | boolean,
-  'context.webview.host': 'view' | 'editor',
+  'context.webview.host': 'view' | 'editor' | 'panel',
   'context.webview.id': string,
   'context.webview.instanceId': string,
   'context.webview.type': string,
@@ -2148,7 +2300,7 @@ or
   'context.ai.model.maxTokens.input': number,
   'context.ai.model.maxTokens.output': number,
   'context.ai.model.name': string,
-  'context.ai.model.provider.id': 'anthropic' | 'azure' | 'deepseek' | 'gemini' | 'github' | 'gitkraken' | 'huggingface' | 'mistral' | 'ollama' | 'openai' | 'openaicompatible' | 'openrouter' | 'vscode' | 'xai',
+  'context.ai.model.provider.id': 'anthropic' | 'azure' | 'deepseek' | 'gemini' | 'github' | 'gitkraken' | 'huggingface' | 'mistral' | 'ollama' | 'openai' | 'openaicompatible' | 'openrouter' | 'simulator' | 'vscode' | 'xai',
   'context.ai.model.temperature': number,
   'context.commits.autoComposedCount': number,
   'context.commits.composedCount': number,
@@ -2180,10 +2332,10 @@ or
   'context.operations.undo.count': number,
   'context.session.duration': number,
   'context.session.start': string,
-  'context.source': 'account' | 'subscription' | 'graph' | 'composer' | 'patchDetails' | 'settings' | 'timeline' | 'home' | 'welcome' | 'rebaseEditor' | 'ai' | 'ai:markdown-preview' | 'ai:markdown-editor' | 'ai:picker' | 'associateIssueWithBranch' | 'cloud-patches' | 'code-suggest' | 'commandPalette' | 'deeplink' | 'editor:hover' | 'feature-badge' | 'feature-gate' | 'gk-cli-integration' | 'gk-mcp-provider' | 'graph-details' | 'inspect' | 'inspect-overview' | 'integrations' | 'launchpad' | 'launchpad-indicator' | 'launchpad-view' | 'mcp' | 'mcp-welcome-message' | 'merge-target' | 'notification' | 'prompt' | 'quick-wizard' | 'remoteProvider' | 'scm' | 'scm-input' | 'startReview' | 'startWork' | 'statusbar:hover' | 'trial-indicator' | 'view' | 'view:hover' | 'walkthrough' | 'whatsnew' | 'worktrees',
+  'context.source': 'account' | 'subscription' | 'graph' | 'composer' | 'patchDetails' | 'settings' | 'timeline' | 'home' | 'welcome' | 'rebaseEditor' | 'ai' | 'ai:markdown-preview' | 'ai:markdown-editor' | 'ai:picker' | 'associateIssueWithBranch' | 'cloud-patches' | 'code-suggest' | 'commandPalette' | 'deeplink' | 'editor:hover' | 'feature-badge' | 'feature-gate' | 'gk-cli-integration' | 'gk-mcp-provider' | 'graph-details' | 'graph-header' | 'graph-kanban' | 'graph-sidebar' | 'graph-treemap' | 'inspect' | 'inspect-overview' | 'integrations' | 'launchpad' | 'launchpad-indicator' | 'launchpad-view' | 'mcp' | 'mcp-welcome-message' | 'merge-target' | 'notification' | 'prompt' | 'quick-wizard' | 'remoteProvider' | 'scm' | 'scm-input' | 'startReview' | 'startWork' | 'statusbar:hover' | 'trial-indicator' | 'view' | 'view:hover' | 'walkthrough' | 'whatsnew' | 'worktrees',
   'context.warnings.indexChanged': boolean,
   'context.warnings.workingDirectoryChanged': boolean,
-  'context.webview.host': 'view' | 'editor',
+  'context.webview.host': 'view' | 'editor' | 'panel',
   'context.webview.id': string,
   'context.webview.instanceId': string,
   'context.webview.type': string
@@ -2204,7 +2356,7 @@ or
   'context.ai.model.maxTokens.input': number,
   'context.ai.model.maxTokens.output': number,
   'context.ai.model.name': string,
-  'context.ai.model.provider.id': 'anthropic' | 'azure' | 'deepseek' | 'gemini' | 'github' | 'gitkraken' | 'huggingface' | 'mistral' | 'ollama' | 'openai' | 'openaicompatible' | 'openrouter' | 'vscode' | 'xai',
+  'context.ai.model.provider.id': 'anthropic' | 'azure' | 'deepseek' | 'gemini' | 'github' | 'gitkraken' | 'huggingface' | 'mistral' | 'ollama' | 'openai' | 'openaicompatible' | 'openrouter' | 'simulator' | 'vscode' | 'xai',
   'context.ai.model.temperature': number,
   'context.commits.autoComposedCount': number,
   'context.commits.composedCount': number,
@@ -2236,13 +2388,25 @@ or
   'context.operations.undo.count': number,
   'context.session.duration': number,
   'context.session.start': string,
-  'context.source': 'account' | 'subscription' | 'graph' | 'composer' | 'patchDetails' | 'settings' | 'timeline' | 'home' | 'welcome' | 'rebaseEditor' | 'ai' | 'ai:markdown-preview' | 'ai:markdown-editor' | 'ai:picker' | 'associateIssueWithBranch' | 'cloud-patches' | 'code-suggest' | 'commandPalette' | 'deeplink' | 'editor:hover' | 'feature-badge' | 'feature-gate' | 'gk-cli-integration' | 'gk-mcp-provider' | 'graph-details' | 'inspect' | 'inspect-overview' | 'integrations' | 'launchpad' | 'launchpad-indicator' | 'launchpad-view' | 'mcp' | 'mcp-welcome-message' | 'merge-target' | 'notification' | 'prompt' | 'quick-wizard' | 'remoteProvider' | 'scm' | 'scm-input' | 'startReview' | 'startWork' | 'statusbar:hover' | 'trial-indicator' | 'view' | 'view:hover' | 'walkthrough' | 'whatsnew' | 'worktrees',
+  'context.source': 'account' | 'subscription' | 'graph' | 'composer' | 'patchDetails' | 'settings' | 'timeline' | 'home' | 'welcome' | 'rebaseEditor' | 'ai' | 'ai:markdown-preview' | 'ai:markdown-editor' | 'ai:picker' | 'associateIssueWithBranch' | 'cloud-patches' | 'code-suggest' | 'commandPalette' | 'deeplink' | 'editor:hover' | 'feature-badge' | 'feature-gate' | 'gk-cli-integration' | 'gk-mcp-provider' | 'graph-details' | 'graph-header' | 'graph-kanban' | 'graph-sidebar' | 'graph-treemap' | 'inspect' | 'inspect-overview' | 'integrations' | 'launchpad' | 'launchpad-indicator' | 'launchpad-view' | 'mcp' | 'mcp-welcome-message' | 'merge-target' | 'notification' | 'prompt' | 'quick-wizard' | 'remoteProvider' | 'scm' | 'scm-input' | 'startReview' | 'startWork' | 'statusbar:hover' | 'trial-indicator' | 'view' | 'view:hover' | 'walkthrough' | 'whatsnew' | 'worktrees',
   'context.warnings.indexChanged': boolean,
   'context.warnings.workingDirectoryChanged': boolean,
-  'context.webview.host': 'view' | 'editor',
+  'context.webview.host': 'view' | 'editor' | 'panel',
   'context.webview.id': string,
   'context.webview.instanceId': string,
   'context.webview.type': string
+}
+```
+
+### extension/chunkLoad/failed
+
+> Sent when a lazily-loaded webpack chunk fails to load — typically because VS Code
+background-upgraded the extension while the host kept running the old build
+
+```typescript
+{
+  'error.code': string,
+  'error.message': string
 }
 ```
 
@@ -2277,7 +2441,7 @@ or
   'context.repository.id': string,
   'context.repository.provider.id': string,
   'context.repository.scheme': string,
-  'context.webview.host': 'view' | 'editor',
+  'context.webview.host': 'view' | 'editor' | 'panel',
   'context.webview.id': string,
   'context.webview.instanceId': string,
   'context.webview.type': string,
@@ -2296,7 +2460,7 @@ or
   'context.repository.id': string,
   'context.repository.provider.id': string,
   'context.repository.scheme': string,
-  'context.webview.host': 'view' | 'editor',
+  'context.webview.host': 'view' | 'editor' | 'panel',
   'context.webview.id': string,
   'context.webview.instanceId': string,
   'context.webview.type': string
@@ -2315,10 +2479,30 @@ or
   'context.repository.id': string,
   'context.repository.provider.id': string,
   'context.repository.scheme': string,
-  'context.webview.host': 'view' | 'editor',
+  'context.webview.host': 'view' | 'editor' | 'panel',
   'context.webview.id': string,
   'context.webview.instanceId': string,
   'context.webview.type': string
+}
+```
+
+### graph/autoFetch
+
+> Sent when GitLens auto-fetch fires a `git fetch` for the visible Commit Graph
+
+```typescript
+{
+  'context.repository.closed': boolean,
+  'context.repository.folder.scheme': string,
+  'context.repository.id': string,
+  'context.repository.provider.id': string,
+  'context.repository.scheme': string,
+  'context.webview.host': 'view' | 'editor' | 'panel',
+  'context.webview.id': string,
+  'context.webview.instanceId': string,
+  'context.webview.type': string,
+  'intervalSeconds': number,
+  'sinceLastFetchedMs': number
 }
 ```
 
@@ -2328,14 +2512,14 @@ or
 
 ```typescript
 {
-  'branchesVisibility.new': 'all' | 'smart' | 'current' | 'favorited',
-  'branchesVisibility.old': 'all' | 'smart' | 'current' | 'favorited',
+  'branchesVisibility.new': 'all' | 'smart' | 'current' | 'favorited' | 'agents',
+  'branchesVisibility.old': 'all' | 'smart' | 'current' | 'favorited' | 'agents',
   'context.repository.closed': boolean,
   'context.repository.folder.scheme': string,
   'context.repository.id': string,
   'context.repository.provider.id': string,
   'context.repository.scheme': string,
-  'context.webview.host': 'view' | 'editor',
+  'context.webview.host': 'view' | 'editor' | 'panel',
   'context.webview.id': string,
   'context.webview.instanceId': string,
   'context.webview.type': string
@@ -2347,7 +2531,7 @@ or
 ```typescript
 {
   [`context.${string}`]: string | number | boolean,
-  'context.webview.host': 'view' | 'editor',
+  'context.webview.host': 'view' | 'editor' | 'panel',
   'context.webview.id': string,
   'context.webview.instanceId': string,
   'context.webview.type': string
@@ -2369,7 +2553,7 @@ or
   'context.repository.id': string,
   'context.repository.provider.id': string,
   'context.repository.scheme': string,
-  'context.webview.host': 'view' | 'editor',
+  'context.webview.host': 'view' | 'editor' | 'panel',
   'context.webview.id': string,
   'context.webview.instanceId': string,
   'context.webview.type': string
@@ -2398,12 +2582,34 @@ or
   'context.repository.id': string,
   'context.repository.provider.id': string,
   'context.repository.scheme': string,
-  'context.webview.host': 'view' | 'editor',
+  'context.webview.host': 'view' | 'editor' | 'panel',
   'context.webview.id': string,
   'context.webview.instanceId': string,
   'context.webview.type': string,
   'key': string,
   'value': boolean
+}
+```
+
+### graph/filters/cleared
+
+> Sent when the user clears all filters on the Commit Graph
+
+```typescript
+{
+  'cleared.branchesVisibility': boolean,
+  'cleared.excludeRefs': boolean,
+  'cleared.excludeTypes': boolean,
+  'cleared.includeOnlyRefs': boolean,
+  'context.repository.closed': boolean,
+  'context.repository.folder.scheme': string,
+  'context.repository.id': string,
+  'context.repository.provider.id': string,
+  'context.repository.scheme': string,
+  'context.webview.host': 'view' | 'editor' | 'panel',
+  'context.webview.id': string,
+  'context.webview.instanceId': string,
+  'context.webview.type': string
 }
 ```
 
@@ -2418,7 +2624,52 @@ or
   'context.repository.id': string,
   'context.repository.provider.id': string,
   'context.repository.scheme': string,
-  'context.webview.host': 'view' | 'editor',
+  'context.webview.host': 'view' | 'editor' | 'panel',
+  'context.webview.id': string,
+  'context.webview.instanceId': string,
+  'context.webview.type': string
+}
+```
+
+### graph/overview/action
+
+> Sent when the user invokes an action item on a Graph Overview branch card
+
+```typescript
+{
+  // Whether the user held Alt/Shift to swap to the alt action
+  'alt': boolean,
+  'context.repository.closed': boolean,
+  'context.repository.folder.scheme': string,
+  'context.repository.id': string,
+  'context.repository.provider.id': string,
+  'context.repository.scheme': string,
+  'context.webview.host': 'view' | 'editor' | 'panel',
+  'context.webview.id': string,
+  'context.webview.instanceId': string,
+  'context.webview.type': string,
+  // Where on the card the action was invoked
+  'location': 'inline' | 'hover',
+  'name': 'pull' | 'push' | 'fetch' | 'publishBranch' | 'switch' | 'openWorktree' | 'compareWithHead' | 'compareWithWorking' | 'compareWithPr' | 'other'
+}
+```
+
+### graph/overview/shown
+
+> Sent when the Graph Overview panel becomes visible (mounted in the active sidebar slot)
+
+```typescript
+{
+  // Number of branches in the "active" section at the time of show
+  'branches.active.count': number,
+  // Number of branches in the "recent" section at the time of show
+  'branches.recent.count': number,
+  'context.repository.closed': boolean,
+  'context.repository.folder.scheme': string,
+  'context.repository.id': string,
+  'context.repository.provider.id': string,
+  'context.repository.scheme': string,
+  'context.webview.host': 'view' | 'editor' | 'panel',
   'context.webview.id': string,
   'context.webview.instanceId': string,
   'context.webview.type': string
@@ -2436,7 +2687,7 @@ or
   'context.repository.id': string,
   'context.repository.provider.id': string,
   'context.repository.scheme': string,
-  'context.webview.host': 'view' | 'editor',
+  'context.webview.host': 'view' | 'editor' | 'panel',
   'context.webview.id': string,
   'context.webview.instanceId': string,
   'context.webview.type': string,
@@ -2459,7 +2710,7 @@ or
   'context.repository.id': string,
   'context.repository.provider.id': string,
   'context.repository.scheme': string,
-  'context.webview.host': 'view' | 'editor',
+  'context.webview.host': 'view' | 'editor' | 'panel',
   'context.webview.id': string,
   'context.webview.instanceId': string,
   'context.webview.type': string,
@@ -2478,7 +2729,7 @@ or
   'context.repository.id': string,
   'context.repository.provider.id': string,
   'context.repository.scheme': string,
-  'context.webview.host': 'view' | 'editor',
+  'context.webview.host': 'view' | 'editor' | 'panel',
   'context.webview.id': string,
   'context.webview.instanceId': string,
   'context.webview.type': string,
@@ -2498,12 +2749,54 @@ or
   'context.repository.id': string,
   'context.repository.provider.id': string,
   'context.repository.scheme': string,
-  'context.webview.host': 'view' | 'editor',
+  'context.webview.host': 'view' | 'editor' | 'panel',
   'context.webview.id': string,
   'context.webview.instanceId': string,
   'context.webview.type': string,
   'duration': number,
   'rows': number
+}
+```
+
+### graph/scope/changed
+
+> Sent when the user scopes the Commit Graph to a specific branch (Focus Branch feature)
+
+```typescript
+{
+  'context.repository.closed': boolean,
+  'context.repository.folder.scheme': string,
+  'context.repository.id': string,
+  'context.repository.provider.id': string,
+  'context.repository.scheme': string,
+  'context.webview.host': 'view' | 'editor' | 'panel',
+  'context.webview.id': string,
+  'context.webview.instanceId': string,
+  'context.webview.type': string,
+  // Whether the scope's merge-target tip SHA is known at scope time (proxy for "merge-target resolved")
+  'scope.hasMergeTarget': boolean,
+  // Whether the scoped branch has a tracked upstream resolved at the time of the scope change
+  'scope.hasUpstream': boolean,
+  // Where the user initiated the scope change
+  'source': 'popover' | 'overview-card'
+}
+```
+
+### graph/scope/cleared
+
+> Sent when the user clears the active Commit Graph scope
+
+```typescript
+{
+  'context.repository.closed': boolean,
+  'context.repository.folder.scheme': string,
+  'context.repository.id': string,
+  'context.repository.provider.id': string,
+  'context.repository.scheme': string,
+  'context.webview.host': 'view' | 'editor' | 'panel',
+  'context.webview.id': string,
+  'context.webview.instanceId': string,
+  'context.webview.type': string
 }
 ```
 
@@ -2518,7 +2811,7 @@ or
   'context.repository.id': string,
   'context.repository.provider.id': string,
   'context.repository.scheme': string,
-  'context.webview.host': 'view' | 'editor',
+  'context.webview.host': 'view' | 'editor' | 'panel',
   'context.webview.id': string,
   'context.webview.instanceId': string,
   'context.webview.type': string,
@@ -2536,7 +2829,7 @@ or
 
 ```typescript
 {
-  'context.webview.host': 'view' | 'editor',
+  'context.webview.host': 'view' | 'editor' | 'panel',
   'context.webview.id': string,
   'context.webview.instanceId': string,
   'context.webview.type': string,
@@ -2554,14 +2847,18 @@ or
   [`context.column.${string}.mode`]: string,
   [`context.column.${string}.visible`]: boolean,
   'context.config.allowMultiple': boolean,
+  'context.config.autoFetch.enabled': boolean,
   'context.config.avatars': boolean,
-  'context.config.branchesVisibility': 'all' | 'smart' | 'current' | 'favorited',
+  'context.config.branchesVisibility': 'all' | 'smart' | 'current' | 'favorited' | 'agents',
   'context.config.commitOrdering': 'date' | 'author-date' | 'topo',
   'context.config.dateFormat': string,
   'context.config.dateStyle': 'absolute' | 'relative',
   'context.config.defaultItemLimit': number,
+  'context.config.details.location': 'right' | 'bottom',
   'context.config.dimMergeCommits': boolean,
-  'context.config.experimental.renderer.enabled': boolean,
+  'context.config.editorOpeningBehavior': 'active' | 'auto',
+  'context.config.experimental.kanban.enabled': boolean,
+  'context.config.experimental.visualizations.enabled': boolean,
   'context.config.highlightRowsOnRefHover': boolean,
   'context.config.initialRowSelection': 'wip' | 'head',
   'context.config.issues.enabled': boolean,
@@ -2569,6 +2866,7 @@ or
   'context.config.minimap.additionalTypes': string,
   'context.config.minimap.dataType': 'commits' | 'lines',
   'context.config.minimap.enabled': boolean,
+  'context.config.minimap.reversed': boolean,
   'context.config.multiselect': boolean | 'topological',
   'context.config.onlyFollowFirstParent': boolean,
   'context.config.pageItemLimit': number,
@@ -2577,11 +2875,12 @@ or
   'context.config.scrollMarkers.enabled': boolean,
   'context.config.scrollRowPadding': number,
   'context.config.searchItemLimit': number,
-  'context.config.showDetailsView': false | 'open' | 'selection',
   'context.config.showGhostRefsOnRowHover': boolean,
   'context.config.showRemoteNames': boolean,
   'context.config.showUpstreamStatus': boolean,
+  'context.config.showWorktreeWipStats': boolean,
   'context.config.sidebar.enabled': boolean,
+  'context.config.sidebar.pinned': boolean,
   'context.config.statusBar.enabled': boolean,
   'context.config.stickyTimeline': boolean,
   'context.repository.closed': boolean,
@@ -2589,7 +2888,7 @@ or
   'context.repository.id': string,
   'context.repository.provider.id': string,
   'context.repository.scheme': string,
-  'context.webview.host': 'view' | 'editor',
+  'context.webview.host': 'view' | 'editor' | 'panel',
   'context.webview.id': string,
   'context.webview.instanceId': string,
   'context.webview.type': string,
@@ -2598,59 +2897,104 @@ or
 }
 ```
 
-### graphDetails/closed
+### graph/virtualFile/failed
+
+> Sent when opening a virtual-FS-backed file fails (e.g. the compose session is no longer registered)
 
 ```typescript
 {
-  [`context.${string}`]: string | number | boolean,
-  'context.webview.host': 'view' | 'editor',
-  'context.webview.id': string,
-  'context.webview.instanceId': string,
-  'context.webview.type': string
-}
-```
-
-### graphDetails/mode/changed
-
-> Sent when the user changes the selected tab (mode) on the Graph Details view
-
-```typescript
-{
-  'context.attachedTo': 'graph' | 'default',
-  'context.autolinks': number,
-  'context.codeSuggestions': number,
-  'context.inReview': boolean,
-  'context.mode': 'wip',
   'context.repository.closed': boolean,
   'context.repository.folder.scheme': string,
   'context.repository.id': string,
   'context.repository.provider.id': string,
   'context.repository.scheme': string,
-  'context.webview.host': 'view' | 'editor',
+  'context.webview.host': 'view' | 'editor' | 'panel',
   'context.webview.id': string,
   'context.webview.instanceId': string,
   'context.webview.type': string,
-  'mode.new': 'wip' | 'commit',
-  'mode.old': 'wip' | 'commit'
+  'error.message': string,
+  'files.count': number,
+  'mode': 'diff' | 'comparePrevious' | 'multiDiff',
+  // Best-effort categorization of the failure
+  'reason': 'unknown' | 'provider-missing' | 'parent-missing'
 }
 ```
 
-or
+### graph/virtualFile/opened
+
+> Sent when a virtual-FS-backed file (e.g. a Graph Compose proposed commit) is opened
 
 ```typescript
 {
-  'context.attachedTo': 'graph' | 'default',
-  'context.autolinks': number,
-  'context.mode': 'commit',
-  'context.pinned': boolean,
-  'context.type': 'stash' | 'commit',
-  'context.uncommitted': boolean,
-  'context.webview.host': 'view' | 'editor',
+  'context.repository.closed': boolean,
+  'context.repository.folder.scheme': string,
+  'context.repository.id': string,
+  'context.repository.provider.id': string,
+  'context.repository.scheme': string,
+  'context.webview.host': 'view' | 'editor' | 'panel',
   'context.webview.id': string,
   'context.webview.instanceId': string,
   'context.webview.type': string,
-  'mode.new': 'wip' | 'commit',
-  'mode.old': 'wip' | 'commit'
+  // Number of files being opened (1 for single-file modes, N for multiDiff)
+  'files.count': number,
+  // Which open operation the user triggered
+  'mode': 'diff' | 'comparePrevious' | 'multiDiff'
+}
+```
+
+### graph/wip/commit/failed
+
+> Sent when a commit from the Graph's WIP panel fails (e.g. a hook rejection or signing failure)
+
+```typescript
+{
+  // Whether the failed commit was an amend
+  'amend': boolean,
+  'context.repository.closed': boolean,
+  'context.repository.folder.scheme': string,
+  'context.repository.id': string,
+  'context.repository.provider.id': string,
+  'context.repository.scheme': string,
+  'context.webview.host': 'view' | 'editor' | 'panel',
+  'context.webview.id': string,
+  'context.webview.instanceId': string,
+  'context.webview.type': string,
+  // Whether raw output (hook/git stderr) was captured and surfaced via "View Full Output"
+  'hasOutput': boolean,
+  'reason': 'unknown' | 'hookRejected' | 'signingFailed' | 'nothingToCommit' | 'conflicts' | 'identityMissing'
+}
+```
+
+### graphDetails/closed
+
+> Sent when the integrated graph details panel is collapsed
+
+```typescript
+{
+  // How long the panel was open in milliseconds
+  'duration': number,
+  // Active panel mode at time of close
+  'mode': 'wip' | 'commit' | 'compare' | 'review' | 'multicommit' | 'compose' | 'none'
+}
+```
+
+### graphDetails/mode/changed
+
+> Sent when the active mode of the integrated graph details panel changes while open
+
+```typescript
+{
+  'context.repository.closed': boolean,
+  'context.repository.folder.scheme': string,
+  'context.repository.id': string,
+  'context.repository.provider.id': string,
+  'context.repository.scheme': string,
+  'context.webview.host': 'view' | 'editor' | 'panel',
+  'context.webview.id': string,
+  'context.webview.instanceId': string,
+  'context.webview.type': string,
+  'mode.new': 'wip' | 'commit' | 'compare' | 'review' | 'multicommit' | 'compose' | 'none',
+  'mode.old': 'wip' | 'commit' | 'compare' | 'review' | 'multicommit' | 'compose' | 'none'
 }
 ```
 
@@ -2677,76 +3021,26 @@ or
 }
 ```
 
-### graphDetails/showAborted
-
-```typescript
-{
-  'context.webview.host': 'view' | 'editor',
-  'context.webview.id': string,
-  'context.webview.instanceId': string,
-  'context.webview.type': string,
-  'duration': number,
-  'loading': boolean
-}
-```
-
 ### graphDetails/shown
 
-> Sent when the Graph Details view is shown
+> Sent when the integrated graph details panel is expanded
 
 ```typescript
 {
-  'context.attachedTo': 'graph' | 'default',
-  'context.autolinks': number,
-  'context.codeSuggestions': number,
-  'context.config.autolinks.enabled': boolean,
-  'context.config.autolinks.enhanced': boolean,
-  'context.config.avatars': boolean,
-  'context.config.files.compact': boolean,
-  'context.config.files.icon': 'status' | 'type',
-  'context.config.files.layout': 'auto' | 'list' | 'tree',
-  'context.config.files.threshold': number,
-  'context.config.pullRequests.enabled': boolean,
-  'context.inReview': boolean,
-  'context.mode': 'wip',
-  'context.repository.closed': boolean,
-  'context.repository.folder.scheme': string,
-  'context.repository.id': string,
-  'context.repository.provider.id': string,
-  'context.repository.scheme': string,
-  'context.webview.host': 'view' | 'editor',
-  'context.webview.id': string,
-  'context.webview.instanceId': string,
-  'context.webview.type': string,
-  'duration': number,
-  'loading': boolean
-}
-```
-
-or
-
-```typescript
-{
-  'context.attachedTo': 'graph' | 'default',
-  'context.autolinks': number,
-  'context.config.autolinks.enabled': boolean,
-  'context.config.autolinks.enhanced': boolean,
-  'context.config.avatars': boolean,
-  'context.config.files.compact': boolean,
-  'context.config.files.icon': 'status' | 'type',
-  'context.config.files.layout': 'auto' | 'list' | 'tree',
-  'context.config.files.threshold': number,
-  'context.config.pullRequests.enabled': boolean,
-  'context.mode': 'commit',
-  'context.pinned': boolean,
-  'context.type': 'stash' | 'commit',
-  'context.uncommitted': boolean,
-  'context.webview.host': 'view' | 'editor',
-  'context.webview.id': string,
-  'context.webview.instanceId': string,
-  'context.webview.type': string,
-  'duration': number,
-  'loading': boolean
+  // Which graph host the panel is in: editor area or bottom panel
+  'host': 'editor' | 'panel',
+  // Where the details panel is anchored relative to the graph
+  'location': 'right' | 'bottom',
+  // Active panel mode at time of show
+  'mode': 'wip' | 'commit' | 'compare' | 'review' | 'multicommit' | 'compose' | 'none',
+  // Split-pane position percentage from the closed edge (0–100)
+  'position': number,
+  // Number of rows currently selected in the graph (0, 1, or N)
+  'selection.count': number,
+  // Whether the active selection is the WIP / uncommitted row
+  'selection.uncommitted': boolean,
+  // What caused the panel to be shown
+  'trigger': 'toggle' | 'auto-restore'
 }
 ```
 
@@ -2763,7 +3057,7 @@ void
 ```typescript
 {
   [`context.${string}`]: string | number | boolean,
-  'context.webview.host': 'view' | 'editor',
+  'context.webview.host': 'view' | 'editor' | 'panel',
   'context.webview.id': string,
   'context.webview.instanceId': string,
   'context.webview.type': string
@@ -2801,22 +3095,11 @@ void
 }
 ```
 
-### home/preview/toggled
-
-> Sent when the new Home view preview is toggled on/off
-
-```typescript
-{
-  'enabled': boolean,
-  'version': string
-}
-```
-
 ### home/showAborted
 
 ```typescript
 {
-  'context.webview.host': 'view' | 'editor',
+  'context.webview.host': 'view' | 'editor' | 'panel',
   'context.webview.id': string,
   'context.webview.instanceId': string,
   'context.webview.type': string,
@@ -2830,7 +3113,7 @@ void
 ```typescript
 {
   [`context.${string}`]: string | number | boolean,
-  'context.webview.host': 'view' | 'editor',
+  'context.webview.host': 'view' | 'editor' | 'panel',
   'context.webview.id': string,
   'context.webview.instanceId': string,
   'context.webview.type': string,
@@ -2855,7 +3138,7 @@ void
 {
   'instance': number,
   'items.error': string,
-  'action': 'soft-open' | 'code-suggest' | 'merge' | 'open' | 'switch' | 'open-worktree' | 'switch-and-code-suggest' | 'show-overview' | 'open-changes' | 'open-in-graph' | 'pin' | 'unpin' | 'snooze' | 'unsnooze' | 'open-suggestion' | 'open-suggestion-browser',
+  'action': 'soft-open' | 'code-suggest' | 'merge' | 'switch' | 'open' | 'open-worktree' | 'switch-and-code-suggest' | 'show-overview' | 'open-changes' | 'open-in-graph' | 'pin' | 'unpin' | 'snooze' | 'unsnooze' | 'open-suggestion' | 'open-suggestion-browser',
   'groups.blocked.collapsed': boolean,
   'groups.blocked.count': number,
   'groups.count': number,
@@ -2916,7 +3199,7 @@ void
   'instance': number,
   'items.error': string,
   'collapsed': boolean,
-  'group': 'current-branch' | 'pinned' | 'mergeable' | 'blocked' | 'follow-up' | 'needs-review' | 'waiting-for-review' | 'draft' | 'other' | 'snoozed',
+  'group': 'other' | 'pinned' | 'current-branch' | 'mergeable' | 'blocked' | 'follow-up' | 'needs-review' | 'waiting-for-review' | 'draft' | 'snoozed',
   'groups.blocked.collapsed': boolean,
   'groups.blocked.count': number,
   'groups.count': number,
@@ -3183,16 +3466,29 @@ void
 }
 ```
 
+### mcp/agents/selected
+
+> Sent when user selects agents for MCP installation
+
+```typescript
+{
+  'agents.count': number,
+  'agents.ids': string,
+  'source': 'account' | 'subscription' | 'graph' | 'composer' | 'patchDetails' | 'settings' | 'timeline' | 'home' | 'welcome' | 'rebaseEditor' | 'ai' | 'ai:markdown-preview' | 'ai:markdown-editor' | 'ai:picker' | 'associateIssueWithBranch' | 'cloud-patches' | 'code-suggest' | 'commandPalette' | 'deeplink' | 'editor:hover' | 'feature-badge' | 'feature-gate' | 'gk-cli-integration' | 'gk-mcp-provider' | 'graph-details' | 'graph-header' | 'graph-kanban' | 'graph-sidebar' | 'graph-treemap' | 'inspect' | 'inspect-overview' | 'integrations' | 'launchpad' | 'launchpad-indicator' | 'launchpad-view' | 'mcp' | 'mcp-welcome-message' | 'merge-target' | 'notification' | 'prompt' | 'quick-wizard' | 'remoteProvider' | 'scm' | 'scm-input' | 'startReview' | 'startWork' | 'statusbar:hover' | 'trial-indicator' | 'view' | 'view:hover' | 'walkthrough' | 'whatsnew' | 'worktrees'
+}
+```
+
 ### mcp/registration/failed
 
 > Sent when GitKraken MCP registration fails
 
 ```typescript
 {
+  'agents.failed': string,
   'cli.version': string,
   'error.message': string,
   'reason': string,
-  'source': 'account' | 'subscription' | 'graph' | 'composer' | 'patchDetails' | 'settings' | 'timeline' | 'home' | 'welcome' | 'rebaseEditor' | 'ai' | 'ai:markdown-preview' | 'ai:markdown-editor' | 'ai:picker' | 'associateIssueWithBranch' | 'cloud-patches' | 'code-suggest' | 'commandPalette' | 'deeplink' | 'editor:hover' | 'feature-badge' | 'feature-gate' | 'gk-cli-integration' | 'gk-mcp-provider' | 'graph-details' | 'inspect' | 'inspect-overview' | 'integrations' | 'launchpad' | 'launchpad-indicator' | 'launchpad-view' | 'mcp' | 'mcp-welcome-message' | 'merge-target' | 'notification' | 'prompt' | 'quick-wizard' | 'remoteProvider' | 'scm' | 'scm-input' | 'startReview' | 'startWork' | 'statusbar:hover' | 'trial-indicator' | 'view' | 'view:hover' | 'walkthrough' | 'whatsnew' | 'worktrees'
+  'source': 'account' | 'subscription' | 'graph' | 'composer' | 'patchDetails' | 'settings' | 'timeline' | 'home' | 'welcome' | 'rebaseEditor' | 'ai' | 'ai:markdown-preview' | 'ai:markdown-editor' | 'ai:picker' | 'associateIssueWithBranch' | 'cloud-patches' | 'code-suggest' | 'commandPalette' | 'deeplink' | 'editor:hover' | 'feature-badge' | 'feature-gate' | 'gk-cli-integration' | 'gk-mcp-provider' | 'graph-details' | 'graph-header' | 'graph-kanban' | 'graph-sidebar' | 'graph-treemap' | 'inspect' | 'inspect-overview' | 'integrations' | 'launchpad' | 'launchpad-indicator' | 'launchpad-view' | 'mcp' | 'mcp-welcome-message' | 'merge-target' | 'notification' | 'prompt' | 'quick-wizard' | 'remoteProvider' | 'scm' | 'scm-input' | 'startReview' | 'startWork' | 'statusbar:hover' | 'trial-indicator' | 'view' | 'view:hover' | 'walkthrough' | 'whatsnew' | 'worktrees'
 }
 ```
 
@@ -3202,9 +3498,12 @@ void
 
 ```typescript
 {
+  'agents.failed': string,
+  'agents.succeeded': string,
+  'agents.userAction': string,
   'cli.version': string,
   'requiresUserCompletion': boolean,
-  'source': 'account' | 'subscription' | 'graph' | 'composer' | 'patchDetails' | 'settings' | 'timeline' | 'home' | 'welcome' | 'rebaseEditor' | 'ai' | 'ai:markdown-preview' | 'ai:markdown-editor' | 'ai:picker' | 'associateIssueWithBranch' | 'cloud-patches' | 'code-suggest' | 'commandPalette' | 'deeplink' | 'editor:hover' | 'feature-badge' | 'feature-gate' | 'gk-cli-integration' | 'gk-mcp-provider' | 'graph-details' | 'inspect' | 'inspect-overview' | 'integrations' | 'launchpad' | 'launchpad-indicator' | 'launchpad-view' | 'mcp' | 'mcp-welcome-message' | 'merge-target' | 'notification' | 'prompt' | 'quick-wizard' | 'remoteProvider' | 'scm' | 'scm-input' | 'startReview' | 'startWork' | 'statusbar:hover' | 'trial-indicator' | 'view' | 'view:hover' | 'walkthrough' | 'whatsnew' | 'worktrees'
+  'source': 'account' | 'subscription' | 'graph' | 'composer' | 'patchDetails' | 'settings' | 'timeline' | 'home' | 'welcome' | 'rebaseEditor' | 'ai' | 'ai:markdown-preview' | 'ai:markdown-editor' | 'ai:picker' | 'associateIssueWithBranch' | 'cloud-patches' | 'code-suggest' | 'commandPalette' | 'deeplink' | 'editor:hover' | 'feature-badge' | 'feature-gate' | 'gk-cli-integration' | 'gk-mcp-provider' | 'graph-details' | 'graph-header' | 'graph-kanban' | 'graph-sidebar' | 'graph-treemap' | 'inspect' | 'inspect-overview' | 'integrations' | 'launchpad' | 'launchpad-indicator' | 'launchpad-view' | 'mcp' | 'mcp-welcome-message' | 'merge-target' | 'notification' | 'prompt' | 'quick-wizard' | 'remoteProvider' | 'scm' | 'scm-input' | 'startReview' | 'startWork' | 'statusbar:hover' | 'trial-indicator' | 'view' | 'view:hover' | 'walkthrough' | 'whatsnew' | 'worktrees'
 }
 ```
 
@@ -3214,10 +3513,11 @@ void
 
 ```typescript
 {
+  'agents.failed': string,
   'cli.version': string,
   'error.message': string,
   'reason': string,
-  'source': 'account' | 'subscription' | 'graph' | 'composer' | 'patchDetails' | 'settings' | 'timeline' | 'home' | 'welcome' | 'rebaseEditor' | 'ai' | 'ai:markdown-preview' | 'ai:markdown-editor' | 'ai:picker' | 'associateIssueWithBranch' | 'cloud-patches' | 'code-suggest' | 'commandPalette' | 'deeplink' | 'editor:hover' | 'feature-badge' | 'feature-gate' | 'gk-cli-integration' | 'gk-mcp-provider' | 'graph-details' | 'inspect' | 'inspect-overview' | 'integrations' | 'launchpad' | 'launchpad-indicator' | 'launchpad-view' | 'mcp' | 'mcp-welcome-message' | 'merge-target' | 'notification' | 'prompt' | 'quick-wizard' | 'remoteProvider' | 'scm' | 'scm-input' | 'startReview' | 'startWork' | 'statusbar:hover' | 'trial-indicator' | 'view' | 'view:hover' | 'walkthrough' | 'whatsnew' | 'worktrees'
+  'source': 'account' | 'subscription' | 'graph' | 'composer' | 'patchDetails' | 'settings' | 'timeline' | 'home' | 'welcome' | 'rebaseEditor' | 'ai' | 'ai:markdown-preview' | 'ai:markdown-editor' | 'ai:picker' | 'associateIssueWithBranch' | 'cloud-patches' | 'code-suggest' | 'commandPalette' | 'deeplink' | 'editor:hover' | 'feature-badge' | 'feature-gate' | 'gk-cli-integration' | 'gk-mcp-provider' | 'graph-details' | 'graph-header' | 'graph-kanban' | 'graph-sidebar' | 'graph-treemap' | 'inspect' | 'inspect-overview' | 'integrations' | 'launchpad' | 'launchpad-indicator' | 'launchpad-view' | 'mcp' | 'mcp-welcome-message' | 'merge-target' | 'notification' | 'prompt' | 'quick-wizard' | 'remoteProvider' | 'scm' | 'scm-input' | 'startReview' | 'startWork' | 'statusbar:hover' | 'trial-indicator' | 'view' | 'view:hover' | 'walkthrough' | 'whatsnew' | 'worktrees'
 }
 ```
 
@@ -3227,7 +3527,7 @@ void
 
 ```typescript
 {
-  'source': 'account' | 'subscription' | 'graph' | 'composer' | 'patchDetails' | 'settings' | 'timeline' | 'home' | 'welcome' | 'rebaseEditor' | 'ai' | 'ai:markdown-preview' | 'ai:markdown-editor' | 'ai:picker' | 'associateIssueWithBranch' | 'cloud-patches' | 'code-suggest' | 'commandPalette' | 'deeplink' | 'editor:hover' | 'feature-badge' | 'feature-gate' | 'gk-cli-integration' | 'gk-mcp-provider' | 'graph-details' | 'inspect' | 'inspect-overview' | 'integrations' | 'launchpad' | 'launchpad-indicator' | 'launchpad-view' | 'mcp' | 'mcp-welcome-message' | 'merge-target' | 'notification' | 'prompt' | 'quick-wizard' | 'remoteProvider' | 'scm' | 'scm-input' | 'startReview' | 'startWork' | 'statusbar:hover' | 'trial-indicator' | 'view' | 'view:hover' | 'walkthrough' | 'whatsnew' | 'worktrees'
+  'source': 'account' | 'subscription' | 'graph' | 'composer' | 'patchDetails' | 'settings' | 'timeline' | 'home' | 'welcome' | 'rebaseEditor' | 'ai' | 'ai:markdown-preview' | 'ai:markdown-editor' | 'ai:picker' | 'associateIssueWithBranch' | 'cloud-patches' | 'code-suggest' | 'commandPalette' | 'deeplink' | 'editor:hover' | 'feature-badge' | 'feature-gate' | 'gk-cli-integration' | 'gk-mcp-provider' | 'graph-details' | 'graph-header' | 'graph-kanban' | 'graph-sidebar' | 'graph-treemap' | 'inspect' | 'inspect-overview' | 'integrations' | 'launchpad' | 'launchpad-indicator' | 'launchpad-view' | 'mcp' | 'mcp-welcome-message' | 'merge-target' | 'notification' | 'prompt' | 'quick-wizard' | 'remoteProvider' | 'scm' | 'scm-input' | 'startReview' | 'startWork' | 'statusbar:hover' | 'trial-indicator' | 'view' | 'view:hover' | 'walkthrough' | 'whatsnew' | 'worktrees'
 }
 ```
 
@@ -3251,6 +3551,18 @@ void
   'operation': string,
   'reason': 'unknown' | 'timeout' | 'cancellation',
   'timeout': number
+}
+```
+
+### op/git/gitDirResolve/failed
+
+> Sent when getGitDir resolves to a non-existent .git directory or rev-parse fails
+
+```typescript
+{
+  'error.message': string,
+  'git.dir': string,
+  'repository.path': string
 }
 ```
 
@@ -3289,7 +3601,7 @@ void
   'repoPrivacy': 'private' | 'public' | 'local',
   'repository.visibility': 'private' | 'public' | 'local',
   // Provided for compatibility with other GK surfaces
-  'source': 'account' | 'subscription' | 'graph' | 'composer' | 'patchDetails' | 'settings' | 'timeline' | 'home' | 'welcome' | 'rebaseEditor' | 'ai' | 'ai:markdown-preview' | 'ai:markdown-editor' | 'ai:picker' | 'associateIssueWithBranch' | 'cloud-patches' | 'code-suggest' | 'commandPalette' | 'deeplink' | 'editor:hover' | 'feature-badge' | 'feature-gate' | 'gk-cli-integration' | 'gk-mcp-provider' | 'graph-details' | 'inspect' | 'inspect-overview' | 'integrations' | 'launchpad' | 'launchpad-indicator' | 'launchpad-view' | 'mcp' | 'mcp-welcome-message' | 'merge-target' | 'notification' | 'prompt' | 'quick-wizard' | 'remoteProvider' | 'scm' | 'scm-input' | 'startReview' | 'startWork' | 'statusbar:hover' | 'trial-indicator' | 'view' | 'view:hover' | 'walkthrough' | 'whatsnew' | 'worktrees'
+  'source': 'account' | 'subscription' | 'graph' | 'composer' | 'patchDetails' | 'settings' | 'timeline' | 'home' | 'welcome' | 'rebaseEditor' | 'ai' | 'ai:markdown-preview' | 'ai:markdown-editor' | 'ai:picker' | 'associateIssueWithBranch' | 'cloud-patches' | 'code-suggest' | 'commandPalette' | 'deeplink' | 'editor:hover' | 'feature-badge' | 'feature-gate' | 'gk-cli-integration' | 'gk-mcp-provider' | 'graph-details' | 'graph-header' | 'graph-kanban' | 'graph-sidebar' | 'graph-treemap' | 'inspect' | 'inspect-overview' | 'integrations' | 'launchpad' | 'launchpad-indicator' | 'launchpad-view' | 'mcp' | 'mcp-welcome-message' | 'merge-target' | 'notification' | 'prompt' | 'quick-wizard' | 'remoteProvider' | 'scm' | 'scm-input' | 'startReview' | 'startWork' | 'statusbar:hover' | 'trial-indicator' | 'view' | 'view:hover' | 'walkthrough' | 'whatsnew' | 'worktrees'
 }
 ```
 
@@ -3298,7 +3610,7 @@ void
 ```typescript
 {
   [`context.${string}`]: string | number | boolean,
-  'context.webview.host': 'view' | 'editor',
+  'context.webview.host': 'view' | 'editor' | 'panel',
   'context.webview.id': string,
   'context.webview.instanceId': string,
   'context.webview.type': string
@@ -3309,7 +3621,7 @@ void
 
 ```typescript
 {
-  'context.webview.host': 'view' | 'editor',
+  'context.webview.host': 'view' | 'editor' | 'panel',
   'context.webview.id': string,
   'context.webview.instanceId': string,
   'context.webview.type': string,
@@ -3323,7 +3635,7 @@ void
 ```typescript
 {
   [`context.${string}`]: string | number | boolean,
-  'context.webview.host': 'view' | 'editor',
+  'context.webview.host': 'view' | 'editor' | 'panel',
   'context.webview.id': string,
   'context.webview.instanceId': string,
   'context.webview.type': string,
@@ -3368,7 +3680,7 @@ void
 ```typescript
 {
   [`context.${string}`]: string | number | boolean,
-  'context.webview.host': 'view' | 'editor',
+  'context.webview.host': 'view' | 'editor' | 'panel',
   'context.webview.id': string,
   'context.webview.instanceId': string,
   'context.webview.type': string
@@ -3379,7 +3691,7 @@ void
 
 ```typescript
 {
-  'context.webview.host': 'view' | 'editor',
+  'context.webview.host': 'view' | 'editor' | 'panel',
   'context.webview.id': string,
   'context.webview.instanceId': string,
   'context.webview.type': string,
@@ -3393,7 +3705,7 @@ void
 ```typescript
 {
   [`context.${string}`]: string | number | boolean,
-  'context.webview.host': 'view' | 'editor',
+  'context.webview.host': 'view' | 'editor' | 'panel',
   'context.webview.id': string,
   'context.webview.instanceId': string,
   'context.webview.type': string,
@@ -3417,7 +3729,7 @@ void
   'context.session.duration': number,
   'context.session.start': string,
   'context.todo.count': number,
-  'context.webview.host': 'view' | 'editor',
+  'context.webview.host': 'view' | 'editor' | 'panel',
   'context.webview.id': string,
   'context.webview.instanceId': string,
   'context.webview.type': string
@@ -3438,7 +3750,53 @@ void
   'context.preservesMerges': boolean,
   'context.session.start': string,
   'context.todo.count': number,
-  'context.webview.host': 'view' | 'editor',
+  'context.webview.host': 'view' | 'editor' | 'panel',
+  'context.webview.id': string,
+  'context.webview.instanceId': string,
+  'context.webview.type': string
+}
+```
+
+### rebaseEditor/action/openConflictChanges
+
+> Sent when the user opens current or incoming changes for a conflict file
+
+```typescript
+{
+  'context.ascending': boolean,
+  'context.done.count': number,
+  'context.hasConflicts': boolean,
+  'context.isPaused': boolean,
+  'context.isRebasing': boolean,
+  'context.preservesMerges': boolean,
+  'context.session.start': string,
+  'context.todo.count': number,
+  'context.webview.host': 'view' | 'editor' | 'panel',
+  'context.webview.id': string,
+  'context.webview.instanceId': string,
+  'context.webview.type': string,
+  // Which side of the conflict was opened
+  'side': 'current' | 'incoming'
+}
+```
+
+### rebaseEditor/action/openConflictFile
+
+> Sent when the user opens a conflict file from the inline conflict panel
+
+```typescript
+{
+  // File extension of the opened conflict file (e.g. '.ts', '.json')
+  'conflict.fileExtension': string,
+  'context.ascending': boolean,
+  'context.done.count': number,
+  'context.hasConflicts': boolean,
+  'context.isPaused': boolean,
+  'context.isRebasing': boolean,
+  'context.preservesMerges': boolean,
+  'context.session.start': string,
+  'context.todo.count': number,
+  'context.webview.host': 'view' | 'editor' | 'panel',
   'context.webview.id': string,
   'context.webview.instanceId': string,
   'context.webview.type': string
@@ -3460,7 +3818,65 @@ void
   'context.session.duration': number,
   'context.session.start': string,
   'context.todo.count': number,
-  'context.webview.host': 'view' | 'editor',
+  'context.webview.host': 'view' | 'editor' | 'panel',
+  'context.webview.id': string,
+  'context.webview.instanceId': string,
+  'context.webview.type': string
+}
+```
+
+### rebaseEditor/action/resolveAllConflicts
+
+> Sent when the user resolves all conflict files by taking one side
+
+```typescript
+{
+  // Total number of conflicted files at the time of confirmation
+  'conflict.fileCount': number,
+  // Number of files whose resolution failed (checkout or staging error)
+  'conflict.fileCount.failed': number,
+  // Number of files successfully resolved (checked out or deleted, and then staged)
+  'conflict.fileCount.resolved': number,
+  // Number of files skipped because the requested side is unsupported for their status
+  'conflict.fileCount.skipped': number,
+  // Which side of the conflict was taken for all files
+  'conflict.resolution': 'current' | 'incoming',
+  'context.ascending': boolean,
+  'context.done.count': number,
+  'context.hasConflicts': boolean,
+  'context.isPaused': boolean,
+  'context.isRebasing': boolean,
+  'context.preservesMerges': boolean,
+  'context.session.start': string,
+  'context.todo.count': number,
+  'context.webview.host': 'view' | 'editor' | 'panel',
+  'context.webview.id': string,
+  'context.webview.instanceId': string,
+  'context.webview.type': string
+}
+```
+
+### rebaseEditor/action/resolveConflict
+
+> Sent when the user resolves a single conflict file by taking one side
+
+```typescript
+{
+  // File extension of the resolved conflict file (e.g. '.ts', '.json')
+  'conflict.fileExtension': string,
+  // Which side of the conflict was taken
+  'conflict.resolution': 'current' | 'incoming',
+  // Two-character conflict status (e.g. 'UU', 'AU')
+  'conflict.status': string,
+  'context.ascending': boolean,
+  'context.done.count': number,
+  'context.hasConflicts': boolean,
+  'context.isPaused': boolean,
+  'context.isRebasing': boolean,
+  'context.preservesMerges': boolean,
+  'context.session.start': string,
+  'context.todo.count': number,
+  'context.webview.host': 'view' | 'editor' | 'panel',
   'context.webview.id': string,
   'context.webview.instanceId': string,
   'context.webview.type': string
@@ -3481,7 +3897,7 @@ void
   'context.preservesMerges': boolean,
   'context.session.start': string,
   'context.todo.count': number,
-  'context.webview.host': 'view' | 'editor',
+  'context.webview.host': 'view' | 'editor' | 'panel',
   'context.webview.id': string,
   'context.webview.instanceId': string,
   'context.webview.type': string,
@@ -3506,7 +3922,7 @@ void
   'context.preservesMerges': boolean,
   'context.session.start': string,
   'context.todo.count': number,
-  'context.webview.host': 'view' | 'editor',
+  'context.webview.host': 'view' | 'editor' | 'panel',
   'context.webview.id': string,
   'context.webview.instanceId': string,
   'context.webview.type': string
@@ -3527,7 +3943,32 @@ void
   'context.preservesMerges': boolean,
   'context.session.start': string,
   'context.todo.count': number,
-  'context.webview.host': 'view' | 'editor',
+  'context.webview.host': 'view' | 'editor' | 'panel',
+  'context.webview.id': string,
+  'context.webview.instanceId': string,
+  'context.webview.type': string
+}
+```
+
+### rebaseEditor/action/stageConflict
+
+> Sent when the user stages a single conflict file (marks as resolved)
+
+```typescript
+{
+  // File extension of the staged conflict file (e.g. '.ts', '.json')
+  'conflict.fileExtension': string,
+  // Two-character conflict status (e.g. 'UU', 'AU')
+  'conflict.status': string,
+  'context.ascending': boolean,
+  'context.done.count': number,
+  'context.hasConflicts': boolean,
+  'context.isPaused': boolean,
+  'context.isRebasing': boolean,
+  'context.preservesMerges': boolean,
+  'context.session.start': string,
+  'context.todo.count': number,
+  'context.webview.host': 'view' | 'editor' | 'panel',
   'context.webview.id': string,
   'context.webview.instanceId': string,
   'context.webview.type': string
@@ -3549,7 +3990,7 @@ void
   'context.session.duration': number,
   'context.session.start': string,
   'context.todo.count': number,
-  'context.webview.host': 'view' | 'editor',
+  'context.webview.host': 'view' | 'editor' | 'panel',
   'context.webview.id': string,
   'context.webview.instanceId': string,
   'context.webview.type': string
@@ -3571,7 +4012,7 @@ void
   'context.session.duration': number,
   'context.session.start': string,
   'context.todo.count': number,
-  'context.webview.host': 'view' | 'editor',
+  'context.webview.host': 'view' | 'editor' | 'panel',
   'context.webview.id': string,
   'context.webview.instanceId': string,
   'context.webview.type': string
@@ -3592,7 +4033,7 @@ void
   'context.preservesMerges': boolean,
   'context.session.start': string,
   'context.todo.count': number,
-  'context.webview.host': 'view' | 'editor',
+  'context.webview.host': 'view' | 'editor' | 'panel',
   'context.webview.id': string,
   'context.webview.instanceId': string,
   'context.webview.type': string,
@@ -3619,14 +4060,16 @@ void
   'context.preservesMerges': boolean,
   'context.session.start': string,
   'context.todo.count': number,
-  'context.webview.host': 'view' | 'editor',
+  'context.webview.host': 'view' | 'editor' | 'panel',
   'context.webview.id': string,
   'context.webview.instanceId': string,
   'context.webview.type': string,
+  // Which detection mode produced this event
+  'detection': 'potential' | 'todo',
   // Duration of conflict detection in milliseconds
   'duration': number,
   // Result status
-  'status': 'clean' | 'conflicts'
+  'status': 'conflicts' | 'clean'
 }
 ```
 
@@ -3644,7 +4087,7 @@ void
   'context.preservesMerges': boolean,
   'context.session.start': string,
   'context.todo.count': number,
-  'context.webview.host': 'view' | 'editor',
+  'context.webview.host': 'view' | 'editor' | 'panel',
   'context.webview.id': string,
   'context.webview.instanceId': string,
   'context.webview.type': string
@@ -3667,7 +4110,7 @@ void
   'context.preservesMerges': boolean,
   'context.session.start': string,
   'context.todo.count': number,
-  'context.webview.host': 'view' | 'editor',
+  'context.webview.host': 'view' | 'editor' | 'panel',
   'context.webview.id': string,
   'context.webview.instanceId': string,
   'context.webview.type': string,
@@ -3694,7 +4137,7 @@ void
   'context.preservesMerges': boolean,
   'context.session.start': string,
   'context.todo.count': number,
-  'context.webview.host': 'view' | 'editor',
+  'context.webview.host': 'view' | 'editor' | 'panel',
   'context.webview.id': string,
   'context.webview.instanceId': string,
   'context.webview.type': string,
@@ -3717,7 +4160,7 @@ void
   'context.preservesMerges': boolean,
   'context.session.start': string,
   'context.todo.count': number,
-  'context.webview.host': 'view' | 'editor',
+  'context.webview.host': 'view' | 'editor' | 'panel',
   'context.webview.id': string,
   'context.webview.instanceId': string,
   'context.webview.type': string,
@@ -3736,6 +4179,7 @@ void
 {
   'context.ascending': boolean,
   'context.config.density': 'compact' | 'comfortable',
+  'context.config.openBehavior': 'auto' | 'beside',
   'context.config.openOnPausedRebase': boolean | 'interactive',
   'context.config.ordering': 'asc' | 'desc',
   'context.config.revealBehavior': 'onDoubleClick' | 'onSelection',
@@ -3747,7 +4191,7 @@ void
   'context.preservesMerges': boolean,
   'context.session.start': string,
   'context.todo.count': number,
-  'context.webview.host': 'view' | 'editor',
+  'context.webview.host': 'view' | 'editor' | 'panel',
   'context.webview.id': string,
   'context.webview.instanceId': string,
   'context.webview.type': string,
@@ -3850,7 +4294,7 @@ void
 ```typescript
 {
   [`context.${string}`]: string | number | boolean,
-  'context.webview.host': 'view' | 'editor',
+  'context.webview.host': 'view' | 'editor' | 'panel',
   'context.webview.id': string,
   'context.webview.instanceId': string,
   'context.webview.type': string
@@ -3861,7 +4305,7 @@ void
 
 ```typescript
 {
-  'context.webview.host': 'view' | 'editor',
+  'context.webview.host': 'view' | 'editor' | 'panel',
   'context.webview.id': string,
   'context.webview.instanceId': string,
   'context.webview.type': string,
@@ -3875,7 +4319,7 @@ void
 ```typescript
 {
   [`context.${string}`]: string | number | boolean,
-  'context.webview.host': 'view' | 'editor',
+  'context.webview.host': 'view' | 'editor' | 'panel',
   'context.webview.id': string,
   'context.webview.instanceId': string,
   'context.webview.type': string,
@@ -3893,6 +4337,38 @@ void
   'instance': number,
   'action': 'manage' | 'connect',
   'connected': boolean,
+  // Route requested by the caller for the manual-vs-agent flow; `undefined` when the caller didn't opt in.
+  'context.showOpenInAgent': 'ask' | 'manual' | 'agent',
+  'items.count': number
+}
+```
+
+### startReview/agent/resolved
+
+> Sent when the manual-vs-agent flow resolves (manual, cancel, or a specific agent)
+
+```typescript
+{
+  'instance': number,
+  'agent.resolution': 'manual' | 'cancel',
+  'connected': boolean,
+  // Route requested by the caller for the manual-vs-agent flow; `undefined` when the caller didn't opt in.
+  'context.showOpenInAgent': 'ask' | 'manual' | 'agent',
+  'items.count': number
+}
+```
+
+or
+
+```typescript
+{
+  'instance': number,
+  'agent.id': string,
+  'agent.kind': 'ide-chat' | 'claude-extension' | 'cli',
+  'agent.resolution': 'agent',
+  'connected': boolean,
+  // Route requested by the caller for the manual-vs-agent flow; `undefined` when the caller didn't opt in.
+  'context.showOpenInAgent': 'ask' | 'manual' | 'agent',
   'items.count': number
 }
 ```
@@ -3903,7 +4379,9 @@ void
 
 ```typescript
 {
-  'instance': number
+  'instance': number,
+  // Route requested by the caller for the manual-vs-agent flow; `undefined` when the caller didn't opt in.
+  'context.showOpenInAgent': 'ask' | 'manual' | 'agent'
 }
 ```
 
@@ -3915,6 +4393,8 @@ void
 {
   'instance': number,
   'connected': boolean,
+  // Route requested by the caller for the manual-vs-agent flow; `undefined` when the caller didn't opt in.
+  'context.showOpenInAgent': 'ask' | 'manual' | 'agent',
   'items.count': number
 }
 ```
@@ -3928,6 +4408,8 @@ void
   'instance': number,
   'action': 'soft-open',
   'connected': boolean,
+  // Route requested by the caller for the manual-vs-agent flow; `undefined` when the caller didn't opt in.
+  'context.showOpenInAgent': 'ask' | 'manual' | 'agent',
   [`item.${string}`]: string | number | boolean,
   'items.count': number
 }
@@ -3941,6 +4423,8 @@ void
 {
   'instance': number,
   'connected': boolean,
+  // Route requested by the caller for the manual-vs-agent flow; `undefined` when the caller didn't opt in.
+  'context.showOpenInAgent': 'ask' | 'manual' | 'agent',
   [`item.${string}`]: string | number | boolean,
   'items.count': number
 }
@@ -3954,6 +4438,8 @@ void
 {
   'instance': number,
   'connected': boolean,
+  // Route requested by the caller for the manual-vs-agent flow; `undefined` when the caller didn't opt in.
+  'context.showOpenInAgent': 'ask' | 'manual' | 'agent',
   'items.count': number
 }
 ```
@@ -3966,6 +4452,8 @@ void
 {
   'instance': number,
   'connected': boolean,
+  // Route requested by the caller for the manual-vs-agent flow; `undefined` when the caller didn't opt in.
+  'context.showOpenInAgent': 'ask' | 'manual' | 'agent',
   'items.count': number
 }
 ```
@@ -3979,6 +4467,8 @@ void
   'instance': number,
   'action': 'connect',
   'connected': boolean,
+  // Route requested by the caller for the manual-vs-agent flow; `undefined` when the caller didn't opt in.
+  'context.showOpenInAgent': 'ask' | 'manual' | 'agent',
   'items.count': number
 }
 ```
@@ -3992,6 +4482,38 @@ void
   'instance': number,
   'action': 'manage' | 'connect',
   'connected': boolean,
+  // Route requested by the caller for the manual-vs-agent flow; `undefined` when the caller didn't opt in.
+  'context.showOpenInAgent': 'ask' | 'manual' | 'agent',
+  'items.count': number
+}
+```
+
+### startWork/agent/resolved
+
+> Sent when the manual-vs-agent flow resolves (manual, cancel, or a specific agent)
+
+```typescript
+{
+  'instance': number,
+  'agent.resolution': 'manual' | 'cancel',
+  'connected': boolean,
+  // Route requested by the caller for the manual-vs-agent flow; `undefined` when the caller didn't opt in.
+  'context.showOpenInAgent': 'ask' | 'manual' | 'agent',
+  'items.count': number
+}
+```
+
+or
+
+```typescript
+{
+  'instance': number,
+  'agent.id': string,
+  'agent.kind': 'ide-chat' | 'claude-extension' | 'cli',
+  'agent.resolution': 'agent',
+  'connected': boolean,
+  // Route requested by the caller for the manual-vs-agent flow; `undefined` when the caller didn't opt in.
+  'context.showOpenInAgent': 'ask' | 'manual' | 'agent',
   'items.count': number
 }
 ```
@@ -4005,6 +4527,8 @@ void
   'instance': number,
   'action': 'soft-open',
   'connected': boolean,
+  // Route requested by the caller for the manual-vs-agent flow; `undefined` when the caller didn't opt in.
+  'context.showOpenInAgent': 'ask' | 'manual' | 'agent',
   [`item.${string}`]: string | number | boolean,
   'items.count': number
 }
@@ -4018,6 +4542,8 @@ void
 {
   'instance': number,
   'connected': boolean,
+  // Route requested by the caller for the manual-vs-agent flow; `undefined` when the caller didn't opt in.
+  'context.showOpenInAgent': 'ask' | 'manual' | 'agent',
   [`item.${string}`]: string | number | boolean,
   'items.count': number
 }
@@ -4029,7 +4555,9 @@ void
 
 ```typescript
 {
-  'instance': number
+  'instance': number,
+  // Route requested by the caller for the manual-vs-agent flow; `undefined` when the caller didn't opt in.
+  'context.showOpenInAgent': 'ask' | 'manual' | 'agent'
 }
 ```
 
@@ -4041,6 +4569,8 @@ void
 {
   'instance': number,
   'connected': boolean,
+  // Route requested by the caller for the manual-vs-agent flow; `undefined` when the caller didn't opt in.
+  'context.showOpenInAgent': 'ask' | 'manual' | 'agent',
   'items.count': number
 }
 ```
@@ -4053,6 +4583,8 @@ void
 {
   'instance': number,
   'connected': boolean,
+  // Route requested by the caller for the manual-vs-agent flow; `undefined` when the caller didn't opt in.
+  'context.showOpenInAgent': 'ask' | 'manual' | 'agent',
   'items.count': number
 }
 ```
@@ -4065,6 +4597,8 @@ void
 {
   'instance': number,
   'connected': boolean,
+  // Route requested by the caller for the manual-vs-agent flow; `undefined` when the caller didn't opt in.
+  'context.showOpenInAgent': 'ask' | 'manual' | 'agent',
   'items.count': number
 }
 ```
@@ -4078,6 +4612,8 @@ void
   'instance': number,
   'action': 'connect',
   'connected': boolean,
+  // Route requested by the caller for the manual-vs-agent flow; `undefined` when the caller didn't opt in.
+  'context.showOpenInAgent': 'ask' | 'manual' | 'agent',
   'items.count': number
 }
 ```
@@ -4235,7 +4771,7 @@ or
   'context.scope.type': 'file' | 'folder' | 'repo',
   'context.showAllBranches': boolean,
   'context.sliceBy': 'branch' | 'author',
-  'context.webview.host': 'view' | 'editor',
+  'context.webview.host': 'view' | 'editor' | 'panel',
   'context.webview.id': string,
   'context.webview.instanceId': string,
   'context.webview.type': string,
@@ -4250,7 +4786,7 @@ or
 ```typescript
 {
   [`context.${string}`]: string | number | boolean,
-  'context.webview.host': 'view' | 'editor',
+  'context.webview.host': 'view' | 'editor' | 'panel',
   'context.webview.id': string,
   'context.webview.instanceId': string,
   'context.webview.type': string
@@ -4269,7 +4805,7 @@ or
   'context.scope.type': 'file' | 'folder' | 'repo',
   'context.showAllBranches': boolean,
   'context.sliceBy': 'branch' | 'author',
-  'context.webview.host': 'view' | 'editor',
+  'context.webview.host': 'view' | 'editor' | 'panel',
   'context.webview.id': string,
   'context.webview.instanceId': string,
   'context.webview.type': string
@@ -4288,7 +4824,7 @@ or
   'context.scope.type': 'file' | 'folder' | 'repo',
   'context.showAllBranches': boolean,
   'context.sliceBy': 'branch' | 'author',
-  'context.webview.host': 'view' | 'editor',
+  'context.webview.host': 'view' | 'editor' | 'panel',
   'context.webview.id': string,
   'context.webview.instanceId': string,
   'context.webview.type': string,
@@ -4310,7 +4846,7 @@ or
   'context.scope.type': 'file' | 'folder' | 'repo',
   'context.showAllBranches': boolean,
   'context.sliceBy': 'branch' | 'author',
-  'context.webview.host': 'view' | 'editor',
+  'context.webview.host': 'view' | 'editor' | 'panel',
   'context.webview.id': string,
   'context.webview.instanceId': string,
   'context.webview.type': string
@@ -4329,7 +4865,7 @@ or
   'context.scope.type': 'file' | 'folder' | 'repo',
   'context.showAllBranches': boolean,
   'context.sliceBy': 'branch' | 'author',
-  'context.webview.host': 'view' | 'editor',
+  'context.webview.host': 'view' | 'editor' | 'panel',
   'context.webview.id': string,
   'context.webview.instanceId': string,
   'context.webview.type': string
@@ -4340,7 +4876,7 @@ or
 
 ```typescript
 {
-  'context.webview.host': 'view' | 'editor',
+  'context.webview.host': 'view' | 'editor' | 'panel',
   'context.webview.id': string,
   'context.webview.instanceId': string,
   'context.webview.type': string,
@@ -4356,6 +4892,7 @@ or
 ```typescript
 {
   'context.config.allowMultiple': boolean,
+  'context.config.editorOpeningBehavior': 'active' | 'auto',
   'context.config.queryLimit': number,
   'context.period': 'all' | `${number}|D` | `${number}|M` | `${number}|Y`,
   'context.scope.hasBase': boolean,
@@ -4363,7 +4900,7 @@ or
   'context.scope.type': 'file' | 'folder' | 'repo',
   'context.showAllBranches': boolean,
   'context.sliceBy': 'branch' | 'author',
-  'context.webview.host': 'view' | 'editor',
+  'context.webview.host': 'view' | 'editor' | 'panel',
   'context.webview.id': string,
   'context.webview.instanceId': string,
   'context.webview.type': string,
@@ -4422,7 +4959,7 @@ or
 
 ```typescript
 {
-  'context.key': 'homeView' | 'gettingStarted' | 'visualizeCodeHistory' | 'gitBlame' | 'prReviews' | 'mcpFeatures' | 'aiFeatures'
+  'context.key': 'homeView' | 'gettingStarted' | 'visualizeCodeHistory' | 'gitBlame' | 'prReviews' | 'mcpFeatures' | 'aiFeatures' | 'graphAgentMonitoring' | 'graphParallelWork' | 'graphAiReview' | 'graphCompose' | 'graphCompare' | 'graphNextSteps'
 }
 ```
 
@@ -4463,7 +5000,7 @@ or
 ```typescript
 {
   [`context.${string}`]: string | number | boolean,
-  'context.webview.host': 'view' | 'editor',
+  'context.webview.host': 'view' | 'editor' | 'panel',
   'context.webview.id': string,
   'context.webview.instanceId': string,
   'context.webview.type': string
@@ -4474,7 +5011,7 @@ or
 
 ```typescript
 {
-  'context.webview.host': 'view' | 'editor',
+  'context.webview.host': 'view' | 'editor' | 'panel',
   'context.webview.id': string,
   'context.webview.instanceId': string,
   'context.webview.type': string,
@@ -4488,7 +5025,7 @@ or
 ```typescript
 {
   [`context.${string}`]: string | number | boolean,
-  'context.webview.host': 'view' | 'editor',
+  'context.webview.host': 'view' | 'editor' | 'panel',
   'context.webview.id': string,
   'context.webview.instanceId': string,
   'context.webview.type': string,

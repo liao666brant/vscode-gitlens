@@ -1,9 +1,9 @@
 import type { QuickInputButton, ThemeIcon } from 'vscode';
+import type { GitBranch } from '@gitlens/git/models/branch.js';
+import type { GitBranchReference } from '@gitlens/git/models/reference.js';
+import type { BranchSortOptions } from '@gitlens/git/utils/sorting.js';
 import { revealBranch } from '../../../git/actions/branch.js';
-import type { GitBranch } from '../../../git/models/branch.js';
-import type { GitBranchReference } from '../../../git/models/reference.js';
-import type { Repository } from '../../../git/models/repository.js';
-import type { BranchSortOptions } from '../../../git/utils/-webview/sorting.js';
+import type { GlRepository } from '../../../git/models/repository.js';
 import { createDirectiveQuickPickItem, Directive } from '../../../quickpicks/items/directive.js';
 import type { BranchQuickPickItem } from '../../../quickpicks/items/gitWizard.js';
 import type {
@@ -26,7 +26,7 @@ import {
 import { getBranchesAndOrTags } from './references.js';
 
 export async function getBranches(
-	repos: Repository | Repository[],
+	repos: GlRepository | GlRepository[],
 	options?: {
 		buttons?: QuickInputButton[];
 		filter?: (b: GitBranch) => boolean;
@@ -39,12 +39,12 @@ export async function getBranches(
 		filter: options?.filter != null ? { branches: options.filter } : undefined,
 		picked: options?.picked,
 		sort: options?.sort != null ? { branches: options.sort } : true,
-	}) as Promise<BranchQuickPickItem[]>;
+	});
 }
 
 export async function* inputBranchNameStep<
-	State extends PartialStepState & ({ repo: Repository } | { repos: Repository[] }),
-	Context extends StepsContext<any> & { repos: Repository[]; showTags?: boolean },
+	State extends PartialStepState & ({ repo: GlRepository } | { repos: GlRepository[] }),
+	Context extends StepsContext<any> & { repos: GlRepository[]; showTags?: boolean },
 >(
 	state: State,
 	context: Context,
@@ -72,10 +72,8 @@ export async function* inputBranchNameStep<
 				return [true, undefined];
 			}
 
-			let valid = true;
-
 			for (const repo of state.repos) {
-				valid = await repo.git.refs.checkIfCouldBeValidBranchOrTagName(value);
+				const valid = await repo.git.refs.checkIfCouldBeValidBranchOrTagName(value);
 				if (!valid) return [false, `'${value}' isn't a valid branch name`];
 
 				const alreadyExists = await repo.git.branches.getBranch(value);
@@ -95,8 +93,8 @@ export async function* inputBranchNameStep<
 }
 
 export function* pickBranchStep<
-	State extends PartialStepState & { repo: Repository },
-	Context extends StepsContext<any> & { repos: Repository[]; showTags?: boolean },
+	State extends PartialStepState & { repo: GlRepository },
+	Context extends StepsContext<any> & { repos: GlRepository[]; showTags?: boolean },
 >(
 	state: State,
 	context: Context,
@@ -134,8 +132,8 @@ export function* pickBranchStep<
 }
 
 export function* pickBranchesStep<
-	State extends PartialStepState & { repo: Repository },
-	Context extends StepsContext<any> & { repos: Repository[]; showTags?: boolean },
+	State extends PartialStepState & { repo: GlRepository },
+	Context extends StepsContext<any> & { repos: GlRepository[]; showTags?: boolean },
 >(
 	state: State,
 	context: Context,
@@ -183,8 +181,8 @@ export function* pickBranchesStep<
 }
 
 export function* pickOrResetBranchStep<
-	State extends PartialStepState & { repo: Repository },
-	Context extends StepsContext<any> & { repos: Repository[]; showTags?: boolean },
+	State extends PartialStepState & { repo: GlRepository },
+	Context extends StepsContext<any> & { repos: GlRepository[]; showTags?: boolean },
 >(
 	state: State,
 	context: Context,

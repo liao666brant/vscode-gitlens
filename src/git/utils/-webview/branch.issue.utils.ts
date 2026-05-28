@@ -1,4 +1,11 @@
-import type { CancellationToken } from 'vscode';
+import type { GitBranch } from '@gitlens/git/models/branch.js';
+import type { Issue } from '@gitlens/git/models/issue.js';
+import type { GitBranchReference } from '@gitlens/git/models/reference.js';
+import type { IssueResourceDescriptor, RepositoryDescriptor } from '@gitlens/git/models/resourceDescriptor.js';
+import { Logger } from '@gitlens/utils/logger.js';
+import type { MaybePausedResult } from '@gitlens/utils/promise.js';
+import { getSettledValue, pauseOnCancelOrTimeout } from '@gitlens/utils/promise.js';
+import { getRepositoryKey } from '@gitlens/utils/uri.js';
 import type { GkConfigKeys } from '../../../constants.js';
 import type { Container } from '../../../container.js';
 import type { GitConfigEntityIdentifier } from '../../../plus/integrations/providers/models.js';
@@ -7,13 +14,6 @@ import {
 	encodeIssueOrPullRequestForGitConfig,
 	getIssueFromGitConfigEntityIdentifier,
 } from '../../../plus/integrations/providers/utils.js';
-import { Logger } from '../../../system/logger.js';
-import type { MaybePausedResult } from '../../../system/promise.js';
-import { getSettledValue, pauseOnCancelOrTimeout } from '../../../system/promise.js';
-import type { GitBranch } from '../../models/branch.js';
-import type { Issue } from '../../models/issue.js';
-import type { GitBranchReference } from '../../models/reference.js';
-import type { IssueResourceDescriptor, RepositoryDescriptor } from '../../models/resourceDescriptor.js';
 
 export async function addAssociatedIssueToBranch(
 	container: Container,
@@ -21,11 +21,12 @@ export async function addAssociatedIssueToBranch(
 	issue: Issue,
 	owner: RepositoryDescriptor | IssueResourceDescriptor,
 	options?: {
-		cancellation?: CancellationToken;
+		cancellation?: AbortSignal;
 	},
 ): Promise<void> {
 	const { key, encoded } = await getConfigKeyAndEncodedAssociatedIssuesForBranch(container, branch);
-	if (options?.cancellation?.isCancellationRequested) return;
+	if (options?.cancellation?.aborted) return;
+
 	try {
 		const associatedIssues: GitConfigEntityIdentifier[] = encoded
 			? (JSON.parse(encoded) as GitConfigEntityIdentifier[])
@@ -33,10 +34,15 @@ export async function addAssociatedIssueToBranch(
 		if (associatedIssues.some(i => i.entityId === issue.nodeId)) {
 			return;
 		}
+
 		associatedIssues.push(encodeIssueOrPullRequestForGitConfig(issue, owner));
 		await container.git
 			.getRepositoryService(branch.repoPath)
 			.config.setGkConfig?.(key, JSON.stringify(associatedIssues));
+		container.events.fire('git:repo:change', {
+			repoPath: getRepositoryKey(branch.repoPath),
+			changes: ['gkConfig'],
+		});
 	} catch (ex) {
 		Logger.error(ex, 'addAssociatedIssueToBranch');
 	}
@@ -46,12 +52,14 @@ export async function getAssociatedIssuesForBranch(
 	container: Container,
 	branch: GitBranch,
 	options?: {
-		cancellation?: CancellationToken;
+		cancellation?: AbortSignal;
 		timeout?: number;
+		/** Only return issues already in the local cache. No remote fetch — uncached entries are skipped. */
+		cached?: boolean;
 	},
 ): Promise<MaybePausedResult<Issue[] | undefined>> {
 	const { encoded } = await getConfigKeyAndEncodedAssociatedIssuesForBranch(container, branch);
-	if (options?.cancellation?.isCancellationRequested) return { value: undefined, paused: false };
+	if (options?.cancellation?.aborted) return { value: undefined, paused: false };
 
 	let associatedIssues: GitConfigEntityIdentifier[] | undefined;
 	if (encoded) {
@@ -67,7 +75,9 @@ export async function getAssociatedIssuesForBranch(
 				(async () => {
 					return (
 						await Promise.allSettled(
-							(associatedIssues ?? []).map(i => getIssueFromGitConfigEntityIdentifier(container, i)),
+							(associatedIssues ?? []).map(i =>
+								getIssueFromGitConfigEntityIdentifier(container, i, { cached: options?.cached }),
+							),
 						)
 					)
 						.map(r => getSettledValue(r))
@@ -87,11 +97,12 @@ export async function removeAssociatedIssueFromBranch(
 	branch: GitBranchReference,
 	id: string,
 	options?: {
-		cancellation?: CancellationToken;
+		cancellation?: AbortSignal;
 	},
 ): Promise<void> {
 	const { key, encoded } = await getConfigKeyAndEncodedAssociatedIssuesForBranch(container, branch);
-	if (options?.cancellation?.isCancellationRequested) return;
+	if (options?.cancellation?.aborted) return;
+
 	try {
 		let associatedIssues: GitConfigEntityIdentifier[] = encoded
 			? (JSON.parse(encoded) as GitConfigEntityIdentifier[])
@@ -104,6 +115,10 @@ export async function removeAssociatedIssueFromBranch(
 				.getRepositoryService(branch.repoPath)
 				.config.setGkConfig?.(key, JSON.stringify(associatedIssues));
 		}
+		container.events.fire('git:repo:change', {
+			repoPath: getRepositoryKey(branch.repoPath),
+			changes: ['gkConfig'],
+		});
 	} catch (ex) {
 		Logger.error(ex, 'removeAssociatedIssueFromBranch');
 	}

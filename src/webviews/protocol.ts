@@ -11,6 +11,10 @@ import { IpcCommand, IpcNotification, IpcRequest } from './ipc/models/ipc.js';
 
 export interface WebviewReadyParams {
 	bootstrap?: boolean;
+	/** Stable id generated once per JS module evaluation on the webview side. Same `clientId` across two readies means the iframe was NOT reloaded. */
+	clientId?: string;
+	/** `Date.now()` captured at module evaluation time on the webview side. */
+	clientLoadedAt?: number;
 }
 
 export interface WebviewReadyResponse {
@@ -121,8 +125,8 @@ export function isCustomConfigKey(key: string): key is CustomConfigPath {
 
 export function assertsConfigKeyValue<T extends ConfigPath>(
 	_key: T,
-	value: unknown,
-): asserts value is ConfigPathValue<T> {
+	_value: unknown,
+): asserts _value is ConfigPathValue<T> {
 	// Noop
 }
 

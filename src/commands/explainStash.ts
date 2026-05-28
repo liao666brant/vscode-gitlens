@@ -1,11 +1,11 @@
 import type { TextEditor, Uri } from 'vscode';
 import { ProgressLocation } from 'vscode';
+import type { GitCommit, GitStashCommit } from '@gitlens/git/models/commit.js';
+import { Logger } from '@gitlens/utils/logger.js';
 import type { Container } from '../container.js';
-import type { GitCommit, GitStashCommit } from '../git/models/commit.js';
 import { showGenericErrorMessage } from '../messages.js';
 import { showStashPicker } from '../quickpicks/stashPicker.js';
 import { command } from '../system/-webview/command.js';
-import { Logger } from '../system/logger.js';
 import type { CommandContext } from './commandContext.js';
 import { isCommandContextViewNodeHasCommit } from './commandContext.utils.js';
 import type { ExplainBaseArgs } from './explainBase.js';
@@ -13,6 +13,7 @@ import { ExplainCommandBase } from './explainBase.js';
 
 export interface ExplainStashCommandArgs extends ExplainBaseArgs {
 	rev?: string;
+	prompt?: string;
 }
 
 @command()
@@ -50,6 +51,7 @@ export class ExplainStashCommand extends ExplainCommandBase {
 			if (args.rev == null) {
 				const pick = await showStashPicker(svc.stash?.getStash(), this.pickerTitle, '选择要解释的贮藏');
 				if (pick?.ref == null) return;
+
 				args.rev = pick.ref;
 				commit = pick;
 			} else {
@@ -69,6 +71,7 @@ export class ExplainStashCommand extends ExplainCommandBase {
 				},
 				{
 					progress: { location: ProgressLocation.Notification, title: '正在解释贮藏...' },
+					prompt: args.prompt,
 				},
 			);
 
@@ -85,7 +88,7 @@ export class ExplainStashCommand extends ExplainCommandBase {
 				command: {
 					label: '解释贮藏变更',
 					name: 'gitlens.ai.explainStash',
-					args: { repoPath: svc.path, ref: commit.ref, source: args.source },
+					args: { repoPath: svc.path, rev: commit.ref, prompt: args.prompt, source: args.source },
 				},
 			});
 		} catch (ex) {

@@ -1,13 +1,12 @@
 import type { TextEditor, Uri } from 'vscode';
 import { ProgressLocation } from 'vscode';
+import { GitCommit } from '@gitlens/git/models/commit.js';
+import { Logger } from '@gitlens/utils/logger.js';
 import type { Container } from '../container.js';
-import type { GitCommit } from '../git/models/commit.js';
-import { isStash } from '../git/models/commit.js';
 import { showGenericErrorMessage } from '../messages.js';
 import { showCommitPicker } from '../quickpicks/commitPicker.js';
 import { command } from '../system/-webview/command.js';
 import { createMarkdownCommandLink } from '../system/commands.js';
-import { Logger } from '../system/logger.js';
 import { getNodeRepoPath } from '../views/nodes/abstract/viewNode.js';
 import type { CommandContext } from './commandContext.js';
 import { isCommandContextViewNodeHasCommit } from './commandContext.utils.js';
@@ -16,6 +15,7 @@ import { ExplainCommandBase } from './explainBase.js';
 
 export interface ExplainCommitCommandArgs extends ExplainBaseArgs {
 	rev?: string;
+	prompt?: string;
 }
 
 @command()
@@ -42,7 +42,7 @@ export class ExplainCommitCommand extends ExplainCommandBase {
 			args.rev = args.rev ?? context.node.commit.sha;
 			args.source = args.source ?? {
 				source: 'view',
-				context: { type: isStash(context.node.commit) ? 'stash' : 'commit' },
+				context: { type: GitCommit.isStash(context.node.commit) ? 'stash' : 'commit' },
 			};
 		}
 
@@ -66,6 +66,7 @@ export class ExplainCommitCommand extends ExplainCommandBase {
 				const log = await commitsProvider.getLog();
 				const pick = await showCommitPicker(log, this.pickerTitle, '选择要解释的提交');
 				if (pick?.sha == null) return;
+
 				args.rev = pick.sha;
 				commit = pick;
 			} else {
@@ -87,6 +88,7 @@ export class ExplainCommitCommand extends ExplainCommandBase {
 				},
 				{
 					progress: { location: ProgressLocation.Notification, title: '正在解释提交...' },
+					prompt: args.prompt,
 				},
 			);
 
@@ -106,6 +108,7 @@ export class ExplainCommitCommand extends ExplainCommandBase {
 					args: {
 						repoPath: svc.path,
 						rev: commit.ref,
+						prompt: args.prompt,
 						source: args.source,
 					},
 				},

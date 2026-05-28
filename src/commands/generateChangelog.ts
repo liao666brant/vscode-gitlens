@@ -1,23 +1,25 @@
 import type { CancellationToken, ProgressOptions } from 'vscode';
 import { ProgressLocation, window, workspace } from 'vscode';
+import type { GitReference } from '@gitlens/git/models/reference.js';
+import { createRevisionRange, shortenRevision } from '@gitlens/git/utils/revision.utils.js';
+import type { Lazy } from '@gitlens/utils/lazy.js';
+import { lazy } from '@gitlens/utils/lazy.js';
+import { Logger } from '@gitlens/utils/logger.js';
+import { pluralize } from '@gitlens/utils/string.js';
 import type { Source } from '../constants.telemetry.js';
 import type { Container } from '../container.js';
-import type { GitReference } from '../git/models/reference.js';
 import { getChangesForChangelog } from '../git/utils/-webview/log.utils.js';
-import { createRevisionRange, shortenRevision } from '../git/utils/revision.utils.js';
 import { showGenericErrorMessage } from '../messages.js';
 import type { AIGenerateChangelogChanges } from '../plus/ai/actions/generateChangelog.js';
 import { getAIResultContext } from '../plus/ai/utils/-webview/ai.utils.js';
 import { showComparisonPicker } from '../quickpicks/comparisonPicker.js';
 import { command } from '../system/-webview/command.js';
-import type { Lazy } from '../system/lazy.js';
-import { lazy } from '../system/lazy.js';
-import { Logger } from '../system/logger.js';
 import { GlCommandBase } from './commandBase.js';
 
 export interface GenerateChangelogCommandArgs {
 	repoPath?: string;
 	head?: GitReference;
+	base?: GitReference;
 	source?: Source;
 }
 
@@ -31,6 +33,7 @@ export class GenerateChangelogCommand extends GlCommandBase {
 		try {
 			const result = await showComparisonPicker(this.container, args?.repoPath, {
 				head: args?.head,
+				base: args?.base,
 				getTitleAndPlaceholder: step => {
 					switch (step) {
 						case 1:

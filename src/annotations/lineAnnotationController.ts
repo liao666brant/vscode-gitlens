@@ -1,18 +1,22 @@
 import type { ConfigurationChangeEvent, DecorationOptions, TextEditor, TextEditorDecorationType } from 'vscode';
-import { CancellationTokenSource, DecorationRangeBehavior, Disposable, Range, window } from 'vscode';
+import { CancellationTokenSource, Disposable, Range, window } from 'vscode';
+import { GitCommit } from '@gitlens/git/models/commit.js';
+import type { PullRequest } from '@gitlens/git/models/pullRequest.js';
+import { debounce } from '@gitlens/utils/debounce.js';
+import { debug, trace } from '@gitlens/utils/decorators/log.js';
+import { once } from '@gitlens/utils/event.js';
+import { getScopedLogger } from '@gitlens/utils/logger.scoped.js';
+import type { MaybePausedResult } from '@gitlens/utils/promise.js';
+import { getSettledValue, pauseOnCancelOrTimeoutMap } from '@gitlens/utils/promise.js';
 import { GlyphChars, Schemes } from '../constants.js';
 import type { Container } from '../container.js';
 import { CommitFormatter } from '../git/formatters/commitFormatter.js';
-import type { PullRequest } from '../git/models/pullRequest.js';
+import { getCommitAssociatedPullRequest } from '../git/utils/-webview/commit.utils.js';
+import { getBestRemoteWithIntegration } from '../git/utils/-webview/remote.utils.js';
 import { detailsMessage } from '../hovers/hovers.js';
+import { toAbortSignal } from '../system/-webview/cancellation.js';
 import { configuration } from '../system/-webview/configuration.js';
 import { isTrackableTextEditor } from '../system/-webview/vscode/editors.js';
-import { debug, trace } from '../system/decorators/log.js';
-import { once } from '../system/event.js';
-import { debounce } from '../system/function/debounce.js';
-import { getScopedLogger } from '../system/logger.scope.js';
-import type { MaybePausedResult } from '../system/promise.js';
-import { getSettledValue, pauseOnCancelOrTimeoutMap } from '../system/promise.js';
 import type { LinesChangeEvent, LineState } from '../trackers/lineTracker.js';
 import { getInlineDecoration } from './annotations.js';
 import type { BlameFontOptions } from './gutterBlameAnnotationProvider.js';
@@ -22,7 +26,6 @@ const annotationDecoration: TextEditorDecorationType = window.createTextEditorDe
 		margin: '0 0 0 3em',
 		textDecoration: 'none',
 	},
-	rangeBehavior: DecorationRangeBehavior.OpenOpen,
 });
 const maxSmallIntegerV8 = 2 ** 30 - 1; // Max number that can be stored in V8's smis (small integers)
 
@@ -55,19 +58,28 @@ export class LineAnnotationController implements Disposable {
 	}
 
 	private onConfigurationChanged(e?: ConfigurationChangeEvent) {
-		if (!configuration.changed(e, 'currentLine')) return;
+		let refresh = false;
 
-		if (configuration.changed(e, 'currentLine.enabled')) {
-			if (configuration.get('currentLine.enabled')) {
-				this._enabled = true;
-				this.resume();
-			} else {
-				this._enabled = false;
-				this.setLineTracker(false);
-			}
+		if (configuration.changed(e, 'defaultCurrentUserNameStyle')) {
+			refresh = true;
 		}
 
-		void this.refresh(window.activeTextEditor);
+		if (configuration.changed(e, 'currentLine')) {
+			if (configuration.changed(e, 'currentLine.enabled')) {
+				if (configuration.get('currentLine.enabled')) {
+					this._enabled = true;
+					this.resume();
+				} else {
+					this._enabled = false;
+					this.setLineTracker(false);
+				}
+			}
+			refresh = true;
+		}
+
+		if (refresh) {
+			void this.refresh(window.activeTextEditor);
+		}
 	}
 
 	private _suspended: boolean = false;
@@ -110,12 +122,32 @@ export class LineAnnotationController implements Disposable {
 		}),
 	})
 	private onActiveLinesChanged(e: LinesChangeEvent) {
-		if (!e.pending && e.selections !== undefined) {
-			void this.refresh(e.editor);
-
+		// Editing event — user is typing on the current line.
+		// Clear decorations so annotations don't interfere with editing.
+		// They'll reappear when the cursor moves to a different line.
+		if (e.editing) {
+			this.clearAnnotations(e.editor);
 			return;
 		}
 
+		// Real event with blame data ready — refresh decorations
+		if (!e.pending && e.selections != null) {
+			void this.refresh(e.editor);
+			return;
+		}
+
+		// Pending event — cursor moved, blame data not ready yet.
+		// Clear stale decorations so old blame doesn't "stick" on the wrong line,
+		// but DON'T cancel in-flight work — let it complete or detect staleness.
+		if (e.pending) {
+			if (this._editor !== e.editor && this._editor != null) {
+				this.clearAnnotations(this._editor);
+			}
+			this.clearAnnotations(e.editor);
+			return;
+		}
+
+		// No selections / suspended / error — full clear including work cancellation
 		this.clear(e.editor);
 	}
 
@@ -158,14 +190,16 @@ export class LineAnnotationController implements Disposable {
 		const prs = new Map<string, Promise<PullRequest | undefined>>();
 		if (lines.size === 0) return prs;
 
-		const remotePromise = this.container.git.getRepositoryService(repoPath).remotes.getBestRemoteWithIntegration();
+		const remotePromise = getBestRemoteWithIntegration(repoPath);
 
 		for (const [, state] of lines) {
 			if (state.commit.isUncommitted) continue;
 
 			let pr = prs.get(state.commit.ref);
 			if (pr == null) {
-				pr = remotePromise.then(remote => state.commit.getAssociatedPullRequest(remote));
+				pr = remotePromise.then(remote =>
+					getCommitAssociatedPullRequest(state.commit.repoPath, state.commit.sha, remote),
+				);
 				prs.set(state.commit.ref, pr);
 			}
 		}
@@ -180,6 +214,7 @@ export class LineAnnotationController implements Disposable {
 		const scope = getScopedLogger();
 
 		const selections = this.container.lineTracker.selections;
+		const selectionsVersion = this.container.lineTracker.selectionsVersion;
 		if (editor == null || selections == null || !isTrackableTextEditor(editor)) {
 			scope?.addExitInfo('Skipped because there is no valid editor or no valid selections');
 
@@ -202,9 +237,17 @@ export class LineAnnotationController implements Disposable {
 			return;
 		}
 
+		// Don't show annotations while actively editing the current line
+		if (this.container.lineTracker.isEditing) {
+			scope?.addExitInfo('Skipped because the user is actively editing');
+
+			this.clearAnnotations(editor);
+			return;
+		}
+
 		const trackedDocument = await this.container.documentTracker.getOrAdd(editor.document);
 		const status = await trackedDocument?.getStatus();
-		if (!status?.blameable && this.suspended) {
+		if (!status?.blameable || this.suspended) {
 			scope?.addExitInfo(
 				`Skipped because the ${this.suspended ? 'controller is suspended' : 'document is not blameable'}`,
 			);
@@ -214,7 +257,7 @@ export class LineAnnotationController implements Disposable {
 		}
 
 		// Make sure the editor hasn't died since the await above and that we are still on the same line(s)
-		if (editor.document == null || !this.container.lineTracker.includes(selections)) {
+		if (editor.document == null || selectionsVersion !== this.container.lineTracker.selectionsVersion) {
 			scope?.addExitInfo(
 				`Skipped because the ${
 					editor.document == null
@@ -222,6 +265,7 @@ export class LineAnnotationController implements Disposable {
 						: `selection=${selections.map(s => `[${s.anchor}-${s.active}]`).join()} are no longer current`
 				}`,
 			);
+			this.clearAnnotations(editor);
 			return;
 		}
 
@@ -255,7 +299,7 @@ export class LineAnnotationController implements Disposable {
 
 			// Only ensure the full details if we have to add the hover eagerly (Live Share) and we don't have a message
 			if (hoverOptions != null && state.commit.message == null && !commitPromises.has(state.commit.ref)) {
-				commitPromises.set(state.commit.ref, state.commit.ensureFullDetails());
+				commitPromises.set(state.commit.ref, GitCommit.ensureFullDetails(state.commit));
 			}
 			lines.set(selection.active, state);
 			if (!state.commit.isUncommitted) {
@@ -346,7 +390,7 @@ export class LineAnnotationController implements Disposable {
 			? await pauseOnCancelOrTimeoutMap(
 					this.getPullRequestsForLines(repoPath, lines),
 					true,
-					cancellation,
+					toAbortSignal(cancellation),
 					timeout,
 					async result => {
 						if (
@@ -383,7 +427,10 @@ export class LineAnnotationController implements Disposable {
 			...commitPromises.values(),
 		]);
 
-		if (cancellation.isCancellationRequested) return;
+		if (cancellation.isCancellationRequested) {
+			this.clearAnnotations(editor);
+			return;
+		}
 
 		await updateDecorations(this.container, editor, getSettledValue(getBranchAndTagTipsResult), prsResult, 100);
 	}

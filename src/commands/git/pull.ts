@@ -1,15 +1,15 @@
+import { GitBranch } from '@gitlens/git/models/branch.js';
+import type { GitBranchReference } from '@gitlens/git/models/reference.js';
+import { getReferenceLabel, isBranchReference } from '@gitlens/git/utils/reference.utils.js';
+import { isStringArray } from '@gitlens/utils/array.js';
+import { fromNow } from '@gitlens/utils/date.js';
+import { pad, pluralize } from '@gitlens/utils/string.js';
 import { GlyphChars } from '../../constants.js';
 import type { Container } from '../../container.js';
-import { isBranch } from '../../git/models/branch.js';
-import type { GitBranchReference } from '../../git/models/reference.js';
-import type { Repository } from '../../git/models/repository.js';
-import { getReferenceLabel, isBranchReference } from '../../git/utils/reference.utils.js';
+import type { GlRepository } from '../../git/models/repository.js';
 import { createDirectiveQuickPickItem, Directive } from '../../quickpicks/items/directive.js';
 import type { FlagsQuickPickItem } from '../../quickpicks/items/flags.js';
 import { createFlagsQuickPickItem } from '../../quickpicks/items/flags.js';
-import { isStringArray } from '../../system/array.js';
-import { fromNow } from '../../system/date.js';
-import { pad } from '../../system/string.js';
 import type { ViewsWithRepositoryFolders } from '../../views/viewBase.js';
 import type {
 	AsyncStepResultGenerator,
@@ -34,13 +34,13 @@ const Steps = {
 type StepNames = (typeof Steps)[keyof typeof Steps];
 
 interface Context extends StepsContext<StepNames> {
-	repos: Repository[];
+	repos: GlRepository[];
 	associatedView: ViewsWithRepositoryFolders;
 	title: string;
 }
 
 type Flags = '--rebase';
-interface State<Repos = string | string[] | Repository | Repository[]> {
+interface State<Repos = string | string[] | GlRepository | GlRepository[]> {
 	repos: Repos;
 	reference?: GitBranchReference;
 	flags: Flags[];
@@ -65,13 +65,13 @@ export class PullGitCommand extends QuickCommand<State> {
 		this.initialState = { confirm: args?.confirm, ...args?.state };
 	}
 
-	private async execute(state: StepState<State<Repository[]>>) {
+	private async execute(state: StepState<State<GlRepository[]>>) {
 		if (isBranchReference(state.reference)) {
 			// Only resort to a branch fetch if the branch isn't the current one
-			if (!isBranch(state.reference) || !state.reference.current) {
+			if (!GitBranch.is(state.reference) || !state.reference.current) {
 				const currentBranch = await state.repos[0].git.branches.getBranch();
 				if (currentBranch?.name !== state.reference.name) {
-					return state.repos[0].fetch({ branch: state.reference, pull: true });
+					return state.repos[0].git.fetch({ branch: state.reference, pull: true });
 				}
 			}
 		}
@@ -99,7 +99,7 @@ export class PullGitCommand extends QuickCommand<State> {
 			state.repos = typeof state.repos === 'string' ? [state.repos] : [state.repos];
 		}
 
-		assertStepState<State<Repository[] | string[]>>(state);
+		assertStepState<State<GlRepository[] | string[]>>(state);
 
 		while (!steps.isComplete) {
 			context.title = this.title;
@@ -112,7 +112,7 @@ export class PullGitCommand extends QuickCommand<State> {
 					using step = steps.enterStep(Steps.PickRepos);
 
 					const result = yield* pickRepositoriesStep(state, context, step, {
-						skipIfPossible: !steps.isAtStep(Steps.PickRepos),
+						skipIfPossible: true,
 					});
 					if (result === StepResultBreak) {
 						state.repos = undefined!;
@@ -124,7 +124,7 @@ export class PullGitCommand extends QuickCommand<State> {
 				}
 			}
 
-			assertStepState<State<Repository[]>>(state);
+			assertStepState<State<GlRepository[]>>(state);
 
 			if (this.confirm(state.confirm)) {
 				using step = steps.enterStep(Steps.Confirm);
@@ -147,7 +147,7 @@ export class PullGitCommand extends QuickCommand<State> {
 	}
 
 	private async *confirmStep(
-		state: StepState<State<Repository[]>>,
+		state: StepState<State<GlRepository[]>>,
 		context: Context,
 	): AsyncStepResultGenerator<Flags[]> {
 		let step: QuickPickStep<FlagsQuickPickItem<Flags>>;
@@ -240,7 +240,7 @@ export class PullGitCommand extends QuickCommand<State> {
 
 						quickpick.busy = true;
 						try {
-							await repo.fetch({ progress: true });
+							await repo.git.fetch({ progress: true });
 							// Signal that the step should be retried
 							return true;
 						} finally {

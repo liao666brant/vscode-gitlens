@@ -1,18 +1,19 @@
 import type { MessageItem } from 'vscode';
 import { ConfigurationTarget, ThemeIcon, window } from 'vscode';
+import type { BlameIgnoreRevsFileError, GitCommandContext } from '@gitlens/git/errors.js';
+import { BlameIgnoreRevsFileBadRevisionError, GitCommandError } from '@gitlens/git/errors.js';
+import type { GitCommit } from '@gitlens/git/models/commit.js';
+import { filterMap } from '@gitlens/utils/array.js';
+import { Logger } from '@gitlens/utils/logger.js';
 import type { SuppressedMessages } from './config.js';
 import { urls } from './constants.js';
 import type { Source } from './constants.telemetry.js';
 import type { Container } from './container.js';
-import type { BlameIgnoreRevsFileError, GitCommandContext } from './git/errors.js';
-import { BlameIgnoreRevsFileBadRevisionError, GitCommandError } from './git/errors.js';
-import type { GitCommit } from './git/models/commit.js';
+import { formatIdentityDisplayName, getCommitFormattedDate } from './git/utils/-webview/commit.utils.js';
 import { mcpRegistrationAllowed } from './plus/gk/utils/-webview/mcp.utils.js';
 import { executeCommand, executeCoreCommand } from './system/-webview/command.js';
 import { configuration } from './system/-webview/configuration.js';
 import { openUrl } from './system/-webview/vscode/uris.js';
-import { filterMap } from './system/array.js';
-import { Logger } from './system/logger.js';
 
 export function showBlameInvalidIgnoreRevsFileWarningMessage(
 	ex: BlameIgnoreRevsFileError | BlameIgnoreRevsFileBadRevisionError,
@@ -38,7 +39,7 @@ export function showCommitHasNoPreviousCommitWarningMessage(commit?: GitCommit):
 	}
 	return showMessage(
 		'info',
-		`提交 ${commit.shortSha} (${commit.author.name}, ${commit.formattedDate}) 没有上一个提交。`,
+		`提交 ${commit.shortSha} (${formatIdentityDisplayName(commit.author)}, ${getCommitFormattedDate(commit)}) 没有上一个提交。`,
 		'suppressCommitHasNoPreviousCommitWarning',
 	);
 }
@@ -300,21 +301,35 @@ export function showIntegrationRequestTimedOutWarningMessage(providerName: strin
 export async function showWhatsNewMessage(majorVersion: string): Promise<void> {
 	const confirm = { title: '确定', isCloseAffordance: true };
 	const releaseNotes = { title: '查看发布说明' };
-	const result = await showMessage(
-		'info',
-		`已升级到 GitLens ${majorVersion}${
-			majorVersion === '17'
-				? '，包含 GitLens Pro 中全新的 [GitKraken AI](https://gitkraken.com/solutions/gitkraken-ai?source=gitlens&product=gitlens&utm_source=gitlens-extension&utm_medium=in-app-links) 访问权限、AI 变更日志和拉取请求创建以及 Bitbucket 集成。'
-				: ' — 查看新功能。'
-		}`,
-		undefined,
-		null,
-		releaseNotes,
-		confirm,
-	);
+	const openWalkthrough = { title: '打开使用指南' };
+
+	let message: string;
+	switch (majorVersion) {
+		case '18':
+			message =
+				'GitLens 已升级到 18 — 提交图谱全新改版，支持 Agent 集成、多工作树 WIP 行、AI 驱动的评审和撰写模式等。';
+			break;
+		case '17':
+			message =
+				'GitLens 已升级到 17，包含 GitLens Pro 中全新的 [GitKraken AI](https://gitkraken.com/solutions/gitkraken-ai?source=gitlens&product=gitlens&utm_source=gitlens-extension&utm_medium=in-app-links) 访问权限、AI 变更日志和拉取请求创建以及 Bitbucket 集成。';
+			break;
+		default:
+			message = `GitLens 已升级到 ${majorVersion} — 查看新功能。`;
+			break;
+	}
+
+	const actions: MessageItem[] = [releaseNotes];
+	if (majorVersion === '18') {
+		actions.push(openWalkthrough);
+	}
+	actions.push(confirm);
+
+	const result = await showMessage('info', message, undefined, null, ...actions);
 
 	if (result === releaseNotes) {
 		void openUrl(urls.releaseNotes);
+	} else if (result === openWalkthrough) {
+		void executeCommand('gitlens.showWelcomeView', { mode: 'graph' });
 	}
 }
 
@@ -322,15 +337,17 @@ export async function showMcpMessage(container: Container, _current: string): Pr
 	const isAutoInstallable = mcpRegistrationAllowed(container);
 	const confirm = { title: '确定', isCloseAffordance: true };
 	const learnMore = { title: '了解更多' };
+	const connectMore = { title: '连接更多 Agent' };
 	const install = { title: '安装 GitKraken MCP' };
 
 	let result: MessageItem | undefined;
 	if (isAutoInstallable) {
 		result = await showMessage(
 			'info',
-			`GitLens 会将 GitKraken MCP 添加到您的 AI 聊天中，结合 Git 与您的集成能力提供上下文并执行操作。`,
+			`GitLens 会将 GitKraken MCP 添加到您的 AI 聊天中，结合 Git 与您的集成能力提供上下文并执行操作。您还可以将 MCP 连接到机器上的其他 Agent。`,
 			undefined,
 			null,
+			connectMore,
 			learnMore,
 			confirm,
 		);
@@ -348,6 +365,10 @@ export async function showMcpMessage(container: Container, _current: string): Pr
 
 	if (result === install) {
 		void executeCommand<Source>('gitlens.ai.mcp.install', { source: 'mcp-welcome-message' });
+	}
+
+	if (result === connectMore) {
+		void executeCommand<Source>('gitlens.ai.mcp.selectAgents', { source: 'mcp-welcome-message' });
 	}
 
 	if (result === learnMore) {

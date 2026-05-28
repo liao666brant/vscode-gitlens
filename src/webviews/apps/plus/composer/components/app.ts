@@ -389,8 +389,7 @@ export class ComposerApp extends LitElement {
 	@state()
 	private selectedHunkIds: Set<string> = new Set();
 
-	@state()
-	private customInstructions: string = '';
+	private initialCustomInstructions: string = '';
 
 	@state()
 	private compositionSummarySelected: boolean = false;
@@ -427,7 +426,7 @@ export class ComposerApp extends LitElement {
 		}
 		// Initialize custom instructions from state if provided
 		if (this.state.autoComposeInstructions) {
-			this.customInstructions = this.state.autoComposeInstructions;
+			this.initialCustomInstructions = this.state.autoComposeInstructions;
 		}
 	}
 
@@ -1351,7 +1350,11 @@ export class ComposerApp extends LitElement {
 	private renderLoadingDialogs() {
 		// Generate Commits loading dialog
 		if (this.state.generatingCommits) {
-			return this.renderLoadingDialog('正在生成提交', '正在生成提交。', this.handleCancelGenerateCommits);
+			return this.renderLoadingDialog(
+				'正在生成提交',
+				this.state.generatingCommitsStatus ?? '正在生成提交。',
+				this.handleCancelGenerateCommits,
+			);
 		}
 
 		// Generate Commit Message loading dialog
@@ -1394,8 +1397,6 @@ export class ComposerApp extends LitElement {
 	}
 
 	private handleGenerateCommitsWithAI(e: CustomEvent) {
-		this.customInstructions = e.detail?.customInstructions ?? '';
-
 		// Reset feedback state and create new session ID for new composition
 		this.compositionFeedback = null;
 		this.compositionSessionId = `composer-${Date.now()}-${Math.random().toString(36).substring(2, 11)}`;
@@ -1510,10 +1511,6 @@ export class ComposerApp extends LitElement {
 		const sessionId = e.detail?.sessionId;
 		this.compositionFeedback = 'unhelpful';
 		this._ipc.sendCommand(AIFeedbackUnhelpfulCommand, { sessionId: sessionId });
-	}
-
-	private handleCustomInstructionsChange(e: CustomEvent) {
-		this.customInstructions = e.detail?.customInstructions ?? '';
 	}
 
 	@query('gl-details-panel')
@@ -1676,7 +1673,7 @@ export class ComposerApp extends LitElement {
 							html`<gl-repo-button-group
 								.icon=${false}
 								.repository=${this.state.repositoryState!.current}
-								?hasMultipleRepositories=${this.state.repositoryState!.hasMultipleRepositories}
+								.hasMultipleRepositories=${this.state.repositoryState!.hasMultipleRepositories}
 								@gl-click=${this.onRepositorySelectorClicked}
 							></gl-repo-button-group>`,
 					)}
@@ -1704,7 +1701,7 @@ export class ComposerApp extends LitElement {
 					.isPreviewMode=${this.isPreviewMode}
 					.baseCommit=${this.state.baseCommit}
 					.repoName=${this.state.baseCommit?.repoName ?? this.state.repositoryState?.current.name ?? null}
-					.customInstructions=${this.customInstructions}
+					.initialCustomInstructions=${this.initialCustomInstructions}
 					.hasUsedAutoCompose=${this.state.hasUsedAutoCompose}
 					.hasChanges=${this.state.hasChanges}
 					.aiModel=${this.state.ai?.model}
@@ -1718,7 +1715,6 @@ export class ComposerApp extends LitElement {
 					@combine-commits=${this.combineSelectedCommits}
 					@finish-and-commit=${this.finishAndCommit}
 					@generate-commits-with-ai=${this.handleGenerateCommitsWithAI}
-					@custom-instructions-change=${this.handleCustomInstructionsChange}
 					@focus-commit-message=${this.handleFocusCommitMessage}
 					@commit-reorder=${(e: CustomEvent) => this.reorderCommits(e.detail.oldIndex, e.detail.newIndex)}
 					@create-new-commit=${(e: CustomEvent) => this.createNewCommitWithHunks(e.detail.hunkIds)}

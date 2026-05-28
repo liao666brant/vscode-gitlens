@@ -1,6 +1,7 @@
 /*global document window*/
 import type GraphContainer from '@gitkraken/gitkraken-components';
 import type {
+	ColumnNumberBySha,
 	CssVariables,
 	GraphRow,
 	GraphZoneType,
@@ -12,21 +13,37 @@ import { SignalWatcher } from '@lit-labs/signals';
 import { html, LitElement } from 'lit';
 import { customElement, query, state } from 'lit/decorators.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
-import type { GitGraphRowType } from '../../../../../git/models/graph.js';
-import { filterMap } from '../../../../../system/array.js';
-import { getCssMixedColorValue, getCssOpacityColorValue, getCssVariable } from '../../../../../system/color.js';
-import { debounce } from '../../../../../system/function/debounce.js';
-import type { GraphSelection, RowAction } from '../../../../plus/graph/protocol.js';
+import type { GitGraphRowType } from '@gitlens/git/models/graph.js';
+import { uncommitted } from '@gitlens/git/models/revision.js';
+import type { GitCommitReachability } from '@gitlens/git/providers/commits.js';
+import { filterMap } from '@gitlens/utils/array.js';
+import { getCssMixedColorValue, getCssOpacityColorValue, getCssVariable } from '@gitlens/utils/color.js';
+import { debounce } from '@gitlens/utils/debounce.js';
+import { areEqual } from '@gitlens/utils/object.js';
+import type { CommitDetails } from '../../../../commitDetails/protocol.js';
+import type {
+	GraphAvatars,
+	GraphScope,
+	GraphSelection,
+	GraphWipMetadataBySha,
+	RowAction,
+} from '../../../../plus/graph/protocol.js';
 import {
+	createSecondaryWipSha,
 	DoubleClickedCommand,
+	EnsureRowRequest,
 	GetMissingAvatarsCommand,
 	GetMissingRefsMetadataCommand,
 	GetMoreRowsCommand,
+	GetWipStatsRequest,
+	isSecondaryWipSha,
 	RowActionCommand,
+	SyncWipWatchesCommand,
 	UpdateColumnsCommand,
 	UpdateRefsVisibilityCommand,
 	UpdateSelectionCommand,
 } from '../../../../plus/graph/protocol.js';
+import { indexAgentSessionsByRepoAndWorktree, matchAgentSessionsForWorktree } from '../../../shared/agentUtils.js';
 import type { CustomEventType } from '../../../shared/components/element.js';
 import { ipcContext } from '../../../shared/contexts/ipc.js';
 import type { TelemetryContext } from '../../../shared/contexts/telemetry.js';
@@ -34,10 +51,51 @@ import { telemetryContext } from '../../../shared/contexts/telemetry.js';
 import type { Disposable } from '../../../shared/events.js';
 import type { ThemeChangeEvent } from '../../../shared/theme.js';
 import { onDidChangeTheme } from '../../../shared/theme.js';
+import type { AnchorKey } from '../components/anchorKey.js';
+import type { RunningOperationBucket } from '../components/detailsState.js';
+import type { WipRowAgentStatus } from '../components/wipRowAgentStatus.js';
+import { pickWipRowAgentStatus } from '../components/wipRowAgentStatus.js';
 import { graphStateContext } from '../context.js';
+import type { GraphCrossPaneState } from '../graphCrossPaneState.js';
+import { graphCrossPaneContext } from '../graphCrossPaneState.js';
+import { pickScopePageTarget } from '../utils/scopePaging.utils.js';
+import { filterSecondariesForScopeAndVisibility, shouldShowPrimaryWipRow } from '../utils/wip.utils.js';
 import type { GlGraph } from './gl-graph.js';
 import type { GraphWrapperTheming } from './gl-graph.react.jsx';
+import type { WipCandidate } from './nearestWip.js';
+import { findNearestWipByAncestry, findWipInColumn } from './nearestWip.js';
 import './gl-graph.js';
+
+// Builds the display message for a WIP row. The label (worktree name) is appended in parens for
+// secondary WIP rows; the primary row passes `undefined` and gets the bare base string.
+function wipRowMessage(label: string | undefined): string {
+	return label != null ? `Working Changes (${label})` : 'Working Changes';
+}
+
+// Builds a "lite" CommitDetails from a graph row so the details panel can paint the commit
+// shell synchronously on selection — no IPC roundtrip required for the metadata bar/header.
+// `files`/`stats` stay undefined and get filled in by the subsequent full fetch.
+// committer is duplicated from author (graph row only carries one identity); the full fetch
+// reconciles it. avatar is resolved synchronously from the host-supplied email→URL map so the
+// embedded gl-commit-author doesn't flash its `person` fallback icon between selections; if the
+// email isn't yet in the map, the full fetch will supply the URL.
+function buildCommitLite(
+	row: { sha: string; parents: string[]; author: string; email: string; date: number; message: string },
+	repoPath: string,
+	avatars: GraphAvatars | undefined,
+): CommitDetails {
+	const date = new Date(row.date);
+	const avatar = row.email ? avatars?.[row.email] : undefined;
+	return {
+		sha: row.sha,
+		shortSha: row.sha.slice(0, 7),
+		message: row.message,
+		author: { name: row.author, email: row.email, date: date, avatar: avatar },
+		committer: { name: row.author, email: row.email, date: date, avatar: avatar },
+		parents: row.parents,
+		repoPath: repoPath,
+	};
+}
 
 // These properties in the DOM are auto-generated by VS Code from our `contributes.colors` in package.json
 const graphLaneThemeColors = new Map([
@@ -60,10 +118,17 @@ declare global {
 
 	interface GlobalEventHandlersEventMap {
 		// passing up event map
-		'gl-graph-change-selection': CustomEvent<{ selection: GraphSelection[] }>;
+		'gl-graph-change-selection': CustomEvent<{
+			selection: GraphSelection[];
+			reachability?: GitCommitReachability;
+			/** Per-sha commit shell (no files/stats) for synchronous first paint of the details panel. */
+			commits?: Record<string, CommitDetails>;
+		}>;
 		'gl-graph-change-visible-days': CustomEvent<{ top: number; bottom: number }>;
+		'gl-graph-filter-column': CustomEvent<{ zone: GraphZoneType }>;
 		'gl-graph-mouse-leave': CustomEvent<void>;
 		'gl-graph-row-context-menu': CustomEvent<{ graphZoneType: GraphZoneType; graphRow: GraphRow }>;
+		'gl-graph-row-double-click': CustomEvent<{ graphRow: GraphRow; preserveFocus?: boolean }>;
 		'gl-graph-row-hover': CustomEvent<{
 			graphZoneType: GraphZoneType;
 			graphRow: GraphRow;
@@ -90,6 +155,9 @@ export class GlGraphWrapper extends SignalWatcher(LitElement) {
 	@consume({ context: graphStateContext, subscribe: true })
 	private readonly graphState!: typeof graphStateContext.__context__;
 
+	@consume({ context: graphCrossPaneContext })
+	private readonly _crossPaneState!: GraphCrossPaneState;
+
 	@consume({ context: ipcContext })
 	private readonly _ipc!: typeof ipcContext.__context__;
 
@@ -103,6 +171,12 @@ export class GlGraphWrapper extends SignalWatcher(LitElement) {
 	private onSetRef = (ref: GraphContainer) => {
 		this.ref = ref;
 	};
+
+	scrollGraphBy(deltaY: number): void {
+		if (this.ref == null) return;
+
+		this.ref.setScrollTop((this.ref.scrollTop ?? 0) + deltaY);
+	}
 
 	@state()
 	private theming?: GraphWrapperTheming;
@@ -118,20 +192,394 @@ export class GlGraphWrapper extends SignalWatcher(LitElement) {
 				}, 100),
 			),
 		);
+
+		document.addEventListener('gl-jump-to-pinned-branch', this.onJumpToPinnedBranch as EventListener);
+		document.addEventListener('gl-jump-to-nearest-wip', this.onJumpToNearestWip as EventListener);
 	}
 
 	override disconnectedCallback(): void {
 		super.disconnectedCallback?.();
 
+		document.removeEventListener('gl-jump-to-pinned-branch', this.onJumpToPinnedBranch as EventListener);
+		document.removeEventListener('gl-jump-to-nearest-wip', this.onJumpToNearestWip as EventListener);
 		this.disposables.forEach(d => d.dispose());
 		this.disposables = [];
 	}
 
+	private onJumpToPinnedBranch = (e: CustomEvent<{ sha: string }>) => {
+		this.ensureAndSelectCommit(e.detail.sha);
+	};
+
+	// Per-SHA column assignments from the GK component (`onColumnsCalculated`). Held on the
+	// instance and consulted on-demand by `onJumpToNearestWip` so the jump never crosses lanes
+	// to a different worktree's WIP. Stays undefined until the first layout pass; individual
+	// shas may also be missing during the partial-load window after a scope change or paging.
+	// Both gaps are handled — see `findWipInColumn`'s early-return on missing data and the
+	// defensive BFS fallback in `onJumpToNearestWip` below.
+	private _columnsBySha: ColumnNumberBySha | undefined;
+
+	private onColumnsCalculated = (event: CustomEvent<ColumnNumberBySha>): void => {
+		this._columnsBySha = event.detail;
+	};
+
+	private onJumpToNearestWip = (e: CustomEvent<{ fromSha: string }>) => {
+		const rows = this.graphState.rows;
+		const wipMetadataBySha = this.graphState.wipMetadataBySha;
+		const primaryAnchor = this.graphState.branch?.sha;
+
+		// Primary strategy: pick the WIP in the same column as the clicked commit (the
+		// "visual lane" the user sees). Exact-anchor match (clicked commit IS a branch tip
+		// with a WIP) overrides — jumps directly to that branch's WIP regardless of column.
+		let target = findWipInColumn(e.detail.fromSha, rows, primaryAnchor, wipMetadataBySha, this._columnsBySha);
+
+		// Defensive fallback when column data for the clicked commit is unavailable — either
+		// the cold-start window before any `onColumnsCalculated`, OR the brief partial-load
+		// gap after scope change / paging where the clicked row is in `rows` but not yet in
+		// the column map. Without this, clicks during the gap blindly snap to primary.
+		// Once the column for the clicked commit lands, the column rule dominates.
+		if (target == null && this._columnsBySha?.[e.detail.fromSha] == null) {
+			const wips: WipCandidate[] = [];
+			if (primaryAnchor != null) {
+				wips.push({ sha: uncommitted, anchor: primaryAnchor });
+			}
+			if (wipMetadataBySha != null) {
+				for (const [sha, meta] of Object.entries(wipMetadataBySha)) {
+					if (meta.parentSha != null) {
+						wips.push({ sha: sha, anchor: meta.parentSha });
+					}
+				}
+			}
+			target = findNearestWipByAncestry(e.detail.fromSha, wips, rows);
+		}
+
+		// Last-resort: no in-column WIP and no ancestry match → jump to the primary (uncommitted).
+		this.ensureAndSelectCommit(target ?? uncommitted);
+	};
+
+	// Cache keyed by (rows, wipMetadataBySha, workingTreeStats, scope, branchesVisibility,
+	// includeOnlyRefs, branch.id) — any reference change invalidates. Scope must be in the key
+	// because `filterSecondariesForScopeAndVisibility` reads `scope.branchRef`/`upstreamRef`/
+	// `additionalBranchRefs` AND switches off the visibility filter entirely when scope is active,
+	// AND `shouldShowPrimaryWipRow` reads `scope.branchRef` to enforce the "primary WIP belongs
+	// only to the focal branch when focal === current" convention; `branchesVisibility` +
+	// `includeOnlyRefs` + `currentBranchId` must also be in the key because the WIP-visibility
+	// helpers read them when the scope picker is in a non-`all` mode (current/smart/favorited/agents)
+	// AND when no scope is active.
+	private _decoratedRowsCache?: {
+		rows: GraphRow[] | undefined;
+		wipMetadataBySha: GraphWipMetadataBySha | undefined;
+		workingTreeStats: typeof graphStateContext.__context__.workingTreeStats;
+		scope: GraphScope | undefined;
+		branchesVisibility: typeof graphStateContext.__context__.branchesVisibility;
+		includeOnlyRefs: typeof graphStateContext.__context__.includeOnlyRefs;
+		currentBranchId: string | undefined;
+		result: { rows: GraphRow[] | undefined; showPrimary: boolean };
+	};
+
+	// Injects a synthetic primary WIP row at [0] and per-worktree secondary WIP rows
+	// immediately after, so the GK component renders one row per worktree. The component's
+	// own auto-inject is skipped because rows[0] already has type `work-dir-changes`.
+	private getDecoratedRows(): { rows: GraphRow[] | undefined; showPrimary: boolean } {
+		const { graphState } = this;
+		const rows = graphState.rows;
+		const wipMetadataBySha = graphState.wipMetadataBySha;
+		const workingTreeStats = graphState.workingTreeStats;
+		const scope = graphState.scope;
+		const branchesVisibility = graphState.branchesVisibility;
+		const includeOnlyRefs = graphState.includeOnlyRefs;
+		const currentBranchId = graphState.branch?.id;
+
+		const cached = this._decoratedRowsCache;
+		if (
+			cached != null &&
+			cached.rows === rows &&
+			cached.wipMetadataBySha === wipMetadataBySha &&
+			cached.workingTreeStats === workingTreeStats &&
+			cached.scope === scope &&
+			cached.branchesVisibility === branchesVisibility &&
+			cached.includeOnlyRefs === includeOnlyRefs &&
+			cached.currentBranchId === currentBranchId
+		) {
+			// Return the cached `result` object identity-stable. The render boundary still
+			// slices `.rows` defensively (the GK component mutates the array it receives), so
+			// gl-graph sees a fresh array reference per render and runs its own dirty-check —
+			// the cache's benefit here is avoiding the O(n*m) interleave work, NOT skipping
+			// gl-graph re-renders. The shared `result.rows` reference inside the cache is
+			// pristine because the slice-at-boundary keeps GK's mutations confined to the
+			// downstream copy.
+			return cached.result;
+		}
+
+		const showPrimary = shouldShowPrimaryWipRow(branchesVisibility, includeOnlyRefs, currentBranchId, scope);
+
+		const filteredMetadata = filterSecondariesForScopeAndVisibility(
+			wipMetadataBySha,
+			scope,
+			branchesVisibility,
+			includeOnlyRefs,
+		);
+
+		let resultRows: GraphRow[] | undefined;
+		if (rows != null && filteredMetadata != null && Object.keys(filteredMetadata).length > 0) {
+			// The GK component mutates the passed array via unshift on each render, so rows[0] may
+			// already be a primary work-dir row from a previous pass. Strip it to avoid duplicates —
+			// we inject our own primary below with the same role.
+			const realRows = rows[0]?.type === 'work-dir-changes' ? rows.slice(1) : rows;
+			const headRefSha = realRows.find(r => r.heads?.some(h => h.isCurrentHead))?.sha ?? realRows[0]?.sha;
+
+			const now = Date.now();
+			const primary: GraphRow = {
+				sha: 'work-dir-changes',
+				parents: headRefSha ? [headRefSha] : [],
+				author: '',
+				email: '',
+				date: now,
+				message: wipRowMessage(undefined),
+				type: 'work-dir-changes',
+				heads: [],
+				remotes: [],
+				tags: [],
+				...(workingTreeStats?.context ? { contexts: { row: workingTreeStats.context } } : {}),
+			};
+
+			// Group secondary WIP rows by the index of their parent commit in `realRows`, so each
+			// worktree's WIP row renders directly above the commit it's anchored at. Worktrees whose
+			// HEAD isn't in the loaded/visible rows (hidden branch, beyond paging limit) are dropped —
+			// a floating WIP row with no anchor in the graph is more confusing than missing one.
+			const realRowIndexBySha = new Map<string, number>();
+			for (let i = 0; i < realRows.length; i++) {
+				realRowIndexBySha.set(realRows[i].sha, i);
+			}
+
+			const secondariesByParentIdx = new Map<number, GraphRow[]>();
+			for (const [sha, meta] of Object.entries(filteredMetadata)) {
+				const idx = realRowIndexBySha.get(meta.parentSha);
+				if (idx == null) continue;
+
+				const row: GraphRow = {
+					sha: sha,
+					parents: [meta.parentSha],
+					author: '',
+					email: '',
+					date: now,
+					message: wipRowMessage(meta.label),
+					type: 'work-dir-changes',
+					heads: [],
+					remotes: [],
+					tags: [],
+					...(meta.context ? { contexts: { row: meta.context } } : {}),
+				};
+				const existing = secondariesByParentIdx.get(idx);
+				if (existing != null) {
+					existing.push(row);
+				} else {
+					secondariesByParentIdx.set(idx, [row]);
+				}
+			}
+
+			const interleaved: GraphRow[] = showPrimary ? [primary] : [];
+			for (let i = 0; i < realRows.length; i++) {
+				const atThisIdx = secondariesByParentIdx.get(i);
+				if (atThisIdx != null) {
+					interleaved.push(...atThisIdx);
+				}
+				interleaved.push(realRows[i]);
+			}
+
+			resultRows = interleaved;
+		} else if (!showPrimary && rows?.[0]?.type === 'work-dir-changes') {
+			// Strip a stale GK-injected primary from a prior render; we render no primary in
+			// this branch by also passing `wipVisibility='auto'` + `workingTreeStats=undefined`
+			// down to the GK component so it doesn't re-inject.
+			resultRows = rows.slice(1);
+		} else {
+			// Let the GK component handle the primary WIP auto-inject from workingTreeStats.
+			resultRows = rows?.slice();
+		}
+
+		// Cache the pristine `result` for re-use on subsequent renders with identical inputs.
+		// The defensive slice happens at the `gl-graph` prop boundary in `render()` so the
+		// cache and consumer never share an array reference (the GK component mutates the
+		// passed array; see the `render()` `.rows=` binding comment).
+		const result = { rows: resultRows, showPrimary: showPrimary };
+		this._decoratedRowsCache = {
+			rows: rows,
+			wipMetadataBySha: wipMetadataBySha,
+			workingTreeStats: workingTreeStats,
+			scope: scope,
+			branchesVisibility: branchesVisibility,
+			includeOnlyRefs: includeOnlyRefs,
+			currentBranchId: currentBranchId,
+			result: result,
+		};
+		return result;
+	}
+
+	// Memoization for `getRunningOperationByRowSha`: every wrapper render would otherwise build a
+	// fresh Map (new identity), which cascades into Lit @property updates → React subscriber
+	// push → invalidate-event-driven adornment re-resolve. Cached on the inputs that actually
+	// drive the translation (registry signal value identity + primary repo path) so unrelated
+	// wrapper re-renders return the same Map instance and stop the churn at the prop boundary.
+	private _runningOperationByRowShaCache?: {
+		registry: ReadonlyMap<AnchorKey, RunningOperationBucket>;
+		primaryRepoPath: string | undefined;
+		byRowSha: ReadonlyMap<string, RunningOperationBucket> | undefined;
+	};
+
+	/** Translates the canonical anchor-keyed `runningOperations` registry from the cross-pane
+	 *  context into a row-sha-keyed bucket map the React row renderer can look up directly. WIP
+	 *  anchors only — commit/multi-commit anchors don't decorate graph rows. Memoized on
+	 *  (registry, primaryRepoPath); see {@link _runningOperationByRowShaCache}. */
+	private getRunningOperationByRowSha(): ReadonlyMap<string, RunningOperationBucket> | undefined {
+		const runningOperations = this._crossPaneState?.runningOperations.get();
+		if (runningOperations == null) return undefined;
+
+		const repositories = this.graphState.repositories;
+		const selectedRepoId = this.graphState.selectedRepository;
+		const primaryRepoPath =
+			(selectedRepoId != null ? repositories?.find(r => r.id === selectedRepoId)?.path : undefined) ??
+			repositories?.[0]?.path;
+
+		const cached = this._runningOperationByRowShaCache;
+		if (cached?.registry === runningOperations && cached.primaryRepoPath === primaryRepoPath) {
+			return cached.byRowSha;
+		}
+
+		let byRowSha: ReadonlyMap<string, RunningOperationBucket> | undefined;
+		if (runningOperations.size === 0) {
+			byRowSha = undefined;
+		} else {
+			const next = new Map<string, RunningOperationBucket>();
+			for (const bucket of runningOperations.values()) {
+				// Either kind in the bucket has the same anchor (the bucket is per-anchor), so
+				// derive repoPath from whichever is set.
+				const anchor = (bucket.review ?? bucket.compose)?.anchor;
+				if (anchor?.kind !== 'wip') continue;
+
+				const rowSha =
+					anchor.repoPath === primaryRepoPath ? 'work-dir-changes' : createSecondaryWipSha(anchor.repoPath);
+				next.set(rowSha, bucket);
+			}
+			byRowSha = next;
+		}
+		this._runningOperationByRowShaCache = {
+			registry: runningOperations,
+			primaryRepoPath: primaryRepoPath,
+			byRowSha: byRowSha,
+		};
+		return byRowSha;
+	}
+
+	// Memoization for `getAgentStatusByRowSha`: agent state and WIP metadata both update
+	// independently of other render triggers (selection, hover, theme), so caching on the three
+	// inputs that actually drive the row→agent mapping keeps the prop identity stable for the
+	// React layer and stops the invalidate-event churn at the prop boundary.
+	private _agentStatusByRowShaCache?: {
+		agentSessions: typeof graphStateContext.__context__.agentSessions | undefined;
+		wipMetadataBySha: GraphWipMetadataBySha | undefined;
+		primaryRepoPath: string | undefined;
+		byRowSha: ReadonlyMap<string, WipRowAgentStatus> | undefined;
+	};
+
+	/** Maps each WIP row's sha → the worst-priority agent status running in that worktree.
+	 *  Primary WIP (sha `'work-dir-changes'`) is matched against `primaryRepoPath`; secondaries
+	 *  are matched against their `wipMetadataBySha[sha].repoPath`. Returns `undefined` when no
+	 *  WIP row has a surfacing agent so the React layer can skip the indicator path entirely. */
+	private getAgentStatusByRowSha(): ReadonlyMap<string, WipRowAgentStatus> | undefined {
+		const agentSessions = this.graphState.agentSessions;
+		const wipMetadataBySha = this.graphState.wipMetadataBySha;
+
+		const repositories = this.graphState.repositories;
+		const selectedRepoId = this.graphState.selectedRepository;
+		const primaryRepoPath =
+			(selectedRepoId != null ? repositories?.find(r => r.id === selectedRepoId)?.path : undefined) ??
+			repositories?.[0]?.path;
+
+		const cached = this._agentStatusByRowShaCache;
+		if (
+			cached?.agentSessions === agentSessions &&
+			cached.wipMetadataBySha === wipMetadataBySha &&
+			cached.primaryRepoPath === primaryRepoPath
+		) {
+			return cached.byRowSha;
+		}
+
+		let byRowSha: ReadonlyMap<string, WipRowAgentStatus> | undefined;
+		const index = indexAgentSessionsByRepoAndWorktree(agentSessions);
+		if (index == null || index.size === 0) {
+			byRowSha = undefined;
+		} else {
+			const next = new Map<string, WipRowAgentStatus>();
+
+			// Primary WIP row — always sha `'work-dir-changes'`, anchored at the primary repo path.
+			if (primaryRepoPath != null) {
+				const primaryMatches = matchAgentSessionsForWorktree(index, {
+					repoPath: primaryRepoPath,
+					worktreePath: primaryRepoPath,
+				});
+				const status = pickWipRowAgentStatus(primaryMatches);
+				if (status != null) {
+					next.set('work-dir-changes', status);
+				}
+			}
+
+			// Secondary WIP rows — one per worktree in `wipMetadataBySha`. The sha encodes the
+			// worktree path; `meta.repoPath` is the same value but read directly to avoid parsing.
+			if (wipMetadataBySha != null && primaryRepoPath != null) {
+				for (const [sha, meta] of Object.entries(wipMetadataBySha)) {
+					if (meta?.repoPath == null) continue;
+
+					const matches = matchAgentSessionsForWorktree(index, {
+						repoPath: primaryRepoPath,
+						worktreePath: meta.repoPath,
+					});
+					const status = pickWipRowAgentStatus(matches);
+					if (status != null) {
+						next.set(sha, status);
+					}
+				}
+			}
+
+			byRowSha = next.size > 0 ? next : undefined;
+		}
+
+		this._agentStatusByRowShaCache = {
+			agentSessions: agentSessions,
+			wipMetadataBySha: wipMetadataBySha,
+			primaryRepoPath: primaryRepoPath,
+			byRowSha: byRowSha,
+		};
+		return byRowSha;
+	}
+
 	override render() {
 		const { graphState } = this;
+		const { rows: decoratedRows, showPrimary } = this.getDecoratedRows();
+
+		// The GK component runs this on every render against `rows[0]`:
+		//   if (shouldShowWip(stats, wipVisibility) && rows.length && !isWipType(rows[0].type)) rows.unshift(autoPrimary)
+		//   else if (!shouldShowWip(...) && rows.length && isWipType(rows[0].type))            rows.shift()  // ← removes our injected secondary
+		// When we inject a secondary WIP that lands at `rows[0]` (scope to a worktree whose tip
+		// is the first loaded commit, e.g. `feature/agents-collapse-modes` at the top of the
+		// rows), the `else if` would shift it out under our default `auto`/`undefined` props.
+		// Force `'always'` + a stats sentinel when our WIP is at index 0 so GK no-ops on it.
+		// We don't always pass `'always'` because when there's no WIP at index 0 and we do, GK
+		// unshifts its own primary WIP at index 0 — that produces a duplicate.
+		const wipAtTop = decoratedRows?.[0]?.type === 'work-dir-changes';
+		const wipVisibility = showPrimary || wipAtTop ? 'always' : 'auto';
+		// Sentinel zero-stats keeps the no-op branch live without colliding with our row (GK
+		// only reads `workingTreeStats` to build its own auto-primary, which it skips when
+		// `rows[0]` is already a WIP). When we show our primary, pass the real stats so the
+		// primary row can display them.
+		const workingTreeStats = showPrimary
+			? graphState.workingTreeStats
+			: wipAtTop
+				? GlGraphWrapper.sentinelWorkingTreeStats
+				: undefined;
 
 		return html`<gl-graph
 			.setRef=${this.onSetRef}
+			.activeFilterColumns=${graphState.activeFilterColumns}
 			.activeRow=${graphState.activeRow}
 			.avatars=${graphState.avatars}
 			.columns=${graphState.columns}
@@ -141,11 +589,12 @@ export class GlGraphWrapper extends SignalWatcher(LitElement) {
 			.excludeRefs=${graphState.excludeRefs}
 			.excludeTypes=${graphState.excludeTypes}
 			.includeOnlyRefs=${graphState.includeOnlyRefs}
-			?loading=${graphState.loading}
+			.pinnedRef=${graphState.pinnedRef}
+			?loading=${graphState.loading || graphState.scopeLoading}
 			nonce=${ifDefined(graphState.nonce)}
 			.paging=${graphState.paging}
 			.refsMetadata=${graphState.refsMetadata}
-			.rows=${graphState.rows}
+			.rows=${decoratedRows?.slice()}
 			.rowsStats=${graphState.rowsStats}
 			?rowsStatsLoading=${graphState.rowsStatsLoading}
 			.searchMode=${graphState.searchMode}
@@ -153,21 +602,33 @@ export class GlGraphWrapper extends SignalWatcher(LitElement) {
 			.selectedRows=${graphState.selectedRows}
 			.theming=${this.theming}
 			?windowFocused=${graphState.windowFocused}
-			.workingTreeStats=${graphState.workingTreeStats}
+			.workingTreeStats=${workingTreeStats}
+			.wipMetadataBySha=${graphState.wipMetadataBySha}
+			.wipShasSettleDelayMs=${GlGraphWrapper.wipShasSettleDelayMs}
+			.wipVisibility=${wipVisibility}
+			.scope=${graphState.scope}
+			.runningOperationByRowSha=${this.getRunningOperationByRowSha()}
+			.agentStatusByRowSha=${this.getAgentStatusByRowSha()}
 			@changecolumns=${this.onColumnsChanged}
 			@changerefsvisibility=${this.onRefsVisibilityChanged}
 			@changeselection=${this.onSelectionChanged}
 			@changevisibledays=${this.onVisibleDaysChanged}
+			@filtercolumn=${this.onFilterColumn}
 			@missingavatars=${this.onMissingAvatars}
 			@missingrefsmetadata=${this.onMissingRefsMetadata}
 			@morerows=${this.onGetMoreRows}
 			@graphmouseleave=${this.onMouseLeave}
 			@refdoubleclick=${this.onRefDoubleClick}
 			@rowaction=${this.onRowAction}
+			@wiprowopen=${this.onWipRowOpen}
 			@rowcontextmenu=${this.onRowContextMenu}
 			@rowdoubleclick=${this.onRowDoubleClick}
 			@rowhover=${this.onRowHover}
 			@rowunhover=${this.onRowUnhover}
+			@scopeanchorsunreachable=${this.onScopeAnchorsUnreachable}
+			@wipshasmissingstats=${this.onWipShasMissingStats}
+			@visiblewipshaschanged=${this.onVisibleWipShasChanged}
+			@columnscalculated=${this.onColumnsCalculated}
 		></gl-graph>`;
 	}
 
@@ -181,6 +642,68 @@ export class GlGraphWrapper extends SignalWatcher(LitElement) {
 
 	selectCommits(shas: string[], options?: SelectCommitsOptions): ReadonlyGraphRow[] {
 		return this.ref?.selectCommits(shas, options) ?? [];
+	}
+
+	/** Monotonic counter bumped on every `ensureAndSelectCommit` entry. The synthetic-WIP retry
+	 *  loop captures the value at scheduling time and bails when it advances — without this, a
+	 *  retry from an earlier scope/selection can race the next ~166 ms of frames and clobber a
+	 *  newer selection (e.g. user scopes to a WIP branch then immediately scopes elsewhere; the
+	 *  older `work-dir-changes` retry would overwrite the newer focal-tip selection). Mirrors
+	 *  the `_anchorGenerations` pattern in `stateProvider`. */
+	private _selectGeneration = 0;
+
+	/**
+	 * Select a row by SHA, loading it into the graph first if necessary.
+	 * The host handles both loading and selecting — the rows notification
+	 * carries the updated selection so the graph renders it automatically.
+	 */
+	ensureAndSelectCommit(sha: string): void {
+		// The primary WIP row is synthesized client-side (see `decoratedRows` above) with the
+		// literal sha `'work-dir-changes'`, NOT the `uncommitted` revision constant. Callers that
+		// hand us `uncommitted` (sidebar panel, overview cards, anywhere referring to "the WIP")
+		// would otherwise miss the row in both the fast-path lookup and the host-side EnsureRow
+		// fallback (which can't load a synthetic id either) — normalize once here so every caller
+		// can use either form.
+		if (sha === uncommitted) {
+			sha = 'work-dir-changes';
+		}
+
+		const generation = ++this._selectGeneration;
+
+		// Fast path — row already loaded
+		if (this.ref?.getCommits([sha])?.length) {
+			this.ref.selectCommits([sha], { ensureVisible: true });
+			return;
+		}
+
+		// Synthetic WIP rows (`work-dir-changes` and `worktree-wip::<path>`) can't be loaded
+		// via the host EnsureRow fallback — the host has no real graph row for them, and the
+		// fallback's `updateGraphWithMoreRows` won't materialize one. They appear after the next
+		// render when `getDecoratedRows` synthesizes them, which only happens after Lit + React
+		// catch up to a scope change. Retry with a short backoff so callers that scope and select
+		// in the same tick (e.g. `handleScopeToBranchFromHeader`) don't drop the selection.
+		// We need to wait through: signal flush → Lit update → wrapper's render-batching RAF →
+		// React setState batch → React render → GK component indexing. A few retries cover that
+		// reliably without blocking on a fixed long timeout.
+		if (sha === 'work-dir-changes' || isSecondaryWipSha(sha)) {
+			const tryAgain = (attempt: number): void => {
+				if (this._selectGeneration !== generation) return;
+				if (this.ref?.getCommits([sha])?.length) {
+					this.ref.selectCommits([sha], { ensureVisible: true });
+					return;
+				}
+				if (attempt >= 10) return;
+
+				requestAnimationFrame(() => tryAgain(attempt + 1));
+			};
+			requestAnimationFrame(() => tryAgain(0));
+			return;
+		}
+
+		// Ask the host to load and select the row; the rows notification
+		// will carry the selection so the graph picks it up on render.
+		this.graphState.loading = true;
+		void this._ipc.sendRequest(EnsureRowRequest, { id: sha, select: true });
 	}
 
 	private onColumnsChanged(event: CustomEventType<'graph-changecolumns'>) {
@@ -208,12 +731,31 @@ export class GlGraphWrapper extends SignalWatcher(LitElement) {
 		this._ipc.sendCommand(DoubleClickedCommand, { type: 'ref', ref: ref, metadata: metadata });
 	}
 
+	private onFilterColumn({ detail }: CustomEventType<'graph-filtercolumn'>) {
+		this.dispatchEvent(new CustomEvent('gl-graph-filter-column', { detail: detail }));
+	}
+
 	private onRefsVisibilityChanged({ detail }: CustomEventType<'graph-changerefsvisibility'>) {
 		this._ipc.sendCommand(UpdateRefsVisibilityCommand, detail);
 	}
 
 	private onRowAction({ detail: { action, row } }: CustomEvent<{ action: RowAction; row: GraphRow }>) {
 		this._ipc.sendCommand(RowActionCommand, { action: action, row: { id: row.sha, type: row.type } });
+	}
+
+	private onWipRowOpen({
+		detail: { target, row },
+	}: CustomEvent<{ target: 'compose' | 'review' | 'agents'; row: GraphRow }>) {
+		// Webview-internal event — bubbles up to graph-app which selects the row, opens the
+		// details panel, and routes to the requested target (compose/review enter the matching
+		// workflow mode; `agents` expands the agents section). No IPC round-trip needed.
+		this.dispatchEvent(
+			new CustomEvent('gl-graph-wip-row-open', {
+				detail: { target: target, row: row },
+				bubbles: true,
+				composed: true,
+			}),
+		);
 	}
 
 	private onRowContextMenu({ detail: { graphRow, graphZoneType } }: CustomEventType<'graph-rowcontextmenu'>) {
@@ -225,6 +767,11 @@ export class GlGraphWrapper extends SignalWatcher(LitElement) {
 	}
 
 	private onRowDoubleClick({ detail: { row, preserveFocus } }: CustomEventType<'graph-doubleclickrow'>) {
+		this.dispatchEvent(
+			new CustomEvent('gl-graph-row-double-click', {
+				detail: { graphRow: row, preserveFocus: preserveFocus },
+			}),
+		);
 		this._ipc.sendCommand(DoubleClickedCommand, {
 			type: 'row',
 			row: { id: row.sha, type: row.type },
@@ -240,14 +787,17 @@ export class GlGraphWrapper extends SignalWatcher(LitElement) {
 		this.dispatchEvent(new CustomEvent('gl-graph-row-unhover', { detail: detail }));
 	}
 
+	private _lastSentSelectionKey: string | undefined;
 	private onSelectionChanged({ detail: { rows, focusedRow } }: CustomEventType<'graph-changeselection'>) {
+		const wipMetadataBySha = this.graphState.wipMetadataBySha;
 		const selection: GraphSelection[] = filterMap(rows, r =>
 			r != null
 				? ({
 						id: r.sha,
-						type: r.type as GitGraphRowType,
+						type: r.type,
 						active: r === focusedRow,
 						hidden: r.hidden,
+						repoPath: wipMetadataBySha?.[r.sha]?.repoPath,
 					} satisfies GraphSelection)
 				: undefined,
 		);
@@ -256,12 +806,232 @@ export class GlGraphWrapper extends SignalWatcher(LitElement) {
 		this.graphState.activeRow = activeKey;
 		this.graphState.activeDay = focusedRow?.date;
 
-		this.dispatchEvent(new CustomEvent('gl-graph-change-selection', { detail: { selection: selection } }));
+		// Build per-sha commit shells from the underlying row data so the details panel can
+		// paint the commit metadata synchronously (no IPC roundtrip) on cold-cache selections.
+		// Skip WIP / work-dir-changes rows — they don't map to a commit shell.
+		const sourceRows = this.graphState.rows;
+		const repositories = this.graphState.repositories;
+		const selectedRepoId = this.graphState.selectedRepository;
+		const fallbackRepoPath =
+			(selectedRepoId != null ? repositories?.find(r => r.id === selectedRepoId)?.path : undefined) ??
+			repositories?.[0]?.path;
+		const sourceRowBySha = sourceRows != null ? new Map(sourceRows.map(r => [r.sha, r])) : undefined;
+		let commits: Record<string, CommitDetails> | undefined;
+		if (sourceRowBySha != null) {
+			for (const sel of selection) {
+				if (sel.type === ('work-dir-changes' satisfies GitGraphRowType)) continue;
+
+				const sourceRow = sourceRowBySha.get(sel.id);
+				if (sourceRow == null) continue;
+
+				const repoPath = sel.repoPath ?? fallbackRepoPath;
+				if (repoPath == null) continue;
+
+				commits ??= {};
+				commits[sel.id] = buildCommitLite(sourceRow, repoPath, this.graphState.avatars);
+			}
+		}
+
+		// Look up reachability from our original row data (the GK components
+		// processed row doesn't preserve custom properties from GitGraphRow)
+		const reachability =
+			focusedRow != null
+				? (sourceRowBySha?.get(focusedRow.sha) as { reachability?: GitCommitReachability } | undefined)
+						?.reachability
+				: undefined;
+
+		this.dispatchEvent(
+			new CustomEvent('gl-graph-change-selection', {
+				detail: { selection: selection, reachability: reachability, commits: commits },
+			}),
+		);
+
+		// Dedup host RPC: the GK component fires `graph-changeselection` on focus-row changes too, which
+		// can trip during scroll without any real selection change. Skip the IPC when the selection set
+		// (including active/hidden flags) matches what we last sent.
+		const selectionKey = selection
+			.map(s => `${s.id}|${s.type}|${s.repoPath ?? ''}|${s.active ? 1 : 0}|${s.hidden ? 1 : 0}`)
+			.join(',');
+		if (selectionKey === this._lastSentSelectionKey) return;
+
+		this._lastSentSelectionKey = selectionKey;
+
 		this._ipc.sendCommand(UpdateSelectionCommand, { selection: selection });
 	}
 
 	private onVisibleDaysChanged({ detail }: CustomEventType<'graph-changevisibledays'>) {
 		this.dispatchEvent(new CustomEvent('gl-graph-change-visible-days', { detail: detail }));
+	}
+
+	/**
+	 * SHAs we've already issued `GetMoreRowsCommand({ id: sha })` for via the unreachable-anchor
+	 * path, mapped to the loaded row count at the time the request was sent. If a targeted walk
+	 * returns without surfacing the SHA, we park it here so the next `scopeanchorsunreachable`
+	 * event doesn't re-fire the same request immediately. Entries are released two ways:
+	 * (a) scope reference changes (user re-scopes, or refs-moved invalidation produces a new
+	 *     scope object), which clears the entire map;
+	 * (b) the host response delivered new rows, growing `rows.length` past the snapshot — the
+	 *     provider's cursor advanced past where the previous walk's `limit * 10` cap aborted,
+	 *     so a retry continues the walk from the new cursor rather than re-running the same
+	 *     range. Entries whose request didn't grow rows stay parked: retrying would hit the
+	 *     same cap at the same cursor with no progress.
+	 */
+	private _unreachableAnchorRequests = new Map<string, number>();
+	private _unreachableAnchorScope: typeof graphStateContext.__context__.scope = undefined;
+
+	private onScopeAnchorsUnreachable(event: CustomEvent<Set<string>>) {
+		// The component flagged that one or more scope anchors can't reach a visible ancestor
+		// within the loaded graph rows (merge base not yet fetched). Ask the host for more rows
+		// so the synthetic edges can resolve.
+		if (this.graphState.loading || !this.graphState.paging?.hasMore) return;
+
+		// Drop prior dedupe state when the live scope reference changes — the stateProvider
+		// assigns a new scope object on every transition (re-scope, post-invalidation re-resolve),
+		// so reference inequality cleanly catches both.
+		const scope = this.graphState.scope;
+		if (scope !== this._unreachableAnchorScope) {
+			this._unreachableAnchorRequests.clear();
+			this._unreachableAnchorScope = scope;
+		}
+
+		// Forward a page-target SHA to the host so the provider's page-until-found path (graph.ts
+		// `getCommitsForGraphCore` stop logic) loads enough rows in one round trip — typically the
+		// `scope.mergeBase.sha` when the library flagged loaded branch tips as "unreachable"
+		// because their parent chain can't reach a visible ancestor. Without that targeted page,
+		// `isBounded` stays false and the library's scroll/fill-viewport paths leak generic pages.
+		const anchors = event.detail;
+		const rows = this.graphState.rows;
+		if (anchors?.size && rows?.length) {
+			const loaded = new Set(rows.map(r => r.sha));
+			const rowCount = rows.length;
+
+			// Release any prior request whose response delivered new rows — the provider's cursor
+			// advanced past where the previous walk's cap aborted, so retrying continues the walk
+			// from the new cursor instead of re-running the same range.
+			for (const [sha, requestedAtCount] of this._unreachableAnchorRequests) {
+				if (rowCount > requestedAtCount) {
+					this._unreachableAnchorRequests.delete(sha);
+				}
+			}
+
+			const target = pickScopePageTarget(
+				anchors,
+				loaded,
+				new Set(this._unreachableAnchorRequests.keys()),
+				scope?.mergeBase?.sha,
+			);
+			if (target == null) return;
+
+			this._unreachableAnchorRequests.set(target, rowCount);
+			this.graphState.loading = true;
+			this._ipc.sendCommand(GetMoreRowsCommand, { id: target });
+			return;
+		}
+
+		this.graphState.loading = true;
+		this._ipc.sendCommand(GetMoreRowsCommand, { id: undefined });
+	}
+
+	private _lastSyncedWipShas: Set<string> | undefined;
+
+	/**
+	 * How long a secondary WIP row must settle in the viewport before the GK component fires
+	 * `onWipShasMissingStats` for it. Library default is 100ms; we raise it so rows that only flash
+	 * through during fast scrolls never trigger stats work. Re-entry works because the library prunes
+	 * its `requestedMissingWipStats` dedup for shas that leave the viewport.
+	 */
+	private static readonly wipShasSettleDelayMs = 350;
+
+	/**
+	 * Zero-stats sentinel passed down to GK's `workingTreeStats` prop when our injected
+	 * secondary WIP lands at `rows[0]` and we're not showing the primary WIP. GK uses
+	 * `workingTreeStats` + `wipVisibility` together to decide whether to keep / shift the
+	 * row at index 0. Pinning a stable identity (rather than `{}` each render) avoids
+	 * triggering needless `componentDidUpdate` work in GK on every wrapper render.
+	 * `Object.freeze` ensures any downstream consumer that decides to mutate the prop
+	 * (defensive copy helpers, future instrumentation hooks) throws in strict mode
+	 * instead of silently poisoning the singleton for every future render.
+	 */
+	private static readonly sentinelWorkingTreeStats = Object.freeze({ added: 0, deleted: 0, modified: 0 } as const);
+
+	private onVisibleWipShasChanged(event: CustomEvent<Record<string, true>>) {
+		// The GK component tells us the full current set of secondary WIP rows in the viewport.
+		// The host diffs against its own subscription map and opens/closes FS watchers as needed.
+		const shas = Object.keys(event.detail);
+
+		// Defensive dedup against repeat-identical sets (the library's settle-delay collapses most dupes,
+		// but a round-trip through viewport edges can still emit the same set back to back).
+		if (this._lastSyncedWipShas?.size === shas.length && shas.every(s => this._lastSyncedWipShas!.has(s))) {
+			return;
+		}
+
+		this._lastSyncedWipShas = new Set(shas);
+		this._ipc.sendCommand(SyncWipWatchesCommand, { shas: shas });
+
+		// Mirror the host's watcher set into graphState so `getWipState().isLive` reflects which
+		// repos are currently being watched. The state provider unions in the primary repo path
+		// implicitly — we only pass the secondary set here.
+		const watchedRepoPaths: string[] = [];
+		const metadata = this.graphState.wipMetadataBySha;
+		if (metadata != null) {
+			for (const sha of shas) {
+				const repoPath = metadata[sha]?.repoPath;
+				if (repoPath != null) {
+					watchedRepoPaths.push(repoPath);
+				}
+			}
+		}
+		this.graphState.updateActiveWipWatchers(watchedRepoPaths);
+	}
+
+	private async onWipShasMissingStats(event: CustomEvent<Record<string, true>>) {
+		const shas = Object.keys(event.detail);
+		if (shas.length === 0) return;
+
+		const response = await this._ipc.sendRequest(GetWipStatsRequest, { shas: shas });
+		if (response == null) return;
+
+		// Merge fetched stats into `wipMetadataBySha`. Skipping no-op entries via `wipStatsEqual` preserves
+		// the prior reference so downstream reactive consumers don't churn.
+		const existing = this.graphState.wipMetadataBySha;
+		if (existing == null) return;
+
+		let next: GraphWipMetadataBySha | undefined;
+		for (const sha of shas) {
+			const prev = existing[sha];
+			if (prev == null) continue;
+
+			const incoming = response[sha];
+			if (incoming === undefined) {
+				// Host couldn't (or wouldn't) provide stats — feature disabled with force=false,
+				// or the underlying `git status` errored. Don't clobber an existing `workDirStats`
+				// value with `undefined`; just clear the stale flag so the GK component's
+				// `requestedMissingWipStats` dedup doesn't loop on us.
+				if (prev.workDirStatsStale) {
+					next ??= { ...existing };
+					next[sha] = { ...prev, workDirStatsStale: false };
+				}
+				continue;
+			}
+			if (
+				!prev.workDirStatsStale &&
+				areEqual(prev.workDirStats, incoming.workDirStats) &&
+				prev.pausedOpStatus === incoming.pausedOpStatus
+			) {
+				continue;
+			}
+
+			next ??= { ...existing };
+			next[sha] = {
+				...prev,
+				workDirStats: incoming.workDirStats,
+				workDirStatsStale: false,
+				pausedOpStatus: incoming.pausedOpStatus,
+			};
+		}
+		if (next == null) return;
+
+		this.graphState.wipMetadataBySha = next;
 	}
 
 	private readonly themingDefaults: { cssVariables: CssVariables; themeOpacityFactor: number } = {
@@ -282,8 +1052,8 @@ export class GlGraphWrapper extends SignalWatcher(LitElement) {
 				i++;
 			}
 			return {
-				'--app__bg0': getCssVariableValue('--color-background'),
-				'--panel__bg0': getCssVariableValue('--color-graph-background'),
+				'--app__bg0': getCssVariableValue('--color-graph-background'),
+				'--panel__bg0': getCssVariableValue('--color-graph-background1'),
 				'--panel__bg1': getCssVariableValue('--color-graph-background2'),
 				'--section-border': getCssVariableValue('--color-graph-background2'),
 				'--selected-row': getCssVariableValue('--color-graph-selected-row'),
@@ -305,6 +1075,7 @@ export class GlGraphWrapper extends SignalWatcher(LitElement) {
 				'--scroll-marker-tags-color': getCssVariableValue('--color-graph-scroll-marker-tags'),
 				'--scroll-marker-selection-color': getCssVariableValue('--color-graph-scroll-marker-selection'),
 				'--scroll-marker-pull-requests-color': getCssVariableValue('--color-graph-scroll-marker-pull-requests'),
+				'--scroll-marker-wip-color': getCssVariableValue('--color-graph-scroll-marker-wip'),
 				'--stats-added-color': getCssVariableValue('--color-graph-stats-added'),
 				'--stats-deleted-color': getCssVariableValue('--color-graph-stats-deleted'),
 				'--stats-files-color': getCssVariableValue('--color-graph-stats-files'),

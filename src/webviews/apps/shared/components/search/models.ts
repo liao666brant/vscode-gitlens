@@ -1,6 +1,6 @@
 import type { TemplateResult } from 'lit';
 import { html } from 'lit';
-import type { SearchOperatorsLongForm } from '../../../../../constants.search.js';
+import type { SearchOperatorsLongForm } from '@gitlens/git/models/search.js';
 import type { CompletionItem } from '../autocomplete/autocomplete.js';
 
 export type SearchCompletionItem = CompletionItem<
@@ -130,7 +130,7 @@ export const searchCompletionOperators: SearchCompletionOperator[] = [
 		description: '按提交类型筛选，仅查看储藏或分支/标签尖端提交',
 		icon: 'symbol-misc',
 		aliases: ['is:'],
-		// example: html`Use <code>is:stash</code> for stashes or <code>is:tip</code> for branch & tag tips`,
+		// example: html`Use <code>is:stash</code> for stashes, <code>is:tip</code> for branch & tag tips, or <code>is:wip</code> for working tree changes`,
 		values: [
 			{
 				value: 'stash',
@@ -143,6 +143,12 @@ export const searchCompletionOperators: SearchCompletionOperator[] = [
 				label: 'tip',
 				description: '筛选提交，仅显示被分支或标签指向的提交',
 				icon: 'git-branch',
+			},
+			{
+				value: 'wip',
+				label: 'wip',
+				description: 'Filter to only show working tree changes (current and other worktrees)',
+				icon: 'gl-wip',
 			},
 		],
 	},

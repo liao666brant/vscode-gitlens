@@ -1,17 +1,17 @@
 // import type { EnrichedAutolink } from './annotations/autolinks.js';
+import type { Account } from '@gitlens/git/models/author.js';
+import type { DefaultBranch } from '@gitlens/git/models/defaultBranch.js';
+import type { Issue } from '@gitlens/git/models/issue.js';
+import type { IssueOrPullRequest, IssueOrPullRequestType } from '@gitlens/git/models/issueOrPullRequest.js';
+import type { PullRequest } from '@gitlens/git/models/pullRequest.js';
+import type { RepositoryMetadata } from '@gitlens/git/models/repositoryMetadata.js';
+import type { ResourceDescriptor } from '@gitlens/git/models/resourceDescriptor.js';
+import { isPromise } from '@gitlens/utils/promise.js';
+import { CacheController } from '@gitlens/utils/promiseCache.js';
 import type { Disposable } from './api/gitlens.d.js';
 import type { Container } from './container.js';
-import type { Account } from './git/models/author.js';
-import type { DefaultBranch } from './git/models/defaultBranch.js';
-import type { Issue } from './git/models/issue.js';
-import type { IssueOrPullRequest, IssueOrPullRequestType } from './git/models/issueOrPullRequest.js';
-import type { PullRequest } from './git/models/pullRequest.js';
-import type { RepositoryMetadata } from './git/models/repositoryMetadata.js';
-import type { ResourceDescriptor } from './git/models/resourceDescriptor.js';
 import type { GitHostIntegration } from './plus/integrations/models/gitHostIntegration.js';
 import type { IntegrationBase } from './plus/integrations/models/integration.js';
-import { isPromise } from './system/promise.js';
-import { CacheController } from './system/promiseCache.js';
 
 type Caches = {
 	defaultBranch: { key: `repo:${string}`; value: DefaultBranch };
@@ -63,6 +63,13 @@ export class CacheProvider implements Disposable {
 		this._cache.delete(`${cache}:${key}`);
 	}
 
+	/** Returns the resolved cached value without triggering a fetch on cache miss */
+	private peek<T extends Cache>(cache: T, key: CacheKey<T>): CacheValue<T> | undefined {
+		const item = this._cache.get(`${cache}:${key}`);
+		if (item == null || isPromise(item.value)) return undefined;
+		return item.value;
+	}
+
 	get<T extends Cache>(
 		cache: T,
 		key: CacheKey<T>,
@@ -107,7 +114,7 @@ export class CacheProvider implements Disposable {
 		cacheable: Cacheable<Account>,
 		options?: ExpiryOptions,
 	): CacheResult<Account> {
-		const { key, etag } = getIntegrationKeyAndEtag(integration);
+		const { key, etag } = this.getIntegrationKeyAndEtag(integration);
 		return this.get('currentAccount', `id:${key}`, etag, cacheable, options);
 	}
 
@@ -129,7 +136,7 @@ export class CacheProvider implements Disposable {
 		cacheable: Cacheable<IssueOrPullRequest>,
 		options?: ExpiryOptions,
 	): CacheResult<IssueOrPullRequest> {
-		const { key, etag } = getResourceKeyAndEtag(resource, integration);
+		const { key, etag } = this.getResourceKeyAndEtag(resource, integration);
 
 		if (resource == null) {
 			return this.get('issuesOrPrsById', `id:${id}:${key}:${type ?? 'unknown'}`, etag, cacheable, options);
@@ -150,7 +157,7 @@ export class CacheProvider implements Disposable {
 		cacheable: Cacheable<Issue>,
 		options?: ExpiryOptions,
 	): CacheResult<Issue> {
-		const { key, etag } = getResourceKeyAndEtag(resource, integration);
+		const { key, etag } = this.getResourceKeyAndEtag(resource, integration);
 
 		if (resource == null) {
 			return this.get(
@@ -177,7 +184,7 @@ export class CacheProvider implements Disposable {
 		cacheable: Cacheable<PullRequest>,
 		options?: ExpiryOptions,
 	): CacheResult<PullRequest> {
-		const { key, etag } = getResourceKeyAndEtag(resource, integration);
+		const { key, etag } = this.getResourceKeyAndEtag(resource, integration);
 
 		if (resource == null) {
 			return this.get(
@@ -204,7 +211,7 @@ export class CacheProvider implements Disposable {
 		cacheable: Cacheable<PullRequest>,
 		options?: ExpiryOptions,
 	): CacheResult<PullRequest> {
-		const { key, etag } = getResourceKeyAndEtag(repo, integration);
+		const { key, etag } = this.getResourceKeyAndEtag(repo, integration);
 		// Wrap the cacheable so we can also add the result to the issuesOrPrsById cache
 		return this.get(
 			'prByBranch',
@@ -222,7 +229,7 @@ export class CacheProvider implements Disposable {
 		cacheable: Cacheable<PullRequest>,
 		options?: ExpiryOptions,
 	): CacheResult<PullRequest> {
-		const { key, etag } = getResourceKeyAndEtag(repo, integration);
+		const { key, etag } = this.getResourceKeyAndEtag(repo, integration);
 		// Wrap the cacheable so we can also add the result to the issuesOrPrsById cache
 		return this.get(
 			'prsBySha',
@@ -239,8 +246,34 @@ export class CacheProvider implements Disposable {
 		cacheable: Cacheable<DefaultBranch>,
 		options?: ExpiryOptions,
 	): CacheResult<DefaultBranch> {
-		const { key, etag } = getResourceKeyAndEtag(repo, integration);
+		const { key, etag } = this.getResourceKeyAndEtag(repo, integration);
 		return this.get('defaultBranch', `repo:${key}`, etag, cacheable, options);
+	}
+
+	peekPullRequestForBranch(
+		branch: string,
+		repo: ResourceDescriptor,
+		integration: GitHostIntegration | undefined,
+	): PullRequest | undefined {
+		const { key } = this.getResourceKeyAndEtag(repo, integration);
+		return this.peek('prByBranch', `branch:${branch}:${key}`);
+	}
+
+	peekPullRequestForSha(
+		sha: string,
+		repo: ResourceDescriptor,
+		integration: GitHostIntegration | undefined,
+	): PullRequest | undefined {
+		const { key } = this.getResourceKeyAndEtag(repo, integration);
+		return this.peek('prsBySha', `sha:${sha}:${key}`);
+	}
+
+	peekIssue(id: string, resource: ResourceDescriptor, integration: IntegrationBase | undefined): Issue | undefined {
+		const { key } = this.getResourceKeyAndEtag(resource, integration);
+		return this.peek(
+			'issuesByIdAndResource',
+			`id:${id}:${key}:${'issue' satisfies IssueOrPullRequestType}:${JSON.stringify(resource)}}`,
+		);
 	}
 
 	getRepositoryMetadata(
@@ -249,7 +282,7 @@ export class CacheProvider implements Disposable {
 		cacheable: Cacheable<RepositoryMetadata>,
 		options?: ExpiryOptions,
 	): CacheResult<RepositoryMetadata> {
-		const { key, etag } = getResourceKeyAndEtag(repo, integration);
+		const { key, etag } = this.getResourceKeyAndEtag(repo, integration);
 		return this.get('repoMetadata', `repo:${key}`, etag, cacheable, options);
 	}
 
@@ -318,6 +351,26 @@ export class CacheProvider implements Disposable {
 			return item;
 		};
 	}
+
+	private getIntegrationKeyAndEtag(integration: IntegrationBase) {
+		return {
+			key: integration.id,
+			etag: `${integration.id}:${integration.maybeConnected ?? false}:${integration.sessionFingerprint ?? ''}`,
+		};
+	}
+
+	/** ETag for resource caches — uses cached account ID when available, falls back to sessionFingerprint */
+	private getResourceKeyAndEtag(resource: ResourceDescriptor, integration?: GitHostIntegration | IntegrationBase) {
+		let fingerprint = '';
+		if (integration != null) {
+			fingerprint =
+				this.peek('currentAccount', `id:${integration.id}`)?.id ?? integration.sessionFingerprint ?? '';
+		}
+		return {
+			key: resource.key,
+			etag: `${resource.key}:${integration?.maybeConnected ?? false}:${fingerprint}`,
+		};
+	}
 }
 
 function getExpiresAt<T extends Cache>(cache: T, value: CacheValue<T> | undefined): number {
@@ -370,12 +423,4 @@ function getExpiresAt<T extends Cache>(cache: T, value: CacheValue<T> | undefine
 		default:
 			return value == null ? 0 /* Never expires */ : defaultExpiresAt;
 	}
-}
-
-function getResourceKeyAndEtag(resource: ResourceDescriptor, integration?: GitHostIntegration | IntegrationBase) {
-	return { key: resource.key, etag: `${resource.key}:${integration?.maybeConnected ?? false}` };
-}
-
-function getIntegrationKeyAndEtag(integration: IntegrationBase) {
-	return { key: integration.id, etag: `${integration.id}:${integration.maybeConnected ?? false}` };
 }

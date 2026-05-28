@@ -19,7 +19,6 @@ import MiniCssExtractPlugin from 'mini-css-extract-plugin';
 import { createRequire } from 'module';
 import { availableParallelism } from 'os';
 import path from 'path';
-import { defineReactCompilerLoaderOption, reactCompilerLoader } from 'react-compiler-webpack';
 import { validate } from 'schema-utils';
 import TerserPlugin from 'terser-webpack-plugin';
 import { fileURLToPath, pathToFileURL } from 'url';
@@ -53,6 +52,38 @@ const pkgMgr = useNpm ? 'npm' : 'pnpm';
 
 /** @typedef {'production' | 'development' | 'none'} GlMode */
 /** @typedef { 'node' | 'webworker' } GlTarget */
+
+function getLibraryAliases() {
+	return {
+		'@gitlens/utils': path.resolve(__dirname, 'packages', 'utils', 'src'),
+		'@gitlens/ipc': path.resolve(__dirname, 'packages', 'ipc', 'src'),
+		'@gitlens/git': path.resolve(__dirname, 'packages', 'git', 'src'),
+		'@gitlens/git-cli': path.resolve(__dirname, 'packages', 'git-cli', 'src'),
+		'@gitlens/git-github': path.resolve(__dirname, 'packages', 'plus', 'git-github', 'src'),
+		'@gitlens/ai': path.resolve(__dirname, 'packages', 'plus', 'ai', 'src'),
+		'@gitlens/agents': path.resolve(__dirname, 'packages', 'plus', 'agents', 'src'),
+	};
+}
+
+/**
+ * Gets `#env` aliases for `@gitlens/utils` internal env-switching imports.
+ * Enhanced-resolve doesn't re-apply extensionAlias (.js→.ts) to paths
+ * resolved through package.json `imports` fields, so we need explicit file aliases.
+ * @param {'node' | 'webworker'} target
+ */
+function getUtilsEnvAliases(target) {
+	const env = target === 'webworker' ? 'browser' : 'node';
+	const base = path.resolve(__dirname, 'packages', 'utils', 'src', 'env', env);
+	return {
+		'#env/base64.js': path.resolve(base, 'base64.ts'),
+		'#env/crypto.js': path.resolve(base, 'crypto.ts'),
+		'#env/fs.js': path.resolve(base, 'fs.ts'),
+		'#env/hex.js': path.resolve(base, 'hex.ts'),
+		'#env/hrtime.js': path.resolve(base, 'hrtime.ts'),
+		'#env/logScope.js': path.resolve(base, 'logScope.ts'),
+		'#env/platform.js': path.resolve(base, 'platform.ts'),
+	};
+}
 /** @typedef {{ analyzeBundle?: boolean; analyzeDeps?: boolean; esbuild?: boolean; quick?: 'turbo' | boolean; trace?: boolean; webviews?: string }} GlEnv */
 /** @typedef {{ [key: string]: { entry: string; plus?: boolean; alias?: { [key: string]: string } } }} GlWebviews */
 
@@ -233,7 +264,10 @@ function getExtensionConfig(target, mode, env) {
 	if (!env.quick && target !== 'webworker') {
 		plugins.push(
 			new ESLintLitePlugin({
-				files: path.join(__dirname, 'src', '**', '*.ts'),
+				files: [
+					path.join(__dirname, 'src', '**', '*.ts'),
+					path.join(__dirname, 'packages', '**', 'src', '**', '*.ts'),
+				],
 				exclude: ['**/@types/**', '**/webviews/apps/**', '**/__tests__/**'],
 				worker: eslintWorker,
 				eslintOptions: { ...eslintOptions, cacheLocation: path.join(__dirname, '.eslintcache/') },
@@ -344,7 +378,7 @@ function getExtensionConfig(target, mode, env) {
 			rules: [
 				{
 					exclude: /\.d\.ts$/,
-					include: path.join(__dirname, 'src'),
+					include: [path.join(__dirname, 'src'), path.join(__dirname, 'packages')],
 					test: /\.tsx?$/,
 					use: env.esbuild
 						? {
@@ -366,7 +400,12 @@ function getExtensionConfig(target, mode, env) {
 		resolve: {
 			alias: {
 				'@env': path.resolve(__dirname, 'src', 'env', target === 'webworker' ? 'browser' : target),
-				// Stupid dependency that is used by `http[s]-proxy-agent`
+				// Deduplicate signal-polyfill: linked @supertalk/* packages resolve to their
+				// own node_modules copy, breaking instanceof checks in SignalHandler.canHandle().
+				'signal-polyfill': path.resolve(__dirname, 'node_modules', 'signal-polyfill'),
+				...getLibraryAliases(),
+				...getUtilsEnvAliases(target),
+				// Stupid dependency that is used by `http[s]-proxy-agent` (via @gitkraken/provider-apis)
 				debug: path.resolve(__dirname, 'patches', 'debug.js'),
 				// This dependency is very large, and isn't needed for our use-case
 				tr46: path.resolve(__dirname, 'patches', 'tr46.js'),
@@ -377,12 +416,25 @@ function getExtensionConfig(target, mode, env) {
 			fallback: {
 				'../../../product.json': false,
 				...(target === 'webworker'
-					? { path: require.resolve('path-browserify'), os: require.resolve('os-browserify/browser') }
+					? {
+							path: require.resolve('path-browserify'),
+							os: require.resolve('os-browserify/browser'),
+							child_process: false,
+							fs: false,
+							'fs/promises': false,
+							process: false,
+						}
 					: {}),
 			},
 			mainFields: target === 'webworker' ? ['browser', 'module', 'main'] : ['module', 'main'],
 			extensions: ['.ts', '.tsx', '.js', '.jsx', '.json'],
 		},
+		ignoreWarnings: [
+			// Ignore dynamic require warning for platform-agnostic async_hooks detection
+			{ module: /packages[\\/]utils[\\/]src[\\/]logScope\.ts/, message: /Critical dependency/ },
+			// Ignore dynamic require warning from protobufjs's optional-peer resolver (used by @opentelemetry/otlp-transformer)
+			{ module: /[\\/]@protobufjs[\\/]inquire[\\/]/, message: /Critical dependency/ },
+		],
 		plugins: plugins,
 		infrastructureLogging: mode === 'production' ? undefined : { level: 'log' }, // enables logging required for problem matchers
 		stats: stats,
@@ -394,19 +446,36 @@ function getExtensionConfig(target, mode, env) {
  * Unit test config - delegates to esbuild via EsbuildTestsPlugin for faster builds.
  * @param { GlTarget } _target
  * @param { GlMode } mode
- * @param {GlEnv} _env
+ * @param {GlEnv} env
  * @returns { WebpackConfig }
  */
-function getUnitTestConfig(_target, mode, _env) {
+function getUnitTestConfig(_target, mode, env) {
+	/** @type {import('webpack').WebpackPluginInstance[]} */
+	const plugins = [new EsbuildTestsPlugin()];
+
+	if (!env.quick) {
+		plugins.push(
+			new ESLintLitePlugin({
+				files: [
+					path.join(__dirname, 'src', '**', '__tests__', '**', '*.ts'),
+					path.join(__dirname, 'packages', '**', 'src', '**', '__tests__', '**', '*.ts'),
+				],
+				worker: eslintWorker,
+				eslintOptions: { ...eslintOptions, cacheLocation: path.join(__dirname, '.eslintcache', 'tests/') },
+			}),
+		);
+	}
+
 	return {
 		name: 'unit-tests',
 		context: __dirname,
 		// Empty entry - esbuild handles the actual bundling
 		entry: {},
 		mode: mode,
-		plugins: [new EsbuildTestsPlugin()],
+		plugins: plugins,
 		infrastructureLogging: mode === 'production' ? undefined : { level: 'log' },
-		stats: 'none',
+		// Surface ESLint errors/warnings from the lint plugin (esbuild handles asset output separately)
+		stats: { preset: 'errors-warnings', colors: true, errorsCount: true, warningsCount: true },
 	};
 }
 
@@ -540,6 +609,11 @@ function getWebviewConfig(webviews, overrides, mode, env) {
 		plugins.push(new CompileComposerTemplatesPlugin());
 	}
 
+	// Keep `custom-elements.json` fresh during dev/watch builds (skipped in production and quick modes)
+	if (mode !== 'production' && !env.quick) {
+		plugins.push(new CustomElementsManifestPlugin());
+	}
+
 	let name = '';
 	let filePrefix = '';
 	if (Object.keys(webviews).length > 1) {
@@ -656,7 +730,7 @@ function getWebviewConfig(webviews, overrides, mode, env) {
 							new CssMinimizerPlugin({
 								minimizerOptions: {
 									preset: [
-										'cssnano-preset-advanced',
+										require.resolve('cssnano-preset-advanced'),
 										{
 											autoprefixer: false,
 											discardUnused: false,
@@ -683,12 +757,9 @@ function getWebviewConfig(webviews, overrides, mode, env) {
 				},
 				{
 					exclude: /\.d\.ts$/,
-					include: path.join(__dirname, 'src'),
+					include: [path.join(__dirname, 'src'), path.join(__dirname, 'packages')],
 					test: /\.tsx?$/,
 					use: [
-						// React Compiler - must come before esbuild-loader/ts-loader
-						{ loader: reactCompilerLoader, options: defineReactCompilerLoaderOption({ target: '19' }) },
-						// TypeScript transpilation
 						env.esbuild
 							? {
 									loader: 'esbuild-loader',
@@ -727,6 +798,11 @@ function getWebviewConfig(webviews, overrides, mode, env) {
 		resolve: {
 			alias: {
 				'@env': path.resolve(__dirname, 'src', 'env', 'browser'),
+				// Deduplicate signal-polyfill: linked @supertalk/* packages resolve to their
+				// own node_modules copy, breaking instanceof checks in SignalHandler.canHandle().
+				'signal-polyfill': path.resolve(__dirname, 'node_modules', 'signal-polyfill'),
+				...getLibraryAliases(),
+				...getUtilsEnvAliases('webworker'),
 				react: path.resolve(__dirname, 'node_modules', 'react'),
 				'react-dom': path.resolve(__dirname, 'node_modules', 'react-dom'),
 				...overrides.alias,
@@ -762,17 +838,15 @@ function getCspHtmlPlugin(mode, env) {
 				mode !== 'production'
 					? ['#{cspSource}', "'nonce-#{cspNonce}'", "'unsafe-eval'"]
 					: ['#{cspSource}', "'nonce-#{cspNonce}'"],
-			'style-src':
-				mode === 'production'
-					? ['#{cspSource}', "'nonce-#{cspNonce}'", "'unsafe-hashes'"]
-					: ['#{cspSource}', "'unsafe-hashes'", "'unsafe-inline'"],
+			'style-src': ['#{cspSource}', "'nonce-#{cspNonce}'", "'unsafe-hashes'"],
 			'font-src': ['#{cspSource}'],
+			'connect-src': mode !== 'production' ? ['#{cspSource}'] : "'none'",
 		},
 		{
 			enabled: true,
 			hashingMethod: 'sha256',
 			hashEnabled: { 'script-src': true, 'style-src': mode === 'production' },
-			nonceEnabled: { 'script-src': true, 'style-src': mode === 'production' },
+			nonceEnabled: { 'script-src': true, 'style-src': true },
 		},
 	);
 	// Override the nonce creation so we can dynamically generate them at runtime
@@ -1374,5 +1448,57 @@ class CompileComposerTemplatesPlugin {
 			fs.writeFileSync(outPath, newContent, 'utf8');
 			console.log(`[CompileComposerTemplatesPlugin] Wrote ${outPath}`);
 		}
+	}
+}
+
+class CustomElementsManifestPlugin {
+	static name = 'CustomElementsManifestPlugin';
+
+	#firstRun = true;
+	#sourcePrefix = `${path.sep}src${path.sep}webviews${path.sep}apps${path.sep}`;
+
+	/**
+	 * @param {import('webpack').Compiler} compiler
+	 */
+	apply(compiler) {
+		compiler.hooks.afterEmit.tapAsync(CustomElementsManifestPlugin.name, (_compilation, callback) => {
+			// On the first compile, regenerate unconditionally to refresh any stale committed manifest.
+			// On subsequent compiles (watch mode), only regenerate when a webview source file changed.
+			if (!this.#firstRun) {
+				const changed = [...(compiler.modifiedFiles ?? []), ...(compiler.removedFiles ?? [])];
+				const relevant = changed.some(f => f.includes(this.#sourcePrefix) && /\.tsx?$/.test(f));
+				if (!relevant) {
+					callback();
+					return;
+				}
+			}
+			this.#firstRun = false;
+
+			const logger = compiler.getInfrastructureLogger(CustomElementsManifestPlugin.name);
+			try {
+				logger.log(`Generating 'custom-elements.json'...`);
+				const start = Date.now();
+
+				const result = spawnSync(pkgMgr, ['run', 'generate:customElements'], {
+					cwd: __dirname,
+					encoding: 'utf8',
+					shell: true,
+				});
+
+				if (result.status === 0) {
+					logger.log(`Generated 'custom-elements.json' in \x1b[32m${Date.now() - start}ms\x1b[0m`);
+				} else {
+					logger.warn(
+						`Failed to generate 'custom-elements.json' (exit ${result.status})${
+							result.stderr ? `: ${result.stderr.trim()}` : ''
+						}`,
+					);
+				}
+			} catch (ex) {
+				logger.warn(`Error generating 'custom-elements.json': ${ex}`);
+			}
+
+			callback();
+		});
 	}
 }

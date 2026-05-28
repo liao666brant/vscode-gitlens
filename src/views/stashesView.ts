@@ -1,11 +1,11 @@
 import type { CancellationToken, ConfigurationChangeEvent, Disposable } from 'vscode';
 import { ProgressLocation, TreeItem, TreeItemCollapsibleState, window } from 'vscode';
+import type { GitStashReference } from '@gitlens/git/models/reference.js';
+import { getReferenceLabel } from '@gitlens/git/utils/reference.utils.js';
 import type { StashesViewConfig, ViewFilesLayout } from '../config.js';
 import type { Container } from '../container.js';
 import { GitUri } from '../git/gitUri.js';
-import type { GitStashReference } from '../git/models/reference.js';
 import type { RepositoryChangeEvent } from '../git/models/repository.js';
-import { getReferenceLabel } from '../git/utils/reference.utils.js';
 import { executeCommand } from '../system/-webview/command.js';
 import { configuration } from '../system/-webview/configuration.js';
 import { gate } from '../system/decorators/gate.js';
@@ -133,6 +133,7 @@ export class StashesView extends ViewBase<'stashes', StashesViewNode, StashesVie
 		const changed = super.filterConfigurationChanged(e);
 		if (
 			!changed &&
+			!configuration.changed(e, 'defaultCurrentUserNameStyle') &&
 			!configuration.changed(e, 'defaultDateFormat') &&
 			!configuration.changed(e, 'defaultDateLocale') &&
 			!configuration.changed(e, 'defaultDateShortFormat') &&

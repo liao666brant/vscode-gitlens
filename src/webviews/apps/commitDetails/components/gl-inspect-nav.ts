@@ -131,7 +131,7 @@ export class GlInspectNav extends LitElement {
 				${when(
 					!this.uncommitted,
 					() => html`
-						<gl-tooltip hoist>
+						<gl-tooltip>
 							<a
 								class="commit-action"
 								href="#"
@@ -155,7 +155,7 @@ export class GlInspectNav extends LitElement {
 				)}
 			</div>
 			<div class="group">
-				<gl-tooltip hoist
+				<gl-tooltip
 					><a
 						class="commit-action${this.pinned ? ' is-active' : ''}"
 						href="#"
@@ -167,7 +167,7 @@ export class GlInspectNav extends LitElement {
 						></code-icon></a
 					><span slot="content">${pinLabel}</span></gl-tooltip
 				>
-				<gl-tooltip hoist content="${backLabel}"
+				<gl-tooltip content="${backLabel}"
 					><a
 						class="commit-action${this.navigationState.back ? '' : ' is-disabled'}"
 						aria-disabled="${this.navigationState.back ? 'false' : 'true'}"
@@ -179,7 +179,7 @@ export class GlInspectNav extends LitElement {
 				${when(
 					this.navigationState.forward,
 					() => html`
-						<gl-tooltip hoist content="${forwardLabel}"
+						<gl-tooltip content="${forwardLabel}"
 							><a class="commit-action" href="#" data-action="forward" @click=${this.handleAction}
 								><code-icon icon="arrow-right" data-region="commit-forward"></code-icon></a
 						></gl-tooltip>

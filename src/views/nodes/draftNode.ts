@@ -1,10 +1,11 @@
 import type { Uri } from 'vscode';
 import { MarkdownString, ThemeIcon, TreeItem, TreeItemCollapsibleState } from 'vscode';
+import { formatDate, fromNow } from '@gitlens/utils/date.js';
 import { getAvatarUri } from '../../avatars.js';
 import type { GitUri } from '../../git/gitUri.js';
+import { formatCurrentUserDisplayName } from '../../git/utils/-webview/commit.utils.js';
 import type { Draft } from '../../plus/drafts/models/drafts.js';
 import { configuration } from '../../system/-webview/configuration.js';
-import { formatDate, fromNow } from '../../system/date.js';
 import type { DraftsView } from '../draftsView.js';
 import type { ViewsWithCommits } from '../viewBase.js';
 import { ContextValues, getViewNodeId, ViewNode } from './abstract/viewNode.js';
@@ -70,7 +71,9 @@ export class DraftNode extends ViewNode<'draft', ViewsWithCommits | DraftsView> 
 
 		item.tooltip = new MarkdownString(
 			`${label}${this.draft.description ? `\\\n${this.draft.description}` : ''}\n\n创建于 ${
-				this.draft.author?.name ? `，由 ${this.draft.author.name} 创建` : ''
+				this.draft.author?.name
+					? `，由 ${this.draft.isMine ? formatCurrentUserDisplayName(this.draft.author.name) : this.draft.author.name} 创建`
+					: ''
 			} ${fromNow(this.draft.createdAt)} &nbsp; _(${formatDate(this.draft.createdAt, dateFormat)})_${
 				showUpdated
 					? ` \\\n上次更新于 ${fromNow(this.draft.updatedAt)} &nbsp; _(${formatDate(

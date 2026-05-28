@@ -16,7 +16,7 @@ export class WebviewPane extends LitElement {
 			:host {
 				display: flex;
 				flex-direction: column;
-				background-color: var(--vscode-sideBar-background);
+				/* background-color: var(--vscode-sideBar-background); */
 				min-height: 23px;
 			}
 
@@ -28,12 +28,12 @@ export class WebviewPane extends LitElement {
 				flex: none;
 				display: flex;
 				background-color: var(--vscode-sideBarSectionHeader-background);
-				color: var(--vscode-sideBarSectionHeader-foreground);
+				color: var(--vscode-sideBarSectionHeader-foreground, var(--vscode-foreground));
 				border-top: 1px solid var(--vscode-sideBarSectionHeader-border);
 				position: relative;
 			}
 
-			.header:focus-within {
+			:host([collapsable]) .header:focus-within {
 				outline: 1px solid var(--vscode-focusBorder);
 				outline-offset: -1px;
 			}
@@ -91,6 +91,8 @@ export class WebviewPane extends LitElement {
 			}
 
 			.content {
+				display: flex;
+				flex-direction: column;
 				flex: 1;
 				overflow: auto;
 				min-height: 0;
@@ -144,7 +146,7 @@ export class WebviewPane extends LitElement {
 
 	override render(): unknown {
 		return html`
-			<header class="header">
+			<header class="header" part="header">
 				${this.renderTitle()}
 				<slot name="actions"></slot>
 				<progress-indicator ?active="${this.loading}"></progress-indicator>

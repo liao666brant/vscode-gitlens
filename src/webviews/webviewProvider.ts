@@ -23,6 +23,7 @@ import type {
 	IpcRequest,
 } from './ipc/models/ipc.js';
 import type { WebviewState } from './protocol.js';
+import type { EventVisibilityBuffer, SubscriptionTracker } from './rpc/eventVisibilityBuffer.js';
 import type { WebviewCommandCallback } from './webviewCommandRegistrar.js';
 import type { WebviewShowOptions } from './webviewsController.js';
 
@@ -55,6 +56,14 @@ export interface WebviewProvider<
 	includeEndOfBody?(): string | Promise<string>;
 
 	onReady?(): void | Promise<void>;
+	/**
+	 * Called when the webview iframe sends `core/webview/ready` while the host already considered the controller ready —
+	 * i.e., the iframe was reloaded under us (e.g., panel layout settle, editor-tab webview restored after a window reload).
+	 * The host replays the buffered post-bootstrap IPC log automatically, so providers usually do NOT need to re-push state.
+	 * Use this hook only for things outside the IPC log: re-establishing RPC subscriptions, re-deriving non-IPC state,
+	 * telemetry, or one-shot reconnect side effects.
+	 */
+	onReconnect?(): void | Promise<void>;
 	onRefresh?(force?: boolean): void;
 	onReloaded?(): void;
 	onMessageReceived?(e: IpcMessage): void;
@@ -62,6 +71,25 @@ export interface WebviewProvider<
 	onFocusChanged?(focused: boolean): void;
 	onVisibilityChanged?(visible: boolean): void;
 	onWindowFocusChanged?(focused: boolean): void;
+
+	/**
+	 * Returns services to expose via RPC (Supertalk).
+	 *
+	 * If provided, these services will be exposed to the webview and can be
+	 * called via `wrapServices<T>()` from the webview side. This enables a
+	 * service-oriented architecture alongside or instead of IPC messages.
+	 *
+	 * @example
+	 * ```typescript
+	 * getRpcServices() {
+	 *   return {
+	 *     getCommit: (sha: string) => this.getCommitDetails(sha),
+	 *     search: (query: string) => this.performSearch(query),
+	 *   };
+	 * }
+	 * ```
+	 */
+	getRpcServices?(buffer?: EventVisibilityBuffer, tracker?: SubscriptionTracker): object;
 }
 
 export interface WebviewStateProvier<
@@ -93,7 +121,7 @@ export interface WebviewHost<ID extends WebviewIds | CustomEditorIds> {
 
 	addPendingIpcNotification(
 		type: IpcNotification<any>,
-		mapping: Map<IpcNotification<any>, () => Promise<boolean>>,
+		mapping: Map<IpcNotification<any>, () => Promise<boolean | void>>,
 		thisArg: any,
 	): void;
 	clearPendingIpcNotifications(): void;
@@ -126,6 +154,11 @@ export interface WebviewHost<ID extends WebviewIds | CustomEditorIds> {
 		params: IpcCallResponseParamsType<T>,
 	): Promise<boolean>;
 	registerWebviewCommand<T extends Partial<WebviewContext>>(
+		command: GlWebviewCommands,
+		callback: WebviewCommandCallback<T>,
+	): Disposable;
+	registerWebviewCommandForId<T extends Partial<WebviewContext>>(
+		webviewId: string,
 		command: GlWebviewCommands,
 		callback: WebviewCommandCallback<T>,
 	): Disposable;

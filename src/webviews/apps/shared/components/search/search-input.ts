@@ -3,13 +3,16 @@ import { css, html, nothing } from 'lit';
 import { customElement, property, query, state } from 'lit/decorators.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
 import { live } from 'lit/directives/live.js';
+import type { SearchOperators, SearchQuery } from '@gitlens/git/models/search.js';
+import { searchOperatorsToLongFormMap } from '@gitlens/git/models/search.js';
+import {
+	areSearchQueriesEqual,
+	parseSearchQuery,
+	rebuildSearchQueryFromParsed,
+} from '@gitlens/git/utils/search.utils.js';
+import { filterMap } from '@gitlens/utils/array.js';
+import { fuzzyFilter } from '@gitlens/utils/fuzzy.js';
 import { whitespaceRegex } from '../../../../../constants.js';
-import type { SearchOperators, SearchQuery } from '../../../../../constants.search.js';
-import { searchOperatorsToLongFormMap } from '../../../../../constants.search.js';
-import { parseSearchQuery, rebuildSearchQueryFromParsed } from '../../../../../git/search.js';
-import { areSearchQueriesEqual } from '../../../../../git/utils/search.utils.js';
-import { filterMap } from '../../../../../system/array.js';
-import { fuzzyFilter } from '../../../../../system/fuzzy.js';
 import {
 	ChooseAuthorRequest,
 	ChooseComparisonRequest,
@@ -76,7 +79,7 @@ export class GlSearchInput extends GlElement {
 		:host {
 			--gl-search-input-background: var(--vscode-input-background);
 			--gl-search-input-foreground: var(--vscode-input-foreground);
-			--gl-search-input-border: var(--vscode-input-border);
+			--gl-search-input-border: var(--vscode-input-border, transparent);
 			--gl-search-input-placeholder: var(
 				--vscode-editor-placeholder\\\.foreground,
 				var(--vscode-input-placeholderForeground)
@@ -143,7 +146,7 @@ export class GlSearchInput extends GlElement {
 			background-color: var(--gl-search-input-background);
 			color: var(--gl-search-input-foreground);
 			border: 1px solid var(--gl-search-input-border);
-			border-radius: 0.25rem;
+			border-radius: var(--gl-input-border-radius);
 			padding-top: 0;
 			padding-bottom: 1px;
 			padding-left: calc(0.7rem + calc(1.96rem * var(--gl-search-input-buttons-left)));
@@ -194,6 +197,8 @@ export class GlSearchInput extends GlElement {
 		/* Input highlighting overlay */
 		.input-container {
 			position: relative;
+			background-color: var(--gl-search-input-background);
+			border-radius: var(--gl-input-border-radius);
 		}
 
 		.input-highlight {
@@ -208,7 +213,7 @@ export class GlSearchInput extends GlElement {
 			box-sizing: border-box;
 			height: 2.7rem;
 			border: 1px solid transparent;
-			border-radius: 0.25rem;
+			border-radius: var(--gl-input-border-radius);
 			font-family: inherit;
 			font-size: inherit;
 			line-height: 2.7rem;
@@ -280,6 +285,7 @@ export class GlSearchInput extends GlElement {
 
 		.example {
 			display: inline-block;
+			margin-left: 0.5em;
 		}
 
 		code {
@@ -300,7 +306,7 @@ export class GlSearchInput extends GlElement {
 		} */
 
 		gl-copy-container {
-			margin-top: -0.1rem;
+			--copy-padding: 0 0.1rem;
 		}
 	`;
 
@@ -862,7 +868,7 @@ export class GlSearchInput extends GlElement {
 
 		// Deduplicate by parsing and rebuilding the query
 		// The parsed operations use Sets, so duplicates are automatically removed
-		const parsed = parseSearchQuery({ query: newValue } as SearchQuery);
+		const parsed = parseSearchQuery({ query: newValue });
 		newValue = rebuildSearchQueryFromParsed(parsed);
 
 		// Update the input value directly
@@ -878,6 +884,110 @@ export class GlSearchInput extends GlElement {
 
 		// Update autocomplete in the next frame to ensure input is updated
 		window.requestAnimationFrame(() => this.updateAutocomplete());
+	}
+
+	/**
+	 * Strip a trailing valueless operator (e.g. ` message:` at the end of the query) so
+	 * successive column-filter clicks don't pile up half-typed prefixes. Matches one short
+	 * alpha token followed by `:` and nothing else before end-of-string — long enough to
+	 * cover every defined operator, narrow enough not to chew into real values.
+	 * Returns the resulting string (without mutating internal state).
+	 */
+	private withoutTrailingEmptyOperator(value: string): string {
+		return value.replace(/\s*\b[a-z]+:\s*$/i, '');
+	}
+
+	/**
+	 * Append `<operator><value>` terms to the query, normalize/dedupe via parse+rebuild,
+	 * place the caret at the end, and fire `onSearchChanged()`. Shared by the column-header
+	 * picker entry points; bypasses the `cursorOperator` gate used by autocomplete-driven picks.
+	 */
+	private appendOperatorValues(operator: string, values: string[]): void {
+		if (values.length === 0) {
+			this.input.focus();
+			return;
+		}
+
+		const base = this.withoutTrailingEmptyOperator(this.value);
+		const separator = base.length === 0 || base.endsWith(' ') ? '' : ' ';
+		const insertText = separator + values.map(v => `${operator}${v}`).join(' ');
+
+		let newValue = base + insertText;
+		const parsed = parseSearchQuery({ query: newValue });
+		newValue = rebuildSearchQueryFromParsed(parsed);
+
+		this.input.value = newValue;
+		this._value = newValue;
+
+		const cursorPos = newValue.length;
+		this.input.focus();
+		this.input.selectionStart = cursorPos;
+		this.input.selectionEnd = cursorPos;
+		this.cursorPosition = [cursorPos, cursorPos];
+
+		this.onSearchChanged();
+	}
+
+	/** Opens the author picker and appends `author:<email>` terms to the query. */
+	async pickAuthors(): Promise<void> {
+		try {
+			const result = await this._ipc.sendRequest(ChooseAuthorRequest, {
+				title: 'Search by Author',
+				placeholder: 'Choose contributors to include commits from',
+			});
+			this.appendOperatorValues('author:', result.authors ?? []);
+		} catch {
+			this.input.focus();
+		}
+	}
+
+	/** Opens the ref picker and appends a `ref:<name>` term to the query. */
+	async pickRefs(): Promise<void> {
+		try {
+			const result = await this._ipc.sendRequest(ChooseRefRequest, {
+				title: 'Search by Branch or Tag',
+				placeholder: 'Choose a branch or tag to filter by',
+				allowedAdditionalInput: { range: false, rev: false },
+				include: ['branches', 'tags', 'HEAD'],
+			});
+			this.appendOperatorValues('ref:', result?.name ? [result.name] : []);
+		} catch {
+			this.input.focus();
+		}
+	}
+
+	/** Opens the file picker and appends `file:<path>` terms to the query. */
+	async pickFiles(): Promise<void> {
+		try {
+			const result = await this._ipc.sendRequest(ChooseFileRequest, {
+				title: 'Search by File',
+				type: 'file',
+				openLabel: 'Add to Search',
+			});
+			this.appendOperatorValues('file:', result.files ?? []);
+		} catch {
+			this.input.focus();
+		}
+	}
+
+	/**
+	 * Append a bare `<operator>` prefix (with a leading space if needed), place the caret
+	 * right after it, and focus the input. Does not fire a search — the user still needs to
+	 * type the value.
+	 */
+	insertSearchOperator(operator: string): void {
+		const base = this.withoutTrailingEmptyOperator(this.value);
+		const separator = base.length === 0 || base.endsWith(' ') ? '' : ' ';
+		const newValue = base + separator + operator;
+
+		this.input.value = newValue;
+		this._value = newValue;
+
+		const cursorPos = newValue.length;
+		this.input.focus();
+		this.input.selectionStart = cursorPos;
+		this.input.selectionEnd = cursorPos;
+		this.cursorPosition = [cursorPos, cursorPos];
 	}
 
 	/**
@@ -987,13 +1097,14 @@ export class GlSearchInput extends GlElement {
 	}
 
 	private handleKeyup(e: KeyboardEvent) {
-		// Don't update autocomplete on navigation keys - they're handled in handleShortcutKeys
+		// Don't update autocomplete on navigation keys or Enter - they're handled in handleShortcutKeys
 		if (
 			e.key !== 'ArrowUp' &&
 			e.key !== 'ArrowDown' &&
 			e.key !== 'PageUp' &&
 			e.key !== 'PageDown' &&
-			e.key !== 'Escape'
+			e.key !== 'Escape' &&
+			e.key !== 'Enter'
 		) {
 			this.updateAutocomplete();
 		}
@@ -1023,9 +1134,14 @@ export class GlSearchInput extends GlElement {
 				e.preventDefault();
 				e.stopPropagation();
 
-				// Accept autocomplete selection if visible AND an item is selected
+				// Accept autocomplete selection if visible, an item is selected, and we're completing a value (not an operator suggestion)
 				const selectedIndex = this.autocomplete?.selectedIndex ?? -1;
-				if (this.autocompleteOpen && this.autocompleteItems.length && selectedIndex >= 0) {
+				if (
+					this.autocompleteOpen &&
+					this.autocompleteItems.length &&
+					selectedIndex >= 0 &&
+					this.cursorOperator
+				) {
 					void this.acceptAutocomplete(selectedIndex);
 					return true;
 				}
@@ -1195,7 +1311,7 @@ export class GlSearchInput extends GlElement {
 	private validateQuery(raw: string): string | undefined {
 		if (!raw) return undefined;
 
-		const { operations, errors } = parseSearchQuery({ query: raw } as SearchQuery, true);
+		const { operations, errors } = parseSearchQuery({ query: raw }, true);
 		if (errors?.length) return errors[0];
 
 		// If no operations were parsed, the query is effectively empty
@@ -1227,6 +1343,7 @@ export class GlSearchInput extends GlElement {
 		if (!force && this._lastSearch && areSearchQueriesEqual(search, this._lastSearch)) return;
 
 		this._lastSearch = search;
+		this.hideAutocomplete();
 
 		this.emit('gl-search-inputchange', search);
 	}

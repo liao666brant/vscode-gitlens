@@ -1,14 +1,25 @@
 import { consume } from '@lit/context';
 import { css, html, LitElement, nothing } from 'lit';
 import { customElement, property } from 'lit/decorators.js';
-import { fromNow } from '../../../../../system/date.js';
-import type { BranchState, State } from '../../../../plus/graph/protocol.js';
+import { pausedOperationStatusStringsByType } from '@gitlens/git/utils/pausedOperationStatus.utils.js';
+import { fromNow } from '@gitlens/utils/date.js';
+import { pluralize } from '@gitlens/utils/string.js';
+import type { StashSaveCommandArgs } from '../../../../../commands/stashSave.js';
+import { createCommandLink } from '../../../../../system/commands.js';
+import type { BranchState, GraphAutoFetchMode, GraphWorkingTreeStats, State } from '../../../../plus/graph/protocol.js';
+import { UpdateGraphConfigurationCommand } from '../../../../plus/graph/protocol.js';
 import { inlineCode } from '../../../shared/components/styles/lit/base.css.js';
+import { ipcContext } from '../../../shared/contexts/ipc.js';
 import type { WebviewContext } from '../../../shared/contexts/webview.js';
 import { webviewContext } from '../../../shared/contexts/webview.js';
 import { ruleStyles } from '../../shared/components/vscode.css.js';
 import { actionButton, linkBase } from '../styles/graph.css.js';
+import '../../../shared/components/button.js';
+import '../../../shared/components/checkbox/checkbox.js';
 import '../../../shared/components/code-icon.js';
+import '../../../shared/components/commit/wip-stats.js';
+import '../../../shared/components/menu/menu-divider.js';
+import '../../../shared/components/overlays/popover.js';
 import '../../../shared/components/overlays/tooltip.js';
 
 function formatCommitCount(count: number | undefined) {
@@ -17,11 +28,41 @@ function formatCommitCount(count: number | undefined) {
 
 @customElement('gl-git-actions-buttons')
 export class GitActionsButtons extends LitElement {
-	static override styles = css`
-		:host {
-			display: contents;
-		}
-	`;
+	static override styles = [
+		linkBase,
+		actionButton,
+		ruleStyles,
+		css`
+			:host {
+				display: contents;
+			}
+
+			gl-push-pull-button,
+			gl-tooltip {
+				flex-shrink: 0;
+			}
+
+			gl-fetch-button {
+				flex-shrink: 1;
+				min-width: 3.2rem;
+			}
+
+			.wip-button {
+				padding: 0;
+				background-color: transparent;
+				gap: 0;
+				--commit-stats-pill-line-height: 2.2rem;
+			}
+
+			.wip-button:hover {
+				background-color: transparent;
+			}
+
+			gl-tooltip {
+				margin-left: 0.4rem;
+			}
+		`,
+	];
 
 	@property({ type: Object })
 	branchState?: BranchState;
@@ -33,19 +74,68 @@ export class GitActionsButtons extends LitElement {
 	lastFetched?: Date;
 
 	@property({ type: Object })
+	workingTreeStats?: GraphWorkingTreeStats;
+
+	@property({ type: Object })
 	state!: State;
 
-	private get fetchedText() {
+	private get hasWorkingChanges(): boolean {
+		const stats = this.workingTreeStats;
+		if (stats == null) return false;
+		return stats.added + stats.deleted + stats.modified + (stats.renamed ?? 0) > 0;
+	}
+
+	private get lastFetchedDate(): Date | undefined {
 		if (!this.lastFetched) return undefined;
 
-		let lastFetchedDate: Date;
-		if (typeof this.lastFetched === 'string') {
-			lastFetchedDate = new Date(this.lastFetched);
-		} else {
-			lastFetchedDate = this.lastFetched;
+		const d = typeof this.lastFetched === 'string' ? new Date(this.lastFetched) : this.lastFetched;
+		return d.getTime() !== 0 ? d : undefined;
+	}
+
+	private get fetchedText(): string | undefined {
+		const d = this.lastFetchedDate;
+		return d != null ? fromNow(d) : undefined;
+	}
+
+	private get fetchedTextShort(): string | undefined {
+		const d = this.lastFetchedDate;
+		if (d == null) return undefined;
+		if (Date.now() - d.getTime() < 1000) return 'now';
+		return `${fromNow(d, true)} ago`;
+	}
+
+	private onJumpToWip() {
+		this.dispatchEvent(new CustomEvent('jump-to-wip', { bubbles: true, composed: true }));
+		if (this.workingTreeStats?.pausedOpStatus != null) {
+			this.dispatchEvent(new CustomEvent('show-details', { bubbles: true, composed: true }));
+		}
+	}
+
+	private renderWipTooltip() {
+		const stats = this.workingTreeStats;
+		const pausedOp = stats?.pausedOpStatus;
+		if (pausedOp != null) {
+			const opStrings = pausedOperationStatusStringsByType[pausedOp.type];
+			const headline = stats?.hasConflicts === true ? opStrings.conflicts : `${opStrings.label} 进行中`;
+			return html`${headline}
+				<hr />
+				跳转到工作更改`;
 		}
 
-		return lastFetchedDate.getTime() !== 0 ? fromNow(lastFetchedDate) : undefined;
+		return html`跳转到 WIP
+		${this.hasWorkingChanges
+			? html`
+					<hr />
+					工作更改
+					<br />
+					${stats!.added ? html`${pluralize('个文件', stats!.added)} 已添加<br />` : nothing}
+					${stats!.modified ? html`${pluralize('个文件', stats!.modified)} 已修改<br />` : nothing}
+					${stats!.deleted ? html`${pluralize('个文件', stats!.deleted)} 已删除<br />` : nothing}
+				`
+			: html`
+					<hr />
+					无更改
+				`}`;
 	}
 
 	override render() {
@@ -59,18 +149,154 @@ export class GitActionsButtons extends LitElement {
 			<gl-fetch-button
 				.branchState=${this.branchState}
 				.fetchedText=${this.fetchedText}
+				.fetchedTextShort=${this.fetchedTextShort}
 				.state=${this.state}
+				.autoFetchMode=${this.state.config?.autoFetchMode ?? 'off'}
+				.autoFetchIntervalSeconds=${this.state.config?.autoFetchIntervalSeconds ?? 180}
 			></gl-fetch-button>
+			<gl-tooltip placement="bottom">
+				<a class="action-button wip-button" @click=${this.onJumpToWip}>
+					<code-icon class="action-button__icon" icon="gl-wip"></code-icon>
+					<gl-wip-stats
+						.added=${this.workingTreeStats?.added}
+						.modified=${this.workingTreeStats?.modified}
+						.removed=${this.workingTreeStats?.deleted}
+						.pausedOpStatus=${this.workingTreeStats?.pausedOpStatus}
+						?has-conflicts=${this.workingTreeStats?.hasConflicts === true}
+						.conflictsCount=${this.workingTreeStats?.conflictsCount}
+						show-clean
+						no-tooltip
+					></gl-wip-stats>
+				</a>
+				<span slot="content">${this.renderWipTooltip()}</span>
+			</gl-tooltip>
+			${this.hasWorkingChanges
+				? html`<gl-button
+						appearance="toolbar"
+						href=${createCommandLink<StashSaveCommandArgs>('gitlens.stashSave', {
+							repoPath: this.state.selectedRepository,
+						})}
+						aria-label="存储更改..."
+						tooltip="存储更改..."
+					>
+						<code-icon icon="gl-stash-save"></code-icon>
+					</gl-button>`
+				: nothing}
 		`;
 	}
 }
 
 @customElement('gl-fetch-button')
 export class GlFetchButton extends LitElement {
-	static override styles = [linkBase, inlineCode, actionButton, ruleStyles];
+	static override styles = [
+		linkBase,
+		inlineCode,
+		actionButton,
+		ruleStyles,
+		css`
+			:host {
+				display: inline-flex;
+				min-width: 0;
+				max-width: 100%;
+			}
+			gl-popover.fetch-popover {
+				display: block;
+				min-width: 0;
+				max-width: 100%;
+			}
+			/* Use CSS Grid so the text column's min-content is 0,
+			   allowing the text to shrink and ellipsize without expanding
+			   the parent's intrinsic min-content beyond the icon size. */
+			.action-button {
+				display: grid;
+				grid-template-columns: auto minmax(0, 1fr);
+				align-items: center;
+				max-width: 100%;
+			}
+			.action-button__text {
+				display: block;
+				overflow: hidden;
+				text-overflow: ellipsis;
+				white-space: nowrap;
+			}
+
+			.fetch-popover::part(body) {
+				min-width: 24rem;
+				max-width: 36rem;
+			}
+			.fetch-popover__menu {
+				display: flex;
+				flex-direction: column;
+				padding: 0.2rem 0;
+				min-width: 0;
+			}
+			.fetch-popover__info {
+				padding: 0.4rem 0.8rem;
+				color: var(--vscode-menu-foreground);
+				font-size: 1.2rem;
+				line-height: 1.4;
+			}
+			.fetch-popover__info-secondary {
+				margin-top: 0.2rem;
+				opacity: 0.7;
+				font-size: 1.1rem;
+			}
+			.fetch-popover__divider {
+				margin: 0.2rem 0;
+			}
+			.fetch-popover__row {
+				display: flex;
+				align-items: center;
+				gap: 0.4rem;
+				padding: 0.3rem 0.4rem 0.3rem 0.8rem;
+				min-height: 2.4rem;
+				color: var(--vscode-menu-foreground);
+			}
+			.fetch-popover__row gl-checkbox {
+				flex: 1;
+				min-width: 0;
+				margin: 0;
+				font-size: 1.2rem;
+				--checkbox-foreground: currentColor;
+				--checkbox-background: var(--vscode-checkbox-selectBackground);
+				--checkbox-border: var(--vscode-checkbox-selectBorder);
+				--checkbox-hover-background: var(--vscode-checkbox-selectBackground);
+			}
+			.fetch-popover__row .fetch-popover__label-text {
+				flex: 1;
+				min-width: 0;
+				font-size: 1.2rem;
+			}
+			.fetch-popover__row gl-button {
+				flex: none;
+				--button-padding: 0.2rem;
+				--button-foreground: var(--vscode-menu-foreground, var(--vscode-foreground));
+				--button-hover-background: color-mix(in srgb, var(--vscode-menu-foreground) 18%, transparent);
+				opacity: 0.7;
+			}
+			.fetch-popover__row gl-button:hover {
+				opacity: 1;
+			}
+			.fetch-popover__hint {
+				padding: 0 0.8rem 0.4rem 2.6rem;
+				color: var(--vscode-menu-foreground);
+				opacity: 0.7;
+				font-size: 1.1rem;
+				line-height: 1.4;
+			}
+			.fetch-popover__row--info .fetch-popover__label-text {
+				display: inline-flex;
+				align-items: center;
+				gap: 0.4rem;
+			}
+		`,
+	];
 
 	@consume({ context: webviewContext })
 	private _webview!: WebviewContext;
+
+	@consume({ context: ipcContext })
+	private _ipc!: typeof ipcContext.__context__;
 
 	@property({ type: Object })
 	state!: State;
@@ -78,8 +304,17 @@ export class GlFetchButton extends LitElement {
 	@property({ type: String })
 	fetchedText?: string;
 
+	@property({ type: String })
+	fetchedTextShort?: string;
+
 	@property({ type: Object })
 	branchState?: BranchState;
+
+	@property({ type: String })
+	autoFetchMode: GraphAutoFetchMode = 'off';
+
+	@property({ type: Number })
+	autoFetchIntervalSeconds = 180;
 
 	private get upstream() {
 		return this.branchState?.upstream
@@ -87,26 +322,98 @@ export class GlFetchButton extends LitElement {
 			: '远程';
 	}
 
+	private get intervalLabel(): string {
+		const seconds = this.autoFetchIntervalSeconds;
+		if (seconds < 60) return pluralize('second', seconds);
+		return pluralize('minute', Math.round(seconds / 60));
+	}
+
+	private get settingsLink(): string {
+		// Only surface `git.autofetch` when it's currently enabled — that's the one case where the user
+		// might want to turn it off and revert auto-fetch to GitLens. In off/gitlens modes, the period is
+		// the only knob that matters.
+		const ids =
+			this.autoFetchMode === 'vscode' ? '@id:git.autofetch @id:git.autofetchPeriod' : '@id:git.autofetchPeriod';
+		return `command:workbench.action.openSettings?${encodeURIComponent(`"${ids}"`)}`;
+	}
+
 	override render() {
 		return html`
-			<gl-tooltip placement="bottom">
-				<a href=${this._webview.createCommandLink('gitlens.fetch:')} class="action-button">
+			<gl-popover class="fetch-popover" placement="bottom" ?arrow=${false} distance=${4}>
+				<a slot="anchor" href=${this._webview.createCommandLink('gitlens.fetch:')} class="action-button">
 					<code-icon class="action-button__icon" icon="repo-fetch"></code-icon>
-					抓取
-					${this.fetchedText ? html`<span class="action-button__small">(${this.fetchedText})</span>` : ''}
+					<span class="action-button__text"
+						><span class="action-button__label">抓取</span>${this.fetchedTextShort
+							? html` <span class="action-button__small">(${this.fetchedTextShort})</span>`
+							: ''}</span
+					>
 				</a>
-				<span slot="content">
-					从 ${this.upstream} 抓取
-					${this.branchState?.provider?.name ? html`（${this.branchState.provider.name}）` : ''}
-					${this.fetchedText
-						? html`
-								<hr />
-								上次抓取 ${this.fetchedText}
-							`
-						: nothing}
-				</span>
-			</gl-tooltip>
+				<div slot="content" class="fetch-popover__menu" role="menu">
+					<div class="fetch-popover__info">
+						从 ${this.upstream} 抓取
+						${this.branchState?.provider?.name ? html`（${this.branchState.provider.name}）` : nothing}
+						${this.fetchedText
+							? html`<div class="fetch-popover__info-secondary">上次抓取 ${this.fetchedText}</div>`
+							: nothing}
+					</div>
+					<menu-divider class="fetch-popover__divider"></menu-divider>
+					${this.renderAutoFetchRow()}
+				</div>
+			</gl-popover>
 		`;
+	}
+
+	private renderAutoFetchRow() {
+		const intervalLabel = this.intervalLabel;
+		if (this.autoFetchMode === 'vscode') {
+			return html`
+				<div class="fetch-popover__row fetch-popover__row--info">
+					<span class="fetch-popover__label-text">
+						<code-icon icon="check"></code-icon>
+						自动抓取由 VS Code Git 处理
+					</span>
+					${this.renderSettingsCog()}
+				</div>
+				<div class="fetch-popover__hint">每 ${intervalLabel}</div>
+			`;
+		}
+
+		const checked = this.autoFetchMode === 'gitlens';
+		return html`
+			<div class="fetch-popover__row">
+				<gl-checkbox
+					value="autoFetchEnabled"
+					?checked=${checked}
+					@gl-change-value=${this.handleAutoFetchToggle}
+				>
+					自动抓取
+				</gl-checkbox>
+				${this.renderSettingsCog()}
+			</div>
+			<div class="fetch-popover__hint">每 ${intervalLabel}（在视图打开时）</div>
+		`;
+	}
+
+	private renderSettingsCog() {
+		// No wrapping <gl-tooltip>: its body positions above the gear and ends up occluding the
+		// popover content the user is already reading. The aria-label below covers screen-reader needs.
+		return html`
+			<gl-button
+				appearance="toolbar"
+				density="compact"
+				href=${this.settingsLink}
+				aria-label="打开 Git 自动抓取设置"
+			>
+				<code-icon icon="gear"></code-icon>
+			</gl-button>
+		`;
+	}
+
+	private handleAutoFetchToggle(e: CustomEvent) {
+		const $el = e.target as HTMLInputElement | null;
+		if ($el == null) return;
+
+		this._ipc.sendCommand(UpdateGraphConfigurationCommand, { changes: { autoFetchEnabled: $el.checked } });
 	}
 }
 
@@ -123,7 +430,9 @@ export class PushPullButton extends LitElement {
 			}
 
 			.pill {
-				display: inline-block;
+				display: inline-flex;
+				align-items: center;
+				gap: 0.5rem;
 				padding: 0.2rem 0.5rem;
 				border-radius: 0.5rem;
 				font-size: 1rem;
@@ -132,6 +441,11 @@ export class PushPullButton extends LitElement {
 				text-transform: uppercase;
 				color: var(--vscode-foreground);
 				background-color: var(--vscode-editorWidget-background);
+			}
+			.pill > span {
+				display: inline-flex;
+				align-items: center;
+				gap: 0;
 			}
 			.pill code-icon {
 				font-size: inherit !important;
@@ -226,20 +540,10 @@ export class PushPullButton extends LitElement {
 					<span>
 						<span class="pill action-button__pill">
 							${this.isBehind
-								? html`
-										<span>
-											${this.branchState.behind}
-											<code-icon icon="arrow-down"></code-icon>
-										</span>
-									`
+								? html`<span>${this.branchState.behind}<code-icon icon="arrow-down"></code-icon></span>`
 								: ''}
 							${this.isAhead
-								? html`
-										<span>
-											${this.isBehind ? html`&nbsp;&nbsp;` : ''} ${this.branchState.ahead}
-											<code-icon icon="arrow-up"></code-icon>
-										</span>
-									`
+								? html`<span>${this.branchState.ahead}<code-icon icon="arrow-up"></code-icon></span>`
 								: ''}
 						</span>
 					</span>
@@ -254,19 +558,18 @@ export class PushPullButton extends LitElement {
 			</gl-tooltip>
 			${this.isAhead && this.isBehind
 				? html`
-						<gl-tooltip placement="top" slot="anchor">
-							<a
-								href=${this._webview.createCommandLink('gitlens.graph.pushWithForce')}
-								class="action-button"
-								aria-label="强制推送"
-							>
-								<code-icon icon="repo-force-push" aria-hidden="true"></code-icon>
-							</a>
-							<span slot="content">
+						<gl-button
+							appearance="toolbar"
+							href=${this._webview.createCommandLink('gitlens.graph.pushWithForce')}
+							aria-label="强制推送"
+							tooltipPlacement="top"
+						>
+							<code-icon icon="repo-force-push" aria-hidden="true"></code-icon>
+							<span slot="tooltip">
 								强制推送 ${formatCommitCount(this.branchState?.ahead)} 到 ${this.upstream}
 								${this.branchState?.provider?.name ? html`（${this.branchState.provider.name}）` : ''}
 							</span>
-						</gl-tooltip>
+						</gl-button>
 					`
 				: ''}
 		`;

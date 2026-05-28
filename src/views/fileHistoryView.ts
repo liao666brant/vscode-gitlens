@@ -127,6 +127,7 @@ export class FileHistoryView extends ViewBase<
 		const changed = super.filterConfigurationChanged(e);
 		if (
 			!changed &&
+			!configuration.changed(e, 'defaultCurrentUserNameStyle') &&
 			!configuration.changed(e, 'defaultDateFormat') &&
 			!configuration.changed(e, 'defaultDateLocale') &&
 			!configuration.changed(e, 'defaultDateShortFormat') &&
@@ -144,13 +145,13 @@ export class FileHistoryView extends ViewBase<
 		return true;
 	}
 
-	async showHistoryForUri(uri: GitUri): Promise<void> {
+	async showHistoryForUri(uri: GitUri, selectSha?: string): Promise<void> {
 		this.setCursorFollowing(false);
 
 		const root = this.ensureRoot(true);
 
 		if (root instanceof FileHistoryTrackerNode) {
-			await root.showHistoryForUri(uri);
+			await root.showHistoryForUri(uri, selectSha);
 
 			this.setEditorFollowing(false);
 		}
