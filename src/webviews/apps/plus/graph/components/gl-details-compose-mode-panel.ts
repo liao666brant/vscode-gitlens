@@ -6,7 +6,6 @@ import { uncommitted } from '@gitlens/git/models/revision.js';
 import type { GitCommitSearchContext } from '@gitlens/git/models/search.js';
 import { splitCommitMessage } from '@gitlens/git/utils/commit.utils.js';
 import { fromNow } from '@gitlens/utils/date.js';
-import { pluralize } from '@gitlens/utils/string.js';
 import type { ViewFilesLayout } from '../../../../../config.js';
 import { serializeWebviewItemContext } from '../../../../../system/webview.js';
 import type { DetailsItemTypedContext } from '../../../../plus/graph/detailsProtocol.js';
@@ -208,7 +207,7 @@ export class GlDetailsComposeModePanel extends LitElement {
 	override connectedCallback(): void {
 		super.connectedCallback?.();
 		this.setAttribute('role', 'region');
-		this.setAttribute('aria-label', 'Compose Changes');
+		this.setAttribute('aria-label', '编排更改');
 		// Flip overflow from hidden to auto only after the slide-up settles, preventing
 		// scrollbar flicker as the transform animates.
 		this.addEventListener('animationend', this.onAnimationEnd);
@@ -245,7 +244,7 @@ export class GlDetailsComposeModePanel extends LitElement {
 
 	private renderCancelButton() {
 		return html`<gl-button class="compose-cancel" appearance="secondary" @click=${this.handleCancel}
-			>Cancel</gl-button
+			>取消</gl-button
 		>`;
 	}
 
@@ -258,7 +257,7 @@ export class GlDetailsComposeModePanel extends LitElement {
 		// editable and the action is uncancellable, so we render a loading overlay regardless
 		// of whether `status` is still 'ready'.
 		if (this.applying) {
-			return renderLoadingState('Applying commits…');
+			return renderLoadingState('正在应用提交…');
 		}
 
 		if (this.status === 'idle') {
@@ -274,7 +273,7 @@ export class GlDetailsComposeModePanel extends LitElement {
 			return html`<div class="compose-loading-stage">
 				<gl-categorizing-loading-animation variant="compose"></gl-categorizing-loading-animation>
 				<div class="compose-loading-foreground">
-					${renderLoadingState(this.progressMessage ?? 'Composing changes…')}${this.renderCancelButton()}
+					${renderLoadingState(this.progressMessage ?? '正在编排更改…')}${this.renderCancelButton()}
 				</div>
 			</div>`;
 		}
@@ -282,7 +281,7 @@ export class GlDetailsComposeModePanel extends LitElement {
 		if (this.status === 'error') {
 			return renderErrorState(
 				this.errorMessage,
-				'An error occurred during composition.',
+				'编排期间发生错误。',
 				'compose-error-retry',
 				'compose-error-back',
 			);
@@ -311,10 +310,10 @@ export class GlDetailsComposeModePanel extends LitElement {
 					multiline
 					active
 					rows="2"
-					button-label="Compose"
-					busy-label="Composing changes…"
+					button-label="编排"
+					busy-label="正在编排更改…"
 					event-name="compose-generate"
-					placeholder='Instructions — e.g. "Group by feature, keep perf changes separate"'
+					placeholder="说明 — 例如“按功能分组，性能更改单独保留”"
 					.value=${this.lastPrompt}
 					.busy=${this.status === 'loading'}
 					?disabled=${disabled}
@@ -330,11 +329,10 @@ export class GlDetailsComposeModePanel extends LitElement {
 				<div class="review-idle">
 					<div class="review-idle__scope">
 						<code-icon icon="wand"></code-icon>
-						Compose Changes
+						编排更改
 					</div>
 					<div class="review-idle__desc">
-						AI will analyze your working changes and unpushed commits to create a clean, logical commit
-						sequence.
+						AI 会分析你的工作区更改和未推送提交，创建清晰、合乎逻辑的提交序列。
 					</div>
 				</div>
 				${aiInput}
@@ -379,7 +377,7 @@ export class GlDetailsComposeModePanel extends LitElement {
 			if (checked || disabled) {
 				checkableStates.set(file.path, {
 					...(checked ? { state: 'checked' as const } : {}),
-					...(disabled ? { disabled: true, disabledReason: 'Excluded by AI ignore rules' } : {}),
+					...(disabled ? { disabled: true, disabledReason: '已被 AI 忽略规则排除' } : {}),
 				});
 			}
 		}
@@ -399,9 +397,9 @@ export class GlDetailsComposeModePanel extends LitElement {
 					.searchContext=${this.searchContext}
 					.showSearchBox=${this.showSearchBox}
 					.searchBoxFilter=${this.searchBoxFilter}
-					check-verb="Include"
-					uncheck-verb="Exclude"
-					empty-text="No files changed"
+					check-verb="包含"
+					uncheck-verb="排除"
+					empty-text="无文件更改"
 					@file-checked=${this.onFileChecked}
 					@gl-check-all=${this.onToggleCheckAll}
 					@file-open=${this.redispatch}
@@ -416,7 +414,7 @@ export class GlDetailsComposeModePanel extends LitElement {
 	}
 
 	private idleFileActionsForFile = (_file: GitFileChangeShape): TreeItemAction[] => {
-		return [{ icon: 'go-to-file', label: 'Open File', action: 'file-open' }];
+		return [{ icon: 'go-to-file', label: '打开文件', action: 'file-open' }];
 	};
 
 	private getIdleFileContext = (file: GitFileChangeShape): string | undefined => {
@@ -491,7 +489,7 @@ export class GlDetailsComposeModePanel extends LitElement {
 	private renderStaleBanner() {
 		return html`<div class="stale-banner" role="status">
 			<code-icon icon="warning"></code-icon>
-			<span>Working changes have changed since this plan was generated.</span>
+			<span>工作区更改已在此计划生成后发生变化。</span>
 		</div>`;
 	}
 
@@ -502,7 +500,7 @@ export class GlDetailsComposeModePanel extends LitElement {
 
 		const includedCount = this.commits.length - this._excludedCommitIds.size;
 		const allIncluded = this._excludedCommitIds.size === 0;
-		const commitButtonLabel = allIncluded ? 'Commit All' : `Commit ${pluralize('Commit', includedCount)}`;
+		const commitButtonLabel = allIncluded ? '全部提交' : `提交 ${includedCount} 个提交`;
 
 		const commitAllRow = html`<div class="compose-plan__commit-all">
 			<gl-button full ?disabled=${includedCount === 0} @click=${this.handleCommitAll}
@@ -530,10 +528,10 @@ export class GlDetailsComposeModePanel extends LitElement {
 				multiline
 				active
 				rows="2"
-				button-label="Refine"
-				busy-label="Recomposing…"
+				button-label="优化"
+				busy-label="正在重新编排…"
 				event-name="compose-refine"
-				placeholder='Refine — e.g. "Merge commits 1 and 2, they&apos;re related"'
+				placeholder="优化 — 例如“合并提交 1 和 2，它们相关”"
 				.busy=${isLoading}
 				.recall=${this.lastPrompt}
 			>
@@ -558,7 +556,7 @@ export class GlDetailsComposeModePanel extends LitElement {
 		const num = this.commits!.length - index;
 		const isSelected = this._selectedCommitId === commit.id;
 		const isExcluded = this._excludedCommitIds.has(commit.id);
-		const toggleLabel = isExcluded ? 'Include this commit' : 'Exclude this commit';
+		const toggleLabel = isExcluded ? '包含此提交' : '排除此提交';
 
 		return html`<div
 			class="compose-commit ${isSelected ? 'compose-commit--selected' : ''} ${isExcluded
@@ -567,7 +565,7 @@ export class GlDetailsComposeModePanel extends LitElement {
 			role="button"
 			tabindex="0"
 			aria-current=${isSelected ? 'true' : 'false'}
-			aria-label="Commit ${num}, ${pluralize('file', commit.files.length)}"
+			aria-label="提交 ${num}，${commit.files.length} 个文件"
 			@click=${() => this.handleSelectCommit(commit.id)}
 			@keydown=${(e: KeyboardEvent) => {
 				if (e.key === 'Enter' || e.key === ' ') {
@@ -585,7 +583,7 @@ export class GlDetailsComposeModePanel extends LitElement {
 					<gl-markdown slot="content" .markdown=${commit.message}></gl-markdown>
 				</gl-popover>
 				<span class="compose-commit__stats">
-					${pluralize('file', commit.files.length)}
+					${commit.files.length} 个文件
 					<span class="compose-commit__additions">+${commit.additions}</span>
 					<span class="compose-commit__deletions">&minus;${commit.deletions}</span>
 				</span>
@@ -610,10 +608,10 @@ export class GlDetailsComposeModePanel extends LitElement {
 	private renderBaseCommit() {
 		const base = this.baseCommit!;
 		const shortSha = base.sha.substring(0, 7);
-		const headline = base.message?.split('\n')[0]?.trim() || '(no message)';
+		const headline = base.message?.split('\n')[0]?.trim() || '（无消息）';
 		const dateLabel = base.date ? fromNow(new Date(base.date)) : undefined;
 
-		return html`<div class="compose-base" title="Anchored at ${shortSha}">
+		return html`<div class="compose-base" title="锚定于 ${shortSha}">
 			<span class="compose-base__marker" aria-hidden="true">&#9675;</span>
 			<div class="compose-base__body">
 				<span class="compose-base__headline">${headline}</span>
@@ -636,14 +634,14 @@ export class GlDetailsComposeModePanel extends LitElement {
 	private renderSelectedCommitFiles() {
 		const commit = this._selectedCommitId ? this.commits?.find(c => c.id === this._selectedCommitId) : undefined;
 		const files = commit?.files ?? [];
-		const emptyText = commit ? 'No files changed' : 'Select a commit above to see the file changes';
+		const emptyText = commit ? '无文件更改' : '选择上方提交以查看文件更改';
 
 		return html`<gl-file-tree-pane
 			.files=${files}
 			.filesLayout=${{ layout: this.fileLayout }}
 			.collapsable=${false}
 			show-file-icons
-			header="File Changes"
+			header="文件更改"
 			empty-text=${emptyText}
 			.buttons=${['multi-diff', 'layout', 'search']}
 			.fileActions=${this.fileActionsForFile}
@@ -686,7 +684,7 @@ export class GlDetailsComposeModePanel extends LitElement {
 	};
 
 	private fileActionsForFile = (_file: ProposedCommitFile): TreeItemAction[] => {
-		return [{ icon: 'go-to-file', label: 'Open File', action: 'file-open' }];
+		return [{ icon: 'go-to-file', label: '打开文件', action: 'file-open' }];
 	};
 
 	private getFileContext = (file: ProposedCommitFile): string | undefined => {

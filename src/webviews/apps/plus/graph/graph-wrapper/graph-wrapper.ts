@@ -69,7 +69,7 @@ import './gl-graph.js';
 // Builds the display message for a WIP row. The label (worktree name) is appended in parens for
 // secondary WIP rows; the primary row passes `undefined` and gets the bare base string.
 function wipRowMessage(label: string | undefined): string {
-	return label != null ? `Working Changes (${label})` : 'Working Changes';
+	return label != null ? `工作区更改（${label}）` : '工作区更改';
 }
 
 // Builds a "lite" CommitDetails from a graph row so the details panel can paint the commit

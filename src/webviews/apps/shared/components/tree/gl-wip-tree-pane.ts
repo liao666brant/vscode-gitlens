@@ -43,7 +43,7 @@ export class GlWipTreePane extends LitElement {
 		   set on gl-file-tree-pane (a descendant of the gl-wip-tree-pane container, since
 		   :host IS the container and so isn't matched by @container rules) and inherit
 		   into its shadow so the surrounding action gaps collapse too. The button's
-		   tooltip="Stash Changes" keeps it accessible when the label is hidden. */
+		   tooltip="储藏更改" keeps it accessible when the label is hidden. */
 		@container gl-wip-tree-pane (max-width: 340px) {
 			.stash-label {
 				display: none !important;
@@ -197,9 +197,9 @@ export class GlWipTreePane extends LitElement {
 				getGroup: (file: FileItem) =>
 					isConflictStatus(file.status) ? 'conflicts' : file.staged ? 'staged' : 'unstaged',
 				groups: [
-					{ key: 'conflicts', label: 'Conflicts', actions: [] },
-					{ key: 'staged', label: 'Staged Changes', actions: this.getStagedActions() },
-					{ key: 'unstaged', label: 'Unstaged Changes', actions: this.getUnstagedActions() },
+					{ key: 'conflicts', label: '冲突', actions: [] },
+					{ key: 'staged', label: '已暂存更改', actions: this.getStagedActions() },
+					{ key: 'unstaged', label: '未暂存更改', actions: this.getUnstagedActions() },
 				],
 			};
 		}
@@ -245,10 +245,10 @@ export class GlWipTreePane extends LitElement {
 			.showSearchBox=${this.showSearchBox}
 			.searchBoxFilter=${this.searchBoxFilter}
 			empty-text=${this.emptyText}
-			selection-badge-label="Staged"
+			selection-badge-label="已暂存"
 			selection-action="file-compare-wip"
-			check-verb="Stage"
-			uncheck-verb="Unstage"
+			check-verb="暂存"
+			uncheck-verb="取消暂存"
 			@gl-check-all=${this.onCheckAll}
 			@file-compare-wip=${this.onFileCompareWip}
 			@file-compare-wip-staged=${this.onFileCompareWipStaged}
@@ -260,11 +260,11 @@ export class GlWipTreePane extends LitElement {
 				? html`<gl-button
 						slot="leading-actions"
 						appearance="toolbar"
-						tooltip="Stash Changes"
+						tooltip="储藏更改"
 						@click=${this.onStashSave}
 					>
 						<code-icon icon="gl-stash-save" slot="prefix"></code-icon>
-						<span class="stash-label">Stash</span>
+						<span class="stash-label">储藏</span>
 					</gl-button>`
 				: nothing}
 			<slot name="before-tree" slot="before-tree"></slot>
@@ -278,8 +278,8 @@ export class GlWipTreePane extends LitElement {
 				slot="leading-actions"
 				appearance="toolbar"
 				density="compact"
-				tooltip="Stage Current for All Conflicts"
-				aria-label="Stage Current for All Conflicts"
+				tooltip="暂存所有冲突的当前更改"
+				aria-label="暂存所有冲突的当前更改"
 				@click=${this.onResolveAllCurrent}
 			>
 				<code-icon icon="gl-accept-all-left"></code-icon>
@@ -288,8 +288,8 @@ export class GlWipTreePane extends LitElement {
 				slot="leading-actions"
 				appearance="toolbar"
 				density="compact"
-				tooltip="Stage Incoming for All Conflicts"
-				aria-label="Stage Incoming for All Conflicts"
+				tooltip="暂存所有冲突的传入更改"
+				aria-label="暂存所有冲突的传入更改"
 				@click=${this.onResolveAllIncoming}
 			>
 				<code-icon icon="gl-accept-all-right"></code-icon>
@@ -369,7 +369,7 @@ export class GlWipTreePane extends LitElement {
 		return [
 			{
 				icon: 'gl-cloud-patch-share',
-				label: 'Share Staged Changes',
+				label: '共享已暂存更改',
 				action: 'staged-create-patch',
 			},
 		];
@@ -379,7 +379,7 @@ export class GlWipTreePane extends LitElement {
 		return [
 			{
 				icon: 'gl-cloud-patch-share',
-				label: 'Share Unstaged Changes',
+				label: '共享未暂存更改',
 				action: 'unstaged-create-patch',
 			},
 		];

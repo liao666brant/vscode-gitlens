@@ -73,10 +73,10 @@ export class GlFileTreePane extends LitElement {
 	searchContext?: GitCommitSearchContext;
 
 	@property()
-	header = 'Files changed';
+	header = '文件更改';
 
 	@property({ attribute: 'empty-text' })
-	emptyText = 'No Files';
+	emptyText = '无文件';
 
 	/**
 	 * Actions to display on individual file tree items.
@@ -343,7 +343,7 @@ export class GlFileTreePane extends LitElement {
 						${showMultiDiff
 							? html`<action-item
 									data-action="multi-diff"
-									label="Open All Changes"
+									label="打开所有更改"
 									icon="diff-multiple"
 									@click=${this.onOpenMultiDiff}
 								></action-item>`
@@ -360,7 +360,7 @@ export class GlFileTreePane extends LitElement {
 						${showSearch
 							? html`<action-item
 									data-action="search"
-									label="${showSearchBox ? 'Hide Search' : 'Show Search'}"
+									label="${showSearchBox ? '隐藏搜索' : '显示搜索'}"
 									icon="search"
 									class="${showSearchBox ? 'active-toggle' : ''}"
 									@click=${this.onToggleSearch}
@@ -721,7 +721,7 @@ export class GlFileTreePane extends LitElement {
 		// when nothing passes through, "No matching files" reads more accurately than the generic
 		// empty-text.
 		const matchedEmpty = this._contextMatchVisibility === 'matched' && this.searchContext != null;
-		const emptyText = matchedEmpty ? 'No matching files' : this.emptyText;
+		const emptyText = matchedEmpty ? '无匹配文件' : this.emptyText;
 		// `mixed` context-match visibility shows all files with matches highlighted, so the
 		// search-box filter has to be `false` (highlight) for the visual story to hold even if the
 		// user preference is otherwise. Outside of `mixed`, use the user preference.
@@ -732,8 +732,8 @@ export class GlFileTreePane extends LitElement {
 			.filtered=${this.searchContext != null && this._contextMatchVisibility !== 'off'}
 			.searchBoxFilter=${treeSearchBoxFilter}
 			?filterable=${this.effectiveShowSearchBox}
-			filter-placeholder="Filter files..."
-			search-placeholder="Search files..."
+			filter-placeholder="筛选文件..."
+			search-placeholder="搜索文件..."
 			empty-text=${emptyText}
 			@gl-tree-search-box-filter-changed=${this.onTreeSearchBoxFilterChanged}
 			@gl-tree-generated-item-action-clicked=${this.onTreeItemActionClicked}

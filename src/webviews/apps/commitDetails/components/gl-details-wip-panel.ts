@@ -44,24 +44,24 @@ import './gl-inspect-patch.js';
 // based, so reusing these also avoids spurious re-renders downstream.
 const openCurrentChangesAction: TreeItemAction = {
 	icon: 'gl-diff-left',
-	label: 'Open Current Changes',
+	label: '打开当前更改',
 	action: 'file-open-current',
 };
 const openIncomingChangesAction: TreeItemAction = {
 	icon: 'gl-diff-right',
-	label: 'Open Incoming Changes',
+	label: '打开传入更改',
 	action: 'file-open-incoming',
 };
-const stageConflictAction: TreeItemAction = { icon: 'add', label: 'Stage', action: 'file-stage' };
-const stageAction: TreeItemAction = { icon: 'plus', label: 'Stage Changes', action: 'file-stage' };
-const unstageAction: TreeItemAction = { icon: 'remove', label: 'Unstage Changes', action: 'file-unstage' };
-const discardAction: TreeItemAction = { icon: 'discard', label: 'Discard Changes', action: 'file-discard' };
+const stageConflictAction: TreeItemAction = { icon: 'add', label: '暂存', action: 'file-stage' };
+const stageAction: TreeItemAction = { icon: 'plus', label: '暂存更改', action: 'file-stage' };
+const unstageAction: TreeItemAction = { icon: 'remove', label: '取消暂存更改', action: 'file-unstage' };
+const discardAction: TreeItemAction = { icon: 'discard', label: '放弃更改', action: 'file-discard' };
 // `file-compare-wip-staged` is bridged by gl-wip-tree-pane into `file-compare-wip` with
 // `staged: true` overridden so the diff resolves to staged ↔ HEAD even though the deduped
 // row carries `staged: false` (preferred-unstaged precedence from the tree pane dedup).
 const openStagedChangesAction: TreeItemAction = {
 	icon: 'diff-single',
-	label: 'Open Staged Changes',
+	label: '打开已暂存更改',
 	action: 'file-compare-wip-staged',
 };
 
@@ -595,7 +595,7 @@ export class GlDetailsWipPanel extends GlDetailsBase {
 		// `wip: true` forces the host to per-file HEAD↔index↔working semantics regardless of
 		// `lhs`/`rhs`. The OpenMultipleChangesArgs routing switched from `rhs === ''` to an
 		// explicit `wip` flag, so the WIP details panel must set it here.
-		return { repoPath: repoPath, lhs: 'HEAD', rhs: '', wip: true, title: 'Working Changes' };
+		return { repoPath: repoPath, lhs: 'HEAD', rhs: '', wip: true, title: '工作区更改' };
 	}
 
 	protected override onFileChecked(e: CustomEvent<TreeItemCheckedDetail>): void {
@@ -632,20 +632,20 @@ export class GlDetailsWipPanel extends GlDetailsBase {
 			<div class="header__identity">
 				<code-icon class="header__wip-icon" icon="diff"></code-icon>
 				<div class="header__identity-left">
-					<span class="header__wip-title">Working Changes</span>
+					<span class="header__wip-title">工作区更改</span>
 					<span class="header__wip-subtitle">
 						${this.worktreePath
 							? html`<code-icon icon="folder"></code-icon> ${this.worktreePath}`
 							: html`${stagedCount > 0 || unstagedCount > 0
-									? `${stagedCount} staged · ${unstagedCount} unstaged`
-									: 'No changes'}`}
+									? `${stagedCount} 已暂存 · ${unstagedCount} 未暂存`
+									: '无更改'}`}
 					</span>
 				</div>
 				<div class="header__identity-right">
 					<div class="header__actions">
 						<gl-action-chip
 							icon="close"
-							label="Close"
+							label="关闭"
 							overlay="tooltip"
 							@click=${() =>
 								this.dispatchEvent(new CustomEvent('close-details', { bubbles: true, composed: true }))}

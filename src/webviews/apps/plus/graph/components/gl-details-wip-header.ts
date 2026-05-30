@@ -115,12 +115,11 @@ export class GlDetailsWipHeader extends LitElement {
 			<div class="graph-details-header__title-group">
 				<span class="graph-details-header__wip-title">
 					${this.activeMode === 'compose'
-						? html`<code-icon class="graph-details-header__mode-icon" icon="wand"></code-icon>Composing
-								Changes`
+						? html`<code-icon class="graph-details-header__mode-icon" icon="wand"></code-icon>正在编排更改`
 						: this.activeMode === 'review'
 							? html`<code-icon class="graph-details-header__mode-icon" icon="checklist"></code-icon
-									>Reviewing Changes`
-							: html`Working Changes`}
+									>正在审查更改`
+							: html`工作区更改`}
 				</span>
 				${!isModeActive
 					? html`<gl-wip-stats
@@ -135,7 +134,7 @@ export class GlDetailsWipHeader extends LitElement {
 				? html`<gl-action-chip
 							slot="actions"
 							icon="compare-changes"
-							label="Compare"
+							label="比较"
 							overlay="tooltip"
 							@click=${() =>
 								this.dispatchEvent(
@@ -149,7 +148,7 @@ export class GlDetailsWipHeader extends LitElement {
 						<gl-action-chip
 							slot="actions"
 							icon="terminal"
-							label="Open in Integrated Terminal"
+							label="在集成终端中打开"
 							overlay="tooltip"
 							href=${this._webview.createCommandLink('gitlens.openInIntegratedTerminal:', {
 								worktreeUri: wip.repo.uri,
@@ -159,9 +158,9 @@ export class GlDetailsWipHeader extends LitElement {
 							? html`<gl-action-chip
 									slot="actions"
 									icon="empty-window"
-									label="Open Worktree in New Window"
+									label="在新窗口打开工作树"
 									alt-icon="window"
-									alt-label="Open Worktree"
+									alt-label="打开工作树"
 									overlay="tooltip"
 									href=${this._webview.createCommandLink('gitlens.openWorktreeInNewWindow:', {
 										worktreeUri: wip.repo.uri,
@@ -174,7 +173,7 @@ export class GlDetailsWipHeader extends LitElement {
 						<gl-action-chip
 							slot="actions"
 							icon="refresh"
-							label="Refresh"
+							label="刷新"
 							overlay="tooltip"
 							@click=${() => this.emit('refresh-wip')}
 						></gl-action-chip>`
@@ -190,7 +189,7 @@ export class GlDetailsWipHeader extends LitElement {
 									.name=${branchName}
 									@click=${() => this.emit('switch-branch')}
 								></gl-branch-name>
-								<span slot="content">Switch Branch...</span>
+								<span slot="content">切换分支...</span>
 							</gl-tooltip>`
 						: nothing}
 					${isModeActive
@@ -217,14 +216,14 @@ export class GlDetailsWipHeader extends LitElement {
 							${this.renderBranchStateAction()}${this.renderFetchAction()}
 							<gl-action-chip
 								icon="custom-start-work"
-								label="Create Branch..."
+								label="创建分支..."
 								overlay="tooltip"
 								@click=${() => this.emit('create-branch')}
 							></gl-action-chip>
 							${files.length > 0
 								? html`<gl-action-chip
 										icon="gl-cloud-patch-share"
-										label="Share as Cloud Patch"
+										label="共享为云补丁"
 										overlay="tooltip"
 										@click=${() => this.emit('share-as-cloud-patch')}
 									></gl-action-chip>`
@@ -250,7 +249,7 @@ export class GlDetailsWipHeader extends LitElement {
 		if (branch.upstream == null || branch.upstream.missing === true) {
 			return html`<gl-action-chip
 				icon="cloud-upload"
-				label="Publish Branch"
+				label="发布分支"
 				overlay="tooltip"
 				@click=${() => this.emit('publish-branch')}
 			></gl-action-chip>`;
@@ -262,13 +261,13 @@ export class GlDetailsWipHeader extends LitElement {
 		if (ahead > 0 && behind > 0) {
 			return html`<gl-action-chip
 					icon="repo-pull"
-					label="Pull"
+					label="拉取"
 					overlay="tooltip"
 					@click=${() => this.emit('pull')}
 				></gl-action-chip>
 				<gl-action-chip
 					icon="repo-force-push"
-					label="Force Push"
+					label="强制推送"
 					overlay="tooltip"
 					@click=${() => this.emit('force-push')}
 				></gl-action-chip>`;
@@ -277,7 +276,7 @@ export class GlDetailsWipHeader extends LitElement {
 		if (behind > 0) {
 			return html`<gl-action-chip
 				icon="repo-pull"
-				label="Pull"
+				label="拉取"
 				overlay="tooltip"
 				@click=${() => this.emit('pull')}
 			></gl-action-chip>`;
@@ -286,7 +285,7 @@ export class GlDetailsWipHeader extends LitElement {
 		if (ahead > 0) {
 			return html`<gl-action-chip
 				icon="repo-push"
-				label="Push"
+				label="推送"
 				overlay="tooltip"
 				@click=${() => this.emit('push')}
 			></gl-action-chip>`;
@@ -300,7 +299,7 @@ export class GlDetailsWipHeader extends LitElement {
 
 		return html`<gl-action-chip
 			icon="repo-fetch"
-			label="Fetch"
+			label="抓取"
 			overlay="tooltip"
 			@click=${() => this.emit('fetch')}
 		></gl-action-chip>`;
@@ -412,11 +411,11 @@ export class GlDetailsWipHeader extends LitElement {
 
 		return html`<span class="issue-chip-group" data-associated="true">
 			${chip}
-			<gl-tooltip placement="bottom" content="Remove Branch Association">
+			<gl-tooltip placement="bottom" content="移除分支关联">
 				<button
 					class="issue-chip-group__remove"
 					type="button"
-					aria-label="Remove Branch Association"
+					aria-label="移除分支关联"
 					@click=${(e: MouseEvent) => this.handleRemoveAssociatedIssue(e, i.entityId!)}
 				>
 					<code-icon icon="close" size="12"></code-icon>
@@ -439,7 +438,7 @@ export class GlDetailsWipHeader extends LitElement {
 			return html`<gl-action-chip
 				class="associate-issue-action associate-issue-action--trailing"
 				icon="link"
-				label="Associate Issue with Branch"
+				label="关联议题到分支"
 				overlay="tooltip"
 				href=${href}
 			></gl-action-chip>`;
@@ -448,10 +447,10 @@ export class GlDetailsWipHeader extends LitElement {
 		return html`<gl-action-chip
 			class="associate-issue-action"
 			icon="link"
-			label="Associate Issue with Branch"
+			label="关联议题到分支"
 			overlay="tooltip"
 			href=${href}
-			>&nbsp;Associate Issue…</gl-action-chip
+			>&nbsp;关联议题…</gl-action-chip
 		>`;
 	}
 

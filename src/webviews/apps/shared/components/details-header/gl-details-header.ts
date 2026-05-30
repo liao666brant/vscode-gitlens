@@ -21,16 +21,16 @@ const modeConfig: Record<
 > = {
 	compose: {
 		icon: 'wand',
-		label: 'Compose Changes',
-		closeLabel: 'Close',
-		text: 'Compose',
+		label: '编排更改',
+		closeLabel: '关闭',
+		text: '编排',
 		collapsible: true,
 	},
 	review: {
 		icon: 'checklist',
-		label: 'Review Changes',
-		closeLabel: 'Close',
-		text: 'Review',
+		label: '审查更改',
+		closeLabel: '关闭',
+		text: '审查',
 		collapsible: true,
 	},
 };
@@ -163,7 +163,7 @@ export class GlDetailsHeader extends LitElement {
 		if (this.inResultsView) {
 			return html`<gl-action-chip
 					icon="debug-restart"
-					label="Restart"
+					label="重新开始"
 					overlay="tooltip"
 					class="mode-restart"
 					@click=${this.handleBack}
@@ -182,7 +182,7 @@ export class GlDetailsHeader extends LitElement {
 
 		return html`<gl-action-chip
 				icon="refresh"
-				label="Refresh"
+				label="刷新"
 				overlay="tooltip"
 				class="mode-refresh"
 				@click=${this.handleRefresh}

@@ -63,7 +63,7 @@ export class GlCommitBox extends LitElement {
 				${this.aiEnabled
 					? html`<gl-button appearance="secondary" @click=${this.onCompose}>
 							<code-icon class="compose-icon" icon="wand" slot="prefix"></code-icon>
-							Compose
+							编排
 						</gl-button>`
 					: nothing}
 			</div>
@@ -79,7 +79,7 @@ export class GlCommitBox extends LitElement {
 				?disabled=${this.committing}
 				@gl-change-value=${this.onAmendChange}
 			>
-				Amend Previous Commit
+				修补上次提交
 			</gl-checkbox>
 		`;
 	}
@@ -102,7 +102,7 @@ export class GlCommitBox extends LitElement {
 					.value=${this.message}
 					?disabled=${this.committing}
 					aria-invalid=${this.commitError ? 'true' : 'false'}
-					placeholder=${`Commit message (${modifier}Enter to commit)`}
+					placeholder=${`提交消息（${modifier}Enter 提交）`}
 					@input=${this.onMessageInput}
 					@keydown=${this.onMessageKeydown}
 				></textarea>
@@ -114,7 +114,7 @@ export class GlCommitBox extends LitElement {
 								class="sparkle"
 								appearance="toolbar"
 								density="compact"
-								tooltip=${this.generating ? 'Cancel' : 'Generate Commit Message'}
+								tooltip=${this.generating ? '取消' : '生成提交消息'}
 								aria-busy=${this.generating ? 'true' : 'false'}
 								@click=${this.onGenerateMessage}
 							>
@@ -131,15 +131,15 @@ export class GlCommitBox extends LitElement {
 	}
 
 	private renderActionBar() {
-		const label = this.amend ? 'Amend Commit on' : 'Commit to';
-		const action = this.amend ? 'amend commit on' : 'commit to';
+		const label = this.amend ? '修补提交到' : '提交到';
+		const action = this.amend ? '修补提交到' : '提交到';
 		const branch = this.branchName;
 		const enabledTooltip = `${label} ${branch}`;
 		const disabledTooltip =
 			this.disabledReason === 'no-message'
-				? `Enter a commit message to ${action} ${branch}`
+				? `输入提交消息以${action} ${branch}`
 				: this.disabledReason === 'no-staged'
-					? `Stage changes above to ${action} ${branch}`
+					? `暂存上方更改以${action} ${branch}`
 					: '';
 
 		return html`
@@ -159,7 +159,7 @@ export class GlCommitBox extends LitElement {
 						@click=${this.onCommit}
 					>
 						${this.committing
-							? html`<code-icon icon="loading" modifier="spin" slot="prefix"></code-icon>Committing…`
+							? html`<code-icon icon="loading" modifier="spin" slot="prefix"></code-icon>正在提交…`
 							: html`${label}&nbsp;<gl-branch-name .name=${branch}></gl-branch-name>`}
 					</gl-button>
 				</span>
