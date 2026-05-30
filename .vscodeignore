@@ -1,5 +1,9 @@
+.agents/**
 .augment/**
 .claude/**
+.code-review-graph/**
+.codegraph/**
+.codex/**
 .devcontainer/**
 .github/**
 .husky/**
