@@ -3,7 +3,7 @@ import type { Platform } from '../node/platform.js';
 export const isWeb = true;
 
 export function getIsOffline(): boolean {
-	return typeof navigator !== 'undefined' && navigator.onLine === false;
+	return navigator?.onLine === false;
 }
 
 const _platform = (navigator as any)?.userAgentData?.platform;
@@ -27,6 +27,16 @@ export function getTempFile(filename: string): string {
 export function getAltKeySymbol(): string {
 	if (isMac) return '⌥';
 	return 'Alt';
+}
+
+export function getCmdKeySymbol(): string {
+	if (isMac) return '⌘';
+	return 'Ctrl';
+}
+
+export function getShiftKeySymbol(): string {
+	if (isMac) return '⇧';
+	return 'Shift';
 }
 
 /**

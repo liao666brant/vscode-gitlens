@@ -160,6 +160,48 @@
 }
 ```
 
+### agents/session/syncDiscrepancy
+
+> Sent when a reconciliation poll (`list-sessions`) finds the polled session set differs from
+what the live IPC hook path had already tracked. In a single window this should be rare and
+usually means a hook event was dropped; a nonzero `sync.discovered` is expected in multi-window
+setups, where the machine-wide poll can surface a session owned by another window that never
+routed its hook events here — so don't treat every event as a dropped IPC signal
+
+```typescript
+{
+  'agent.provider': string,
+  // Sessions the poll reported alive that the live IPC path had not tracked.
+  'sync.discovered': number,
+  // Tracked sessions the poll no longer reports alive (teardown the live path missed).
+  'sync.missing': number,
+  // Total alive sessions reported by the poll.
+  'sync.polled': number,
+  // Total sessions tracked (from the live path) before the poll reconciled.
+  'sync.tracked': number
+}
+```
+
+### ai/credits/addOnClicked
+
+> Sent when the user clicks "Get More Credits" on the weekly AI usage-limit notification
+
+```typescript
+{
+  'organization.role': 'owner' | 'admin' | 'billing' | 'user'
+}
+```
+
+### ai/credits/addOnDismissed
+
+> Sent when the user dismisses the weekly AI usage-limit notification
+
+```typescript
+{
+  'organization.role': 'owner' | 'admin' | 'billing' | 'user'
+}
+```
+
 ### ai/enabled
 
 > Sent when AI is enabled
@@ -226,7 +268,7 @@ void
   'model.provider.name': string,
   'sentiment': 'helpful' | 'unhelpful',
   // The AI feature that feedback was submitted for
-  'type': 'explain-changes' | 'review-changes' | 'generate-commitMessage' | 'generate-stashMessage' | 'generate-changelog' | 'generate-create-cloudPatch' | 'generate-create-codeSuggestion' | 'generate-create-pullRequest' | 'generate-commits' | 'generate-searchQuery',
+  'type': 'explain-changes' | 'review-changes' | 'generate-commitMessage' | 'generate-stashMessage' | 'generate-changelog' | 'generate-create-cloudPatch' | 'generate-create-codeSuggestion' | 'generate-create-pullRequest' | 'generate-commits' | 'conflict-resolution' | 'generate-searchQuery',
   // Custom feedback provided (if any)
   'unhelpful.custom': string,
   // Unhelpful reasons selected (if any) - comma-separated list of AIFeedbackUnhelpfulReasons values
@@ -442,6 +484,48 @@ or
   'output.length': number,
   'retry.count': number,
   'type': 'commits',
+  'usage.completionTokens': number,
+  'usage.limits.limit': number,
+  'usage.limits.resetsOn': string,
+  'usage.limits.used': number,
+  'usage.promptTokens': number,
+  'usage.totalTokens': number,
+  'warning.exceededLargePromptThreshold': boolean,
+  'warning.promptTruncated': boolean
+}
+```
+
+or
+
+```typescript
+{
+  'config.largePromptThreshold': number,
+  'config.usedCustomInstructions': boolean,
+  'correlationId': string,
+  'customInstructions.commitMessage.setting.length': number,
+  'customInstructions.commitMessage.setting.used': boolean,
+  'customInstructions.length': number,
+  'customInstructions.setting.length': number,
+  'customInstructions.setting.used': boolean,
+  'customInstructions.used': boolean,
+  'diff.files.count': number,
+  'diff.hash': string,
+  'diff.hunks.count': number,
+  'diff.lines.count': number,
+  'duration': number,
+  'failed': boolean,
+  'failed.cancelled.reason': 'large-prompt',
+  'failed.error': string,
+  'failed.error.detail': string,
+  'failed.reason': 'user-declined' | 'user-cancelled' | 'error',
+  'id': string,
+  'input.length': number,
+  'model.id': string,
+  'model.provider.id': 'anthropic' | 'azure' | 'deepseek' | 'gemini' | 'github' | 'gitkraken' | 'huggingface' | 'mistral' | 'ollama' | 'openai' | 'openaicompatible' | 'openrouter' | 'simulator' | 'vscode' | 'xai',
+  'model.provider.name': string,
+  'output.length': number,
+  'retry.count': number,
+  'type': 'resolveConflicts',
   'usage.completionTokens': number,
   'usage.limits.limit': number,
   'usage.limits.resetsOn': string,
@@ -2858,6 +2942,7 @@ background-upgraded the extension while the host kept running the old build
   'context.config.dimMergeCommits': boolean,
   'context.config.editorOpeningBehavior': 'active' | 'auto',
   'context.config.experimental.kanban.enabled': boolean,
+  'context.config.experimental.visualizations.activityDecay': '30s' | '1m' | '2m' | '5m' | '10m' | '30m',
   'context.config.experimental.visualizations.enabled': boolean,
   'context.config.highlightRowsOnRefHover': boolean,
   'context.config.initialRowSelection': 'wip' | 'head',
@@ -2874,6 +2959,7 @@ background-upgraded the extension while the host kept running the old build
   'context.config.scrollMarkers.additionalTypes': string,
   'context.config.scrollMarkers.enabled': boolean,
   'context.config.scrollRowPadding': number,
+  'context.config.searchAutocompleteOnFocus': boolean,
   'context.config.searchItemLimit': number,
   'context.config.showGhostRefsOnRowHover': boolean,
   'context.config.showRemoteNames': boolean,
@@ -2974,7 +3060,7 @@ background-upgraded the extension while the host kept running the old build
   // How long the panel was open in milliseconds
   'duration': number,
   // Active panel mode at time of close
-  'mode': 'wip' | 'commit' | 'compare' | 'review' | 'multicommit' | 'compose' | 'none'
+  'mode': 'wip' | 'commit' | 'compare' | 'review' | 'multicommit' | 'compose' | 'resolve' | 'none'
 }
 ```
 
@@ -2993,8 +3079,8 @@ background-upgraded the extension while the host kept running the old build
   'context.webview.id': string,
   'context.webview.instanceId': string,
   'context.webview.type': string,
-  'mode.new': 'wip' | 'commit' | 'compare' | 'review' | 'multicommit' | 'compose' | 'none',
-  'mode.old': 'wip' | 'commit' | 'compare' | 'review' | 'multicommit' | 'compose' | 'none'
+  'mode.new': 'wip' | 'commit' | 'compare' | 'review' | 'multicommit' | 'compose' | 'resolve' | 'none',
+  'mode.old': 'wip' | 'commit' | 'compare' | 'review' | 'multicommit' | 'compose' | 'resolve' | 'none'
 }
 ```
 
@@ -3032,7 +3118,7 @@ background-upgraded the extension while the host kept running the old build
   // Where the details panel is anchored relative to the graph
   'location': 'right' | 'bottom',
   // Active panel mode at time of show
-  'mode': 'wip' | 'commit' | 'compare' | 'review' | 'multicommit' | 'compose' | 'none',
+  'mode': 'wip' | 'commit' | 'compare' | 'review' | 'multicommit' | 'compose' | 'resolve' | 'none',
   // Split-pane position percentage from the closed edge (0–100)
   'position': number,
   // Number of rows currently selected in the graph (0, 1, or N)
@@ -3040,7 +3126,7 @@ background-upgraded the extension while the host kept running the old build
   // Whether the active selection is the WIP / uncommitted row
   'selection.uncommitted': boolean,
   // What caused the panel to be shown
-  'trigger': 'toggle' | 'auto-restore'
+  'trigger': 'toggle' | 'request-compare' | 'request-mode' | 'request-agents' | 'request-graph-wip-bar' | 'auto-restore'
 }
 ```
 

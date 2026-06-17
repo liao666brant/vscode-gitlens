@@ -21,6 +21,7 @@ import type { PullRequestShape } from '@gitlens/git/models/pullRequest.js';
 import type { RemoteResourceType } from '@gitlens/git/models/remoteResource.js';
 import { uncommitted, uncommittedStaged } from '@gitlens/git/models/revision.js';
 import type { GitCommitReachability } from '@gitlens/git/providers/commits.js';
+import { appendCoauthorsToMessage } from '@gitlens/git/utils/contributor.utils.js';
 import { areEqual } from '@gitlens/utils/array.js';
 import { Logger } from '@gitlens/utils/logger.js';
 import { LruMap } from '@gitlens/utils/lruMap.js';
@@ -41,10 +42,11 @@ import type {
 	BranchComparisonSummary,
 	ComposeResult,
 	GraphServices,
+	ReresolveFileResult,
+	ResolveResult,
 	ReviewResult,
 	ScopeSelection,
 } from '../../../../plus/graph/graphService.js';
-import type { GraphWorkingTreeStats } from '../../../../plus/graph/protocol.js';
 import { isWipSha } from '../../../../plus/graph/protocol.js';
 import type { BranchMergeTargetStatus } from '../../../../rpc/services/branches.js';
 import type { OverviewBranchIssue, OverviewBranchPullRequest } from '../../../../shared/overviewBranches.js';
@@ -108,6 +110,7 @@ type ResolvedSubService<K extends keyof GraphServices> = Awaited<Remote<GraphSer
 
 export interface ResolvedServices {
 	readonly files: ResolvedSubService<'files'>;
+	readonly drafts: ResolvedSubService<'drafts'>;
 	readonly graphInspect: ResolvedSubService<'graphInspect'>;
 	readonly autolinks: ResolvedSubService<'autolinks'>;
 	readonly branches: ResolvedSubService<'branches'>;
@@ -124,7 +127,7 @@ export interface ResolvedServices {
 
 export interface DetailsResources {
 	readonly commit: Resource<CommitDetails | undefined, [string, string]>;
-	readonly wip: Resource<{ wip: Wip; stats: GraphWorkingTreeStats } | undefined, [string, boolean?]>;
+	readonly wip: Resource<{ wip: Wip } | undefined, [string, boolean?]>;
 	readonly compare: Resource<CompareDiff | undefined, [string, string, string]>;
 	/** Phase 1 — counts + All Files. Keyed on `(repoPath, leftRef, rightRef, options)`. */
 	readonly branchCompareSummary: Resource<
@@ -142,6 +145,9 @@ export interface DetailsResources {
 		ComposeResult,
 		[string, ScopeSelection, string | undefined, string[] | undefined, string[] | undefined]
 	>;
+	/** AI conflict-resolution result. Keyed on `(repoPath, focusedFilePaths, instructions)` — focused
+	 *  paths scope the run to specific conflicted files; `undefined` resolves all conflicts. */
+	readonly resolve: Resource<ResolveResult, [string, readonly string[] | undefined, string | undefined]>;
 	readonly scopeFiles: Resource<GitFileChangeShape[], [string, ScopeSelection]>;
 }
 
@@ -176,13 +182,16 @@ const commitEnrichmentCacheLimit = 32;
 export class DetailsActions {
 	private _lastFetchedKey?: string;
 	private _pendingStagingOp?: Promise<void>;
+	/** Repo path with a commit RPC in flight. While set, host-pushed WIP for this repo is ignored:
+	 *  the commit's own pre-commit hooks (e.g. lint-staged stashing unstaged changes) churn the
+	 *  working tree and produce transient statuses that must not overwrite the panel. */
+	private _committingRepoPath?: string;
 	private _disposed = false;
 	private _eventUnsubscribe?: () => void;
 
 	private _branchCommitsController?: AbortController;
 	private _branchCommitsLoadMoreController?: AbortController;
 	private _enrichmentController?: AbortController;
-	private _generateMessageController?: AbortController;
 	private _branchCompareEnrichmentControllers = new Map<BranchComparisonContributorsScope, AbortController>();
 	private _branchCompareContributorsControllers = new Map<BranchComparisonContributorsScope, AbortController>();
 	/** Per-(tab,sha) abort controllers for lazy commit-file fetches in branch-compare. New selection
@@ -255,7 +264,6 @@ export class DetailsActions {
 		this._branchCommitsController?.abort();
 		this._branchCommitsLoadMoreController?.abort();
 		this._enrichmentController?.abort();
-		this._generateMessageController?.abort();
 		for (const c of this._branchCompareEnrichmentControllers.values()) {
 			c.abort();
 		}
@@ -277,6 +285,7 @@ export class DetailsActions {
 		this.resources.branchCompareSide.dispose();
 		this.resources.review.dispose();
 		this.resources.compose.dispose();
+		this.resources.resolve.dispose();
 		this._eventUnsubscribe?.();
 		this._eventUnsubscribe = undefined;
 	}
@@ -451,8 +460,8 @@ export class DetailsActions {
 		s.commitMessageDirty.set(false);
 		s.amend.set(false);
 		s.amendBaseSha.set(undefined);
-		s.generating.set(false);
 		s.commitError.set(undefined);
+		// `generating` is not reset here — it's panel-derived from the registry, which repo-switch clears.
 	}
 
 	/**
@@ -492,7 +501,7 @@ export class DetailsActions {
 		const [
 			pullRequestExpanded,
 			[avatars, currentUserNameStyle, dateFormat, dateStyle, files, showSignatureBadges],
-			[indentGuides, indent, enableSmartCommit],
+			[indentGuides, indent, enableSmartCommit, workingFilesOrderBy],
 			aiEnabled,
 			aiModel,
 			autolinksEnabled,
@@ -509,7 +518,12 @@ export class DetailsActions {
 				'views.commitDetails.files',
 				'signing.showSignatureBadges',
 			),
-			s.config.getManyCore('workbench.tree.renderIndentGuides', 'workbench.tree.indent', 'git.enableSmartCommit'),
+			s.config.getManyCore(
+				'workbench.tree.renderIndentGuides',
+				'workbench.tree.indent',
+				'git.enableSmartCommit',
+				'scm.defaultViewSortKey',
+			),
 			s.ai.isEnabled(),
 			s.ai.getModel(scopeForActiveMode(this.state.activeMode.get())),
 			s.config.get('views.commitDetails.autolinks.enabled'),
@@ -527,6 +541,7 @@ export class DetailsActions {
 			files: files,
 			indentGuides: indentGuides ?? 'onHover',
 			indent: indent,
+			workingFilesOrderBy: workingFilesOrderBy ?? 'path',
 			aiEnabled: aiEnabled,
 			enableSmartCommit: enableSmartCommit ?? false,
 			showSignatureBadges: showSignatureBadges,
@@ -556,6 +571,10 @@ export class DetailsActions {
 			() =>
 				this.services.graphInspect.onComposeProgress(event => {
 					this.state.composeProgressMessage.set(event?.message);
+				}),
+			() =>
+				this.services.graphInspect.onResolveProgress(event => {
+					this.state.resolveProgressMessage.set(event?.message);
 				}),
 		]);
 		if (this._disposed) {
@@ -619,6 +638,76 @@ export class DetailsActions {
 			aiExcludedFiles,
 			signal,
 		);
+	}
+
+	/** Direct-RPC AI conflict-resolution run. See {@link startReview} for rationale — the run is
+	 *  owned by the caller's `AbortController` so it survives an anchor switch. */
+	startResolve(
+		repoPath: string,
+		focusedFilePaths: readonly string[] | undefined,
+		instructions: string | undefined,
+		signal: AbortSignal,
+	): Promise<ResolveResult> {
+		return this.services.graphInspect.resolveConflicts(repoPath, focusedFilePaths, instructions, signal);
+	}
+
+	/** Re-resolves a single file with user feedback (per-file retry). See {@link startResolve}. */
+	reresolveFile(
+		repoPath: string,
+		filePath: string,
+		feedback: string,
+		signal: AbortSignal,
+	): Promise<ReresolveFileResult> {
+		return this.services.graphInspect.reresolveFile(repoPath, filePath, feedback, signal);
+	}
+
+	/** Apply the cached AI resolutions to the working tree. On success, tears down the engagement
+	 *  signals (mirrors `hideMode`) and refreshes the WIP; the controller's `resolve.applyResolutions`
+	 *  wrapper removes the registry entry. On failure, mutates the resource to an error sentinel so
+	 *  the panel surfaces it. */
+	async applyResolutions(repoPath: string | undefined, includedFilePaths?: readonly string[]): Promise<void> {
+		if (!repoPath) return;
+
+		const resolveValue = this.resources.resolve.value.get();
+		if (!resolveValue || !('result' in resolveValue)) return;
+
+		const sha = this.state.activeModeSha.get();
+		this.state.resolveApplying.set(true);
+		try {
+			const result = await this.services.graphInspect.applyResolutions(repoPath, includedFilePaths);
+			if ('error' in result && result.error) {
+				this.resources.resolve.mutate({ error: { message: result.error.message } });
+			} else {
+				// Engagement teardown — mirrors `hideMode`'s clear so stale `activeMode*`/`scope`
+				// can't bleed into the next action via `currentAnchor()`.
+				this.state.activeMode.set(null);
+				this.state.activeModeContext.set(null);
+				this.state.activeModeRepoPath.set(undefined);
+				this.state.activeModeSha.set(undefined);
+				this.state.activeModeShas.set(undefined);
+				this.state.scope.set(undefined);
+				this.state.aiExcludedFiles.set(undefined);
+				this.invalidateAiExcludedFilesFetch();
+				this.state.wipStale.set(false);
+				this.resources.resolve.reset();
+				this.state.resolveFocusedFilePaths.set(undefined);
+				this.state.resolvePreErrorValue.set(undefined);
+				void this.refreshScopedAiModel();
+				this.refreshWip();
+				void this.fetchDetails(sha, repoPath);
+			}
+		} catch {
+			this.resources.resolve.mutate({ error: { message: 'Failed to apply conflict resolutions.' } });
+		} finally {
+			this.state.resolveApplying.set(false);
+		}
+	}
+
+	/** Drop the host-side cached resolve session without writing anything. Fire-and-forget. */
+	discardResolutions(repoPath: string | undefined): Promise<void> {
+		if (!repoPath) return Promise.resolve();
+
+		return this.services.graphInspect.discardResolutions(repoPath);
 	}
 
 	refreshWip(): void {
@@ -697,6 +786,10 @@ export class DetailsActions {
 			this.state.pullRequest.set(undefined);
 			this.state.signature.set(undefined);
 		}
+		// `graphReachability` is the selected row's reachability, decoded on demand from the graph's
+		// compact reachability table (see `GraphStateProvider.getRowReachability`) — present for commit
+		// rows without any extra fetch. Falls back to a `loaded` empty set (not `idle`) so a commit with
+		// no reachable refs shows "Unreachable" exactly as before the bitmap encoding.
 		this.state.reachability.set(graphReachability ?? { partial: true, refs: [] });
 		this.state.reachabilityState.set('loaded');
 		this.state.explain.set(undefined);
@@ -757,10 +850,13 @@ export class DetailsActions {
 								if (this.resources.wip.status.get() === 'success') {
 									const result = this.resources.wip.value.get();
 									if (result != null) {
-										const { wip, stats } = result;
+										const { wip } = result;
 										this.state.wip.set(wip);
 										this.graphState?.setWip(repoPath, wip);
-										this.graphState?.setWorkingTreeStats(repoPath, stats);
+										// Stats travel embedded as `wip.stats`.
+										if (wip.stats != null) {
+											this.graphState?.setWorkingTreeStats(repoPath, wip.stats);
+										}
 										if (this.state.activeMode.get() != null) {
 											this.state.wipStale.set(true);
 										}
@@ -787,10 +883,13 @@ export class DetailsActions {
 					if (this.resources.wip.status.get() === 'success') {
 						const result = this.resources.wip.value.get();
 						if (result != null) {
-							const { wip, stats } = result;
+							const { wip } = result;
 							this.state.wip.set(wip);
 							this.graphState?.setWip(repoPath, wip);
-							this.graphState?.setWorkingTreeStats(repoPath, stats);
+							// Stats travel embedded as `wip.stats`.
+							if (wip.stats != null) {
+								this.graphState?.setWorkingTreeStats(repoPath, wip.stats);
+							}
 							if (this.state.activeMode.get() != null) {
 								this.state.wipStale.set(true);
 							}
@@ -2441,6 +2540,14 @@ export class DetailsActions {
 		);
 	}
 
+	/** Diff a resolved file's AI content against its conflicted snapshot via the virtual FS — no
+	 *  disk write. The `resolve` virtual session pairs `resolved` (rhs) with `conflicted` (lhs). */
+	openResolutionDiff(file: GitFileChangeShape, ref: fileActions.VirtualRefShape): void {
+		void this.runVirtualFileOpen('comparePrevious', 1, () =>
+			this.services.files.openVirtualFileComparePrevious(ref, file),
+		);
+	}
+
 	/** Open all files in the proposed-commit's virtual ref in VS Code's multi-diff editor. */
 	openVirtualMultipleChanges(ref: fileActions.VirtualRefShape, files: readonly FileChangeListItemDetail[]): void {
 		void this.runVirtualFileOpen('multiDiff', files.length, () =>
@@ -2481,6 +2588,10 @@ export class DetailsActions {
 		fileActions.openMultipleChanges(this.services.files, args);
 	}
 
+	copyWipPatchToClipboard(repoPath: string, scope: 'all' | 'staged' | 'unstaged', uris?: readonly string[]): void {
+		fireAndForget(this.services.drafts.copyWipPatchToClipboard(repoPath, scope, uris), 'copy WIP patch');
+	}
+
 	stageFile(detail: FileChangeListItemDetail): void {
 		this.optimisticallyUpdateFileStaged(detail.path, true);
 		this._pendingStagingOp = this.runStagingOp(this.services.repository.stageFile(detail), 'stage file');
@@ -2504,6 +2615,20 @@ export class DetailsActions {
 		this._pendingStagingOp = this.runStagingOp(this.services.repository.unstageFile(detail), 'unstage file');
 	}
 
+	stageFiles(files: GitFileChangeShape[]): void {
+		for (const file of files) {
+			this.optimisticallyUpdateFileStaged(file.path, true);
+		}
+		this._pendingStagingOp = this.runStagingOp(this.services.repository.stageFiles(files), 'stage files');
+	}
+
+	unstageFiles(files: GitFileChangeShape[]): void {
+		for (const file of files) {
+			this.optimisticallyUpdateFileStaged(file.path, false);
+		}
+		this._pendingStagingOp = this.runStagingOp(this.services.repository.unstageFiles(files), 'unstage files');
+	}
+
 	stageAll(repoPath: string | undefined): void {
 		if (!repoPath) return;
 
@@ -2522,12 +2647,33 @@ export class DetailsActions {
 		this._pendingStagingOp = this.runStagingOp(this.services.repository.discardFile(detail), 'discard file');
 	}
 
+	discardFiles(files: GitFileChangeShape[]): void {
+		this._pendingStagingOp = this.runStagingOp(this.services.repository.discardFiles(files), 'discard files');
+	}
+
+	stashFile(detail: FileChangeListItemDetail): void {
+		this._pendingStagingOp = this.runStagingOp(this.services.repository.stashFile(detail), 'stash file');
+	}
+
+	stashFiles(files: GitFileChangeShape[]): void {
+		this._pendingStagingOp = this.runStagingOp(this.services.repository.stashFiles(files), 'stash files');
+	}
+
 	discardUnstagedFiles(repoPath: string | undefined): void {
 		if (!repoPath) return;
 
 		this._pendingStagingOp = this.runStagingOp(
 			this.services.repository.discardUnstagedFiles(repoPath),
 			'discard unstaged files',
+		);
+	}
+
+	discardStagedFiles(repoPath: string | undefined): void {
+		if (!repoPath) return;
+
+		this._pendingStagingOp = this.runStagingOp(
+			this.services.repository.discardStagedFiles(repoPath),
+			'discard staged files',
 		);
 	}
 
@@ -2566,9 +2712,11 @@ export class DetailsActions {
 
 		this.applyWipPayload(result.wip, repoPath);
 		// Reseed the header/row badge source from the SAME `git status` the panel just applied.
-		// `result.stats` is `result.wip.stats` (one embedded, git-authoritative object), so the
+		// Stats travel embedded as `result.wip.stats` (one git-authoritative object), so the
 		// panel's file list and the header counts can't disagree.
-		this.graphState?.setWorkingTreeStats(repoPath, result.stats);
+		if (result.wip.stats != null) {
+			this.graphState?.setWorkingTreeStats(repoPath, result.wip.stats);
+		}
 	}
 
 	/**
@@ -2580,6 +2728,13 @@ export class DetailsActions {
 	applyPushedWip(wip: Wip): void {
 		const repoPath = wip.repo?.path;
 		if (repoPath == null) return;
+
+		// While a commit for this repo is in flight, the working tree is churned by the commit's own
+		// pre-commit hooks (e.g. lint-staged stashing unstaged changes), so the host emits transient
+		// "all staged" statuses. Applying one would let the subsequent optimistic clear's
+		// `filter(f => !f.staged)` empty the panel. Ignore it — the optimistic clear and the
+		// post-commit reconciliation (once the commit completes) provide the correct state.
+		if (repoPath === this._committingRepoPath) return;
 
 		this.applyWipPayload(wip, repoPath);
 	}
@@ -2704,6 +2859,8 @@ export class DetailsActions {
 		// Clear any prior error and enter the in-flight state (spinner + input lock).
 		this.state.commitError.set(undefined);
 		this.state.committing.set(true);
+		// Suppress host WIP pushes for this repo until the commit settles (see `applyPushedWip`).
+		this._committingRepoPath = repoPath;
 		try {
 			// `commit` returns a discriminated result and never throws for git failures — the host
 			// classifies the error and presents the modal/full-output document itself.
@@ -2728,61 +2885,25 @@ export class DetailsActions {
 			}
 		} finally {
 			this.state.committing.set(false);
+			this._committingRepoPath = undefined;
 		}
 	}
 
-	async generateMessage(repoPath: string | undefined): Promise<void> {
+	async addCoauthors(repoPath: string | undefined): Promise<void> {
 		if (!repoPath) return;
 
-		// Second invocation while generating = cancel. The sparkle button stays enabled
-		// during generation so the spinner doubles as a cancel affordance.
-		if (this._generateMessageController != null) {
-			this._generateMessageController.abort();
-			return;
-		}
+		// Host shows the same contributor picker as the SCM `Add Co-authors…` action, pre-picking
+		// anyone already in the message, and returns the selected `Name <email>` strings.
+		const coauthors = await this.services.graphInspect.pickCoauthors(
+			repoPath,
+			this.state.commitMessage.get() || undefined,
+		);
+		if (coauthors == null) return; // cancelled — leave the message untouched
 
-		const controller = new AbortController();
-		this._generateMessageController = controller;
-		this.state.generating.set(true);
-		try {
-			const currentMessage = this.state.commitMessage.get().trim() || undefined;
-
-			// When amending, the message must describe what the amend will actually produce, not
-			// just the working changes. Mirror `commit()`'s staged-vs-all decision so the host can
-			// diff against the amend's parent and fold in the existing commit's content.
-			let amend: { sha: string; all: boolean } | undefined;
-			if (this.state.amend.get()) {
-				const amendingSha = this.state.amendBaseSha.get();
-				if (amendingSha != null) {
-					const wip = this.state.wip.get();
-					const hasStagedFiles = wip?.changes?.files?.some(f => f.staged) ?? false;
-					const smartCommit = this.state.preferences.get()?.enableSmartCommit ?? false;
-					amend = { sha: amendingSha, all: !hasStagedFiles && smartCommit };
-				}
-			}
-
-			const result = await this.services.graphInspect.generateCommitMessage(
-				repoPath,
-				currentMessage,
-				amend,
-				controller.signal,
-			);
-			// Guard against a late response after the user cancelled or kicked off
-			// a new generation — only land the result if this controller is still current.
-			if (this._generateMessageController !== controller) return;
-
-			if (result) {
-				this.state.commitMessage.set(result.body ? `${result.summary}\n\n${result.body}` : result.summary);
-				// AI output is the user's intentional generation against the current diff —
-				// treat as user-authored so HEAD-move auto-clear preserves it.
-				this.state.commitMessageDirty.set(true);
-			}
-		} finally {
-			if (this._generateMessageController === controller) {
-				this._generateMessageController = undefined;
-				this.state.generating.set(false);
-			}
-		}
+		// Append against the live message so text typed before opening the picker is preserved.
+		this.state.commitMessage.set(appendCoauthorsToMessage(this.state.commitMessage.get(), coauthors));
+		// User-authored edit — survives the HEAD-move auto-clear; the debounced WIP-draft flush persists it.
+		this.state.commitMessageDirty.set(true);
 	}
 
 	async loadLastCommitMessage(repoPath: string | undefined): Promise<void> {
@@ -2816,10 +2937,10 @@ export class DetailsActions {
 		void this.services.repository.createBranch(repoPath);
 	}
 
-	stashSave(repoPath: string | undefined): void {
+	stashSave(repoPath: string | undefined, onlyStaged?: boolean): void {
 		if (!repoPath) return;
 
-		void this.services.commands.execute('gitlens.stashSave', { repoPath: repoPath });
+		void this.services.commands.execute('gitlens.stashSave', { repoPath: repoPath, onlyStaged: onlyStaged });
 	}
 
 	applyStash(repoPath: string | undefined): void {
@@ -2909,7 +3030,8 @@ export class DetailsActions {
  * maintain their own remembered model; compare (and `null`) read the global default.
  */
 function scopeForActiveMode(
-	mode: 'review' | 'compose' | 'compare' | null | undefined,
+	mode: 'review' | 'compose' | 'resolve' | 'compare' | null | undefined,
 ): 'compose' | 'review' | undefined {
+	// Resolve uses the global default AI model (no dedicated scope), so it maps to `undefined`.
 	return mode === 'compose' || mode === 'review' ? mode : undefined;
 }

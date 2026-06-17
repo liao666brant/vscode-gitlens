@@ -31,7 +31,7 @@ import type {
 	TreeModel,
 } from '../../../shared/components/tree/base.js';
 import { GlTreeBase } from './gl-tree-base.js';
-import '../../../shared/components/actions/action-item.js';
+import '../../../shared/components/chips/action-chip.js';
 import '../../../shared/components/actions/action-nav.js';
 import '../../../shared/components/avatar/avatar.js';
 import '../../../shared/components/badges/badge.js';
@@ -199,7 +199,11 @@ export class GlDraftDetails extends GlTreeBase {
 			<webview-pane collapsable data-region="explain-pane">
 				<span slot="title">解释（AI）</span>
 				<action-nav slot="actions">
-					<action-item data-action="switch-ai" label="切换 AI 提供商/模型" icon="arrow-swap"></action-item>
+					<gl-action-chip
+						data-action="switch-ai"
+						label="切换 AI 提供商/模型"
+						icon="arrow-swap"
+					></gl-action-chip>
 				</action-nav>
 
 				<div class="section">

@@ -1,6 +1,7 @@
 import * as assert from 'assert';
 import type { GitBranch } from '@gitlens/git/models/branch.js';
 import type { GitGraphRow, GitGraphRowHead, GitGraphRowRemoteHead, GraphContext } from '@gitlens/git/models/graph.js';
+import { GitGraphRowContextFlags } from '@gitlens/git/models/graph.js';
 import type { GitRemote } from '@gitlens/git/models/remote.js';
 import type { Container } from '../../container.js';
 import { GlGraphRowProcessor } from '../graphRowProcessor.js';
@@ -21,6 +22,9 @@ function createMockContext(overrides?: Partial<GraphContext>): GraphContext {
 		branchIdOfMainWorktree: undefined,
 		stashes: undefined,
 		reachableFromHEAD: new Set<string>(),
+		rewriteableFromHEAD: new Set<string>(),
+		tipShasWithChildren: new Set<string>(),
+		reachableFromHeadUpstream: undefined,
 		avatars: new Map<string, string>([['test@test.com', 'https://avatar']]),
 		...overrides,
 	};
@@ -167,6 +171,117 @@ suite('GlGraphRowProcessor', () => {
 
 			const item = getWebviewItem(head.context);
 			assert.ok(!item.includes('+pinned'), `unexpected +pinned in "${item}"`);
+		});
+	});
+
+	// The host ships `+unpublished` as the `Unpublished` bit in `contexts.flags`; the webview turns
+	// the bit into the `+unpublished` webview-item token (`buildRowCommitContext`). A commit is
+	// unpublished when it's reachable from HEAD but NOT from HEAD's upstream tip
+	// (`reachableFromHeadUpstream`); `undefined` upstream ⇒ HEAD has no upstream ⇒ never flagged.
+	suite('Unpublished flag on commit rows', () => {
+		test('sets the Unpublished bit when reachable from HEAD but not from its upstream', () => {
+			const processor = new GlGraphRowProcessor(createMockContainer(), uri => uri);
+
+			const row = createRow();
+			processor.processRow(
+				row,
+				createMockContext({
+					reachableFromHEAD: new Set([row.sha]),
+					reachableFromHeadUpstream: new Set<string>(), // upstream exists, doesn't contain this commit
+				}),
+			);
+
+			const flags = row.contexts?.flags ?? 0;
+			assert.ok(
+				(flags & GitGraphRowContextFlags.Unpublished) !== 0,
+				`expected Unpublished bit set in flags ${flags}`,
+			);
+		});
+
+		test('does not set the Unpublished bit when the commit is reachable from the upstream', () => {
+			const processor = new GlGraphRowProcessor(createMockContainer(), uri => uri);
+
+			const row = createRow();
+			processor.processRow(
+				row,
+				createMockContext({
+					reachableFromHEAD: new Set([row.sha]),
+					reachableFromHeadUpstream: new Set([row.sha]), // already on the upstream → pushed
+				}),
+			);
+
+			const flags = row.contexts?.flags ?? 0;
+			assert.ok(
+				(flags & GitGraphRowContextFlags.Unpublished) === 0,
+				`unexpected Unpublished bit in flags ${flags}`,
+			);
+		});
+
+		test('does not set the Unpublished bit when HEAD has no upstream', () => {
+			const processor = new GlGraphRowProcessor(createMockContainer(), uri => uri);
+
+			const row = createRow();
+			// reachableFromHeadUpstream undefined ⇒ no upstream to be ahead of ⇒ nothing flagged
+			processor.processRow(row, createMockContext({ reachableFromHEAD: new Set([row.sha]) }));
+
+			const flags = row.contexts?.flags ?? 0;
+			assert.ok(
+				(flags & GitGraphRowContextFlags.Unpublished) === 0,
+				`unexpected Unpublished bit in flags ${flags}`,
+			);
+		});
+
+		test('does not set the Unpublished bit on stash rows', () => {
+			const processor = new GlGraphRowProcessor(createMockContainer(), uri => uri);
+
+			// stash rows go through the stash branch (which builds `contexts.row`, not `contexts.flags`)
+			const row = createRow({ type: 'stash-node' });
+			processor.processRow(
+				row,
+				createMockContext({
+					reachableFromHEAD: new Set([row.sha]),
+					reachableFromHeadUpstream: new Set<string>(),
+				}),
+			);
+
+			const flags = row.contexts?.flags ?? 0;
+			assert.ok(
+				(flags & GitGraphRowContextFlags.Unpublished) === 0,
+				`unexpected Unpublished bit on stash flags ${flags}`,
+			);
+		});
+	});
+
+	// The host ships `+rewriteable` as the `RewriteableFromHead` bit in `contexts.flags`; the webview
+	// turns the bit into the `+rewriteable` webview-item token (`buildRowCommitContext`) that gates the
+	// history-rewriting commands (squash/drop/reword/modify). A commit is rewriteable when it's on the
+	// first-parent chain from HEAD up to (excluding) the first merge — i.e. present in `rewriteableFromHEAD`.
+	suite('RewriteableFromHead flag on commit rows', () => {
+		test('sets the RewriteableFromHead bit when the commit is in rewriteableFromHEAD', () => {
+			const processor = new GlGraphRowProcessor(createMockContainer(), uri => uri);
+
+			const row = createRow();
+			processor.processRow(row, createMockContext({ rewriteableFromHEAD: new Set([row.sha]) }));
+
+			const flags = row.contexts?.flags ?? 0;
+			assert.ok(
+				(flags & GitGraphRowContextFlags.RewriteableFromHead) !== 0,
+				`expected RewriteableFromHead bit set in flags ${flags}`,
+			);
+		});
+
+		test('does not set the RewriteableFromHead bit when the commit is not in rewriteableFromHEAD', () => {
+			const processor = new GlGraphRowProcessor(createMockContainer(), uri => uri);
+
+			// Reachable from HEAD (e.g. an ancestor of a merge) but NOT on the first-parent rewriteable chain.
+			const row = createRow();
+			processor.processRow(row, createMockContext({ reachableFromHEAD: new Set([row.sha]) }));
+
+			const flags = row.contexts?.flags ?? 0;
+			assert.ok(
+				(flags & GitGraphRowContextFlags.RewriteableFromHead) === 0,
+				`unexpected RewriteableFromHead bit in flags ${flags}`,
+			);
 		});
 	});
 });

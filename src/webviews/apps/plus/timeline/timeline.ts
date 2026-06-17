@@ -13,6 +13,7 @@ import type {
 import { periodToMs } from '../../../plus/timeline/utils/period.js';
 import { SignalWatcherWebviewApp } from '../../shared/appBase.js';
 import { compactBreadcrumbsConsumerStyles } from '../../shared/components/breadcrumbs.js';
+import { featureGateContentStyles } from '../../shared/components/feature-gate.css.js';
 import { getHost } from '../../shared/host/context.js';
 import { RpcController } from '../../shared/rpc/rpcController.js';
 import type { Resource } from '../../shared/state/resource.js';
@@ -40,6 +41,7 @@ export class GlTimelineApp extends SignalWatcherWebviewApp {
 	static override styles = [
 		linkStyles,
 		ruleStyles,
+		featureGateContentStyles,
 		timelineBaseStyles,
 		timelineStyles,
 		compactBreadcrumbsConsumerStyles,
@@ -284,39 +286,67 @@ export class GlTimelineApp extends SignalWatcherWebviewApp {
 		this._actions?.changeScope(e.detail.type, e.detail.value ?? null, e.detail.detached);
 	};
 
+	private onSwitchRepos = (): void => {
+		void this._actions?.pickAndNavigateRepo();
+	};
+
 	private renderGate() {
 		const s = this._state;
+		// Mount the gate only while access is denied — mount/unmount drives the modal's open/teardown,
+		// the same way the Commit Graph gate is conditionally rendered.
+		if (s.allowed.get() !== false) return nothing;
+
 		const sub = s.access.get()?.subscription?.current;
 		if (this.placement === 'editor') {
 			return html`<gl-feature-gate
-				?hidden=${s.allowed.get() !== false}
+				?allowRepoSwitch=${s.allowRepoSwitch.get()}
 				featureRestriction="private-repos"
 				.source=${{ source: 'timeline' as const, detail: 'gate' }}
 				.state=${sub?.state}
-				><p slot="feature">
-					<a href="https://help.gitkraken.com/gitlens/gitlens-features/#visual-file-history-pro"
-						>可视化历史</a
-					>
-					<gl-feature-badge></gl-feature-badge>
-					&mdash; 可视化仓库、分支、文件夹或文件的演变，并识别最具影响力的更改是在何时由谁完成的。
-					按分支切片时，可快速查看文件或文件夹中尚未合并的更改。
-				</p></gl-feature-gate
+				@gl-switch-repos=${this.onSwitchRepos}
+				><section slot="feature" class="feature">
+					<header class="feature__header">
+						<div class="icon-cube feature__feature-icon"><code-icon icon="gl-gitlens"></code-icon></div>
+						<hgroup>
+							<h2 class="feature__title">
+								<span>可视化历史</span>
+								<gl-feature-badge></gl-feature-badge>
+							</h2>
+							<p class="feature__lede">一览无余地查看任何文件、文件夹或分支的演变</p>
+						</hgroup>
+					</header>
+					<p>
+						可视化仓库、分支、文件夹或文件的演变，并识别最具影响力的更改是在何时由谁完成的。按分支切片时，可快速查看文件或文件夹中尚未合并的更改。
+						<a href="https://help.gitkraken.com/gitlens/gitlens-features/#visual-file-history-pro"
+							>了解更多</a
+						>
+					</p>
+				</section></gl-feature-gate
 			>`;
 		}
 
 		return html`<gl-feature-gate
-			?hidden=${s.allowed.get() !== false}
+			?allowRepoSwitch=${s.allowRepoSwitch.get()}
 			featureRestriction="private-repos"
 			.source=${{ source: 'timeline' as const, detail: 'gate' }}
 			.state=${sub?.state}
-			><p slot="feature">
-				<a href="https://help.gitkraken.com/gitlens/gitlens-features/#visual-file-history-pro"
-					>可视化文件历史</a
-				>
-				<gl-feature-badge></gl-feature-badge>
-				&mdash; 可视化文件演变，快速识别何时、由谁做出了最具影响力的更改。
-				按分支切片时，可快速查看文件或文件夹中尚未合并的更改。
-			</p></gl-feature-gate
+			@gl-switch-repos=${this.onSwitchRepos}
+			><section slot="feature" class="feature">
+				<header class="feature__header">
+					<div class="icon-cube feature__feature-icon"><code-icon icon="gl-gitlens"></code-icon></div>
+					<hgroup>
+						<h2 class="feature__title">
+							<span>可视化历史</span>
+							<gl-feature-badge></gl-feature-badge>
+						</h2>
+						<p class="feature__lede">一览无余地查看任何文件、文件夹或分支的演变</p>
+					</hgroup>
+				</header>
+				<p>
+					可视化仓库、分支、文件夹或文件的演变，并识别最具影响力的更改是在何时由谁完成的。按分支切片时，可快速查看文件或文件夹中尚未合并的更改。
+					<a href="https://help.gitkraken.com/gitlens/gitlens-features/#visual-file-history-pro">了解更多</a>
+				</p>
+			</section></gl-feature-gate
 		>`;
 	}
 

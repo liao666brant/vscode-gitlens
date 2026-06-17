@@ -1,5 +1,5 @@
 import { html, LitElement, nothing } from 'lit';
-import { customElement, property } from 'lit/decorators.js';
+import { customElement, property, state } from 'lit/decorators.js';
 import { classMap } from 'lit/directives/class-map.js';
 import type { RunningOperationExecState } from '../../../plus/graph/components/detailsState.js';
 import { chipStateSuffix, statusIconFor } from '../../../plus/graph/components/runningOperationStatus.js';
@@ -10,10 +10,11 @@ import '../chips/action-chip.js';
 import '../code-icon.js';
 import '../progress.js';
 
-/** Compose/review live in the details panel as toggle modes. Compare is no longer a header
- *  toggle — it opens as a sheet over the panel via dedicated entry points (sidebar action
- *  + commit-panel "Compare" button), so it's not part of `Mode`. */
-type Mode = 'review' | 'compose';
+/** Compose/review live in the details panel as toggle modes. Compare is rendered here too,
+ *  as a grouped entry-point chip alongside the toggles (for visual grouping + responsive
+ *  label-collapse parity), but it is NOT a `Mode`: it has no active/close state — clicking
+ *  it opens a compare sheet over the panel (dispatches `toggle-mode`/'compare'). */
+type Mode = 'review' | 'compose' | 'resolve';
 
 const modeConfig: Record<
 	Mode,
@@ -33,6 +34,13 @@ const modeConfig: Record<
 		text: '审查',
 		collapsible: true,
 	},
+	resolve: {
+		icon: 'sparkle',
+		label: 'Resolve Conflicts',
+		closeLabel: 'Close',
+		text: 'Resolve',
+		collapsible: true,
+	},
 };
 
 @customElement('gl-details-header')
@@ -43,6 +51,10 @@ export class GlDetailsHeader extends LitElement {
 	@property({ type: Boolean }) loading = false;
 	@property({ type: Array }) modes?: Mode[];
 
+	/** When true (and no mode is active), render a Compare entry-point chip in the primary
+	 *  action group, after the mode toggles. Not a `Mode` — see the `Mode` type comment. */
+	@property({ type: Boolean }) compareEnabled = false;
+
 	/** Per-mode execState + has-result of any running operation at the engaged anchor — drives
 	 *  the status-overlay suffix icon on compose/review toggle chips (parallel to the WIP-row
 	 *  adornment buttons). `hasResult` distinguishes a `'backed'` entry with a viewable result
@@ -50,7 +62,7 @@ export class GlDetailsHeader extends LitElement {
 	 *  Go Back) so the chip doesn't falsely advertise a completed run. Set even when `activeMode`
 	 *  is null so a toggled-out-but-still-running operation keeps its chip overlay. */
 	@property({ attribute: false }) modeStatus?: Partial<
-		Record<'review' | 'compose', { execState: RunningOperationExecState; hasResult: boolean }>
+		Record<Mode, { execState: RunningOperationExecState; hasResult: boolean }>
 	>;
 
 	/** True when the mode is in its drilled-in "results" sub-state (e.g. review showing
@@ -59,6 +71,11 @@ export class GlDetailsHeader extends LitElement {
 	 *  re-run with different scope) and dispatches `mode-back`, which the host routes to
 	 *  the appropriate workflow `.back()` method. Close still exits the mode entirely. */
 	@property({ type: Boolean, attribute: 'in-results-view' }) inResultsView = false;
+
+	/** Whether the `actions` slot has any assigned content. Gates the group-separating gap so
+	 *  it never reserves trailing space when a consumer (e.g. the comparison panel) slots no
+	 *  secondary actions — see `.details-header__actions-secondary` in the stylesheet. */
+	@state() private hasActions = false;
 
 	override render() {
 		const isModeActive = this.activeMode != null;
@@ -69,9 +86,16 @@ export class GlDetailsHeader extends LitElement {
 					<slot></slot>
 				</div>
 				<div class="details-header__actions">
-					${this.renderModeToggles()}
-					<slot name="actions"></slot>
-					${isModeActive ? this.renderCloseButton() : nothing}
+					${isModeActive
+						? this.renderCloseButton()
+						: html`${this.renderModeToggles()}${this.renderCompareToggle()}<slot
+									name="actions"
+									class=${classMap({
+										'details-header__actions-secondary': true,
+										'has-actions': this.hasActions,
+									})}
+									@slotchange=${this.onActionsSlotChange}
+								></slot>`}
 				</div>
 			</div>
 			<slot name="secondary"></slot>
@@ -143,6 +167,33 @@ export class GlDetailsHeader extends LitElement {
 		// (or the completed result stays). The Back-then-close destroy path also fires through
 		// here when active is clicked from `'backed'`; the controller side handles the destroy.
 		this.dispatchEvent(new CustomEvent('toggle-mode', { detail: { mode: mode }, bubbles: true, composed: true }));
+	}
+
+	private renderCompareToggle() {
+		if (!this.compareEnabled) return nothing;
+
+		// Grouped with the mode toggles for layout + label-collapse parity, but Compare is not
+		// a mode (no active/close state) — it just opens the compare sheet. Its label collapses
+		// first (widest `@container` breakpoint in `gl-details-header.css.ts`).
+		return html`<gl-action-chip
+			icon="compare-changes"
+			label="Compare"
+			overlay="tooltip"
+			class="mode-toggle mode-toggle--compare"
+			@click=${this.handleCompare}
+		>
+			<span class="mode-toggle__text">Compare</span>
+		</gl-action-chip>`;
+	}
+
+	private handleCompare = (): void => {
+		this.dispatchEvent(
+			new CustomEvent('toggle-mode', { detail: { mode: 'compare' }, bubbles: true, composed: true }),
+		);
+	};
+
+	private onActionsSlotChange(e: Event) {
+		this.hasActions = (e.target as HTMLSlotElement).assignedElements().length > 0;
 	}
 
 	private renderCloseButton() {

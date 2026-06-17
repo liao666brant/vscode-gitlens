@@ -115,8 +115,7 @@ interface SharedCaches {
 	contributorsStats: RepoPromiseCacheMap<string, GitContributorsStats | undefined> | undefined;
 	defaultBranchName: RepoPromiseCacheMap<string, string | undefined> | undefined;
 	gitResults: RepoPromiseCacheMap<string, GitResult> | undefined;
-	gkConfigKeys: RepoPromiseCacheMap<string, string | undefined> | undefined;
-	gkConfigPatterns: RepoPromiseCacheMap<string, Map<string, string>> | undefined;
+	gkConfigMap: PromiseMap<RepoPath, Map<string, string>> | undefined;
 	initialCommitSha: PromiseMap<RepoPath, string | undefined> | undefined;
 	/** Keyed by commonPath — `FETCH_HEAD` lives in the common git dir, shared across worktrees. */
 	lastFetched: PromiseCache<RepoPath, number | undefined> | undefined;
@@ -147,8 +146,7 @@ const sharedCacheKeys: ReadonlySet<keyof AllCaches> = new Set(
 		'contributorsStats',
 		'defaultBranchName',
 		'gitResults',
-		'gkConfigKeys',
-		'gkConfigPatterns',
+		'gkConfigMap',
 		'initialCommitSha',
 		'lastFetched',
 		'logShas',
@@ -192,8 +190,7 @@ function createEmptyCaches(): AllCaches {
 		gitDir: undefined,
 		gitIgnore: undefined,
 		gitResults: undefined,
-		gkConfigKeys: undefined,
-		gkConfigPatterns: undefined,
+		gkConfigMap: undefined,
 		initialCommitSha: undefined,
 		lastFetched: undefined,
 		logShas: undefined,
@@ -301,12 +298,8 @@ export class Cache implements Disposable {
 		}));
 	}
 
-	private get gkConfigKeys(): RepoPromiseCacheMap<string, string | undefined> {
-		return (this._caches.gkConfigKeys ??= new RepoPromiseCacheMap<string, string | undefined>());
-	}
-
-	private get gkConfigPatterns(): RepoPromiseCacheMap<string, Map<string, string>> {
-		return (this._caches.gkConfigPatterns ??= new RepoPromiseCacheMap<string, Map<string, string>>());
+	private get gkConfigMap(): PromiseMap<RepoPath, Map<string, string>> {
+		return (this._caches.gkConfigMap ??= new PromiseMap<RepoPath, Map<string, string>>());
 	}
 
 	get currentBranchReference(): PromiseCache<RepoPath, GitBranchReference | undefined> {
@@ -548,7 +541,10 @@ export class Cache implements Disposable {
 				keysToClear.add('configPatterns');
 				keysToClear.add('currentBranchReference');
 				keysToClear.add('currentUser');
-				keysToClear.add('gitDir');
+				// `gitDir` is immutable repo topology (toplevel/git-dir/common-dir/superproject) — a
+				// `.git/config` content change never relocates it, and it's owned by the repo lifecycle
+				// (registerRepoPath/unregisterRepoPath). Clearing it here forced a redundant `git rev-parse`
+				// re-spawn (gitDir is read by getGkConfigPath→getGitDir on every gk op), so leave it warm.
 			}
 
 			if (types.includes('contributors')) {
@@ -563,8 +559,7 @@ export class Cache implements Disposable {
 			}
 
 			if (types.includes('gkConfig')) {
-				keysToClear.add('gkConfigKeys');
-				keysToClear.add('gkConfigPatterns');
+				keysToClear.add('gkConfigMap');
 				// Derived from `branch.<ref>.gk-merge-base`/`vscode-merge-base`; clear so external
 				// gkConfig mutations don't leave stale base-branch resolutions cached.
 				keysToClear.add('baseBranchName');
@@ -875,14 +870,18 @@ export class Cache implements Disposable {
 				// On factory invalidation, propagate to the derived per-worktree mapper entries
 				// via soft-invalidate — existing waiters on the mapper complete, and the entry
 				// self-evicts on mapper settle so the next callers build fresh derived entries.
-				void p.finally(() => {
-					if (cacheable.invalidated) {
-						this.branches.invalidate(commonPath);
-						for (const worktreePath of this.getWorktreePaths(commonPath)) {
-							this.branches.invalidate(worktreePath);
+				void p
+					.finally(() => {
+						if (cacheable.invalidated) {
+							this.branches.invalidate(commonPath);
+							for (const worktreePath of this.getWorktreePaths(commonPath)) {
+								this.branches.invalidate(worktreePath);
+							}
 						}
-					}
-				});
+					})
+					// Swallow the cleanup chain's rejection so a rejected factory (e.g. cancellation)
+					// doesn't surface as an unhandled rejection; the caller-facing promise handles it.
+					.catch(() => {});
 				return p;
 			},
 			cancellation,
@@ -944,43 +943,25 @@ export class Cache implements Disposable {
 		this._caches.configPatterns?.delete(cacheKey);
 	}
 
-	getGkConfig(
-		repoPath: string,
-		key: string,
-		factory: () => PromiseOrValue<string | undefined>,
-	): Promise<string | undefined> {
-		const cacheKey = this.getCommonPath(repoPath);
-
-		const result = this.gkConfigKeys.get(cacheKey, key);
-		if (result != null) return result;
-
-		const factoryPromise = Promise.resolve(factory());
-		this.gkConfigKeys.set(cacheKey, key, factoryPromise);
-		return factoryPromise;
-	}
-
-	getGkConfigRegex(
-		repoPath: string,
-		pattern: string,
-		factory: () => PromiseOrValue<Map<string, string>>,
-	): Promise<Map<string, string>> {
-		const cacheKey = this.getCommonPath(repoPath);
-
-		const result = this.gkConfigPatterns.get(cacheKey, pattern);
-		if (result != null) return result;
-
-		const factoryPromise = Promise.resolve(factory());
-		this.gkConfigPatterns.set(cacheKey, pattern, factoryPromise);
-		return factoryPromise;
+	/**
+	 * The whole `.git/gk/config` is read once and cached as a single map per commonPath; per-key and
+	 * per-namespace gk lookups are served from it in-memory (see `getGkConfigMap` in the CLI config
+	 * sub-provider). Invalidated by `deleteGkConfig` (write) and the coarse `'gkConfig'` clear (watcher).
+	 */
+	getGkConfigMap(repoPath: string, factory: () => PromiseOrValue<Map<string, string>>): Promise<Map<string, string>> {
+		return this.getSharedSimple(this.gkConfigMap, repoPath, factory);
 	}
 
 	/**
+	 * Clears the cached `.git/gk/config` map and invalidates the derived caches
+	 * (`baseBranchName`/`branchOverviews`) for the written key's ref.
+	 *
 	 * @param options.skipInvalidation Downstream caches the caller wants preserved despite this
 	 * write. Use when the value being written is exactly what was just resolved — e.g. the Tier 2
 	 * `storeMergeTargetBranchName` self-write inside `getBranchContributionsOverview` (skip
 	 * `'branchOverviews'`) or the Tier 3 `storeBaseBranchName` self-write inside `getBaseBranchName`
-	 * (skip both `'baseBranchName'` and `'branchOverviews'`). The upstream caches (`gkConfigKeys`,
-	 * `gkConfigPatterns`) always invalidate so subsequent reads of this key see the new value.
+	 * (skip both `'baseBranchName'` and `'branchOverviews'`). The bulk `gkConfigMap` map always
+	 * invalidates so subsequent reads see the new value.
 	 */
 	deleteGkConfig(
 		repoPath: string,
@@ -988,8 +969,7 @@ export class Cache implements Disposable {
 		options?: { skipInvalidation?: readonly GkConfigInvalidationTarget[] },
 	): void {
 		const cacheKey = this.getCommonPath(repoPath);
-		this._caches.gkConfigKeys?.delete(cacheKey, key);
-		this._caches.gkConfigPatterns?.delete(cacheKey);
+		this._caches.gkConfigMap?.delete(cacheKey);
 
 		const refMatch = key.match(branchOverviewGkConfigKeysRegex);
 		if (refMatch == null) return;
@@ -1308,15 +1288,19 @@ export class Cache implements Disposable {
 				// On factory invalidation (without rejection), propagate to the derived per-worktree
 				// mapper entries so they don't persist past the shared factory's settle. Mapper
 				// entries cached via `cache.set()` have no controller, so `invalidate` hard-deletes.
-				void p.finally(() => {
-					if (cacheable.invalidated) {
-						for (const worktreePath of this.getWorktreePaths(commonPath)) {
-							if (worktreePath === commonPath) continue;
+				void p
+					.finally(() => {
+						if (cacheable.invalidated) {
+							for (const worktreePath of this.getWorktreePaths(commonPath)) {
+								if (worktreePath === commonPath) continue;
 
-							cache.invalidate(worktreePath);
+								cache.invalidate(worktreePath);
+							}
 						}
-					}
-				});
+					})
+					// Swallow the cleanup chain's rejection so a rejected factory (e.g. cancellation)
+					// doesn't surface as an unhandled rejection; the caller-facing promise handles it.
+					.catch(() => {});
 				return p;
 			},
 			cancellation,
@@ -1365,15 +1349,19 @@ export class Cache implements Disposable {
 				// mapper entries for this `cacheKey` so they don't persist past the shared factory's
 				// settle. Mapper entries cached via `cache.set()` have no controller, so `invalidate`
 				// hard-deletes.
-				void p.finally(() => {
-					if (cacheable.invalidated) {
-						for (const worktreePath of this.getWorktreePaths(commonPath)) {
-							if (worktreePath === commonPath) continue;
+				void p
+					.finally(() => {
+						if (cacheable.invalidated) {
+							for (const worktreePath of this.getWorktreePaths(commonPath)) {
+								if (worktreePath === commonPath) continue;
 
-							cache.invalidate(worktreePath, cacheKey);
+								cache.invalidate(worktreePath, cacheKey);
+							}
 						}
-					}
-				});
+					})
+					// Swallow the cleanup chain's rejection so a rejected factory (e.g. cancellation)
+					// doesn't surface as an unhandled rejection; the caller-facing promise handles it.
+					.catch(() => {});
 				return p;
 			},
 			options,

@@ -10,6 +10,7 @@ import type { OverviewBranchIssue, OverviewBranchPullRequest } from '../../../..
 import { elementBase, metadataBarVarsBase } from '../../../shared/components/styles/lit/base.css.js';
 import type { WebviewContext } from '../../../shared/contexts/webview.js';
 import { webviewContext } from '../../../shared/contexts/webview.js';
+import type { NavigationState } from '../../../shared/controllers/navigationStack.js';
 import type { RunningOperationExecState } from './detailsState.js';
 import { detailsWipHeaderStyles } from './gl-details-wip-header.css.js';
 import '../../shared/components/merge-rebase-status.js';
@@ -23,6 +24,7 @@ import '../../../shared/components/commit/wip-stats.js';
 import '../../../shared/components/progress.js';
 import '../../../shared/components/code-icon.js';
 import '../../../shared/components/details-header/gl-details-header.js';
+import '../../../shared/components/nav-buttons.js';
 import '../../../shared/components/overlays/tooltip.js';
 
 @customElement('gl-details-wip-header')
@@ -37,7 +39,7 @@ export class GlDetailsWipHeader extends LitElement {
 	 *  is for a secondary worktree (`wip.repo.path !== currentRepoPath`) so we can surface the
 	 *  Open Worktree action. */
 	@property() currentRepoPath?: string;
-	@property() activeMode?: 'review' | 'compose' | null;
+	@property() activeMode?: 'review' | 'compose' | 'resolve' | null;
 	/** Pre-computed snippet shown on the right of the identity row while in mode (e.g. "7 files",
 	 *  "Generating…", "3 commits · 7 files", "Error"). Computed by the host panel from scope +
 	 *  resource + registry state. Hidden when `activeMode` is null. */
@@ -50,7 +52,7 @@ export class GlDetailsWipHeader extends LitElement {
 	 *  separates a `'backed'` entry with a viewable result from a `'backed'`-no-result placeholder
 	 *  (cancelled / first-error Go Back) so the chip doesn't falsely advertise a completed run. */
 	@property({ attribute: false }) modeStatus?: Partial<
-		Record<'review' | 'compose', { execState: RunningOperationExecState; hasResult: boolean }>
+		Record<'review' | 'compose' | 'resolve', { execState: RunningOperationExecState; hasResult: boolean }>
 	>;
 	@property({ type: Boolean }) aiEnabled = false;
 	@property({ type: Boolean }) loading = false;
@@ -62,6 +64,8 @@ export class GlDetailsWipHeader extends LitElement {
 	@property({ type: Boolean }) pullRequestLoading = false;
 	@property() dateFormat?: string;
 	@property() dateStyle?: string;
+	/** Back/forward history state from the graph host, rendered to the left of the jump button. */
+	@property({ attribute: false }) navigation?: NavigationState;
 
 	override render() {
 		const wip = this.wip;
@@ -110,6 +114,7 @@ export class GlDetailsWipHeader extends LitElement {
 			.modeStatus=${this.modeStatus}
 			.loading=${this.loading}
 			.modes=${this.computeWipModes()}
+			.compareEnabled=${true}
 			?in-results-view=${this.inResultsView}
 		>
 			<div class="graph-details-header__title-group">
@@ -119,7 +124,10 @@ export class GlDetailsWipHeader extends LitElement {
 						: this.activeMode === 'review'
 							? html`<code-icon class="graph-details-header__mode-icon" icon="checklist"></code-icon
 									>正在审查更改`
-							: html`工作区更改`}
+							: this.activeMode === 'resolve'
+								? html`<code-icon class="graph-details-header__mode-icon" icon="sparkle"></code-icon
+										>正在解决冲突`
+								: html`工作区更改`}
 				</span>
 				${!isModeActive
 					? html`<gl-wip-stats
@@ -133,19 +141,6 @@ export class GlDetailsWipHeader extends LitElement {
 			${!isModeActive
 				? html`<gl-action-chip
 							slot="actions"
-							icon="compare-changes"
-							label="比较"
-							overlay="tooltip"
-							@click=${() =>
-								this.dispatchEvent(
-									new CustomEvent('toggle-mode', {
-										detail: { mode: 'compare' },
-										bubbles: true,
-										composed: true,
-									}),
-								)}
-						></gl-action-chip>
-						<gl-action-chip
 							slot="actions"
 							icon="terminal"
 							label="在集成终端中打开"
@@ -170,6 +165,16 @@ export class GlDetailsWipHeader extends LitElement {
 									})}
 								></gl-action-chip>`
 							: nothing}
+						<gl-nav-buttons slot="actions" .navigation=${this.navigation}></gl-nav-buttons>
+						${wip.branch?.reference?.sha != null
+							? html`<gl-action-chip
+									slot="actions"
+									icon="arrow-down"
+									label="跳转到分支顶端"
+									overlay="tooltip"
+									@click=${this.onJumpToTipClick}
+								></gl-action-chip>`
+							: nothing}
 						<gl-action-chip
 							slot="actions"
 							icon="refresh"
@@ -192,6 +197,7 @@ export class GlDetailsWipHeader extends LitElement {
 								<span slot="content">切换分支...</span>
 							</gl-tooltip>`
 						: nothing}
+					${!isModeActive ? this.renderWipActionsButton() : nothing}
 					${isModeActive
 						? html`<gl-wip-stats
 								.added=${addedCount}
@@ -237,9 +243,48 @@ export class GlDetailsWipHeader extends LitElement {
 		</gl-details-header>`;
 	}
 
-	private computeWipModes(): ('review' | 'compose')[] {
+	private renderWipActionsButton() {
+		// `wip.stats.context` is the serialized `GraphItemContext` for the WIP row's right-click menu,
+		// so reusing it here opens the identical context menu with zero drift. The host panel's
+		// `ContextMenuProxyController` copies `data-vscode-context` into light DOM on `contextmenu`.
+		const context = this.wip?.stats?.context;
+		if (context == null) return nothing;
+
+		return html`<gl-action-chip
+			icon="kebab-vertical"
+			label="Show More Actions"
+			overlay="tooltip"
+			data-vscode-context=${context}
+			@click=${this.onMoreActionsClick}
+		></gl-action-chip>`;
+	}
+
+	private onMoreActionsClick = (e: MouseEvent): void => {
+		e.preventDefault();
+		e.stopPropagation();
+
+		const target = e.currentTarget as HTMLElement | null;
+		if (target == null) return;
+
+		const rect = target.getBoundingClientRect();
+		target.dispatchEvent(
+			new MouseEvent('contextmenu', {
+				bubbles: true,
+				composed: true,
+				cancelable: true,
+				clientX: rect.left,
+				clientY: rect.bottom,
+				button: 2,
+			}),
+		);
+	};
+
+	private computeWipModes(): ('review' | 'compose' | 'resolve')[] {
 		if (!this.aiEnabled) return [];
-		return ['compose', 'review'];
+		// Surface the Resolve toggle only when the WIP has conflicts (a paused merge/rebase) —
+		// resolve operates on the conflicted-file set, so it's meaningless otherwise. It leads
+		// the cluster when present: resolving is the primary action for a conflicted WIP.
+		return this.wip?.changes?.hasConflicts ? ['resolve', 'compose', 'review'] : ['compose', 'review'];
 	}
 
 	private renderBranchStateAction() {
@@ -312,6 +357,7 @@ export class GlDetailsWipHeader extends LitElement {
 		return html`<div slot="secondary" class="graph-details-header__paused-op">
 			<gl-merge-rebase-status
 				?conflicts=${this.wip?.changes?.hasConflicts ?? false}
+				?ai-resolve=${this.aiEnabled}
 				.pausedOpStatus=${pausedOpStatus}
 			></gl-merge-rebase-status>
 		</div>`;
@@ -465,6 +511,19 @@ export class GlDetailsWipHeader extends LitElement {
 			}),
 		);
 	}
+
+	private onJumpToTipClick = (): void => {
+		const sha = this.wip?.branch?.reference?.sha;
+		if (!sha) return;
+
+		this.dispatchEvent(
+			new CustomEvent('gl-jump-to-commit', {
+				detail: { sha: sha },
+				bubbles: true,
+				composed: true,
+			}),
+		);
+	};
 
 	private emit(name: string) {
 		this.dispatchEvent(new CustomEvent(name, { bubbles: true, composed: true }));

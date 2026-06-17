@@ -25,8 +25,8 @@ import type {
 import type { RunningOperationExecState } from '../../plus/graph/components/detailsState.js';
 import { renderLearnAboutAutolinks } from '../../shared/components/chips/learn-about-autolinks.js';
 import type { TreeItemAction, TreeItemBase } from '../../shared/components/tree/base.js';
-import { ContextMenuProxyController } from '../../shared/controllers/context-menu-proxy.js';
 import { ModifierKeysController } from '../../shared/controllers/modifier-keys.js';
+import type { NavigationState } from '../../shared/controllers/navigationStack.js';
 import { detailsBaseStyles } from './gl-details-base.css.js';
 import type { File } from './gl-details-base.js';
 import { GlDetailsBase } from './gl-details-base.js';
@@ -51,6 +51,7 @@ import '../../shared/components/split-panel/split-panel.js';
 import '../../shared/components/progress.js';
 import '../../shared/components/ai-input.js';
 import '../../shared/components/details-header/gl-details-header.js';
+import '../../shared/components/nav-buttons.js';
 
 type State = IpcSerialized<_State>;
 interface ExplainState {
@@ -138,6 +139,10 @@ export class GlDetailsCommitPanel extends GlDetailsBase {
 	/** Forwarded to `gl-details-header` — when true, close becomes a back arrow. */
 	@property({ type: Boolean }) inResultsView = false;
 
+	/** Back/forward history state, forwarded to `gl-details-header`. Set by the graph host; unset
+	 *  for the inspect panel (which renders nav in `gl-inspect-nav`). */
+	@property({ attribute: false }) navigation?: NavigationState;
+
 	@property({ type: Boolean })
 	loading = false;
 
@@ -148,7 +153,6 @@ export class GlDetailsCommitPanel extends GlDetailsBase {
 	private _reachabilityExpanded = false;
 
 	private readonly _modifiers = new ModifierKeysController(this);
-	private readonly _contextMenuProxy = new ContextMenuProxyController(this);
 
 	private get isPopMode(): boolean {
 		return this._modifiers.altKey || this._modifiers.shiftKey;
@@ -307,9 +311,17 @@ export class GlDetailsCommitPanel extends GlDetailsBase {
 		`;
 	}
 
-	private getMultiDiffRefs(): { repoPath: string; lhs: string; rhs: string; title?: string } | undefined {
+	private getMultiDiffRefs():
+		| { repoPath: string; lhs: string; rhs: string; wip?: boolean; title?: string }
+		| undefined {
 		const commit = this.commit;
 		if (!commit) return undefined;
+
+		// The uncommitted pseudo-commit isn't a real revision — open the working changes with per-file
+		// HEAD↔index↔working semantics (the `wip` flag overrides lhs/rhs host-side). Mirrors the WIP panel.
+		if (this.isUncommitted) {
+			return { repoPath: commit.repoPath, lhs: 'HEAD', rhs: '', wip: true, title: '工作区更改' };
+		}
 
 		return {
 			repoPath: commit.repoPath,
@@ -364,27 +376,13 @@ export class GlDetailsCommitPanel extends GlDetailsBase {
 			.modeStatus=${this.modeStatus}
 			.loading=${this.loading}
 			.modes=${this.computeCommitModes()}
+			.compareEnabled=${this.compareEnabled}
 			?in-results-view=${this.inResultsView}
 		>
 			${headerContent}
-			${when(
-				this.compareEnabled && this.activeMode == null,
-				() =>
-					html`<gl-action-chip
-						slot="actions"
-						icon="compare-changes"
-						label="Compare"
-						overlay="tooltip"
-						@click=${() =>
-							this.dispatchEvent(
-								new CustomEvent('toggle-mode', {
-									detail: { mode: 'compare' },
-									bubbles: true,
-									composed: true,
-								}),
-							)}
-					></gl-action-chip>`,
-			)}
+			${this.activeMode == null && (this.navigation?.count ?? 0) > 1
+				? html`<gl-nav-buttons slot="actions" .navigation=${this.navigation}></gl-nav-buttons>`
+				: nothing}
 			${when(
 				this.showJumpToNearestWip && !isStash && !this.isUncommitted && this.activeMode == null,
 				() =>
@@ -397,7 +395,7 @@ export class GlDetailsCommitPanel extends GlDetailsBase {
 					></gl-action-chip>`,
 			)}
 			${when(
-				!isStash && this.hasRemotes && this.activeMode == null,
+				!isStash && !this.isUncommitted && this.hasRemotes && this.activeMode == null,
 				() =>
 					html`<gl-action-chip
 						slot="actions"
@@ -419,7 +417,8 @@ export class GlDetailsCommitPanel extends GlDetailsBase {
 
 	private computeCommitModes(): ('review' | 'compose')[] {
 		if (!this.aiEnabled) return [];
-		return ['review'];
+		// Working changes support both Compose and Review; a real commit supports Review only.
+		return this.isUncommitted ? ['compose', 'review'] : ['review'];
 	}
 
 	private renderEmbeddedMetadataBar() {
@@ -582,10 +581,20 @@ export class GlDetailsCommitPanel extends GlDetailsBase {
 		});
 	}
 
+	private get primaryReachableRef(): GitCommitReachability['refs'][number] | undefined {
+		const refs = this.reachability?.refs;
+		if (!refs?.length) return undefined;
+
+		// refs are pre-sorted (current → local → remote branches, then tags by version desc);
+		// prefer the best branch, else fall back to the first (highest-version) tag.
+		return refs.find(r => r.refType === 'branch') ?? refs[0];
+	}
+
 	private renderBranchIndicator() {
 		const state = this.reachabilityState;
 		const refs = this.reachability?.refs;
-		const extraCount = refs?.length ? refs.length - (this.branchName ? 1 : 0) : 0;
+		const primaryRef = this.primaryReachableRef;
+		const extraCount = refs?.length ? refs.length - (primaryRef ? 1 : 0) : 0;
 
 		// Loading
 		if (state === 'loading') {
@@ -617,8 +626,8 @@ export class GlDetailsCommitPanel extends GlDetailsBase {
 			</gl-tooltip>`;
 		}
 
-		// Loaded with refs — show branch name + count
-		if (this.branchName) {
+		// Loaded with refs — show the primary ref name + count
+		if (primaryRef) {
 			return html`<gl-tooltip
 				content="${this._reachabilityExpanded
 					? 'Hide All Branches & Tags Containing this Commit'
@@ -629,7 +638,11 @@ export class GlDetailsCommitPanel extends GlDetailsBase {
 					aria-expanded="${this._reachabilityExpanded}"
 					@click=${this.onToggleReachability}
 				>
-					<gl-branch-name class="metadata-bar__branch" .name=${this.branchName}></gl-branch-name>
+					<gl-branch-name
+						class="metadata-bar__branch${primaryRef.refType === 'tag' ? ' metadata-bar__branch--tag' : ''}"
+						.name=${primaryRef.name}
+						.icon=${primaryRef.refType === 'tag' ? 'tag' : undefined}
+					></gl-branch-name>
 					${extraCount > 0 ? html`<span class="metadata-bar__ref-count">+${extraCount}</span>` : nothing}
 				</button>
 			</gl-tooltip>`;
@@ -1152,16 +1165,36 @@ export class GlDetailsCommitPanel extends GlDetailsBase {
 		if (!this.commit) return undefined;
 
 		// Build webviewItem with modifiers matching view context values
-		// Pattern: gitlens:file+committed[+current][+HEAD][+unpublished][+submodule]
+		// Pattern: gitlens:file+committed[+current][+HEAD][+unpublished][+submodule][+worktree]
 		const commit = this.commit;
 		const isStash = commit.stashNumber != null;
 		const submodule = file.submodule != null ? '+submodule' : '';
+		// Reachable from a sibling worktree → offer "Open Worktree File" (committed files only)
+		const worktree = !isStash && commit.reachableFromOtherWorktrees ? '+worktree' : '';
+
+		// The uncommitted pseudo-commit isn't a real commit — give its files working-tree context so the
+		// menu shows working-tree actions (stage/discard/open changes) instead of commit-only actions
+		// (open at revision / on remote / restore previous). Mirrors the WIP panel's file context.
+		if (this.isUncommitted) {
+			const context: DetailsItemTypedContext = {
+				webviewItem: `gitlens:file${file.staged ? '+staged' : '+unstaged'}${submodule}`,
+				webviewItemValue: {
+					type: 'file',
+					path: file.path,
+					repoPath: commit.repoPath,
+					sha: commit.sha,
+					staged: file.staged,
+					status: file.status,
+				},
+			};
+			return serializeWebviewItemContext(context);
+		}
 
 		let webviewItem: DetailsItemContext['webviewItem'];
 		if (isStash) {
 			webviewItem = `gitlens:file+stashed${submodule}`;
 		} else {
-			webviewItem = `gitlens:file+committed${submodule}`;
+			webviewItem = `gitlens:file+committed${submodule}${worktree}`;
 		}
 
 		const context: DetailsItemTypedContext = {

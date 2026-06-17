@@ -1,6 +1,10 @@
 import type { WorkDirStats } from '@gitkraken/gitkraken-components';
 import { ContextProvider } from '@lit/context';
+import type { GraphReachabilityTable } from '@gitlens/git/models/graph.js';
+import type { GitCommitReachability } from '@gitlens/git/providers/commits.js';
 import { getBranchId } from '@gitlens/git/utils/branch.utils.js';
+import { decodeReachabilitySet } from '@gitlens/git/utils/reachability.utils.js';
+import { compareReachableRefs } from '@gitlens/git/utils/sorting.js';
 import { debounce } from '@gitlens/utils/debounce.js';
 import { getScopedLogger } from '@gitlens/utils/logger.scoped.js';
 import { LruMap } from '@gitlens/utils/lruMap.js';
@@ -268,6 +272,9 @@ export class GraphStateProvider extends StateProviderBase<State['webviewId'], Ap
 	accessor repositories: State['repositories'];
 
 	@signalState()
+	accessor worktreePaths: State['worktreePaths'];
+
+	@signalState()
 	accessor selectedRepository: State['selectedRepository'];
 
 	@signalState()
@@ -290,6 +297,9 @@ export class GraphStateProvider extends StateProviderBase<State['webviewId'], Ap
 
 	@signalState()
 	accessor allowed: State['allowed'] = false;
+
+	@signalState()
+	accessor allowRepoSwitch: State['allowRepoSwitch'];
 
 	@signalState()
 	accessor avatars: State['avatars'];
@@ -436,6 +446,10 @@ export class GraphStateProvider extends StateProviderBase<State['webviewId'], Ap
 			this.searchMode = this._state.searchMode;
 		}
 
+		// Bootstrap rows arrive lean: the host ships only `contexts.flags`, not the serialized commit
+		// `contexts.row`/`contexts.avatar` blobs. Those are now reconstructed on demand at right-click /
+		// selection time (see `graph-wrapper`), so nothing to rebuild here. Reachability is likewise
+		// decoded on demand from `_state.reachabilityTable` via `getRowReachability`.
 		this.updateState(this._state, true);
 		// Enrichment is fetched lazily when a consumer needs it (the overview sidebar mounting or
 		// the scope popover opening) rather than eagerly at bootstrap, where it competes with the
@@ -527,6 +541,24 @@ export class GraphStateProvider extends StateProviderBase<State['webviewId'], Ap
 		if (this.scope == null) return;
 
 		this._scopeClearDeferred = true;
+	}
+
+	cancelPendingScope(): void {
+		this._pendingScope = undefined;
+		this._scopeClearDeferred = false;
+		this.scopeLoading = false;
+	}
+
+	clearScope(): void {
+		if (this.scope == null) return;
+
+		this.cancelPendingScope();
+		this.scope = undefined;
+
+		emitTelemetrySentEvent<'graph/scope/cleared'>(this.host, {
+			name: 'graph/scope/cleared',
+			data: {},
+		});
 	}
 
 	/**
@@ -741,6 +773,75 @@ export class GraphStateProvider extends StateProviderBase<State['webviewId'], Ap
 		return anchor;
 	}
 
+	/** On-demand decode cache for `getRowReachability`, keyed by the host table's stable set index.
+	 *  Shared across pages and consumers; reset by `resetReachabilityCache` on a new table generation. */
+	private readonly _reachabilityCache = new Map<number, GitCommitReachability>();
+
+	/**
+	 * Decodes a single row's `reachability` on demand from the host-owned, accumulated
+	 * `reachabilityTable` (rows carry only a `contexts.reachabilityIndex`, never per-row ref arrays).
+	 * The table is append-only across pagination within a graph session — an index, once assigned,
+	 * always means the same set — so decoded sets are cached by index and shared across every page and
+	 * consumer (selection details, timeline branch attribution). Decoding only happens for rows a
+	 * consumer actually inspects. Returns undefined when the row has no reachability.
+	 *
+	 * The returned object is shared (one per distinct set, cached) — consumers MUST treat `refs` as
+	 * read-only (filter/map, never sort/splice in place), or they corrupt the set for every other row
+	 * and consumer that shares it.
+	 */
+	getRowReachability(row: NonNullable<State['rows']>[number]): GitCommitReachability | undefined {
+		const table = this._state.reachabilityTable;
+		if (table == null) return undefined;
+
+		const index = (row.contexts as { reachabilityIndex?: number } | undefined)?.reachabilityIndex;
+		if (index == null) return undefined;
+
+		let reachability = this._reachabilityCache.get(index);
+		if (reachability == null) {
+			const refs = decodeReachabilitySet(table, index);
+			// The dictionary is interned in first-seen order (to dedup bitmaps), so restore the host's
+			// canonical order — current-first / local-before-remote / tags newest-first — that the lazy
+			// `getCommitReachability` "load all" path uses and the details panel's `branches[0]`
+			// branch-name fallback depends on.
+			refs.sort(compareReachableRefs);
+			reachability = { partial: true, refs: refs };
+			this._reachabilityCache.set(index, reachability);
+		}
+		return reachability;
+	}
+
+	/** Clears the on-demand decode cache. Called when a new table generation arrives (different `id`);
+	 *  same-generation pagination extends the SAME table, so it must NOT clear there. */
+	private resetReachabilityCache(): void {
+		this._reachabilityCache.clear();
+	}
+
+	/**
+	 * Adopts a reachability-table push from the host. The host ships the FULL table on a new generation
+	 * (a fresh graph walk → new `id`) and only the appended dictionary/sets tail (a delta) on
+	 * same-generation pagination. So a different `id` (or no table yet) → replace + reset the decode
+	 * cache (set indices restart for a new generation); the same `id` → concatenate the delta and KEEP
+	 * the cache (existing indices stay valid — new entries only append). `undefined` means nothing was
+	 * shipped (deduped/no reachability) → keep what we have. Owns `_state.reachabilityTable` directly,
+	 * so callers must NOT also route the table through `updateState`.
+	 */
+	private applyReachabilityTable(incoming: GraphReachabilityTable | undefined): void {
+		if (incoming == null) return;
+
+		const current = this._state.reachabilityTable;
+		if (current?.id !== incoming.id) {
+			this._state.reachabilityTable = incoming;
+			this.resetReachabilityCache();
+			return;
+		}
+
+		this._state.reachabilityTable = {
+			id: current.id,
+			dictionary: [...current.dictionary, ...incoming.dictionary],
+			sets: [...current.sets, ...incoming.sets],
+		};
+	}
+
 	/** True when `sha` is present in the graph's loaded rows. Used to decide whether a resolved
 	 *  scope anchor is usable — see `publishResolvedScope`. */
 	private isShaLoaded(sha: string): boolean {
@@ -825,6 +926,11 @@ export class GraphStateProvider extends StateProviderBase<State['webviewId'], Ap
 				if (next.lastFetched?.getTime() === this._state.lastFetched?.getTime()) {
 					delete next.lastFetched;
 				}
+				// Adopt the reachability table by generation id (replace+reset on a new `id`, append on the
+				// same one). `applyReachabilityTable` owns `_state.reachabilityTable`, so delete the key
+				// from `next` to keep `updateState` from clobbering it.
+				this.applyReachabilityTable(next.reachabilityTable);
+				delete next.reachabilityTable;
 				this.updateState(next);
 				break;
 			}
@@ -921,18 +1027,7 @@ export class GraphStateProvider extends StateProviderBase<State['webviewId'], Ap
 			case DidChangeRefsVisibilityNotification.is(msg):
 				if (this._scopeClearDeferred) {
 					this._scopeClearDeferred = false;
-					const wasScoped = this.scope != null;
-					// Coalesce with the visibility update so the minimap and graph re-render once.
-					this.scope = undefined;
-					// Drop any in-flight `setScope` publish — otherwise a cache-miss resolve could
-					// re-publish a scope the user just cleared by switching visibility modes.
-					this._pendingScope = undefined;
-					if (wasScoped) {
-						emitTelemetrySentEvent<'graph/scope/cleared'>(this.host, {
-							name: 'graph/scope/cleared',
-							data: {},
-						});
-					}
+					this.clearScope();
 				}
 				this.updateState({
 					branchesVisibility: msg.params.branchesVisibility,
@@ -947,12 +1042,21 @@ export class GraphStateProvider extends StateProviderBase<State['webviewId'], Ap
 				break;
 
 			case DidChangeRefsMetadataNotification.is(msg):
+				// The host ships only changed/new entries (a value-reference delta) — spread-merge them.
+				// `null`/`undefined` are authoritative resets (integration connect/disconnect): replace
+				// wholesale so the component re-detects missing metadata and re-requests it.
 				this.updateState({
-					refsMetadata: msg.params.metadata,
+					refsMetadata:
+						msg.params.metadata != null
+							? { ...this._state.refsMetadata, ...msg.params.metadata }
+							: msg.params.metadata,
 				});
 				break;
 
 			case DidChangeRowsNotification.is(msg): {
+				// Lean commit contexts are reconstructed on demand at right-click / selection time (see
+				// `graph-wrapper`); reachability is decoded on demand from the accumulated
+				// `reachabilityTable` (adopted into `updates` below). Nothing to rebuild per-row here.
 				let rows;
 				if (msg.params.rows.length && msg.params.paging?.startingCursor != null && this._state.rows != null) {
 					const previousRows = this._state.rows;
@@ -1017,10 +1121,17 @@ export class GraphStateProvider extends StateProviderBase<State['webviewId'], Ap
 					updates.avatars = msg.params.avatars;
 				}
 				updates.downstreams = msg.params.downstreams;
-				if (msg.params.refsMetadata !== undefined) {
-					updates.refsMetadata = msg.params.refsMetadata;
+				// `refsMetadata` rides along as a value-reference delta: spread-merge an object, replace on
+				// an explicit `null` reset (no integrations), and keep our state on `undefined` (no change).
+				if (msg.params.refsMetadata === null) {
+					updates.refsMetadata = null;
+				} else if (msg.params.refsMetadata !== undefined) {
+					updates.refsMetadata = { ...this._state.refsMetadata, ...msg.params.refsMetadata };
 				}
 				updates.rows = rows;
+				// Adopt the reachability table by generation id: append the delta on same-generation
+				// pagination (cache preserved), replace + reset the decode cache on a new generation.
+				this.applyReachabilityTable(msg.params.reachabilityTable);
 				updates.paging = msg.params.paging;
 				if (msg.params.rowsStats != null) {
 					updates.rowsStats = { ...this._state.rowsStats, ...msg.params.rowsStats };
@@ -1177,10 +1288,17 @@ export class GraphStateProvider extends StateProviderBase<State['webviewId'], Ap
 				// through the accessor and don't update `_state`, so reading `_state` here sees a
 				// stale anchor-only map and the merge drops freshly-fetched `workDirStats` from
 				// every secondary row (the visible pill flash).
-				// `workingTreeStats` is just the primary wip's embedded `stats` (git-authoritative,
-				// same object as `msg.params.wip.stats`). Files and counts travel together, so they
-				// can't drift — no generation guard needed.
-				const updates: Partial<State> = { workingTreeStats: msg.params.stats };
+				// `workingTreeStats` is just the primary wip's embedded `stats` (git-authoritative).
+				// Files and counts travel together on the same `wip` object, so they can't drift —
+				// no generation guard needed. Assign only when stats are present: `updateState`
+				// enumerates keys, so `workingTreeStats: undefined` would actively CLEAR the badge.
+				// The producer always populates `wip.stats` and skips this notification when the status
+				// fetch fails, but guarding here keeps a stats-less push from blanking the badge and
+				// matches the `DidRequestWipRefetchNotification` handler's discipline below.
+				const updates: Partial<State> = {};
+				if (msg.params.wip?.stats != null) {
+					updates.workingTreeStats = msg.params.wip.stats;
+				}
 				if (msg.params.wipMetadataBySha != null) {
 					updates.wipMetadataBySha = mergeWipMetadata(
 						this.wipMetadataBySha,
@@ -1202,7 +1320,7 @@ export class GraphStateProvider extends StateProviderBase<State['webviewId'], Ap
 				// Merge the overview entry for the primary's current branch from the same fetch,
 				// so the overview card's dirty/clean indicator AND inline breakdown counts stay
 				// live without the bulk probe. Skip on detached HEAD (no branch to key by).
-				this.mergeOverviewWipForRepo(msg.params.repoPath, msg.params.wip, msg.params.stats);
+				this.mergeOverviewWipForRepo(msg.params.repoPath, msg.params.wip, msg.params.wip?.stats);
 				break;
 			}
 
@@ -1212,7 +1330,9 @@ export class GraphStateProvider extends StateProviderBase<State['webviewId'], Ap
 				// working-tree notification — the panel's `applyPushedWip` observer handles it.
 				if (msg.params.wip != null) {
 					const updates: Partial<State> = { wip: msg.params.wip };
-					const { repoPath, stats } = msg.params;
+					const { repoPath } = msg.params;
+					// Stats travel embedded as `wip.stats` (host-computed from the same `git status`).
+					const stats = msg.params.wip.stats;
 					this.cacheWip(repoPath, msg.params.wip);
 
 					// Host shipped its already-computed stats — use them directly rather than
@@ -1634,6 +1754,13 @@ export function mergeWipMetadata(
 				workDirStats: prevEntry.workDirStats,
 				workDirStatsStale: prevEntry.workDirStatsStale,
 				pausedOpStatus: prevEntry.pausedOpStatus,
+				// `hasChanges` is only sent on the graph-load probe build; per-tick pushes omit it.
+				// Preserve the last-known dirty bit so the WIP bar doesn't drop a worktree between loads.
+				hasChanges: entry.hasChanges ?? prevEntry.hasChanges,
+				// Tracked branches send `hasUnpushed` every build; local-only branches only on the probe
+				// build (`undefined` otherwise) — preserve it so their `↑` survives per-tick pushes. (`ahead`
+				// is free every build, so it rides `...entry` above and needs no preservation.)
+				hasUnpushed: entry.hasUnpushed ?? prevEntry.hasUnpushed,
 			};
 		} else {
 			// Newly-seen sha for this push. If we've previously seen stats for this sha during
@@ -1651,8 +1778,15 @@ export function mergeWipMetadata(
 		if (
 			entry.repoPath !== prevEntry?.repoPath ||
 			entry.parentSha !== prevEntry?.parentSha ||
+			entry.parentDate !== prevEntry?.parentDate ||
 			entry.label !== prevEntry?.label ||
-			entry.branchRef !== prevEntry?.branchRef
+			entry.branchRef !== prevEntry?.branchRef ||
+			// `ahead` is sent every build (incl 0), so a plain diff catches pushes that clear it.
+			entry.ahead !== prevEntry?.ahead ||
+			// Only the probe build carries `hasChanges`/local-only `hasUnpushed`; a per-tick push leaves
+			// them undefined and must not register as a change (the merge above preserves the prior value).
+			(entry.hasChanges != null && entry.hasChanges !== prevEntry?.hasChanges) ||
+			(entry.hasUnpushed != null && entry.hasUnpushed !== prevEntry?.hasUnpushed)
 		) {
 			changed = true;
 		}

@@ -180,32 +180,37 @@ export const commitBoxStyles = css`
 		top: 0.4rem;
 		right: 0.4rem;
 		display: flex;
+		flex-direction: column;
 		align-items: center;
-		gap: 0.4rem;
+		gap: 0.2rem;
 		transition: right 0.2s ease;
 		pointer-events: none;
 	}
 
+	/* Mirror of the top controls, pinned to the bottom corner. Row layout so the char-count
+	   tucks to the left of the co-author button, which stays pinned to the corner. */
+	.controls-bottom {
+		top: auto;
+		bottom: 0.4rem;
+		flex-direction: row;
+		gap: 0.4rem;
+	}
+
 	/* Shift left when a scrollbar is rendered (using scroll-timeline state detection via CSS if available)
-	   For now, we use :not(:placeholder-shown) as a heuristic (if there is content, there might be a scrollbar). */
+	   For now, we use :not(:placeholder-shown) as a heuristic (if there is content, there might be a scrollbar).
+	   Targets both the top and bottom controls (both carry the .controls class). */
 	.message:has(.textarea:not(:placeholder-shown)) .controls {
 		right: 1.2rem;
 	}
 
 	.char-count {
-		position: absolute;
-		bottom: 0.4rem;
-		right: 0.8rem;
 		font-size: var(--gl-font-sm);
 		color: var(--vscode-descriptionForeground, var(--color-foreground--65));
 		pointer-events: none;
 	}
 
-	.message:has(.textarea:not(:placeholder-shown)) .char-count {
-		right: 1.6rem;
-	}
-
-	.sparkle {
+	.sparkle,
+	.add-coauthors {
 		pointer-events: auto;
 	}
 

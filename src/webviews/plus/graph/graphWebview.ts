@@ -1,5 +1,11 @@
 import type { emptySetMarker, GraphRefOptData, GraphRow, GraphSearchMode } from '@gitkraken/gitkraken-components';
-import type { CancellationToken, ColorTheme, ConfigurationChangeEvent, TextDocumentShowOptions } from 'vscode';
+import type {
+	CancellationToken,
+	ColorTheme,
+	ConfigurationChangeEvent,
+	MessageItem,
+	TextDocumentShowOptions,
+} from 'vscode';
 import {
 	CancellationTokenSource,
 	commands,
@@ -11,14 +17,20 @@ import {
 	window,
 	workspace,
 } from 'vscode';
-import { createGraphComposeIntegration } from '@env/coretools/composer.js';
+import { getSquashSequenceEditor } from '@env/git/squashEditor.js';
 import { getClaudeAgent } from '@env/providers.js';
 import { GitSearchError } from '@gitlens/git/errors.js';
 import type { GitBranch } from '@gitlens/git/models/branch.js';
 import { GitCommit } from '@gitlens/git/models/commit.js';
 import { GitContributor } from '@gitlens/git/models/contributor.js';
 import type { GitFileChangeShape } from '@gitlens/git/models/fileChange.js';
-import type { GitGraph, GitGraphRowType } from '@gitlens/git/models/graph.js';
+import type {
+	GitGraph,
+	GitGraphRow,
+	GitGraphRowHead,
+	GitGraphRowType,
+	GraphReachabilityTable,
+} from '@gitlens/git/models/graph.js';
 import type { GitGraphSearch, GitGraphSearchProgress, GitGraphSearchResults } from '@gitlens/git/models/graphSearch.js';
 import type { IssueShape } from '@gitlens/git/models/issue.js';
 import type { GitPausedOperationStatus } from '@gitlens/git/models/pausedOperationStatus.js';
@@ -42,6 +54,7 @@ import {
 	getRemoteNameFromBranchName,
 } from '@gitlens/git/utils/branch.utils.js';
 import { splitCommitMessage } from '@gitlens/git/utils/commit.utils.js';
+import { appendCoauthorsToMessage } from '@gitlens/git/utils/contributor.utils.js';
 import { getLastFetchedUpdateInterval } from '@gitlens/git/utils/fetch.utils.js';
 import { isConflictStatus } from '@gitlens/git/utils/fileStatus.utils.js';
 import {
@@ -49,8 +62,9 @@ import {
 	getRepositoryIdentityForPullRequest,
 	serializePullRequest,
 } from '@gitlens/git/utils/pullRequest.utils.js';
+import { decodeReachabilitySet } from '@gitlens/git/utils/reachability.utils.js';
 import { createReference } from '@gitlens/git/utils/reference.utils.js';
-import { createRevisionRange, isSha, shortenRevision } from '@gitlens/git/utils/revision.utils.js';
+import { createRevisionRange, isSha, isUncommitted, shortenRevision } from '@gitlens/git/utils/revision.utils.js';
 import {
 	getSearchQueryComparisonKey,
 	parseSearchQuery,
@@ -60,6 +74,7 @@ import { sortBranches, sortRemotes, sortTags, sortWorktrees } from '@gitlens/git
 import { filterMap } from '@gitlens/utils/array.js';
 import { CancellationError, isCancellationError } from '@gitlens/utils/cancellation.js';
 import { getScopedCounter } from '@gitlens/utils/counter.js';
+import { uuid } from '@gitlens/utils/crypto.js';
 import type { Deferrable } from '@gitlens/utils/debounce.js';
 import { debounce } from '@gitlens/utils/debounce.js';
 import { debug, trace } from '@gitlens/utils/decorators/log.js';
@@ -78,6 +93,7 @@ import {
 } from '@gitlens/utils/promise.js';
 import { PromiseCache } from '@gitlens/utils/promiseCache.js';
 import { Stopwatch } from '@gitlens/utils/stopwatch.js';
+import { pluralize } from '@gitlens/utils/string.js';
 import type { AgentSessionState } from '../../../agents/models/agentSessionState.js';
 import { isActiveAgentPhase } from '../../../agents/provider.js';
 import type { CreatePullRequestActionContext, OpenPullRequestActionContext } from '../../../api/gitlens.d.js';
@@ -130,7 +146,6 @@ import {
 	openOnlyChangedFiles,
 	undoCommit,
 } from '../../../git/actions/commit.js';
-import * as ContributorActions from '../../../git/actions/contributor.js';
 import {
 	abortPausedOperation,
 	continuePausedOperation,
@@ -161,6 +176,7 @@ import {
 	formatCommitStats,
 	getCommitAssociatedPullRequest,
 	getCommitEnrichedAutolinks,
+	isCommitPushed,
 	isCommitSigned,
 } from '../../../git/utils/-webview/commit.utils.js';
 import { stageConflictResolution } from '../../../git/utils/-webview/conflictResolution.utils.js';
@@ -174,8 +190,14 @@ import {
 	getRemoteProviderUrl,
 	remoteSupportsIntegration,
 } from '../../../git/utils/-webview/remote.utils.js';
-import type { getWorktreeHasWorkingChanges } from '../../../git/utils/-webview/worktree.utils.js';
-import { getOpenedWorktreesByBranch, getWorktreesByBranch } from '../../../git/utils/-webview/worktree.utils.js';
+import {
+	getOpenedWorktreesByBranch,
+	getReachableWorktrees,
+	getWorktreeHasUnpublishedCommits,
+	getWorktreeHasWorkingChanges,
+	getWorktreesByBranch,
+} from '../../../git/utils/-webview/worktree.utils.js';
+import type { RebaseTodoAction } from '../../../git/utils/rebaseTodo.js';
 import type { OnboardingChangeEvent } from '../../../onboarding/onboardingService.js';
 import type { UsageChangeEvent } from '../../../onboarding/usageTracker.js';
 import { getSupportedAgents } from '../../../plus/agents/agentRegistry.js';
@@ -199,7 +221,7 @@ import { showContributorsPicker } from '../../../quickpicks/contributorsPicker.j
 import { showReferencePicker2 } from '../../../quickpicks/referencePicker.js';
 import { getRepositoryPickerTitleAndPlaceholder, showRepositoryPicker } from '../../../quickpicks/repositoryPicker.js';
 import { showRevisionFilesPicker } from '../../../quickpicks/revisionFilesPicker.js';
-import { fromAbortSignal, toAbortSignal } from '../../../system/-webview/cancellation.js';
+import { cancelAndDispose, fromAbortSignal, toAbortSignal } from '../../../system/-webview/cancellation.js';
 import {
 	executeActionCommand,
 	executeCommand,
@@ -213,8 +235,14 @@ import { loadChunk } from '../../../system/-webview/loadChunk.js';
 import type { StorageChangeEvent } from '../../../system/-webview/storage.js';
 import type { OpenWorkspaceLocation } from '../../../system/-webview/vscode/workspaces.js';
 import { openWorkspace } from '../../../system/-webview/vscode/workspaces.js';
-import { isDarkTheme, isLightTheme, revealInFileExplorer } from '../../../system/-webview/vscode.js';
+import {
+	getHostEditorCommand,
+	isDarkTheme,
+	isLightTheme,
+	revealInFileExplorer,
+} from '../../../system/-webview/vscode.js';
 import { createCommandDecorator, getWebviewCommand } from '../../../system/decorators/command.js';
+import { gate } from '../../../system/decorators/gate.js';
 import { serializeWebviewItemContext } from '../../../system/webview.js';
 import { DeepLinkActionType } from '../../../uris/deepLinks/deepLink.js';
 import { RepositoryFolderNode } from '../../../views/nodes/abstract/repositoryFolderNode.js';
@@ -223,8 +251,13 @@ import {
 	getFileCommitFromContext,
 	isDetailsFileContext,
 	isDetailsFolderContext,
+	resolveMultiFileContext,
 } from '../../commitDetails/commitDetailsWebview.utils.js';
-import { DetailsFileCommands, getDetailsFileCommands } from '../../commitDetails/detailsFileCommands.js';
+import {
+	DetailsFileCommands,
+	getDetailsFileCommands,
+	getDetailsFileMultiCommands,
+} from '../../commitDetails/detailsFileCommands.js';
 import {
 	DetailsFolderCommands,
 	getDetailsFolderCommands,
@@ -253,6 +286,11 @@ import * as branchRefCommands from '../shared/branchRefCommands.js';
 import type { ChoosePathParams, DidChoosePathParams } from '../timeline/protocol.js';
 import type { TimelineCommandArgs } from '../timeline/registration.js';
 import { buildTimelineDataset } from '../timeline/timelineDataset.js';
+import type { ConflictToolsIntegration } from '../../../plus/coretools/conflict/integration.js';
+import type {
+	ConflictProgressEvent,
+	Resolution as ConflictToolsResolution,
+} from '../../../plus/coretools/conflict/types.js';
 import type { GraphComposeIntegration } from './compose/integration.js';
 import { isComposeSimulatorActive, runSimulatedComposeChanges } from './compose/simulator.js';
 import {
@@ -275,6 +313,11 @@ import {
 	GraphComposeVirtualContentProvider,
 	GraphComposeVirtualNamespace,
 } from './graphComposeVirtualContentProvider.js';
+import {
+	GraphResolveVirtualContentProvider,
+	GraphResolveVirtualNamespace,
+	ResolveVirtualSide,
+} from './graphResolveVirtualContentProvider.js';
 import { getScopeFiles } from './graphScopeService.js';
 import type {
 	BranchCommitEntry,
@@ -285,9 +328,15 @@ import type {
 	BranchComparisonFile,
 	ComposeProgressUpdate,
 	GraphServices,
+	ResolvedFileSummary,
+	ResolveFileError,
+	ResolveProgressUpdate,
+	ResolveSkippedFile,
 	ScopeSelection,
+	VirtualRefShape,
 } from './graphService.js';
 import {
+	activityDecayToMs,
 	formatRepositories,
 	hasGitReference,
 	isGraphItemRefContext,
@@ -328,6 +377,7 @@ import type {
 	GraphPinnedRef,
 	GraphRefMetadata,
 	GraphRefMetadataType,
+	GraphRefsMetadata,
 	GraphRefType,
 	GraphRemoteContextValue,
 	GraphRepository,
@@ -423,6 +473,7 @@ import {
 	SyncWipWatchesCommand,
 	TrackGraphDetailsCompareModeCommand,
 	TrackGraphDetailsComposeModeCommand,
+	TrackGraphDetailsResolveModeCommand,
 	TrackGraphDetailsReviewModeCommand,
 	TrackGraphDetailsWipShownCommand,
 	TrackGraphOverviewShownCommand,
@@ -456,15 +507,19 @@ interface ResolvedScopeAnchor {
 	mergeTargetTipSha?: string;
 }
 
+function hasRepository(arg: any): arg is { repository: GlRepository; search?: SearchQuery; selectSha?: string } {
+	return arg?.repository != null;
+}
+
 function hasSearchQuery(arg: any): arg is { repository: GlRepository; search: SearchQuery; selectSha?: string } {
-	return arg?.repository != null && arg?.search != null;
+	return hasRepository(arg) && arg.search != null;
 }
 
 function hasSidebarPanel(arg: any): arg is { sidebarPanel: GraphSidebarPanel } {
 	return typeof arg?.sidebarPanel === 'string';
 }
 
-function hasAction(arg: any): arg is { action: GraphShowAction } {
+function hasAction(arg: any): arg is { action: GraphShowAction; target?: GraphActionTarget } {
 	return typeof arg?.action === 'string';
 }
 
@@ -561,6 +616,9 @@ export class GraphWebviewProvider implements WebviewProvider<State, State, Graph
 	}
 
 	private _cancellations = new Map<CancellableOperations, CancellationTokenSource>();
+	/** In-flight AI-run cancellation sources, so `dispose()` can cancel them when the webview is torn
+	 *  down (their driving webview signal can't fire once its realm is gone). */
+	private _aiCancellations = new Set<CancellationTokenSource>();
 	private _discovering: Promise<number | undefined> | undefined;
 	private readonly _disposable: Disposable;
 	private _etag?: number;
@@ -582,6 +640,25 @@ export class GraphWebviewProvider implements WebviewProvider<State, State, Graph
 	};
 	private _composeToolsForGraph?: GraphComposeIntegration;
 	private readonly _activeComposeCacheKeys = new Map<string, string>();
+	/** Virtual FS session backing the resolve panel's per-file resolved-vs-conflicted diffs. Lazy-initialized on first resolve. */
+	private _resolveVirtual?: {
+		readonly provider: GraphResolveVirtualContentProvider;
+		readonly registration: Disposable;
+		sessionId?: string;
+	};
+	private _conflictToolsForGraph?: ConflictToolsIntegration;
+	/** Cached full AI resolutions per repo (keyed by repoPath) — holds the resolved `content` for a
+	 *  later `applyResolutions`, plus the virtual session id so it can be ended on discard/apply. */
+	private readonly _activeResolveSessions = new Map<
+		string,
+		{ resolutions: readonly ConflictToolsResolution[]; sessionId: string }
+	>();
+	/** Per-repo AI conversation ID for the active resolve session — sent with every AI request so
+	 *  the backend charges its flat per-feature fee once per session, across re-runs and per-file
+	 *  retries. Kept separate from {@link _activeResolveSessions} because it must exist before the
+	 *  first AI call and survive a cancelled/failed first run (so a re-run reuses it); cleared with
+	 *  the session in {@link discardResolveSession}. */
+	private readonly _resolveConversationIds = new Map<string, string>();
 	private _computeWorktreeChangesPromise?: Promise<void>;
 	private _pendingWorktreeChanges?: Parameters<typeof getWorktreeHasWorkingChanges>[1][];
 	private _hoverCache = new Map<string, Promise<string>>();
@@ -617,7 +694,6 @@ export class GraphWebviewProvider implements WebviewProvider<State, State, Graph
 	private _search: GitGraphSearch | undefined;
 	private _searchIdCounter = getScopedCounter();
 	private _selectedId?: string;
-	private _honorSelectedId = false;
 	private _selectedRows: Record<string, SelectedRowState> | undefined;
 	private _theme: ColorTheme | undefined;
 	private _repositoryEventsDisposable: Disposable | undefined;
@@ -664,6 +740,20 @@ export class GraphWebviewProvider implements WebviewProvider<State, State, Graph
 	// some entries were appended. Cleared in `setGraph` on graph identity change.
 	private _lastSentAvatarsSize: number | undefined;
 	private _lastSentRowsStatsSize: number | undefined;
+	// Generation id + dictionary/sets lengths shipped on the previous reachability push. The table is
+	// append-only within a generation, so on a same-`id` push we ship only the appended tail (a delta);
+	// a new `id` ships the full table. Reset by `setGraph(undefined)`; advanced only on confirmed send.
+	private _lastSentReachability: { id: number; dictLen: number; setsLen: number } | undefined;
+	// Snapshot of the `_refsMetadata` value references shipped on the previous send. Entries are replaced
+	// with fresh objects on every change (copy-on-write in `onGetMissingRefMetadata`) and never deleted,
+	// so a reference compare yields an exact delta (the webview spread-merges). Reset by
+	// `resetRefsMetadata`; advanced only on confirmed send.
+	private _lastSentRefsMetadata: Map<string, GraphRefMetadata> | undefined;
+	// Last overview shipped to the webview. `setGraph` fires `notifyDidChangeOverview` on every graph
+	// reload (repo/visibility/filter change, refresh); most reloads reproduce the prior overview, so
+	// a deep-equal gate skips the redundant serialize + webview re-render. Cleared in `setGraph` on
+	// graph identity change.
+	private _lastSentOverview: GraphOverviewData | undefined;
 	private static readonly stateFreshnessMs = 500;
 
 	private isWindowFocused: boolean = true;
@@ -805,15 +895,14 @@ export class GraphWebviewProvider implements WebviewProvider<State, State, Graph
 			clearTimeout(this._stateFreshnessRetryTimer);
 			this._stateFreshnessRetryTimer = undefined;
 		}
-		// Cancel and dispose every in-flight cancellation token. Previously these survived dispose:
-		// the in-flight awaitee would resolve and call `host.notify` on a torn-down host (wasted
-		// work + logged errors), and each source's internal listeners leaked for the extension's
-		// lifetime.
-		for (const source of this._cancellations.values()) {
-			source.cancel();
-			source.dispose();
-		}
+		// Cancel + dispose every in-flight cancellation source, else the awaitee resolves and calls
+		// `host.notify` on a torn-down host and its listeners leak for the extension's lifetime.
+		cancelAndDispose(this._cancellations.values());
 		this._cancellations.clear();
+		// AI runs (generate/review/compose) are driven by the webview's AbortController, which can't
+		// fire once the webview is gone — cancel host-side so the AI call doesn't run for a discarded result.
+		cancelAndDispose(this._aiCancellations);
+		this._aiCancellations.clear();
 		// Cancel any in-flight load-more so its `graph.more()` resolution can't call setGraph on a
 		// disposed instance.
 		if (this._pendingRowsQuery != null) {
@@ -865,6 +954,18 @@ export class GraphWebviewProvider implements WebviewProvider<State, State, Graph
 			this._composeVirtual.registration.dispose();
 			this._composeVirtual = undefined;
 		}
+		this._activeResolveSessions.clear();
+		// Flush each conversation's aggregated BYOK usage report (one feature fee per session) so a
+		// webview teardown mid-session doesn't drop it.
+		for (const conversationId of this._resolveConversationIds.values()) {
+			void this.container.ai.flushBYOKUsage(conversationId);
+		}
+		this._resolveConversationIds.clear();
+		if (this._resolveVirtual != null) {
+			this._resolveVirtual.provider.dispose();
+			this._resolveVirtual.registration.dispose();
+			this._resolveVirtual = undefined;
+		}
 		this._disposable.dispose();
 	}
 
@@ -878,9 +979,62 @@ export class GraphWebviewProvider implements WebviewProvider<State, State, Graph
 		return this._composeVirtual;
 	}
 
-	private getOrCreateComposeToolsForGraph(): GraphComposeIntegration | undefined {
-		this._composeToolsForGraph ??= createGraphComposeIntegration(this.container);
+	private async getOrCreateComposeToolsForGraph(): Promise<GraphComposeIntegration | undefined> {
+		if (this._composeToolsForGraph == null) {
+			// Lazily import the node-only compose-tools library on demand, keeping it (and its eager zod
+			// schema/JIT setup that trips VS Code's `navigator` deprecation warning) off the graph init path.
+			const { createGraphComposeIntegration } = await import('@env/coretools/composer.js');
+			this._composeToolsForGraph ??= createGraphComposeIntegration(this.container);
+		}
 		return this._composeToolsForGraph;
+	}
+
+	/** Lazy-init the resolve virtual content provider + register it with the virtual FS service. */
+	private getOrCreateResolveVirtual(): { provider: GraphResolveVirtualContentProvider; sessionId?: string } {
+		if (this._resolveVirtual == null) {
+			const provider = new GraphResolveVirtualContentProvider();
+			const registration = this.container.virtualFs.registerProvider(provider);
+			this._resolveVirtual = { provider: provider, registration: registration };
+		}
+		return this._resolveVirtual;
+	}
+
+	private async getOrCreateConflictToolsForGraph(): Promise<ConflictToolsIntegration | undefined> {
+		if (this._conflictToolsForGraph == null) {
+			// Lazily import the node-only conflict-tools integration on demand (browser resolves to a
+			// stub returning `undefined`, so callers gate the feature off in VS Code Web).
+			const { createConflictToolsIntegration } = await import('@env/coretools/conflict.js');
+			this._conflictToolsForGraph ??= createConflictToolsIntegration(this.container);
+		}
+		return this._conflictToolsForGraph;
+	}
+
+	/** Gets the repo's resolve-session AI conversation ID, minting one for a new session. */
+	private getOrCreateResolveConversationId(repoPath: string): string {
+		let conversationId = this._resolveConversationIds.get(repoPath);
+		if (conversationId == null) {
+			conversationId = uuid();
+			this._resolveConversationIds.set(repoPath, conversationId);
+		}
+		return conversationId;
+	}
+
+	/** Drops the cached resolve session for a repo and ends its virtual session (no disk writes). */
+	private discardResolveSession(repoPath: string): void {
+		// The conversation outlives the session entry (it exists from before the first AI call), so
+		// end it before the `session == null` return — a run cancelled before any session entry was
+		// created still needs its BYOK usage flushed (one aggregated report = one feature fee).
+		const conversationId = this._resolveConversationIds.get(repoPath);
+		if (conversationId != null) {
+			this._resolveConversationIds.delete(repoPath);
+			void this.container.ai.flushBYOKUsage(conversationId);
+		}
+
+		const session = this._activeResolveSessions.get(repoPath);
+		if (session == null) return;
+
+		this._activeResolveSessions.delete(repoPath);
+		this._resolveVirtual?.provider.endSession(session.sessionId);
 	}
 
 	/** Per-secondary-WIP filesystem watchers, keyed by synthetic `worktree-wip::<path>` sha. */
@@ -892,7 +1046,19 @@ export class GraphWebviewProvider implements WebviewProvider<State, State, Graph
 	/** Per-secondary-WIP refetch coordination (timer + in-flight Promise), keyed by secondary WIP sha. */
 	private readonly _wipRefetches = new Map<
 		string,
-		{ timer?: ReturnType<typeof setTimeout>; repo: GlRepository; inFlight?: Promise<void>; dirty: boolean }
+		{
+			timer?: ReturnType<typeof setTimeout>;
+			repo: GlRepository;
+			inFlight?: Promise<void>;
+			dirty: boolean;
+			/**
+			 * A watcher tick fired while the graph was hidden, so its refetch was held back rather than
+			 * run (a hidden graph shouldn't run `git status`). Flushed by `recoverDeferredSecondaryWip`
+			 * on the next visibility/focus regain — mirrors the primary's pending-notification replay so
+			 * secondary worktrees don't go stale across a hidden→shown transition.
+			 */
+			deferred?: boolean;
+		}
 	>();
 
 	/**
@@ -911,6 +1077,10 @@ export class GraphWebviewProvider implements WebviewProvider<State, State, Graph
 	}>('sidebarWorktreeState', 'save-last');
 	private readonly _composeProgressEvent = createRpcEvent<ComposeProgressUpdate | undefined>(
 		'composeProgress',
+		'save-last',
+	);
+	private readonly _resolveProgressEvent = createRpcEvent<ResolveProgressUpdate | undefined>(
+		'resolveProgress',
 		'save-last',
 	);
 
@@ -1149,20 +1319,23 @@ export class GraphWebviewProvider implements WebviewProvider<State, State, Graph
 					repoPath: string,
 					signal?: AbortSignal,
 					force?: boolean,
-				): Promise<{ wip: Wip; stats: GraphWorkingTreeStats } | undefined> => {
+				): Promise<{ wip: Wip } | undefined> => {
 					signal?.throwIfAborted();
 
-					// Secondary worktrees may not be pre-registered as Repository instances;
-					// open them on demand — closed, so they don't surface in the VS Code UI.
-					const repo =
-						this.container.git.getRepository(repoPath) ??
-						(await this.container.git.getOrOpenRepository(Uri.file(repoPath), { closeOnOpen: true }));
+					// Secondary worktrees (incl. ones nested in the main working tree) may not be pre-registered
+					// as Repository instances; resolve the precise worktree, opening on demand — closed, so they
+					// don't surface in the VS Code UI. `detectNested` avoids getRepository()'s nearest-ancestor fold.
+					const repo = await this.container.git.getOrAddRepository(Uri.file(repoPath), {
+						opened: false,
+						detectNested: true,
+					});
 					if (repo == null) return undefined;
 
-					// Returning both halves lets the cold-load path reseed the webview's
-					// `workingTreeStats` slot from the same `git status` the panel uses — if a prior
-					// initial-state fetch landed with bad data and no FS event has fired since, the
-					// header/row badges stay stuck on stale stats until the next incidental tick.
+					// Returning `wip` (with stats embedded as `wip.stats`) lets the cold-load path
+					// reseed the webview's `workingTreeStats` slot from the same `git status` the
+					// panel uses — if a prior initial-state fetch landed with bad data and no FS event
+					// has fired since, the header/row badges stay stuck on stale stats until the next
+					// incidental tick.
 					// `force` (user-initiated refresh) bypasses `_wipStatusCache` so the button runs
 					// a genuinely fresh `git status` rather than re-serving a possibly-stale entry.
 					return this.getWipForRepoAndStats(repo, signal, force ? { bypassCache: true } : undefined);
@@ -1310,7 +1483,10 @@ export class GraphWebviewProvider implements WebviewProvider<State, State, Graph
 					}
 				},
 				reviewChanges: async (repoPath, scope, prompt, excludedFiles, signal) => {
-					const { token: cancellation, dispose: disposeCancellation } = fromAbortSignal(signal);
+					const { token: cancellation, dispose: disposeCancellation } = fromAbortSignal(
+						signal,
+						this._aiCancellations,
+					);
 					try {
 						signal?.throwIfAborted();
 
@@ -1545,7 +1721,12 @@ export class GraphWebviewProvider implements WebviewProvider<State, State, Graph
 					// staging-aware repo.
 					// Omit `progress` so no VS Code notification is shown — the WIP panel drives
 					// its own inline generating UI and exposes cancel via the sparkle button.
-					const { token: cancellation, dispose: disposeCancellation } = fromAbortSignal(signal);
+					const { token: cancellation, dispose: disposeCancellation } = fromAbortSignal(
+						signal,
+						this._aiCancellations,
+					);
+					// Cancellable by both the webview signal and host `dispose()` (via the registry).
+					const cancellationSignal = toAbortSignal(cancellation);
 					try {
 						const repo = this.container.git.getRepository(repoPath);
 						if (repo == null) return undefined;
@@ -1563,10 +1744,15 @@ export class GraphWebviewProvider implements WebviewProvider<State, State, Graph
 								amend.all ? uncommitted : uncommittedStaged,
 								from,
 								undefined,
-								signal,
+								cancellationSignal,
 							);
 							if (!diff?.contents) {
-								diff = await repo.git.diff.getDiff?.(amend.sha, undefined, undefined, signal);
+								diff = await repo.git.diff.getDiff?.(
+									amend.sha,
+									undefined,
+									undefined,
+									cancellationSignal,
+								);
 							}
 							if (diff?.contents) {
 								changesOrRepo = diff.contents;
@@ -1589,8 +1775,41 @@ export class GraphWebviewProvider implements WebviewProvider<State, State, Graph
 						disposeCancellation();
 					}
 				},
+				pickCoauthors: async (repoPath, currentMessage) => {
+					try {
+						const repo = this.container.git.getRepository(repoPath);
+						if (repo == null) return undefined;
+
+						// Same multi-select contributor picker the SCM `Add Co-authors…` action uses;
+						// pre-pick anyone already present in the message so re-opening it keeps them
+						// selected (deselecting removes them when the trailer block is rewritten).
+						const contributors = await showContributorsPicker(
+							this.container,
+							repo,
+							'Add Co-authors',
+							'Choose contributors to add as co-authors',
+							{
+								appendReposToTitle: true,
+								clearButton: true,
+								multiselect: true,
+								picked: c => currentMessage?.includes(c.coauthor) ?? false,
+							},
+						);
+						// Return the `Name <email>` strings — `GitContributor`'s `coauthor` getter
+						// wouldn't survive RPC serialization, so compute it host-side.
+						return contributors?.map(c => c.coauthor);
+					} catch (ex) {
+						// Match generateCommitMessage: surface the failure in logs rather than letting
+						// it become an unhandled rejection in the webview's fire-and-forget caller.
+						Logger.error(ex, 'graph.pickCoauthors');
+						return undefined;
+					}
+				},
 				composeChanges: async (repoPath, scope, instructions, excludedFiles, aiExcludedFiles, signal) => {
-					const { token: cancellation, dispose: disposeCancellation } = fromAbortSignal(signal);
+					const { token: cancellation, dispose: disposeCancellation } = fromAbortSignal(
+						signal,
+						this._aiCancellations,
+					);
 					// Hoisted so the catch block can `discardCachedPlan` if any step after the
 					// library-side plan registration throws — otherwise an exception after the
 					// `generatePlan...` cache write leaks the cached plan in the compose-tools
@@ -1616,7 +1835,7 @@ export class GraphWebviewProvider implements WebviewProvider<State, State, Graph
 						// user manually flips `gitlens.ai.model` to `simulator:*` in settings.json.
 						const simulated = DEBUG && isComposeSimulatorActive();
 
-						const composeTools = simulated ? undefined : this.getOrCreateComposeToolsForGraph();
+						const composeTools = simulated ? undefined : await this.getOrCreateComposeToolsForGraph();
 						if (!simulated && composeTools == null) {
 							return { error: { message: 'Compose is not available in this environment.' } };
 						}
@@ -1759,7 +1978,7 @@ export class GraphWebviewProvider implements WebviewProvider<State, State, Graph
 				},
 				onComposeProgress: this._composeProgressEvent.subscribe(buffer, tracker),
 				commitCompose: async (repoPath, plan) => {
-					const composeTools = this.getOrCreateComposeToolsForGraph();
+					const composeTools = await this.getOrCreateComposeToolsForGraph();
 					if (composeTools == null) {
 						return { error: { message: 'Compose is not available in this environment.' } };
 					}
@@ -1781,6 +2000,371 @@ export class GraphWebviewProvider implements WebviewProvider<State, State, Graph
 						composeTools.discardCachedPlan(cacheKey);
 					}
 				},
+				resolveConflicts: async (repoPath, focusedFilePaths, instructions, signal) => {
+					const integration = await this.getOrCreateConflictToolsForGraph();
+					if (integration == null) {
+						return { error: { message: 'AI conflict resolution is not available in this environment.' } };
+					}
+
+					const svc = this.container.git.getRepositoryService(repoPath);
+					const status = await svc.pausedOps?.getPausedOperationStatus?.();
+					if (status == null) {
+						return { error: { message: 'No active merge, rebase, or cherry-pick conflicts to resolve.' } };
+					}
+
+					const refs = {
+						ours: status.HEAD?.ref ?? 'HEAD',
+						theirs: status.incoming?.ref ?? 'MERGE_HEAD',
+						...(status.mergeBase != null ? { base: status.mergeBase } : {}),
+					};
+					// `instructions` (whole-run "Refine" feedback) rides conflict-tools' first-class
+					// `ResolutionContext.userGuidance`, which 0.2.0 renders into the prompt.
+					const context = { refs: refs, ...(instructions ? { userGuidance: instructions } : {}) };
+
+					const { token, dispose: disposeCancellation } = fromAbortSignal(signal, this._aiCancellations);
+					const resolveSignal = toAbortSignal(token);
+
+					const onProgress = (event: ConflictProgressEvent) => {
+						switch (event.type) {
+							case 'conflict:found':
+								this._resolveProgressEvent.fire({
+									phase: event.type,
+									message: `Analyzing ${event.filePath}…`,
+								});
+								break;
+							case 'resolution:applied':
+								this._resolveProgressEvent.fire({
+									phase: event.type,
+									message: `Resolved ${event.filePath}.`,
+								});
+								break;
+							case 'resolution:failed':
+								this._resolveProgressEvent.fire({
+									phase: event.type,
+									message: `Couldn't resolve ${event.filePath} — skipping.`,
+								});
+								break;
+							case 'conflict:skipped':
+								this._resolveProgressEvent.fire({
+									phase: event.type,
+									message: `Skipping ${event.filePath} — no conflict markers.`,
+								});
+								break;
+							case 'resolver:tool-call':
+								this._resolveProgressEvent.fire({
+									phase: event.type,
+									message: `${event.filePath}: inspecting ${event.tool}…`,
+								});
+								break;
+						}
+					};
+
+					try {
+						this._resolveProgressEvent.fire({ phase: 'collecting', message: 'Reading conflicts…' });
+
+						// Entries carry each file's conflict reason (porcelain v2), which makes
+						// delete/modify conflicts extractable instead of appearing marker-less.
+						const entries = await integration.listUnmergedEntries(svc);
+
+						// Scope to the requested files (per-file / multi-select entry points); undefined
+						// means all conflicts. Requested files no longer unmerged just drop out.
+						const focused = focusedFilePaths != null && focusedFilePaths.length > 0;
+						const targets = focused ? entries.filter(e => focusedFilePaths.includes(e.path)) : entries;
+						if (targets.length === 0) {
+							return {
+								error: {
+									message: focused
+										? focusedFilePaths.length === 1
+											? `${focusedFilePaths[0]} is no longer conflicted.`
+											: 'The selected files are no longer conflicted.'
+										: 'No conflicted files to resolve.',
+								},
+							};
+						}
+
+						// One conversation ID per resolve session — re-runs ("Refine") and per-file
+						// retries reuse it until apply/discard, so the backend's flat per-feature fee
+						// is charged once for the whole session instead of once per AI request.
+						const conversationId = this.getOrCreateResolveConversationId(repoPath);
+
+						// Resolve the conflicted files in a bounded-concurrency pool so one file's failure
+						// is isolated (recorded in `errors`) and the rest still resolve — and they run in
+						// parallel rather than one-at-a-time.
+						const result = await integration.resolveAllParallel(
+							{
+								svc: svc,
+								entries: targets,
+								context: context,
+								signal: resolveSignal,
+								onProgress: onProgress,
+								conversationId: conversationId,
+							},
+							{
+								source: 'graph',
+								detail: focused
+									? focusedFilePaths.length === 1
+										? 'resolveFile'
+										: 'resolveFiles'
+									: 'resolveAll',
+							},
+						);
+						const resolutions: ConflictToolsResolution[] = result.resolutions;
+						const errors: ResolveFileError[] = result.errors.map(e => ({
+							filePath: e.filePath,
+							message: e.error.message,
+						}));
+						const skipped: ResolveSkippedFile[] = (result.skipped ?? []).map(s => ({
+							filePath: s.filePath,
+							message:
+								'No conflict markers were found — this may be a binary or unsupported conflict; resolve it manually.',
+						}));
+
+						if (resolveSignal?.aborted) return { cancelled: true };
+
+						// Snapshot the conflicted (working-tree) content of every resolved file BEFORE anything
+						// is applied, so "View diff" can show resolved-vs-conflicted. `applyResolutions` runs
+						// later (and may never run if the user discards), so capture now while the markers are
+						// still on disk.
+						const previewable = resolutions.filter(r => r.strategy !== 'skipped');
+						const conflictedContents = await integration.readWorkingFiles(
+							svc,
+							previewable.map(r => r.filePath),
+						);
+
+						const { provider } = this.getOrCreateResolveVirtual();
+						const sessionId = provider.startSession(
+							{
+								repoPath: repoPath,
+								files: previewable
+									.filter(r => conflictedContents.has(r.filePath))
+									.map(r => ({
+										path: r.filePath,
+										conflictedContent: conflictedContents.get(r.filePath)!,
+										resolvedContent: r.content,
+									})),
+							},
+							this._resolveVirtual!.sessionId,
+						);
+						this._resolveVirtual!.sessionId = sessionId;
+
+						// Cache the full resolutions (with `content`) for a later `applyResolutions`.
+						this._activeResolveSessions.set(repoPath, { resolutions: resolutions, sessionId: sessionId });
+
+						logResolutionUsage(resolutions, 'graph.resolveConflicts');
+
+						const summaries: ResolvedFileSummary[] = resolutions.map(r => ({
+							filePath: r.filePath,
+							strategy: r.strategy,
+							reasoning: r.description,
+							confidence: r.confidence,
+							note: r.note,
+							virtualRef:
+								r.strategy !== 'skipped' && conflictedContents.has(r.filePath)
+									? {
+											namespace: GraphResolveVirtualNamespace,
+											sessionId: sessionId,
+											commitId: ResolveVirtualSide.resolved,
+										}
+									: undefined,
+						}));
+
+						return {
+							result: {
+								resolutions: summaries,
+								errors: errors.length > 0 ? errors : undefined,
+								skipped: skipped.length > 0 ? skipped : undefined,
+							},
+						};
+					} catch (ex) {
+						if (resolveSignal?.aborted || isCancellationError(ex)) return { cancelled: true };
+						return { error: { message: ex instanceof Error ? ex.message : String(ex) } };
+					} finally {
+						disposeCancellation();
+						this._resolveProgressEvent.fire(undefined);
+					}
+				},
+				reresolveFile: async (repoPath, filePath, feedback, signal) => {
+					const integration = await this.getOrCreateConflictToolsForGraph();
+					if (integration == null) {
+						return { error: { message: 'AI conflict resolution is not available in this environment.' } };
+					}
+
+					const session = this._activeResolveSessions.get(repoPath);
+					if (session == null) {
+						return { error: { message: 'No active resolutions to retry; please re-run.' } };
+					}
+
+					const svc = this.container.git.getRepositoryService(repoPath);
+					const status = await svc.pausedOps?.getPausedOperationStatus?.();
+					if (status == null) {
+						return { error: { message: 'The merge, rebase, or cherry-pick is no longer in progress.' } };
+					}
+
+					const refs = {
+						ours: status.HEAD?.ref ?? 'HEAD',
+						theirs: status.incoming?.ref ?? 'MERGE_HEAD',
+						...(status.mergeBase != null ? { base: status.mergeBase } : {}),
+					};
+
+					const { token, dispose: disposeCancellation } = fromAbortSignal(signal, this._aiCancellations);
+					const resolveSignal = toAbortSignal(token);
+					try {
+						const entries = await integration.listUnmergedEntries(svc);
+						const entry = entries.find(e => e.path === filePath);
+						if (entry == null) {
+							return { error: { message: `${filePath} is no longer conflicted.` } };
+						}
+
+						const conflict = await integration.extract({
+							svc: svc,
+							filePath: filePath,
+							reason: entry.reason,
+							signal: resolveSignal,
+						});
+						if (conflict == null) {
+							return {
+								error: {
+									message: `No conflict markers were found in ${filePath} — it needs manual resolution.`,
+								},
+							};
+						}
+
+						// Feedback rides conflict-tools' first-class `ResolutionContext.userGuidance`.
+						const resolution = await integration.resolveSingle(
+							{
+								svc: svc,
+								conflict: conflict,
+								context: { refs: refs, userGuidance: feedback },
+								signal: resolveSignal,
+								// Same conversation as the run being retried (an active session implies
+								// the ID exists; minting here is just a defensive fallback).
+								conversationId: this.getOrCreateResolveConversationId(repoPath),
+							},
+							{ source: 'graph', detail: 'resolveRetryFile' },
+						);
+						if (resolveSignal?.aborted) return { cancelled: true };
+
+						// Replace this file's resolution in the cached session (others untouched).
+						const exists = session.resolutions.some(r => r.filePath === filePath);
+						this._activeResolveSessions.set(repoPath, {
+							...session,
+							resolutions: exists
+								? session.resolutions.map(r => (r.filePath === filePath ? resolution : r))
+								: [...session.resolutions, resolution],
+						});
+
+						// Refresh the file's virtual content in place so its existing `resolved` ref re-reads
+						// the new content (the row's "View diff" stays valid — same sessionId).
+						const conflictedContents = await integration.readWorkingFiles(svc, [filePath]);
+						let virtualRef: VirtualRefShape | undefined;
+						if (resolution.strategy !== 'skipped' && conflictedContents.has(filePath)) {
+							this._resolveVirtual?.provider.updateFile(session.sessionId, {
+								path: filePath,
+								conflictedContent: conflictedContents.get(filePath)!,
+								resolvedContent: resolution.content,
+							});
+							virtualRef = {
+								namespace: GraphResolveVirtualNamespace,
+								sessionId: session.sessionId,
+								commitId: ResolveVirtualSide.resolved,
+							};
+						}
+
+						logResolutionUsage([resolution], 'graph.reresolveFile');
+
+						return {
+							result: {
+								filePath: resolution.filePath,
+								strategy: resolution.strategy,
+								reasoning: resolution.description,
+								confidence: resolution.confidence,
+								note: resolution.note,
+								virtualRef: virtualRef,
+							},
+						};
+					} catch (ex) {
+						if (resolveSignal?.aborted || isCancellationError(ex)) return { cancelled: true };
+						return { error: { message: ex instanceof Error ? ex.message : String(ex) } };
+					} finally {
+						disposeCancellation();
+					}
+				},
+				applyResolutions: async (repoPath, includedFilePaths) => {
+					const integration = await this.getOrCreateConflictToolsForGraph();
+					if (integration == null) {
+						return { error: { message: 'AI conflict resolution is not available in this environment.' } };
+					}
+
+					const session = this._activeResolveSessions.get(repoPath);
+					if (session == null) {
+						return { error: { message: 'No resolutions to apply; please re-run.' } };
+					}
+
+					const svc = this.container.git.getRepositoryService(repoPath);
+					try {
+						// Stale guard: if the paused op ended externally (merge aborted/committed) between
+						// generation and apply, the cached resolutions are stale — refuse rather than write
+						// AI content over a working tree the user has since changed.
+						const pausedOp = await svc.pausedOps?.getPausedOperationStatus?.();
+						if (pausedOp == null) {
+							this.discardResolveSession(repoPath);
+							return {
+								error: {
+									message:
+										'The merge, rebase, or cherry-pick is no longer in progress — resolutions were not applied.',
+								},
+							};
+						}
+
+						const included = includedFilePaths != null ? new Set(includedFilePaths) : undefined;
+						// Never apply 'skipped' files — they were intentionally left conflicted.
+						const selected = session.resolutions.filter(
+							r => r.strategy !== 'skipped' && (included == null || included.has(r.filePath)),
+						);
+						if (selected.length === 0) {
+							return { error: { message: 'No applicable resolutions were selected.' } };
+						}
+
+						// Per-file stale guard: only apply files still unmerged. A file resolved externally
+						// (manually or via another tool) since generation must not be clobbered with stale
+						// AI content. Skipped files are surfaced in the result.
+						const stillConflicted = await integration.listUnmergedPaths(svc);
+						const toApply = selected.filter(r => stillConflicted.has(r.filePath));
+						const skipped = selected.length - toApply.length;
+						if (toApply.length === 0) {
+							this.discardResolveSession(repoPath);
+							return {
+								error: { message: 'These files are no longer conflicted — nothing was applied.' },
+							};
+						}
+
+						await integration.applyBatch({ svc: svc, resolutions: toApply });
+						// `applyBatch` stages ai/merged + take-ours/theirs but not deletions (its port only
+						// unlinks). Stage every applied path once — idempotent for the rest, and it stages
+						// deletions so the merge can be completed.
+						const stagePaths = toApply.map(r => r.filePath);
+						if (stagePaths.length > 0) {
+							await svc.staging?.stageFiles?.(stagePaths);
+						}
+
+						this.discardResolveSession(repoPath);
+						void window.showInformationMessage(
+							skipped > 0
+								? `Resolved ${pluralize('file', toApply.length)} with AI — ${skipped} skipped (no longer conflicted).`
+								: `Resolved ${pluralize('file', toApply.length)} with AI.`,
+						);
+						return skipped > 0
+							? { success: true, warning: `${skipped} file(s) were skipped (no longer conflicted).` }
+							: { success: true };
+					} catch (ex) {
+						return { error: { message: ex instanceof Error ? ex.message : String(ex) } };
+					}
+				},
+				discardResolutions: repoPath => {
+					this.discardResolveSession(repoPath);
+					return Promise.resolve();
+				},
+				onResolveProgress: this._resolveProgressEvent.subscribe(buffer, tracker),
 				getBranchComparisonSummary: async (repoPath, leftRef, rightRef, options, signal) => {
 					// Phase 1 — counts + the unified All Files diff + the merge base. Smallest payload
 					// to land the user on a useful panel; per-side commits + their files are fetched
@@ -2108,7 +2692,7 @@ export class GraphWebviewProvider implements WebviewProvider<State, State, Graph
 
 	private async getCoreCommitDetails(commit: GitCommit): Promise<CommitDetails> {
 		const hasDistinctCommitter = commit.committer.email != null && commit.committer.email !== commit.author.email;
-		const [commitResult, avatarUriResult, committerAvatarUriResult] = await Promise.allSettled([
+		const [commitResult, avatarUriResult, committerAvatarUriResult, worktreesResult] = await Promise.allSettled([
 			!commit.hasFullDetails()
 				? GitCommit.ensureFullDetails(commit, { include: { uncommittedFiles: true } }).then(() => commit)
 				: commit,
@@ -2116,6 +2700,9 @@ export class GraphWebviewProvider implements WebviewProvider<State, State, Graph
 			hasDistinctCommitter
 				? getAvatarUri(commit.committer.email, { ref: commit.sha, repoPath: commit.repoPath }, { size: 32 })
 				: Promise.resolve(undefined),
+			commit.refType === 'stash' || commit.isUncommitted
+				? Promise.resolve([])
+				: getReachableWorktrees(this.container, commit.repoPath, commit.sha),
 		]);
 
 		commit = getSettledValue(commitResult, commit);
@@ -2147,6 +2734,7 @@ export class GraphWebviewProvider implements WebviewProvider<State, State, Graph
 				stats: f.stats,
 			})),
 			stats: commit.stats,
+			reachableFromOtherWorktrees: (getSettledValue(worktreesResult)?.length ?? 0) > 0,
 		};
 	}
 
@@ -2160,6 +2748,8 @@ export class GraphWebviewProvider implements WebviewProvider<State, State, Graph
 			repository = arg;
 		} else if (hasGitReference(arg)) {
 			repository = this.container.git.getRepository(arg.ref.repoPath);
+		} else if (hasRepository(arg)) {
+			repository = arg.repository;
 		} else if (isSerializedState<State>(arg) && arg.state.selectedRepository != null) {
 			repository = this.container.git.openRepositories.find(r => r.id === arg.state.selectedRepository);
 		}
@@ -2176,7 +2766,7 @@ export class GraphWebviewProvider implements WebviewProvider<State, State, Graph
 			...this.host.getTelemetryContext(),
 			'context.repository.id': this.repository?.idHash,
 			'context.repository.scheme': this.repository?.uri.scheme,
-			'context.repository.closed': this.repository?.closed,
+			'context.repository.closed': this.repository != null ? !this.repository.opened : undefined,
 			'context.repository.folder.scheme': this.repository?.folder?.uri.scheme,
 			'context.repository.provider.id': this.repository?.provider.id,
 		};
@@ -2233,53 +2823,66 @@ export class GraphWebviewProvider implements WebviewProvider<State, State, Graph
 			this.repository = this.container.git.getRepository(arg.ref.repoPath);
 
 			let id = arg.ref.ref;
-			if (!isSha(id)) {
+			let isWipRow = false;
+			if (isUncommitted(id)) {
+				// The uncommitted revision isn't a real commit — it maps to a synthetic WIP row. Select
+				// the row for the matching worktree: the shown repo's own working tree is the primary
+				// 'work-dir-changes' row; any other worktree path uses its per-path secondary WIP sha
+				// (the graph surfaces one WIP row per worktree). See createSecondaryWipSha.
+				id =
+					arg.ref.repoPath === this.repository?.path
+						? 'work-dir-changes'
+						: createSecondaryWipSha(arg.ref.repoPath);
+				isWipRow = true;
+			} else if (!isSha(id)) {
 				id = (await this.container.git.getRepositoryService(arg.ref.repoPath).revision.resolveRevision(id)).sha;
 			}
 
-			// Make sure we honor the selection to ensure we won't override it with the default selection
-			this._honorSelectedId = true;
 			this.setSelectedRows(id);
 
 			if (this._graph != null) {
-				if (this._graph?.ids.has(id)) {
+				// Synthetic WIP rows can't be paged in via `onGetMoreRows`; selecting + notifying is enough.
+				if (isWipRow || this._graph?.ids.has(id)) {
 					void this.notifyDidChangeSelection();
 					return [true, this.getShownTelemetryContext()];
 				}
 
-				void this.onGetMoreRows({ id: id }, true);
+				this.revealRow(id);
 			}
-		} else if (hasSearchQuery(arg)) {
+		} else if (hasRepository(arg)) {
 			const repoChanged = this._repository !== arg.repository;
 			this.repository = arg.repository;
-			if (arg.selectSha) {
-				this._honorSelectedId = true;
-				this.setSelectedRows(arg.selectSha);
+			// Repository-only args (e.g. the SCM "Show Commit Graph" button or a repo-folder node)
+			// just switch repos; only run the search-specific work when a search is also present.
+			if (hasSearchQuery(arg)) {
+				if (arg.selectSha) {
+					this.setSelectedRows(arg.selectSha);
 
-				if (this._graph != null) {
-					if (this._graph.ids.has(arg.selectSha)) {
-						void this.notifyDidChangeSelection();
-					} else {
-						void this.onGetMoreRows({ id: arg.selectSha }, true);
+					if (this._graph != null) {
+						if (this._graph.ids.has(arg.selectSha)) {
+							void this.notifyDidChangeSelection();
+						} else {
+							this.revealRow(arg.selectSha);
+						}
 					}
 				}
-			}
-			// Three cases routed through the state-bootstrap path (`_searchRequest` → `getState`):
-			//   1. Cold show (`loading`): webview isn't ready, a standalone notification would
-			//      queue in `_pendingIpcNotifications` and get wiped by the bootstrap
-			//      `clearPendingIpcNotifications()`.
-			//   2. Repo swap (`repoChanged`): the repository setter triggers a full `updateState`
-			//      refetch anyway; pipe the search through it so it lands with the new repo's rows
-			//      instead of racing against the just-cleared `_graph`.
-			//   3. Force-refresh in flight (`!host.ready`): same wipe risk as #1 — the reconnect
-			//      handler clears pending notifications before flushing them.
-			// Otherwise (warm + same-repo + ready) use the lightweight notification — bypasses
-			// the ~750ms `updateState` → `getState` pipeline since the only delta is the search.
-			// Mirrors the `DidRequestOpenCompareMode` / `DidRequestOpenTimelineScope` pattern.
-			if (loading || repoChanged || !this.host.ready) {
-				this._searchRequest = arg.search;
-			} else {
-				this.notifyRequestSearch({ search: arg.search, selectSha: arg.selectSha });
+				// Three cases routed through the state-bootstrap path (`_searchRequest` → `getState`):
+				//   1. Cold show (`loading`): webview isn't ready, a standalone notification would
+				//      queue in `_pendingIpcNotifications` and get wiped by the bootstrap
+				//      `clearPendingIpcNotifications()`.
+				//   2. Repo swap (`repoChanged`): the repository setter triggers a full `updateState`
+				//      refetch anyway; pipe the search through it so it lands with the new repo's rows
+				//      instead of racing against the just-cleared `_graph`.
+				//   3. Force-refresh in flight (`!host.ready`): same wipe risk as #1 — the reconnect
+				//      handler clears pending notifications before flushing them.
+				// Otherwise (warm + same-repo + ready) use the lightweight notification — bypasses
+				// the ~750ms `updateState` → `getState` pipeline since the only delta is the search.
+				// Mirrors the `DidRequestOpenCompareMode` / `DidRequestOpenTimelineScope` pattern.
+				if (loading || repoChanged || !this.host.ready) {
+					this._searchRequest = arg.search;
+				} else {
+					this.notifyRequestSearch({ search: arg.search, selectSha: arg.selectSha });
+				}
 			}
 		} else if (hasSidebarPanel(arg)) {
 			if (loading) {
@@ -2288,13 +2891,50 @@ export class GraphWebviewProvider implements WebviewProvider<State, State, Graph
 				void this.host.notify(DidRequestActiveSidebarPanelNotification, { panel: arg.sidebarPanel });
 			}
 		} else if (hasAction(arg)) {
+			const { target } = arg;
+			// Switch to the target's repository so a cold show lands on the right repo (and the
+			// primary-vs-secondary WIP comparison below resolves correctly). Mirrors the ref path.
+			if (target != null) {
+				this.repository =
+					(await this.container.git.getOrAddRepository(Uri.file(target.worktreePath), {
+						opened: false,
+						detectNested: true,
+					})) ?? this.repository;
+			}
+			let rowId: string | undefined;
 			if (arg.action !== 'scope-to-branch') {
-				this.setSelectedRows('work-dir-changes');
+				// Select the row the action targets: an uncommitted target maps to its worktree's WIP
+				// row (primary 'work-dir-changes' or a secondary worktree's synthetic sha), a real
+				// target selects its commit sha, and no target falls back to the primary WIP row.
+				rowId = 'work-dir-changes';
+				if (target != null) {
+					rowId = isUncommitted(target.sha)
+						? target.worktreePath === this.repository?.path
+							? 'work-dir-changes'
+							: createSecondaryWipSha(target.worktreePath)
+						: target.sha;
+				}
+				this.setSelectedRows(rowId);
 			}
 			if (loading) {
-				this._pendingAction = { action: arg.action };
+				this._pendingAction = { action: arg.action, target: arg.target };
 			} else {
-				void this.host.notify(DidRequestGraphActionNotification, { action: arg.action });
+				// Select the targeted row in the graph too (mirrors the ref path). The action
+				// notification only enters the mode / reveals the details panel; without this the
+				// graph row is never actually selected on a warm show. WIP rows + already-loaded
+				// commits select via the lightweight selection notification; an unloaded commit pages
+				// in (which carries the selection along).
+				if (rowId != null && this._graph != null) {
+					if (rowId === 'work-dir-changes' || isSecondaryWipSha(rowId) || this._graph.ids.has(rowId)) {
+						void this.notifyDidChangeSelection();
+					} else {
+						this.revealRow(rowId);
+					}
+				}
+				void this.host.notify(DidRequestGraphActionNotification, {
+					action: arg.action,
+					target: arg.target,
+				});
 			}
 		} else {
 			if (isSerializedState<State>(arg) && arg.state.selectedRepository != null) {
@@ -2439,6 +3079,23 @@ export class GraphWebviewProvider implements WebviewProvider<State, State, Graph
 			);
 		}
 
+		// Multi-file commands. The right-clicked row carries `webviewItemsValues` (all selected files);
+		// resolve each to its commit+file and hand the whole set to the multi handler.
+		for (const { command: cmd, handler } of getDetailsFileMultiCommands()) {
+			commands.push(
+				this.host.registerWebviewCommandForId(
+					this.host.id,
+					getWebviewCommand(cmd, 'graphDetails'),
+					async (item?: DetailsItemContext) => {
+						const resolved = await resolveMultiFileContext(this.container, item);
+						if (resolved.length) {
+							await handler.call(fileCommands, resolved);
+						}
+					},
+				),
+			);
+		}
+
 		// Folder-only commands (Folder History submenu).
 		for (const { command: cmd, handler } of getDetailsFolderCommands()) {
 			if (cmd in sharedDetailsFolderCommandRoutes) continue;
@@ -2495,17 +3152,24 @@ export class GraphWebviewProvider implements WebviewProvider<State, State, Graph
 		void this.ensureAutoFetch();
 		if (focused) {
 			this.recoverWorkingTreeStatsIfStuck();
+			this.recoverDeferredSecondaryWip();
 		}
 	}
 
 	onVisibilityChanged(visible: boolean): void {
-		if (
-			visible &&
-			((this.repository != null && this.repository.etag !== this._etagRepository) ||
-				this.container.subscription.etag !== this._etagSubscription)
-		) {
+		const repositoryChanged = this.repository != null && this.repository.etag !== this._etagRepository;
+		if (visible && (repositoryChanged || this.container.subscription.etag !== this._etagSubscription)) {
 			if (this.host.ready) {
 				this.updateState(true);
+				// `updateState(true)` clears the queued working-tree push, so the details panel (reads
+				// `wip`) would stay stale while the main row (rebuilt `workingTreeStats`) updates — the
+				// recurring #5322 staleness. Re-push fresh WIP through the dedicated channel, which has
+				// the freshness (cache-invalidate), dedup, and commit/optimistic-edit guards `getState`
+				// lacks. Gated on `repositoryChanged` (working-tree edits bump the repo etag); the dedup
+				// gate no-ops this when nothing actually changed.
+				if (repositoryChanged) {
+					void this.notifyDidChangeWorkingTree();
+				}
 			}
 		} else if (visible) {
 			this.host.sendPendingIpcNotifications();
@@ -2514,6 +3178,7 @@ export class GraphWebviewProvider implements WebviewProvider<State, State, Graph
 		void this.ensureAutoFetch();
 		if (visible) {
 			this.recoverWorkingTreeStatsIfStuck();
+			this.recoverDeferredSecondaryWip();
 		}
 	}
 
@@ -3185,6 +3850,12 @@ export class GraphWebviewProvider implements WebviewProvider<State, State, Graph
 					case 'sidebarPinned':
 						void configuration.updateEffective('graph.sidebar.pinned', params.changes[key]);
 						break;
+					case 'activityDecay':
+						void configuration.updateEffective(
+							'graph.experimental.visualizations.activityDecay',
+							params.changes[key],
+						);
+						break;
 					default:
 						// TODO:@eamodio add more config options as needed
 						debugger;
@@ -3224,6 +3895,18 @@ export class GraphWebviewProvider implements WebviewProvider<State, State, Graph
 
 		if (configuration.changed(e, 'graph.experimental.visualizations.enabled')) {
 			this.subscribeToTreemapInvalidations();
+		}
+
+		// `graph.showUpstreamStatus` feeds `resetRefsMetadata`'s feature-on/off decision (upstream is
+		// local-git data, so it keeps metadata populatable even with no integration). The catch-all `graph`
+		// block below only re-sends the component config — re-evaluate the gate here too, but only when the
+		// feature is currently off/unpopulated (`null`/`undefined`) so connected repos with populated
+		// metadata don't needlessly re-fetch and flicker on the toggle.
+		if (configuration.changed(e, 'graph.showUpstreamStatus') && this._refsMetadata == null) {
+			this.resetRefsMetadata();
+			// Immediate (see `onDidChangeContext` reset): wipe before the webview re-requests so the
+			// merge-reducer starts from a clean slate.
+			this.updateRefsMetadata(true);
 		}
 
 		if (configuration.changed(e, 'graph.commitOrdering')) {
@@ -3389,13 +4072,14 @@ export class GraphWebviewProvider implements WebviewProvider<State, State, Graph
 		// `onRepositoryWorkingTreeChanged`.
 		if (e.repository.id !== this.repository?.id) return;
 
-		// Lightweight WIP refresh — covers staging/unstaging (`index` → stats), secondary-worktree
-		// add/remove (`worktrees` → wipMetadataBySha; also falls through to the structural gate
-		// below as a backstop full-state push), and tracking changes (`head|heads|remotes` →
-		// wip.branch.upstream, which drives the "Publish" ↔ "Create PR" next-step row in the
-		// details panel). Unioned so the in-flight coalescer can't double-fire on a single
-		// multi-flag event (e.g. Pull's `head, heads, remotes, index`).
-		if (e.changed('head', 'heads', 'index', 'remotes', 'worktrees')) {
+		// Lightweight WIP refresh — covers staging/unstaging (`index` → stats), `.gitignore` edits
+		// (`ignores` → which untracked files appear in `git status`), secondary-worktree add/remove
+		// (`worktrees` → wipMetadataBySha; also falls through to the structural gate below as a
+		// backstop full-state push), and tracking changes (`head|heads|remotes` → wip.branch.upstream,
+		// which drives the "Publish" ↔ "Create PR" next-step row in the details panel). Unioned so the
+		// in-flight coalescer can't double-fire on a single multi-flag event (e.g. Pull's
+		// `head, heads, remotes, index`).
+		if (e.changed('head', 'heads', 'index', 'ignores', 'remotes', 'worktrees')) {
 			void this.notifyDidChangeWorkingTree();
 		}
 
@@ -3549,6 +4233,11 @@ export class GraphWebviewProvider implements WebviewProvider<State, State, Graph
 	@ipcCommand(TrackGraphDetailsComposeModeCommand)
 	private onTrackGraphDetailsComposeMode() {
 		void this.container.usage.track('action:gitlens.graph.details.composeMode:happened');
+	}
+
+	@ipcCommand(TrackGraphDetailsResolveModeCommand)
+	private onTrackGraphDetailsResolveMode() {
+		void this.container.usage.track('action:gitlens.graph.details.resolveMode:happened');
 	}
 
 	@ipcCommand(TrackGraphDetailsCompareModeCommand)
@@ -3926,7 +4615,15 @@ export class GraphWebviewProvider implements WebviewProvider<State, State, Graph
 			if (this._graph.ids.has(params.id)) {
 				id = params.id;
 			} else {
-				await this.updateGraphWithMoreRows(this._graph, params.id, this._search);
+				// Targeted, UNCAPPED load: `more(0, id)` walks until the SHA is found with no
+				// unreachable-SHA cap. The default-limit path caps each walk at `pageItemLimit*10`
+				// (~2000) and re-walks from the frontier without advancing across retries, so it can
+				// never reach a deeper-but-reachable selection target (nav/search/deep-link/overview).
+				// A real selection target IS reachable; an unreachable one bounds at history end
+				// (`hasMore` goes false). That cap (added in 0ffbf5d for the scope-anchor pagination
+				// path) caught this select-a-row path collaterally — `limit=0` restores the pre-cap
+				// "find the SHA then select it" behavior for the explicit-target case.
+				await this.updateGraphWithMoreRows(this._graph, params.id, this._search, 0);
 				if (this._graph.ids.has(params.id)) {
 					id = params.id;
 				}
@@ -3988,19 +4685,16 @@ export class GraphWebviewProvider implements WebviewProvider<State, State, Graph
 			return;
 		}
 
-		// Check if we have connected integrations that can provide the requested metadata
-		const hasHostingIntegration = getContext('gitlens:repos:withHostingIntegrationsConnected')?.includes(
-			this._graph.repoPath,
-		);
-
-		if (!hasHostingIntegration) {
-			// If no hosting integration, check if we at least have issue integrations connected
-			const hasIssueIntegration =
-				this._issueIntegrationConnectionState !== 'not-checked'
-					? this._issueIntegrationConnectionState === 'connected'
-					: await this.checkIssueIntegrations();
-			if (!hasIssueIntegration) return;
-		}
+		// PR/issue enrichment needs a connected integration; upstream (ahead/behind) is local-git data and
+		// doesn't. Resolve integration availability up front so we can still satisfy upstream requests when
+		// nothing is connected (the per-type loop nulls PR/issue in that case) instead of bailing entirely.
+		const hasHostingIntegration =
+			getContext('gitlens:repos:withHostingIntegrationsConnected')?.includes(this._graph.repoPath) ?? false;
+		const hasIntegration =
+			hasHostingIntegration ||
+			(this._issueIntegrationConnectionState !== 'not-checked'
+				? this._issueIntegrationConnectionState === 'connected'
+				: await this.checkIssueIntegrations());
 
 		const repoPath = this._graph.repoPath;
 
@@ -4029,6 +4723,15 @@ export class GraphWebviewProvider implements WebviewProvider<State, State, Graph
 
 			for (const type of missingTypes) {
 				if (!supportedRefMetadataTypes.includes(type)) {
+					metadata[type] = null;
+					this._refsMetadata.set(id, metadata);
+
+					continue;
+				}
+
+				// PR/issue enrichment requires a connected integration; without one, resolve them as
+				// "none" so the webview stops re-requesting them, while still resolving upstream below.
+				if (!hasIntegration && type !== 'upstream') {
 					metadata[type] = null;
 					this._refsMetadata.set(id, metadata);
 
@@ -4257,20 +4960,21 @@ export class GraphWebviewProvider implements WebviewProvider<State, State, Graph
 			if (!isSecondaryWipSha(sha)) continue;
 
 			const path = getSecondaryWipPath(sha);
-			const repo =
-				this.container.git.getRepository(path) ??
-				(await this.container.git.getOrOpenRepository(Uri.file(path), { closeOnOpen: true }));
+			const repo = await this.container.git.getOrAddRepository(Uri.file(path), {
+				opened: false,
+				detectNested: true,
+			});
 			if (this._disposed) break;
 			if (repo == null) continue;
 			// Double-check: another concurrent call may have claimed this sha while we awaited.
 			if (this._wipWatches.has(sha) || !wanted.has(sha)) continue;
 
 			// Use the service-level watch facility so events fire regardless of whether the
-			// `GlRepository` is open or closed — secondary worktrees are typically opened with
-			// `closeOnOpen: true`, which leaves `repo.watchWorkingTree` / `repo.onDidChange` dead
-			// (closed repos skip `setupWatching`). Going through `repo.git.watch()` routes around
-			// that gating without flipping the repo to "open" (which would inflate
-			// `openRepositoryCount` and surface the worktree in multi-repo UI).
+			// `GlRepository` is open or closed — secondary worktrees are typically added with
+			// `opened: false` (hidden), which leaves `repo.onDidChange` dead (a not-open repo holds
+			// no repo-change watch lease). Going through `repo.git.watch()` routes around that gating
+			// without flipping the repo to "open" (which would inflate `openRepositoryCount` and
+			// surface the worktree in multi-repo UI).
 			const watcher = await repo.git.watch({ workingTreeDelayMs: 500 });
 			if (watcher == null) continue;
 			// Re-check after the await — provider may have been disposed, or another sync may have
@@ -4289,13 +4993,14 @@ export class GraphWebviewProvider implements WebviewProvider<State, State, Graph
 						this.queueWipRefetch(sha, repo);
 					}),
 					// `onDidChangeWorkingTree` covers FS edits to tracked/untracked files. Index,
-					// paused-op, and branch-tracking changes (staging from the CLI, rebase progress,
-					// fetch/publish) only surface via the structural `onDidChange` event — mirror
-					// the WIP triggers the primary fires from `onRepositoryChanged` (see `index` at
-					// line 2917 and `head`/`heads`/`remotes` at line 2999) so the secondary panel
-					// stays reactive to those same changes.
+					// `.gitignore` edits, paused-op, and branch-tracking changes (staging from the
+					// CLI, ignoring/un-ignoring files, rebase progress, fetch/publish) only surface
+					// via the structural `onDidChange` event — mirror the WIP triggers the primary
+					// fires from `onRepositoryChanged` (see `index`/`ignores` and
+					// `head`/`heads`/`remotes`) so the secondary panel stays reactive to those same
+					// changes.
 					watcher.onDidChange(e => {
-						if (!e.changed('index', 'pausedOp', 'head', 'heads', 'remotes')) return;
+						if (!e.changed('index', 'ignores', 'pausedOp', 'head', 'heads', 'remotes')) return;
 
 						this._wipStatusCache.invalidate(path);
 						this.queueWipRefetch(sha, repo);
@@ -4335,24 +5040,39 @@ export class GraphWebviewProvider implements WebviewProvider<State, State, Graph
 		const entry = this._wipRefetches.get(sha);
 		if (entry == null) return;
 		// Watcher disposed during debounce, or webview gone — drop without a fetch.
-		if (!this._wipWatches.has(sha) || !this.host.ready || !this.host.visible) {
+		if (!this._wipWatches.has(sha) || !this.host.ready) {
 			this._wipRefetches.delete(sha);
 			return;
 		}
+		// Graph hidden — defer rather than drop. Running `git status` for an unseen panel is wasted
+		// work, but silently discarding the tick would leave the secondary's WIP/paused-op stale with
+		// no recovery (unlike the primary, which queues a pending notification and replays on show).
+		// Keep the entry and mark it deferred; `recoverDeferredSecondaryWip` flushes it on the next
+		// visibility/focus regain.
+		if (!this.host.visible) {
+			entry.deferred = true;
+			return;
+		}
+
+		entry.deferred = false;
 
 		const promise = (async () => {
 			try {
 				const result = await this.getWipForRepoAndStats(entry.repo);
 				if (result == null) return;
-				// Re-check teardown state — the await above may have spanned a dispose or watcher
-				// removal. Don't gate on `host.ready` though: `host.notify` queues when not ready
-				// and replays on reconnect, so the secondary refetch isn't dropped during a reload.
-				if (this._disposed || !this._wipWatches.has(sha)) return;
+				// Only bail if the whole provider is gone. Deliberately DON'T gate on
+				// `!this._wipWatches.has(sha)`: the grace-period timer can dispose this row's watcher
+				// while this fetch is in flight, but the worktree is still tracked in
+				// `wipMetadataBySha`, so delivering the fresh stats keeps the row correct when it
+				// scrolls back into view (otherwise the update is silently dropped and the row stays
+				// stale). The stateProvider ignores notifications for rows it no longer tracks (its
+				// `prevSecondary != null` gate). Don't gate on `host.ready` either — `host.notify`
+				// queues when not ready and replays on reconnect.
+				if (this._disposed) return;
 
 				void this.host.notify(DidRequestWipRefetchNotification, {
 					repoPath: entry.repo.path,
 					wip: result.wip,
-					stats: result.stats,
 				});
 			} finally {
 				entry.inFlight = undefined;
@@ -4371,6 +5091,26 @@ export class GraphWebviewProvider implements WebviewProvider<State, State, Graph
 		await promise;
 	}
 
+	/**
+	 * Flush secondary-WIP refetches that a watcher tick deferred while the graph was hidden (see
+	 * `runWipRefetch`). Re-queues only entries flagged `deferred`, so a normal hide→show with no
+	 * pending change does zero git work; the `queueWipRefetch`/`runWipRefetch` in-flight+dirty dedup
+	 * collapses any overlap (visibility + focus both firing, or a flush racing a fresh tick) into a
+	 * single status read. Restores the `getWipState().isLive` invariant — the cache becomes current
+	 * again, so the in-graph paused-op badge updates and the details panel's select-time
+	 * revalidation can keep trusting `isLive`.
+	 */
+	private recoverDeferredSecondaryWip(): void {
+		if (this._disposed || !this.host.ready || !this.host.visible) return;
+
+		for (const [sha, entry] of this._wipRefetches) {
+			if (!entry.deferred) continue;
+
+			entry.deferred = false;
+			this.queueWipRefetch(sha, entry.repo);
+		}
+	}
+
 	@ipcCommand(GetMoreRowsCommand)
 	@trace()
 	private async onGetMoreRows(params: IpcParams<typeof GetMoreRowsCommand>, sendSelectedRows: boolean = false) {
@@ -4383,6 +5123,28 @@ export class GraphWebviewProvider implements WebviewProvider<State, State, Graph
 
 		await this.updateGraphWithMoreRows(this._graph, params.id, this._search, params.limit);
 		void this.notifyDidChangeRows(sendSelectedRows);
+	}
+
+	/** Pages rows in until a host-initiated reveal/select target `id` is loaded, then ships the selection.
+	 *  Uses `limit: 0` for an UNCAPPED targeted walk: the default page size caps the walk at
+	 *  `pageItemLimit*10` (~2000) and would never reach a commit deeper than that (e.g. "Open in Commit
+	 *  Graph" on an old commit). The IPC scroll/scope-anchor paging keeps the cap — see `onGetMoreRows`. */
+	private revealRow(id: string): void {
+		void this.onGetMoreRows({ id: id, limit: 0 }, true);
+	}
+
+	/** Pages an explicit real-commit selection target in if a (capped) cold-start `getGraph` walk didn't
+	 *  reach it. `getGraph` caps the targeted walk at `defaultItemLimit*10`, so a deeper "Open in Commit
+	 *  Graph" target opened against a CLOSED graph would never load. Keeps the normal cold-start view
+	 *  (we don't shrink `getGraph`'s limit) and only resumes — uncapped (`limit: 0`) — from the frontier
+	 *  to the target when needed. WIP/uncommitted/already-loaded targets and a fully-paged graph no-op. */
+	private async ensureSelectedTargetLoaded(): Promise<boolean> {
+		const id = this._selectedId;
+		if (id == null || isSecondaryWipSha(id) || isUncommitted(id)) return false;
+		if (this._graph == null || this._graph.ids.has(id) || this._graph.paging?.hasMore !== true) return false;
+
+		await this.updateGraphWithMoreRows(this._graph, id, this._search, 0);
+		return this._graph.ids.has(id);
 	}
 
 	@ipcCommand(OpenPullRequestDetailsCommand)
@@ -4428,6 +5190,17 @@ export class GraphWebviewProvider implements WebviewProvider<State, State, Graph
 				: primaryRepoPath;
 
 		switch (params.action) {
+			case 'undo-commit': {
+				// Build the revision ref directly and delegate to the shared core. Skipping the
+				// `GraphItemContext` round-trip avoids both (a) a fragile synthetic context (the
+				// runtime `isWebviewItemContext` guard requires a `webview` field the IPC payload
+				// has no business knowing about) and (b) the redundant unwrap inside `undoCommit`.
+				// The dialog/WIP message is resolved from the actual commit inside `CommitActions.undoCommit`,
+				// so we don't thread a (display-emojified) message through the webview.
+				const ref = createReference(params.row.id, primaryRepoPath, { refType: 'revision' });
+				await this._undoCommit(ref, params.worktreePath);
+				break;
+			}
 			case 'stash-save':
 				await StashActions.push(rowRepoPath);
 				break;
@@ -4470,6 +5243,9 @@ export class GraphWebviewProvider implements WebviewProvider<State, State, Graph
 				}
 				break;
 			}
+			case 'push-to-commit':
+				await this.pushUpToCommit(rowRepoPath, params.row.id);
+				break;
 		}
 	}
 
@@ -5044,7 +5820,7 @@ export class GraphWebviewProvider implements WebviewProvider<State, State, Graph
 		this.host.sendTelemetryEvent('graph/repository/changed', {
 			'repository.id': this.repository?.idHash,
 			'repository.scheme': this.repository?.uri.scheme,
-			'repository.closed': this.repository?.closed,
+			'repository.closed': !this.repository?.opened,
 			'repository.folder.scheme': this.repository?.folder?.uri.scheme,
 			'repository.provider.id': this.repository?.provider.id,
 		});
@@ -5202,10 +5978,15 @@ export class GraphWebviewProvider implements WebviewProvider<State, State, Graph
 	private clearRefsMetadataIssues(): boolean {
 		if (this._refsMetadata == null) return false;
 
-		for (const [, value] of this._refsMetadata) {
-			if (value == null) continue;
+		for (const [id, value] of this._refsMetadata) {
+			// Skip entries with nothing cached to clear (already pending re-fetch) — avoids allocating and
+			// needlessly bumping their reference into the next delta.
+			if (value?.issue === undefined) continue;
 
-			value.issue = undefined;
+			// Replace the value reference (copy-on-write) rather than mutating in place: `buildRefsMetadataDelta`
+			// detects changes by value-reference identity, so an in-place `value.issue = undefined` would be
+			// invisible to the delta and the stale issue would never ship.
+			this._refsMetadata.set(id, { ...value, issue: undefined });
 		}
 		return true;
 	}
@@ -5321,10 +6102,16 @@ export class GraphWebviewProvider implements WebviewProvider<State, State, Graph
 
 	@ipcCommand(UpdateSelectionCommand)
 	private onSelectionChanged(params: IpcParams<typeof UpdateSelectionCommand>) {
+		// An empty selection echo must never clear the selection hint we already hold. The webview only
+		// sends a real (non-empty) selection on user intent; an empty report is transient (the GK can't
+		// resolve a synthetic WIP row yet) or a scope/visibility filter-out, both of which the webview
+		// handles by keeping its inspection anchor and deriving an empty highlight. The host's
+		// `_selectedId`/`_selection` are now only a getGraph paging hint + command-target fallback, so
+		// leave them intact on an empty echo.
+		if (!params.selection.length && this._selectedId != null) return;
+
 		const item = params.selection.find(r => r.active) ?? params.selection[0];
 		this.setSelectedRows(item?.id, params.selection, { selected: true, hidden: item?.hidden });
-
-		this._honorSelectedId = true;
 
 		this._fireSelectionChangedDebounced ??= debounce(this.fireSelectionChanged.bind(this), 50);
 		this._fireSelectionChangedDebounced(item?.id, item?.type);
@@ -5407,9 +6194,22 @@ export class GraphWebviewProvider implements WebviewProvider<State, State, Graph
 		if (this._graph == null) return;
 
 		const data = this._graph;
-		return this.host.notify(DidChangeAvatarsNotification, {
+		// Share the `_lastSentAvatarsSize` watermark with the rows-notification path: avatar values
+		// never change for existing keys (every write at graphRowProcessor is gated by
+		// `!context.avatars.has(row.email)`), so an unchanged size means the webview already has
+		// every avatar. Skip the `Object.fromEntries` + IPC in that case. Only advance the watermark
+		// on confirmed delivery — a failed `notify` is requeued by type and REPLACED by a later one,
+		// so a speculative advance could skip avatars the webview never received.
+		const avatarsSize = data.avatars.size;
+		if (avatarsSize === this._lastSentAvatarsSize) return;
+
+		const success = await this.host.notify(DidChangeAvatarsNotification, {
 			avatars: Object.fromEntries(data.avatars),
 		});
+		if (success) {
+			this._lastSentAvatarsSize = avatarsSize;
+		}
+		return success;
 	}
 
 	@trace()
@@ -5518,9 +6318,17 @@ export class GraphWebviewProvider implements WebviewProvider<State, State, Graph
 
 	@trace()
 	private async notifyDidChangeRefsMetadata() {
-		return this.host.notify(DidChangeRefsMetadataNotification, {
-			metadata: this._refsMetadata != null ? Object.fromEntries(this._refsMetadata) : this._refsMetadata,
-		});
+		const { payload, watermark } = this.buildRefsMetadataDelta();
+		// Skip the IPC only when the map is populated but unchanged. `null`/`undefined` are authoritative
+		// resets (integration connect/disconnect) that must ship so the webview replaces wholesale and
+		// re-requests missing metadata; a delta object ships the changed entries to spread-merge.
+		if (payload === undefined && this._refsMetadata != null) return;
+
+		const success = await this.host.notify(DidChangeRefsMetadataNotification, { metadata: payload });
+		if (success) {
+			this._lastSentRefsMetadata = watermark;
+		}
+		return success;
 	}
 
 	@trace()
@@ -5656,6 +6464,70 @@ export class GraphWebviewProvider implements WebviewProvider<State, State, Graph
 		};
 	}
 
+	/**
+	 * Picks the reachability payload to ship and the watermark to record on confirmed send. The table is
+	 * append-only within a generation (`id`), so on a same-`id` push we ship only the entries appended
+	 * since the last send (the webview concatenates); a new `id` (a fresh graph walk) ships the full
+	 * table (the webview replaces + resets its decode cache). Returns `payload: undefined` when nothing
+	 * is new (so the webview keeps what it has). The caller assigns `_lastSentReachability = watermark`
+	 * only after `host.notify` confirms delivery — mirroring the avatars/rowsStats counters.
+	 */
+	private buildReachabilityPayload(table: GraphReachabilityTable | undefined): {
+		payload: GraphReachabilityTable | undefined;
+		watermark: { id: number; dictLen: number; setsLen: number } | undefined;
+	} {
+		if (table == null) return { payload: undefined, watermark: this._lastSentReachability };
+
+		const watermark = { id: table.id, dictLen: table.dictionary.length, setsLen: table.sets.length };
+		const last = this._lastSentReachability;
+		if (last?.id === table.id) {
+			const dictionary = table.dictionary.slice(last.dictLen);
+			const sets = table.sets.slice(last.setsLen);
+			// Nothing appended since the last send → ship nothing, keep the watermark where it is.
+			if (!dictionary.length && !sets.length) {
+				return { payload: undefined, watermark: last };
+			}
+			return { payload: { id: table.id, dictionary: dictionary, sets: sets }, watermark: watermark };
+		}
+
+		// New generation (or first send) → full table.
+		return { payload: { id: table.id, dictionary: table.dictionary, sets: table.sets }, watermark: watermark };
+	}
+
+	/**
+	 * Picks the refsMetadata delta to ship and the watermark to record on confirmed send. Unlike the
+	 * append-only avatars/rowsStats Maps (gated by size), refsMetadata mutates entries in place by id —
+	 * but every update replaces the value with a fresh object (the copy-on-write spread in
+	 * `onGetMissingRefMetadata`), so a reference compare against the last-sent snapshot is an exact delta.
+	 * Entries are never deleted (only set to null), so no tombstones are needed and the webview spread-
+	 * merges. `payload` is:
+	 *   - `null` — `_refsMetadata` is null (feature off): an authoritative reset; the webview replaces.
+	 *   - `undefined` — `_refsMetadata` is cleared (reset) OR a populated map with nothing changed. The
+	 *     dedicated channel ships it (webview resets); the rows piggyback omits it (webview keeps state).
+	 *   - a `Record` — the changed/new entries to merge.
+	 * The caller assigns `_lastSentRefsMetadata = watermark` only after `host.notify` confirms delivery.
+	 */
+	private buildRefsMetadataDelta(): {
+		payload: GraphRefsMetadata | null | undefined;
+		watermark: Map<string, GraphRefMetadata> | undefined;
+	} {
+		const metadata = this._refsMetadata;
+		if (metadata == null) return { payload: metadata, watermark: undefined };
+
+		const lastSent = this._lastSentRefsMetadata;
+		let delta: GraphRefsMetadata | undefined;
+		for (const [id, value] of metadata) {
+			// A different value reference means the entry was added or rebuilt since the last send.
+			if (lastSent?.get(id) !== value) {
+				(delta ??= {})[id] = value;
+			}
+		}
+		// Nothing changed since the last send → ship nothing, keep the watermark where it is.
+		if (delta == null) return { payload: undefined, watermark: lastSent };
+
+		return { payload: delta, watermark: new Map(metadata) };
+	}
+
 	@trace()
 	private async notifyDidChangeRows(sendSelectedRows: boolean = false, completionId?: string) {
 		if (this._graph == null) return;
@@ -5698,13 +6570,18 @@ export class GraphWebviewProvider implements WebviewProvider<State, State, Graph
 				? takeEntriesAfter(graph.rowsStats, this._lastSentRowsStatsSize ?? 0)
 				: undefined;
 
+		const reachability = this.buildReachabilityPayload(graph.reachability);
+		// Ship refsMetadata as a value-reference delta (the webview spread-merges) instead of the full Map
+		// on every rows tick. `null` still resets the webview (no integrations); an unchanged Map omits it.
+		const refsMetadata = this.buildRefsMetadataDelta();
 		const success = await this.host.notify(
 			DidChangeRowsNotification,
 			{
 				rows: graph.rows,
+				reachabilityTable: reachability.payload,
 				avatars: avatarsChanged ? Object.fromEntries(graph.avatars) : undefined,
 				downstreams: Object.fromEntries(graph.downstreams),
-				refsMetadata: this._refsMetadata != null ? Object.fromEntries(this._refsMetadata) : this._refsMetadata,
+				refsMetadata: refsMetadata.payload,
 				rowsStats: rowsStatsDelta,
 				rowsStatsLoading:
 					graph.rowsStatsDeferred?.isLoaded != null ? !graph.rowsStatsDeferred.isLoaded() : false,
@@ -5733,6 +6610,9 @@ export class GraphWebviewProvider implements WebviewProvider<State, State, Graph
 		if (success) {
 			this._lastSentAvatarsSize = avatarsSize;
 			this._lastSentRowsStatsSize = rowsStatsSize;
+			this._lastSentReachability = reachability.watermark;
+			// null/undefined reset → undefined watermark; a delta advances it; an unchanged Map keeps it.
+			this._lastSentRefsMetadata = refsMetadata.watermark;
 		}
 		return success;
 	}
@@ -5936,16 +6816,15 @@ export class GraphWebviewProvider implements WebviewProvider<State, State, Graph
 		// entries (opened worktrees whose graph WIP row is off-screen) refresh lazily when the
 		// overview panel becomes visible, served from `_wipStatusCache` when warm.
 		const params: DidChangeWorkingTreeParams = {
-			stats: wipAndStatsResult.stats,
 			wipMetadataBySha: wipMetadataBySha,
 			wip: wipAndStatsResult.wip,
 			repoPath: repo.path,
 		};
 		// Skip identical pushes. Working-tree events fire on any FS write in the repo (file saves,
 		// `.git/index.lock` twiddles, branch-metadata writes), so most ticks reproduce the prior
-		// status verbatim. Comparing the whole params object is safe: `stats`, `wipMetadataBySha`,
-		// and `wip` all derive from the same `git status` — when `wip` is unchanged the others are
-		// too. Same dedup pattern as `_lastSentBranchState`.
+		// status verbatim. Comparing the whole params object is safe: `wipMetadataBySha` and `wip`
+		// (with stats embedded as `wip.stats`) all derive from the same `git status` — when `wip`
+		// is unchanged the others are too. Same dedup pattern as `_lastSentBranchState`.
 		if (this._lastSentWipNotificationParams != null && areEqual(this._lastSentWipNotificationParams, params)) {
 			return false;
 		}
@@ -5972,9 +6851,20 @@ export class GraphWebviewProvider implements WebviewProvider<State, State, Graph
 			return false;
 		}
 
-		return this.host.notify(DidChangeOverviewNotification, {
-			overview: this.getOverviewData(),
-		});
+		// Skip identical pushes — most graph reloads reproduce the prior overview verbatim. Advance
+		// the last-sent snapshot only on confirmed delivery: a failed `notify` is requeued by type
+		// and REPLACED by a later one, so a speculative advance could let the gate suppress the
+		// replacement and leave the webview never receiving the overview.
+		const overview = this.getOverviewData();
+		if (this._lastSentOverview != null && areEqual(overview, this._lastSentOverview)) {
+			return false;
+		}
+
+		const success = await this.host.notify(DidChangeOverviewNotification, { overview: overview });
+		if (success) {
+			this._lastSentOverview = overview;
+		}
+		return success;
 	}
 
 	private getOverviewData(): GraphOverviewData {
@@ -6138,6 +7028,9 @@ export class GraphWebviewProvider implements WebviewProvider<State, State, Graph
 				const skipRows = fingerprint != null && fingerprint === this._lastSentGraphFingerprint;
 				if (skipRows) {
 					state.rows = undefined;
+					// Drop the reachability table alongside rows: it's keyed by the rows' indices, so the
+					// webview keeps its already-accumulated table (and decode cache) when rows are unchanged.
+					state.reachabilityTable = undefined;
 					state.avatars = undefined;
 					state.downstreams = undefined;
 					state.rowsStats = undefined;
@@ -6146,9 +7039,18 @@ export class GraphWebviewProvider implements WebviewProvider<State, State, Graph
 					state.paging = undefined;
 				}
 
+				// Same delta encoding as the rows path: a full-state push is virtually always a fresh
+				// generation (new `id`) → ships the full table; the webview replaces + resets its cache.
+				const reachability = this.buildReachabilityPayload(state.reachabilityTable);
+				state.reachabilityTable = reachability.payload;
+
 				const result = await this.host.notify(DidChangeNotification, { state: state });
+
 				this._lastStateSentAt = performance.now();
 				this._lastSentBranchState = state.branchState;
+				if (result) {
+					this._lastSentReachability = reachability.watermark;
+				}
 				if (fingerprint != null) {
 					this._lastSentGraphFingerprint = fingerprint;
 				}
@@ -6193,7 +7095,10 @@ export class GraphWebviewProvider implements WebviewProvider<State, State, Graph
 				if (key !== 'gitlens:repos:withHostingIntegrationsConnected') return;
 
 				this.resetRefsMetadata();
-				this.updateRefsMetadata();
+				// Immediate so the reset wipes the webview before any repopulation delta merges onto stale
+				// pre-change entries (the reducer spread-merges; a debounced reset can coalesce with a
+				// concurrent repopulation and ship a delta instead of the wipe).
+				this.updateRefsMetadata(true);
 			}),
 		);
 	}
@@ -6219,7 +7124,9 @@ export class GraphWebviewProvider implements WebviewProvider<State, State, Graph
 		}
 
 		this.resetRefsMetadata();
-		this.updateRefsMetadata();
+		// Immediate (see `onDidChangeContext` reset): the wipe must land before any repopulation delta so
+		// the webview's merge-reducer doesn't keep stale pre-change entries.
+		this.updateRefsMetadata(true);
 	}
 
 	private async checkIssueIntegrations(): Promise<boolean> {
@@ -6729,6 +7636,10 @@ export class GraphWebviewProvider implements WebviewProvider<State, State, Graph
 			dimMergeCommits: configuration.get('graph.dimMergeCommits'),
 			experimentalKanbanEnabled: configuration.get('graph.experimental.kanban.enabled') ?? false,
 			experimentalVisualizationsEnabled: configuration.get('graph.experimental.visualizations.enabled') ?? false,
+			activityDecay: configuration.get('graph.experimental.visualizations.activityDecay') ?? '5m',
+			activityDecayMs: activityDecayToMs(
+				configuration.get('graph.experimental.visualizations.activityDecay') ?? '5m',
+			),
 			highlightRowsOnRefHover: configuration.get('graph.highlightRowsOnRefHover'),
 			idLength: configuration.get('advanced.abbreviatedShaLength'),
 			minimap: configuration.get('graph.minimap.enabled'),
@@ -6739,6 +7650,7 @@ export class GraphWebviewProvider implements WebviewProvider<State, State, Graph
 			onlyFollowFirstParent: configuration.get('graph.onlyFollowFirstParent'),
 			scrollRowPadding: configuration.get('graph.scrollRowPadding'),
 			scrollMarkerTypes: this.getScrollMarkerTypes(),
+			searchAutocompleteOnFocus: configuration.get('graph.searchAutocompleteOnFocus'),
 			showGhostRefsOnRowHover: configuration.get('graph.showGhostRefsOnRowHover'),
 			showRemoteNamesOnRefs: configuration.get('graph.showRemoteNames'),
 			showWorktreeWipStats: configuration.get('graph.showWorktreeWipStats'),
@@ -6824,7 +7736,10 @@ export class GraphWebviewProvider implements WebviewProvider<State, State, Graph
 	}
 
 	@trace({ exit: r => `secondaryWorktrees=${Object.keys(r).length}` })
-	private async getWipMetadataBySha(cancellation?: CancellationToken): Promise<GraphWipMetadataBySha> {
+	private async getWipMetadataBySha(
+		cancellation?: CancellationToken,
+		options?: { probeChanges?: boolean },
+	): Promise<GraphWipMetadataBySha> {
 		const result: GraphWipMetadataBySha = {};
 		// Capture the active repo at entry so the post-await reads below see a stable target. If
 		// the user switches repos while `getWorktrees` is in flight, `this.repository` may have
@@ -6835,6 +7750,39 @@ export class GraphWebviewProvider implements WebviewProvider<State, State, Graph
 
 		const worktrees = await repo.git.worktrees?.getWorktrees(toAbortSignal(cancellation));
 		if (!worktrees?.length) return result;
+
+		// Cheap clean/dirty probe per secondary worktree — ONLY when `probeChanges` is set (the
+		// graph-load build), never on the per-working-tree-tick push, so we don't re-stat every
+		// worktree on each FS event (the bulk fanout the per-tick path deliberately dropped).
+		// `getWorktreeHasWorkingChanges` (`git diff --quiet` + untracked probe) short-circuits and
+		// is far cheaper than the full stats the WIP bar fetches lazily on hover. Lets the bar
+		// surface a worktree that has changes before its `workDirStats` are ever requested; visible
+		// rows derive clean/dirty from their fetched `workDirStats` instead and ignore this.
+		let hasChangesByPath: Map<string, boolean | undefined> | undefined;
+		// Per local-only secondary worktree (branch without an upstream): cheap `rev-list --not --remotes`
+		// presence probe so the WIP bar can flag unpushed commits. Tracked branches get their ahead count
+		// for free from `branch.upstream.state` (computed in the loop below), so they're NOT probed here.
+		// Gated on `probeChanges` like the dirty probe, and skipped entirely when the repo has no remotes
+		// (with none, every local branch would falsely read as unpushed). Preserved client-side by
+		// `mergeWipMetadata` between graph loads.
+		let hasUnpushedByPath: Map<string, boolean | undefined> | undefined;
+		if (options?.probeChanges) {
+			const changesMap = new Map<string, boolean | undefined>();
+			const unpushedMap = new Map<string, boolean | undefined>();
+			const hasRemotes = (await repo.git.remotes.getRemotes(undefined, toAbortSignal(cancellation))).length > 0;
+			await Promise.allSettled(
+				worktrees.map(async wt => {
+					if (wt.type === 'bare' || wt.path === repo.path) return;
+
+					changesMap.set(wt.path, await getWorktreeHasWorkingChanges(this.container, wt));
+					if (hasRemotes && wt.branch != null && wt.branch.upstream == null) {
+						unpushedMap.set(wt.path, await getWorktreeHasUnpublishedCommits(this.container, wt));
+					}
+				}),
+			);
+			hasChangesByPath = changesMap;
+			hasUnpushedByPath = unpushedMap;
+		}
 
 		// All known worktrees other than the primary (which is already covered by workingTreeStats).
 		// Emit row-anchor metadata only; workDirStats are fetched on-demand via GetWipStatsRequest
@@ -6852,19 +7800,32 @@ export class GraphWebviewProvider implements WebviewProvider<State, State, Graph
 			// Detached worktrees have no `wt.branch`; leaving `branchRef` undefined defers them
 			// to the graph component's SHA filter.
 			const branchName = wt.branch?.name;
+			// Unpushed state. Tracked branches: `ahead` (free, every build) drives both the hover count
+			// and the `↑` (`ahead > 0`). Local-only branches (no upstream): no count — the `↑` comes from
+			// the probe above (probe build only; preserved between loads by `mergeWipMetadata`).
+			const ahead = wt.branch?.upstream?.state.ahead;
+			let hasUnpushed: boolean | undefined;
+			if (wt.branch?.upstream != null) {
+				hasUnpushed = (ahead ?? 0) > 0;
+			} else if (hasUnpushedByPath != null) {
+				hasUnpushed = hasUnpushedByPath.get(wt.path);
+			}
 			result[createSecondaryWipSha(wt.path)] = {
 				repoPath: wt.path,
 				parentSha: wt.sha,
+				// HEAD commit date (epoch ms) — `GitWorktree.date` is `branch.date`, no extra git
+				// work. Sent on every build so the WIP bar's recency ordering stays current.
+				parentDate: wt.date?.getTime(),
+				// Only attach when probed; omitted on per-tick pushes and preserved client-side by
+				// `mergeWipMetadata` so the bar doesn't lose a worktree's dirty bit between loads.
+				...(hasChangesByPath?.has(wt.path) ? { hasChanges: hasChangesByPath.get(wt.path) } : {}),
+				// Free, every build — attached even at 0 so a push (ahead → 0) clears the stale count.
+				...(ahead != null ? { ahead: ahead } : {}),
+				// Tracked: definite every build. Local-only: probe build only; omitted on per-tick and
+				// preserved client-side by `mergeWipMetadata`.
+				...(hasUnpushed != null ? { hasUnpushed: hasUnpushed } : {}),
 				label: wt.name,
 				branchRef: branchName != null ? getBranchId(repo.path, false, branchName) : undefined,
-				context: serializeWebviewItemContext<GraphItemContext>({
-					webviewItem: 'gitlens:wip+worktree',
-					webviewItemValue: {
-						type: 'commit',
-						ref: this.getRevisionReference(wt.path, uncommitted, 'work-dir-changes')!,
-						worktreePath: wt.path,
-					},
-				}),
 			};
 		}
 
@@ -6882,7 +7843,7 @@ export class GraphWebviewProvider implements WebviewProvider<State, State, Graph
 		repo: GlRepository,
 		signal?: AbortSignal,
 		options?: { bypassCache?: boolean },
-	): Promise<{ wip: Wip; stats: GraphWorkingTreeStats } | undefined> {
+	): Promise<{ wip: Wip } | undefined> {
 		signal?.throwIfAborted();
 
 		const svc = this.container.git.getRepositoryService(repo.path);
@@ -6946,7 +7907,12 @@ export class GraphWebviewProvider implements WebviewProvider<State, State, Graph
 			};
 			files.push(change);
 			if (file.staged && file.wip) {
-				files.push({ ...change, staged: false });
+				// Mixed file: the unstaged twin must carry the WORKING-tree status, not the index
+				// status `file.status` resolves to. Otherwise, after committing only the staged side,
+				// the optimistic clear keeps this twin still showing the staged letter (e.g. `A`) until
+				// the host's status push corrects it to the real working letter (e.g. `M`) — a visible
+				// flicker. `file.wip` guarantees `workingTreeStatus` is set here.
+				files.push({ ...change, staged: false, status: file.workingTreeStatus ?? file.status });
 			}
 		}
 
@@ -6972,10 +7938,14 @@ export class GraphWebviewProvider implements WebviewProvider<State, State, Graph
 
 		const diff = status.diffStatus;
 
-		// Build the stats once and embed the SAME object reference in both `wip.stats` and the
-		// sibling `stats` field. The webview derives `workingTreeStats` from `wip.stats`, so the
-		// file list and its counts can never drift — they're one object. The sibling is kept for
-		// callers that destructure `{ wip, stats }` (refresh / cold-load paths).
+		// Flag secondary worktrees so the details-header kebab (which renders from `wip.stats.context`)
+		// surfaces the worktree-management actions (Open/Delete/Reveal Worktree) gated on
+		// `gitlens:wip+worktree`. Mirrors `buildWipContext(path, secondary)` for graph rows and the
+		// header's own `isSecondaryWorktree` check (`wip.repo.path !== currentRepoPath`).
+		const isSecondaryWorktree = this.repository != null && repo.path !== this.repository.path;
+
+		// Build the stats once and embed it as `wip.stats`. The webview derives `workingTreeStats`
+		// from `wip.stats`, so the file list and its counts can never drift — they're one object.
 		const stats: WipStats = {
 			added: diff.added,
 			deleted: diff.deleted,
@@ -6984,7 +7954,7 @@ export class GraphWebviewProvider implements WebviewProvider<State, State, Graph
 			conflictsCount: status.hasConflicts ? status.conflicts.length : undefined,
 			pausedOpStatus: pausedOpStatus,
 			context: serializeWebviewItemContext<GraphItemContext>({
-				webviewItem: 'gitlens:wip',
+				webviewItem: isSecondaryWorktree ? 'gitlens:wip+worktree' : 'gitlens:wip',
 				webviewItemValue: {
 					type: 'commit',
 					ref: this.getRevisionReference(repo.path, uncommitted, 'work-dir-changes')!,
@@ -7021,7 +7991,6 @@ export class GraphWebviewProvider implements WebviewProvider<State, State, Graph
 				},
 				stats: stats,
 			},
-			stats: stats,
 		};
 	}
 
@@ -7112,10 +8081,13 @@ export class GraphWebviewProvider implements WebviewProvider<State, State, Graph
 
 		let selectionChanged = false;
 
+		// Cold-start default: seed the WIP selection only on a FRESH webview/repo (`_selectedId == null`).
+		// Once any intent sets the anchor, getState never re-asserts WIP — the webview owns the anchor and
+		// there is no reconciliation to pull a default row back in. The seed rides the `selectedRows` prop
+		// and the GK echoes it into the webview anchor.
 		if (
-			!this._honorSelectedId &&
 			searchRequest == null &&
-			this._selectedId !== uncommitted &&
+			this._selectedId == null &&
 			configuration.get('graph.initialRowSelection') === 'wip'
 		) {
 			selectionChanged = true;
@@ -7126,7 +8098,12 @@ export class GraphWebviewProvider implements WebviewProvider<State, State, Graph
 		const columnSettings = this.getColumnSettings(columns);
 
 		const dataPromise = this.repository.git.graph.getGraph(
-			this._selectedId,
+			// `_selectedId` is only a paging/centering hint now. A secondary-worktree synthetic sha
+			// (`worktree-wip::<path>`) isn't a real revision — passing it makes the provider run a
+			// `git log -n1 'worktree-wip::…'` that always fails + a defensive 10× over-walk; pass
+			// `undefined` instead. Real shas (and the primary `uncommitted`, which the provider
+			// short-circuits) pass through so off-screen anchors still page in.
+			isSecondaryWipSha(this._selectedId) ? undefined : this._selectedId,
 			{
 				include: {
 					stats:
@@ -7149,7 +8126,13 @@ export class GraphWebviewProvider implements WebviewProvider<State, State, Graph
 			this.getWorkingTreeStatsAndPausedOperations(undefined, cancellation.token),
 			this.repository.git.branches.getBranch(undefined, toAbortSignal(cancellation.token)),
 			this.repository.getLastFetched(),
-			this.getWipMetadataBySha(cancellation.token),
+			// Probe clean/dirty per worktree on the graph-load build so the WIP bar can surface
+			// worktrees with changes that aren't visible as graph rows. The per-tick push omits it.
+			this.getWipMetadataBySha(cancellation.token, { probeChanges: true }),
+			// Worktree registry for the webview — the Agent Activity treemap maps agent file activity
+			// to repo-relative keys against these. Fetched directly (not via `this._graph`, which isn't
+			// loaded yet on the deferred-rows build).
+			this.repository.git.worktrees?.getWorktrees(toAbortSignal(cancellation.token)),
 		]);
 
 		let data;
@@ -7161,11 +8144,21 @@ export class GraphWebviewProvider implements WebviewProvider<State, State, Graph
 
 					this.setGraph(data);
 
-					// Don't clobber an honored selection if `data.id` ever diverges (slow await, scope/filter shifts, dropped SHAs)
-					if (!this._honorSelectedId && this._selectedId !== data.id) {
+					// Cold-start seed for non-WIP `initialRowSelection` (e.g. 'head'): when nothing has
+					// been selected yet (`_selectedId == null`), select the resolved tip/HEAD (`data.id`).
+					// Gated on `_selectedId == null` so it ONLY seeds a fresh webview/repo — it never
+					// reconciles away (clobbers) a selection the user/anchor already holds.
+					if (this._selectedId == null && data.id != null) {
 						selectionChanged = true;
 						this.setSelectedRows(data.id);
 					}
+
+					// Page in an explicit deep target (e.g. "Open in Commit Graph" on an old commit against a
+					// closed graph) that the capped cold-start walk didn't reach.
+					if (await this.ensureSelectedTargetLoaded()) {
+						selectionChanged = true;
+					}
+					if (cancellation.token.isCancellationRequested || this._graphLoading !== dataPromise) return;
 
 					void this.notifyDidChangeRefsVisibility();
 					void this.notifyDidChangePinnedRef();
@@ -7180,12 +8173,20 @@ export class GraphWebviewProvider implements WebviewProvider<State, State, Graph
 			data = await dataPromise;
 			this.setGraph(data);
 
-			if (!this._honorSelectedId && this._selectedId !== data.id) {
+			// Cold-start seed for non-WIP `initialRowSelection` (see the deferred path above).
+			if (this._selectedId == null && data.id != null) {
 				this.setSelectedRows(data.id);
 			}
+
+			// Page in an explicit deep target the capped cold-start walk didn't reach (see deferred path).
+			// Re-read the (possibly swapped) graph so the State built below ships the paged-in rows —
+			// `ensureSelectedTargetLoaded` replaces `this._graph` via `setGraph`, leaving `data` stale.
+			await this.ensureSelectedTargetLoaded();
+			data = this._graph ?? data;
 		}
 
-		const [accessResult, workingStatsResult, branchResult, lastFetchedResult, wipMetadataResult] = await promises;
+		const [accessResult, workingStatsResult, branchResult, lastFetchedResult, wipMetadataResult, worktreesResult] =
+			await promises;
 		if (cancellation.token.isCancellationRequested) throw new CancellationError();
 
 		const [access, visibility] = getSettledValue(accessResult) ?? [];
@@ -7288,11 +8289,19 @@ export class GraphWebviewProvider implements WebviewProvider<State, State, Graph
 
 		const graphWalkthroughBanner = this.getGraphWalkthroughBannerState();
 
+		// `mixed` means the workspace has both public and private repos — so a gated (private) repo can
+		// offer switching to a public one. Only computed when access is denied (the only time the gate, and
+		// thus the switch affordance, is shown) to avoid an aggregate visibility() scan on the common
+		// allowed path. The result is cached on the provider.
+		const allowed = this.isGraphAccessAllowed(access, featurePreview);
+		const allowRepoSwitch = allowed === false ? (await this.container.git.visibility()) === 'mixed' : false;
+
 		const result: State = {
 			...this.host.baseWebviewState,
 			webroot: this.host.getWebRoot(),
 			windowFocused: this.isWindowFocused,
 			repositories: await formatRepositories(this.container.git.openRepositories),
+			worktreePaths: getSettledValue(worktreesResult)?.map(w => w.path),
 			selectedRepository: this.repository.id,
 			selectedRepositoryVisibility: visibility,
 			branchesVisibility: refsVisibility.branchesVisibility,
@@ -7310,13 +8319,15 @@ export class GraphWebviewProvider implements WebviewProvider<State, State, Graph
 			lastFetched: new Date(getSettledValue(lastFetchedResult)!),
 			selectedRows: convertSelectedRows(this._selectedRows),
 			subscription: access?.subscription.current,
-			allowed: this.isGraphAccessAllowed(access, featurePreview), //(access?.allowed ?? false) !== false,
+			allowed: allowed,
+			allowRepoSwitch: allowRepoSwitch,
 			avatars: data != null ? Object.fromEntries(data.avatars) : undefined,
 			refsMetadata: this.resetRefsMetadata() === null ? null : {},
 			loading: deferRows === true,
 			rowsStatsLoading: data?.rowsStatsDeferred?.isLoaded != null ? !data.rowsStatsDeferred.isLoaded() : false,
 			rowsStatsIncluded: data?.includes?.stats === true,
 			rows: data?.rows,
+			reachabilityTable: data?.reachability,
 			downstreams: data != null ? Object.fromEntries(data.downstreams) : undefined,
 			paging:
 				data != null
@@ -7739,16 +8750,23 @@ export class GraphWebviewProvider implements WebviewProvider<State, State, Graph
 	}
 
 	private resetRefsMetadata(): null | undefined {
+		// `null` marks the whole refsMetadata feature off (the webview won't request metadata). Upstream
+		// (ahead/behind) is local-git data that needs no integration, so keep metadata populatable whenever
+		// upstream status is enabled — even with nothing connected. Only fall back to `null` when there's
+		// genuinely nothing to provide (upstream disabled AND no integration connected).
 		this._refsMetadata =
+			configuration.get('graph.showUpstreamStatus') ||
 			getContext('gitlens:repos:withHostingIntegrationsConnected') ||
 			this._issueIntegrationConnectionState !== 'not-connected'
 				? undefined
 				: null;
+		// Clear the delta watermark so the next populated send ships every entry afresh (the webview is
+		// reset in lockstep — via the dedicated reset notification or the full-state push).
+		this._lastSentRefsMetadata = undefined;
 		return this._refsMetadata;
 	}
 
 	private resetRepositoryState() {
-		this._honorSelectedId = false;
 		this._getBranchesAndTagsTips = undefined;
 		this._searchHistory = undefined;
 		this._lastStateSentAt = undefined;
@@ -7812,6 +8830,8 @@ export class GraphWebviewProvider implements WebviewProvider<State, State, Graph
 			// page-delta, defeating Phase 7's primary perf win.
 			this._lastSentAvatarsSize = undefined;
 			this._lastSentRowsStatsSize = undefined;
+			this._lastSentReachability = undefined;
+			this._lastSentOverview = undefined;
 			this._lastSentWipDrafts = undefined;
 			this._lastSentWipDraftsInitialized = false;
 			this._lastSentWipNotificationParams = undefined;
@@ -8119,6 +9139,26 @@ export class GraphWebviewProvider implements WebviewProvider<State, State, Graph
 		void RepoActions.push(this.repository, force, ref);
 	}
 
+	@command('gitlens.graph.pushToCommit')
+	@debug()
+	private async pushToCommit(item?: GraphItemContext) {
+		const ref = this.getGraphItemRef(item, 'revision');
+		if (ref == null) return;
+
+		await this.pushUpToCommit(ref.repoPath, ref.ref);
+	}
+
+	// `@gate` keyed by repoPath+sha so a user double-clicking the row button (or invoking via
+	// menu while another push is still resolving) doesn't fire two concurrent
+	// `git push <sha>:<upstream>` operations. The IPC surface bypasses the menu's
+	// `!operationInProgress` `enablement` gate, so the dedup lives here. The second call
+	// awaits the same in-flight promise — both resolve/reject together, so the row button
+	// surfaces the same outcome to both invocations.
+	@gate((repoPath: string, sha: string) => `${repoPath}:${sha}`)
+	private async pushUpToCommit(repoPath: string, sha: string) {
+		await RepoActions.pushToCommit(repoPath, sha);
+	}
+
 	@command('gitlens.createBranch:')
 	@debug()
 	private createBranch(item?: GraphItemContext) {
@@ -8208,7 +9248,12 @@ export class GraphWebviewProvider implements WebviewProvider<State, State, Graph
 	@command('gitlens.publishBranch:graph')
 	@debug()
 	private async publishBranch(item?: GraphItemContext | BranchRef) {
-		const ref = await this.resolveBranchRef(item);
+		let ref = await this.resolveBranchRef(item);
+		if (ref == null) {
+			// Header publish button passes no branch context — fall back to the current branch
+			const branch = await this.repository?.git.branches.getBranch();
+			ref = branch != null ? getReferenceFromBranch(branch) : undefined;
+		}
 		if (ref == null) return;
 
 		await RepoActions.push(ref.repoPath, undefined, ref);
@@ -8278,6 +9323,310 @@ export class GraphWebviewProvider implements WebviewProvider<State, State, Graph
 		if (selection == null) return Promise.resolve();
 
 		return RepoActions.cherryPick(selection[0].repoPath, selection);
+	}
+
+	@command('gitlens.graph.squashCommits.multi')
+	@debug()
+	private async squashCommits(item?: GraphItemContext): Promise<void> {
+		const prepared = await this.prepareCommitsForRewrite(item, 'squash');
+		if (prepared == null) return;
+
+		const { repoPath, ordered, published } = prepared;
+
+		const squash: MessageItem = { title: 'Squash' };
+		const fixup: MessageItem = { title: 'Keep First Message' };
+		const cancel: MessageItem = { title: 'Cancel', isCloseAffordance: true };
+		const choice = await window.showWarningMessage(
+			`Squash ${ordered.length} commits into one?`,
+			{
+				modal: true,
+				detail: published
+					? 'One or more of these commits have already been pushed. Squashing rewrites history and will require a force push.'
+					: 'Choose Squash to review and edit the combined message, or Keep First Message to keep only the oldest commit message.',
+			},
+			squash,
+			fixup,
+			cancel,
+		);
+		if (choice !== squash && choice !== fixup) return;
+
+		await this.runRebaseRewrite(repoPath, ordered, choice === fixup ? 'fixup' : 'squash');
+	}
+
+	@command('gitlens.graph.dropCommits.multi')
+	@debug()
+	private async dropCommits(item?: GraphItemContext): Promise<void> {
+		const prepared = await this.prepareCommitsForRewrite(item, 'drop');
+		if (prepared == null) return;
+
+		const { repoPath, ordered, published } = prepared;
+
+		const drop: MessageItem = { title: 'Drop' };
+		const cancel: MessageItem = { title: 'Cancel', isCloseAffordance: true };
+		const choice = await window.showWarningMessage(
+			`Drop ${ordered.length} commits?`,
+			{
+				modal: true,
+				detail: published
+					? 'One or more of these commits have already been pushed. Dropping rewrites history and will require a force push.'
+					: 'This removes the selected commits from the current branch.',
+			},
+			drop,
+			cancel,
+		);
+		if (choice !== drop) return;
+
+		await this.runRebaseRewrite(repoPath, ordered, 'drop');
+	}
+
+	/**
+	 * Guards a history-rewriting rebase against commits that aren't safely rewriteable — i.e. not on the
+	 * first-parent chain from HEAD up to (excluding) the first merge (notably when HEAD itself is a merge,
+	 * or the selection is an ancestor of one). A plain interactive rebase (no `--rebase-merges`) would
+	 * flatten the merge. Uses the chain computed by the graph provider; when that set is unavailable,
+	 * returns `true` so the caller's per-commit parent checks still apply. Surfaces a warning and returns
+	 * `false` when the selection leaves the chain.
+	 */
+	private validateRewriteableSelection(
+		graph: GitGraph,
+		refs: readonly GitRevisionReference[],
+		verb: string,
+	): boolean {
+		const rewriteable = graph.rewriteableFromHEAD;
+		if (rewriteable == null || refs.every(ref => rewriteable.has(ref.ref))) return true;
+
+		void window.showWarningMessage(
+			`Unable to ${verb}: you can only rewrite commits on the current branch up to the first merge.`,
+		);
+		return false;
+	}
+
+	/**
+	 * Validates a multi-commit selection for a history-rewriting rebase (squash/fixup/drop): every commit
+	 * must be loaded in the graph, none may be a merge commit, and the oldest must have a parent to rebase
+	 * onto. Returns the selection ordered oldest-last plus whether any commit is already published, or
+	 * `undefined` (after surfacing a warning) when the selection can't be rewritten.
+	 */
+	private async prepareCommitsForRewrite(
+		item: GraphItemContext | undefined,
+		action: RebaseTodoAction,
+	): Promise<{ repoPath: string; ordered: GitRevisionReference[]; published: boolean } | undefined> {
+		const verb = action === 'drop' ? 'drop' : 'squash';
+
+		const { selection } = this.getGraphItemRefs(item, 'revision');
+		if (selection == null || selection.length < 2) return undefined;
+
+		const graph = this._graph;
+		if (graph == null) return undefined;
+
+		const repoPath = selection[0].repoPath;
+		if (this.container.git.getRepositoryService(repoPath).ops?.rebase == null) {
+			void window.showWarningMessage(`Rewriting commits is not supported in this repository.`);
+			return undefined;
+		}
+
+		// Order by position in the loaded graph (rows are newest-first) so the oldest selected commit is
+		// last — the rebase rewrites the current branch from that commit's parent.
+		const rowIndexBySha = new Map(graph.rows.map((r, i) => [r.sha, i] as const));
+		const ordered = selection
+			.filter(ref => rowIndexBySha.has(ref.ref))
+			.sort((a, b) => rowIndexBySha.get(a.ref)! - rowIndexBySha.get(b.ref)!);
+		if (ordered.length !== selection.length) {
+			void window.showWarningMessage(`Unable to ${verb}: some selected commits are not loaded in the graph.`);
+			return undefined;
+		}
+
+		// squash/fixup fold each commit into the previous todo entry, so the selection must be a contiguous
+		// chain. Validate here (not only via the menu `when`) since the command can be invoked programmatically.
+		if (
+			action !== 'drop' &&
+			ordered.some(
+				(ref, i) => i > 0 && graph.rows[rowIndexBySha.get(ordered[i - 1].ref)!]?.parents[0] !== ref.ref,
+			)
+		) {
+			void window.showWarningMessage(`Unable to ${verb}: select a contiguous range of commits.`);
+			return undefined;
+		}
+
+		if (ordered.some(ref => (graph.rows[rowIndexBySha.get(ref.ref)!]?.parents.length ?? 0) > 1)) {
+			void window.showWarningMessage(`Unable to ${verb}: the selection includes a merge commit.`);
+			return undefined;
+		}
+
+		// Reject selections that leave the first-parent chain from HEAD before the first merge (e.g. HEAD
+		// is a merge, or the commits are an ancestor of one) — a plain interactive rebase would flatten it.
+		if (!this.validateRewriteableSelection(graph, ordered, verb)) return undefined;
+
+		const oldest = ordered.at(-1)!;
+		if ((graph.rows[rowIndexBySha.get(oldest.ref)!]?.parents.length ?? 0) === 0) {
+			void window.showWarningMessage(`Unable to ${verb}: the oldest selected commit has no parent.`);
+			return undefined;
+		}
+
+		// Warn (don't block) when rewriting already-published commits — the rewrite requires a force push.
+		let published = false;
+		try {
+			published = (await Promise.all(ordered.map(ref => isCommitPushed(repoPath, ref.ref)))).some(p => p);
+		} catch {
+			// Ignore — fall back to confirming without the published warning.
+		}
+
+		return { repoPath: repoPath, ordered: ordered, published: published };
+	}
+
+	/**
+	 * Runs a headless interactive rebase that applies {@link action} to the selected commits, using the
+	 * sequence-editor shim to rewrite the todo and (for squash/reword) VS Code as the commit-message editor.
+	 */
+	private async runRebaseRewrite(
+		repoPath: string,
+		ordered: GitRevisionReference[],
+		action: RebaseTodoAction,
+	): Promise<void> {
+		// Track the rebase as a user-initiated git op (this headless path bypasses the executeGitCommand flow).
+		this.container.telemetry.sendEvent('gitCommand/run', { command: 'rebase' });
+
+		const svc = this.container.git.getRepositoryService(repoPath);
+		const oldest = ordered.at(-1)!;
+		const verb =
+			action === 'drop' ? 'Drop' : action === 'reword' ? 'Reword' : action === 'fixup' ? 'Fixup' : 'Squash';
+
+		try {
+			// Resolve inside the try so the browser/web stub's throw surfaces as a friendly message.
+			const sequenceEditor = getSquashSequenceEditor(this.container);
+			const result = await svc.ops!.rebase(
+				`${oldest.ref}^`,
+				{
+					interactive: true,
+					editor: sequenceEditor.editor,
+					// The editor is a script that rewrites the todo by command + SHA, so force git to emit a
+					// plain, natural-order todo (no autosquash reordering, no abbreviated `p` commands).
+					programmaticEditor: true,
+					// squash (combined message) and reword (per-commit message) open a commit-message editor.
+					messageEditor:
+						action === 'squash' || action === 'reword' ? await getHostEditorCommand(true) : undefined,
+					updateRefs: true,
+					autoStash: true,
+				},
+				{
+					env: {
+						...sequenceEditor.env,
+						GL_SQUASH_SHAS: ordered.map(ref => ref.ref).join(','),
+						GL_SQUASH_ACTION: action,
+					},
+				},
+			);
+			if (result?.conflicted) {
+				void window.showWarningMessage(
+					`${verb} stopped because of conflicts. Resolve them to continue, or abort the rebase to cancel.`,
+				);
+			}
+		} catch (ex) {
+			void window.showErrorMessage(
+				`Unable to ${verb.toLowerCase()} commits: ${ex instanceof Error ? ex.message : String(ex)}`,
+			);
+		}
+	}
+
+	@command('gitlens.graph.rewordCommit')
+	@debug()
+	private async rewordCommit(item?: GraphItemContext): Promise<void> {
+		const ref = this.getGraphItemRef(item, 'revision');
+		if (ref == null) return;
+
+		const graph = this._graph;
+		if (graph == null) return;
+
+		const repoPath = ref.repoPath;
+		if (this.container.git.getRepositoryService(repoPath).ops?.rebase == null) {
+			void window.showWarningMessage('Rewording commits is not supported in this repository.');
+			return;
+		}
+
+		const row = graph.rows.find(r => r.sha === ref.ref);
+		if ((row?.parents.length ?? 0) === 0) {
+			void window.showWarningMessage('Unable to reword: the root commit has no parent to rebase onto.');
+			return;
+		}
+		if ((row?.parents.length ?? 0) > 1) {
+			void window.showWarningMessage('Unable to reword: cannot reword a merge commit.');
+			return;
+		}
+		// Also reject commits off the first-parent chain from HEAD before the first merge (e.g. HEAD is a
+		// merge, or this commit is an ancestor of one) — rewording rebases oldest..HEAD across the merge.
+		if (!this.validateRewriteableSelection(graph, [ref], 'reword')) return;
+
+		// Warn (don't block) when rewording an already-published commit — rewording requires a force push.
+		let published = false;
+		try {
+			published = await isCommitPushed(repoPath, ref.ref);
+		} catch {
+			// Ignore — fall back to opening the message editor without the published warning.
+		}
+		if (published) {
+			const confirm: MessageItem = { title: 'Reword' };
+			const cancel: MessageItem = { title: 'Cancel', isCloseAffordance: true };
+			const choice = await window.showWarningMessage(
+				'Reword this commit?',
+				{
+					modal: true,
+					detail: 'This commit has already been pushed. Rewording rewrites history and will require a force push.',
+				},
+				confirm,
+				cancel,
+			);
+			if (choice !== confirm) return;
+		}
+
+		await this.runRebaseRewrite(repoPath, [ref], 'reword');
+	}
+
+	@command('gitlens.graph.modifyCommits')
+	@command('gitlens.graph.modifyCommits.multi')
+	@debug()
+	private modifyCommits(item?: GraphItemContext): Promise<void> {
+		const { selection } = this.getGraphItemRefs(item, 'revision');
+		if (selection == null || selection.length === 0) return Promise.resolve();
+
+		const graph = this._graph;
+		if (graph == null) return Promise.resolve();
+
+		// Interactively rebase from the parent of the oldest selected commit so the todo spans
+		// oldest..HEAD — the user drives squash/reword/drop/reorder in the existing rebase editor.
+		const rowIndexBySha = new Map(graph.rows.map((r, i) => [r.sha, i] as const));
+		const ordered = selection
+			.filter(ref => rowIndexBySha.has(ref.ref))
+			.sort((a, b) => rowIndexBySha.get(a.ref)! - rowIndexBySha.get(b.ref)!);
+		if (ordered.length !== selection.length) {
+			void window.showWarningMessage('Unable to modify: some selected commits are not loaded in the graph.');
+			return Promise.resolve();
+		}
+
+		// A standard interactive rebase flattens merges (no `--rebase-merges`), so a merge anywhere in the
+		// selection won't appear in the todo as the user expects — reject it (as squash/drop/reword do).
+		if (ordered.some(ref => (graph.rows[rowIndexBySha.get(ref.ref)!]?.parents.length ?? 0) > 1)) {
+			void window.showWarningMessage('Unable to modify: the selection includes a merge commit.');
+			return Promise.resolve();
+		}
+
+		// Reject selections that leave the first-parent chain from HEAD before the first merge (e.g. HEAD
+		// is a merge, or the commits are an ancestor of one) — the rebase spans oldest..HEAD across the merge.
+		if (!this.validateRewriteableSelection(graph, ordered, 'modify')) return Promise.resolve();
+
+		const oldest = ordered.at(-1);
+		const parentSha = oldest != null ? graph.rows[rowIndexBySha.get(oldest.ref)!]?.parents[0] : undefined;
+		if (oldest == null || parentSha == null) {
+			void window.showWarningMessage(
+				'Unable to modify: the oldest selected commit has no parent to rebase onto.',
+			);
+			return Promise.resolve();
+		}
+
+		return RepoActions.rebase(
+			oldest.repoPath,
+			createReference(parentSha, oldest.repoPath, { refType: 'revision' }),
+			true,
+		);
 	}
 
 	@command('gitlens.graph.copy')
@@ -8358,7 +9707,7 @@ export class GraphWebviewProvider implements WebviewProvider<State, State, Graph
 			if (scmRepo == null) return;
 
 			// Update the input box to trigger the focus event
-			// eslint-disable-next-line no-self-assign
+			// oxlint-disable-next-line no-self-assign
 			scmRepo.inputBox.value = scmRepo.inputBox.value;
 		}
 	}
@@ -8480,6 +9829,55 @@ export class GraphWebviewProvider implements WebviewProvider<State, State, Graph
 		await this.runStageConflictResolution(item, 'incoming');
 	}
 
+	@command('gitlens.graph.resolveConflictWithAI:')
+	@debug()
+	private async resolveConflictWithAI(item?: DetailsItemTypedContext): Promise<void> {
+		const value = item?.webviewItemValue;
+		if (value?.type !== 'file' || !value.path || !value.repoPath) return;
+
+		// Enter the WIP details resolve mode scoped to this one conflicted file. The webview routes
+		// via `enterModeForWip('resolve', repoPath, uncommitted, filePaths)`.
+		await this.host.notify(DidRequestGraphActionNotification, {
+			action: 'enter-resolve',
+			target: { sha: uncommitted, worktreePath: value.repoPath, filePaths: [value.path] },
+		});
+	}
+
+	@command('gitlens.graph.resolveConflictsWithAI.multi:')
+	@debug()
+	private async resolveConflictsWithAIMulti(item?: DetailsItemTypedContext): Promise<void> {
+		// The right-clicked row carries the whole multi-selection in `webviewItemsValues`; keep just
+		// the conflicted file entries (the menu gates on `webviewItemsUnion`, which matches when ANY
+		// selected item is a conflict — others may be plain changes).
+		const items = item?.webviewItemsValues ?? [];
+		const files = items
+			.filter(i => i.webviewItem.includes('+conflict'))
+			.map(i => i.webviewItemValue)
+			.filter(v => v?.type === 'file' && Boolean(v.path) && Boolean(v.repoPath));
+		if (files.length === 0) return;
+
+		await this.host.notify(DidRequestGraphActionNotification, {
+			action: 'enter-resolve',
+			target: { sha: uncommitted, worktreePath: files[0].repoPath, filePaths: files.map(f => f.path) },
+		});
+	}
+
+	@command('gitlens.graph.resolveAllConflictsWithAI:')
+	@debug()
+	private async resolveAllConflictsWithAI(item?: GraphItemContext): Promise<void> {
+		// Invoked from the WIP-row context menu (sibling to Compose/Review), so the item is a WIP-row
+		// ref — mirror `composeCommits`. For a secondary WIP row `ref.repoPath` is that worktree's path.
+		const ref = this.getGraphItemRef(item);
+		const repoPath = ref?.repoPath ?? this.repository?.path;
+		if (repoPath == null) return;
+
+		// Enter resolve mode for all conflicts (no `filePath`).
+		await this.host.notify(DidRequestGraphActionNotification, {
+			action: 'enter-resolve',
+			target: { sha: uncommitted, worktreePath: repoPath },
+		});
+	}
+
 	private async runStageConflictResolution(
 		item: DetailsItemTypedContext | undefined,
 		resolution: 'current' | 'incoming',
@@ -8503,18 +9901,18 @@ export class GraphWebviewProvider implements WebviewProvider<State, State, Graph
 		// host's regular `DidChangeWorkingTreeNotification` won't reach the panel. Fetch the
 		// updated WIP for this specific repo and push it directly — one `git status`, no
 		// round-trip from the panel.
-		const repo =
-			this.container.git.getRepository(value.repoPath) ??
-			(await this.container.git.getOrOpenRepository(Uri.file(value.repoPath), { closeOnOpen: true }));
+		const repo = await this.container.git.getOrAddRepository(Uri.file(value.repoPath), {
+			opened: false,
+			detectNested: true,
+		});
 		const result = repo != null ? await this.getWipForRepoAndStats(repo) : undefined;
-		// Ship `stats` alongside `wip` so the webview never has to re-derive them — the host
-		// just did the work, the webview's classifier wouldn't match `git diff --shortstat`
-		// semantics for renames/conflicts, and the derived value would drop `pausedOpStatus` /
-		// `context` (real visible regressions during a paused op).
+		// Ship `wip` (with stats embedded as `wip.stats`) so the webview never has to re-derive
+		// them — the host just did the work, the webview's classifier wouldn't match
+		// `git diff --shortstat` semantics for renames/conflicts, and the derived value would drop
+		// `pausedOpStatus` / `context` (real visible regressions during a paused op).
 		void this.host.notify(DidRequestWipRefetchNotification, {
 			repoPath: value.repoPath,
 			wip: result?.wip,
-			stats: result?.stats,
 		});
 	}
 
@@ -8810,36 +10208,58 @@ export class GraphWebviewProvider implements WebviewProvider<State, State, Graph
 		return RepoActions.switchTo(ref.repoPath);
 	}
 
+	// `undoCommitOnWorktree` shares the same handler as `undoCommit`. Both command ids exist
+	// because VS Code menu titles are static and can't be templated per-row — we want the menu
+	// to read "Undo Commit on Worktree" on `+worktreeHEAD` rows. Per-worktree routing flows via
+	// `webviewItemValue.worktreePath`.
 	@command('gitlens.graph.undoCommit')
+	@command('gitlens.graph.undoCommitOnWorktree')
 	@debug()
-	private async undoCommit(item?: GraphItemContext) {
+	private undoCommit(item?: GraphItemContext): Promise<void> {
 		const ref = this.getGraphItemRef(item, 'revision');
-		if (ref == null) return;
+		if (ref == null) return Promise.resolve();
+
+		// For `+worktreeHEAD` rows, the row context carries `webviewItemValue.worktreePath` —
+		// the secondary worktree we should target. We deliberately keep `ref.repoPath` as the
+		// primary (so other right-click commands like cherryPick/reset/rebase don't silently
+		// retarget the wrong worktree) and overlay the worktree path only here.
+		// TODO(multi-worktree-same-sha): when two non-active worktrees share a sha, only the
+		// first emitted `worktreePath` reaches us; the user has no UI to pick the other.
+		const worktreePath = isGraphItemRefContext(item, 'revision') ? item.webviewItemValue.worktreePath : undefined;
+		return this._undoCommit(ref, worktreePath);
+	}
+
+	@gate()
+	private async _undoCommit(ref: GitRevisionReference, worktreePath: string | undefined): Promise<void> {
+		// Only the repoPath changes when routing to a secondary worktree — preserve every other field
+		// (name, message, sha) by spreading rather than rebuilding. Avoids fragile string-equality on
+		// filesystem paths (Windows casing, trailing-slash variants) and can't silently drop fields.
+		const targetRepoPath = worktreePath ?? ref.repoPath;
+		const targetRef: GitRevisionReference = { ...ref, repoPath: targetRepoPath };
 
 		// `createWipSha` needs the graph's anchor repo path to distinguish the primary
 		// 'work-dir-changes' sha from a secondary `worktree-wip::<path>` sha. NEVER coalesce the
-		// second arg to `ref.repoPath` — `createWipSha(p, p)` collapses to `uncommitted` and we'd
+		// second arg to `targetRepoPath` — `createWipSha(p, p)` collapses to `uncommitted` and we'd
 		// emit a primary-WIP sha for what is actually a secondary worktree. Use the bound
 		// repository's path rather than `this._graph?.repoPath` — the Repository is set when the
 		// webview activates, well before graph data loads, and is always present by the time the
 		// context-menu reaches this command.
-		const wipSha = createWipSha(ref.repoPath, this.repository?.path);
+		const wipSha = createWipSha(targetRepoPath, this.repository?.path);
 
-		await undoCommit(this.container, ref, {
+		await undoCommit(this.container, targetRef, {
 			onBeforeReset: message => {
 				// Batch the selection move, draft seed, and details-panel open before the reset
 				// fires its file-watcher event, so the webview sees one coherent transition rather
-				// than three across the refresh boundary. `_honorSelectedId = true` protects the
-				// WIP selection from the post-refresh `data.id` override at getState().
-				// `writeWipDraftToStorage` is the durable mirror of the webview-side flush so the
-				// message persists across sessions even if the user never edits.
-				this.writeWipDraftToStorage(ref.repoPath, { message: message, messageDirty: true });
-				this._honorSelectedId = true;
+				// than three across the refresh boundary. The WIP selection rides the `selectedRows`
+				// prop and the GK echoes it into the webview anchor. `writeWipDraftToStorage` is the
+				// durable mirror of the webview-side flush so the message persists across sessions
+				// even if the user never edits.
+				this.writeWipDraftToStorage(targetRepoPath, { message: message, messageDirty: true });
 				this.setSelectedRows(wipSha);
 				void this.notifyDidChangeSelection();
 				void this.host.notify(DidRequestGraphActionNotification, {
 					action: 'show-wip',
-					target: { sha: wipSha, worktreePath: ref.repoPath },
+					target: { sha: wipSha, worktreePath: targetRepoPath },
 					commitMessage: message,
 				});
 			},
@@ -9382,8 +10802,9 @@ export class GraphWebviewProvider implements WebviewProvider<State, State, Graph
 
 		for (const sha of commitShas) {
 			const row = graph.rows.find(r => r.sha === sha);
-			if (row?.reachability) {
-				for (const ref of row.reachability.refs) {
+			const refs = row != null ? this.getRowReachableRefs(row) : undefined;
+			if (refs != null) {
+				for (const ref of refs) {
 					if (ref.refType === 'branch' && !ref.remote) {
 						branchCounts.set(ref.name, (branchCounts.get(ref.name) ?? 0) + 1);
 					}
@@ -9417,6 +10838,19 @@ export class GraphWebviewProvider implements WebviewProvider<State, State, Graph
 		});
 	}
 
+	/**
+	 * Decodes a row's reachable refs from the graph's shared {@link GitGraph.reachability} table — rows
+	 * carry only a `contexts.reachabilityIndex`, not per-row ref arrays. Refs come back in dictionary
+	 * order; the recompose callers only filter by ref type/remote, so order is irrelevant here.
+	 */
+	private getRowReachableRefs(row: GitGraphRow) {
+		const table = this._graph?.reachability;
+		const index = row.contexts?.reachabilityIndex;
+		if (table == null || index == null) return undefined;
+
+		return decodeReachabilitySet(table, index);
+	}
+
 	@debug()
 	private async recomposeFromCommit(item?: GraphItemContext): Promise<void> {
 		const ref = this.getGraphItemRef(item, 'revision');
@@ -9426,7 +10860,9 @@ export class GraphWebviewProvider implements WebviewProvider<State, State, Graph
 		if (graph == null) return;
 
 		const row = graph.rows.find(r => r.sha === ref.ref);
-		const localBranches = row?.reachability?.refs.filter(r => r.refType === 'branch' && !r.remote);
+		const localBranches = (row != null ? this.getRowReachableRefs(row) : undefined)?.filter(
+			r => r.refType === 'branch' && !r.remote,
+		);
 		if (localBranches?.length !== 1) {
 			void window.showErrorMessage('Unable to recompose: commit must belong to exactly one local branch');
 			return;
@@ -10003,12 +11439,21 @@ export class GraphWebviewProvider implements WebviewProvider<State, State, Graph
 	@debug()
 	private async revealWorktreeInExplorer(item?: GraphItemContext) {
 		const worktree = await this.getGraphItemWorktree(item);
-		if (worktree == null) return;
+		// worktree.uri preserves remote-dev schemes for branch/secondary-worktree contexts.
+		let uri = worktree?.uri;
+		if (uri == null) {
+			// Primary WIP has no resolved worktree (getGraphItemWorktree returns undefined to protect
+			// explainWip); reveal the row's own repo folder, mirroring openInIntegratedTerminal.
+			const ref = this.getGraphItemRef(item, 'revision');
+			if (ref?.ref !== uncommitted) return;
+
+			uri = Uri.file(ref.repoPath);
+		}
 
 		// Pass a sub-path (.git always exists in any worktree) so the OS file manager opens the
 		// worktree folder itself rather than its parent — the default `revealFileInOS` selects
 		// the folder in the parent on Windows/WSL, which isn't what users expect for a worktree.
-		void revealInFileExplorer(Uri.joinPath(worktree.uri, '.git'));
+		void revealInFileExplorer(Uri.joinPath(uri, '.git'));
 	}
 
 	@command('gitlens.graph.deleteWorktree')
@@ -10023,15 +11468,29 @@ export class GraphWebviewProvider implements WebviewProvider<State, State, Graph
 	@command('gitlens.graph.addAuthor')
 	@debug()
 	private addAuthor(item?: GraphItemContext) {
-		if (isGraphItemTypedContext(item, 'contributor')) {
-			const { repoPath, name, email, current } = item.webviewItemValue;
-			return ContributorActions.addAuthors(
-				repoPath,
-				new GitContributor(repoPath, name, email, current ?? false, 0),
-			);
-		}
+		if (!isGraphItemTypedContext(item, 'contributor')) return;
 
-		return Promise.resolve();
+		const { repoPath, name, email, current } = item.webviewItemValue;
+		if (current) return; // can't co-author yourself (the menu `when` clause also excludes +current)
+
+		const coauthor = new GitContributor(repoPath, name, email, current ?? false, 0).coauthor;
+
+		// Seed the co-author into the graph's WIP commit box rather than the SCM input box. Mirror
+		// undoCommit: select the WIP row, persist the draft, and notify the webview to show WIP with
+		// the message — but APPEND to the existing draft instead of replacing it. See undoCommit for
+		// the createWipSha second-arg invariant (distinguishes primary vs secondary WIP).
+		const wipSha = createWipSha(repoPath, this.repository?.path);
+		const existing = this.container.storage.getWorkspace('graph:wipDrafts')?.[repoPath];
+		const message = appendCoauthorsToMessage(existing?.message ?? '', [coauthor]);
+
+		this.writeWipDraftToStorage(repoPath, { ...existing, message: message, messageDirty: true });
+		this.setSelectedRows(wipSha);
+		void this.notifyDidChangeSelection();
+		void this.host.notify(DidRequestGraphActionNotification, {
+			action: 'show-wip',
+			target: { sha: wipSha, worktreePath: repoPath },
+			commitMessage: message,
+		});
 	}
 
 	@debug()
@@ -10469,6 +11928,29 @@ type GraphItemRefs<T> = {
 	selection: T[];
 };
 
+/** Logs each resolution's AI token usage (when the provider reported it) plus a run total to the
+ *  debug logs — usage is diagnostic detail, so it stays out of the resolve results UI. */
+function logResolutionUsage(resolutions: readonly ConflictToolsResolution[], scope: string): void {
+	let input = 0;
+	let output = 0;
+	for (const r of resolutions) {
+		const m = r.metrics;
+		if (m == null) continue;
+
+		input += m.inputTokens;
+		output += m.outputTokens;
+		Logger.debug(
+			`resolved ${r.filePath}: tokens=${m.inputTokens} in / ${m.outputTokens} out${
+				m.stepCount != null ? `, steps=${m.stepCount}` : ''
+			}${m.durationMs != null ? `, duration=${m.durationMs}ms` : ''}`,
+			scope,
+		);
+	}
+	if (resolutions.length > 1 && (input > 0 || output > 0)) {
+		Logger.debug(`run total: tokens=${input} in / ${output} out`, scope);
+	}
+}
+
 function convertBranchToIncludeOnlyRef(branch: GitBranch, remote?: boolean): GraphIncludeOnlyRef {
 	return (remote ?? branch.remote)
 		? { id: branch.id, type: 'remote', name: branch.nameWithoutRemote, owner: branch.remoteName }
@@ -10537,7 +12019,7 @@ function takeEntriesAfter<V>(map: Map<string, V>, skip: number): Record<string, 
  *   - remote branch added/updated → `remotes` entries shift
  *   - new contributor avatar resolved → `avatars` map grows
  *   - downstream tracking changed → `downstreams` keys/values shift
- *   - worktree added/removed for a branch → `heads[].worktreeId` flips
+ *   - worktree added/removed for a branch → `heads[].worktree` flips
  *   - stats-loading flag flipped → ship the new loading state
  *
  * To stay cheap, the per-row scan only emits a signature for rows that ACTUALLY carry refs —
@@ -10580,12 +12062,12 @@ function buildGraphFingerprint(
 				parts.push('S;');
 			}
 			if (hl) {
-				for (const h of r.heads!) {
-					// Include worktreeId (adding/removing a worktree flips it for an existing
+				for (const h of r.heads! as unknown as readonly GitGraphRowHead[]) {
+					// Include worktree id (adding/removing a worktree flips it for an existing
 					// branch) and isCurrentHead (HEAD moving between already-visible branches),
 					// so either change busts the fingerprint and re-ships rows.
 					parts.push(
-						`H${h.id}${h.isCurrentHead ? '*' : ''}${h.worktreeId != null ? `@${h.worktreeId}` : ''};`,
+						`H${h.id}${h.isCurrentHead ? '*' : ''}${h.worktree != null ? `@${h.worktree.id}` : ''};`,
 					);
 				}
 			}

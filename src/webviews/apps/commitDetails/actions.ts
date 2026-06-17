@@ -25,6 +25,7 @@ import type { IssueOrPullRequest } from '@gitlens/git/models/issueOrPullRequest.
 import type { PullRequestRefs, PullRequestShape } from '@gitlens/git/models/pullRequest.js';
 import type { RemoteResourceType } from '@gitlens/git/models/remoteResource.js';
 import type { GitCommitReachability } from '@gitlens/git/providers/commits.ts';
+import { isUncommitted } from '@gitlens/git/utils/revision.utils.js';
 import { Logger } from '@gitlens/utils/logger.js';
 import { LruMap } from '@gitlens/utils/lruMap.js';
 import { getSettledValue } from '@gitlens/utils/promise.js';
@@ -57,6 +58,7 @@ import {
 	optimisticBatchFireAndForget,
 	optimisticFireAndForget,
 } from '../shared/actions/rpc.js';
+import { NavigationStack } from '../shared/controllers/navigationStack.js';
 import { getRemoteNameFromBranchName } from '../shared/git-utils.js';
 import type { Resource } from '../shared/state/resource.js';
 import type { CreatePatchEventDetail } from './components/gl-inspect-patch.js';
@@ -152,6 +154,13 @@ export class CommitDetailsActions {
 		commitEnrichmentCacheLimit,
 	);
 
+	/** Shared back/forward history of visited commits — same controller the graph uses. The
+	 *  onChange callback mirrors derived state into the `navigationStack` signal; recording happens
+	 *  in {@link fetchCommit}. Survives hide/show because the webview is `retainContextWhenHidden`. */
+	private readonly _nav = new NavigationStack<{ sha: string; repoPath: string }>(10, undefined, s =>
+		this.state.navigationStack.set(s),
+	);
+
 	constructor(
 		private readonly state: CommitDetailsState,
 		private readonly services: ResolvedServices,
@@ -240,21 +249,17 @@ export class CommitDetailsActions {
 	// Navigation Actions
 	// ============================================================
 
-	/**
-	 * Navigate back in the commit stack.
-	 * Updates the navigation stack signal from the backend response.
-	 */
+	/** Navigate back to the previously-viewed commit (shared frontend history). */
 	async navigateBack(): Promise<void> {
 		if (this._navigating || !this.state.canNavigateBack.get()) return;
 
+		const target = this._nav.back();
+		if (target == null) return;
+
 		this._navigating = true;
 		try {
-			const result = await this.services.inspect.navigate('back');
-			this.state.navigationStack.set(result.navigationStack);
-			if (result.selectedCommit != null) {
-				this.state.searchContext.set(undefined);
-				await this.fetchCommit(result.selectedCommit.repoPath, result.selectedCommit.sha, { force: true });
-			}
+			this.state.searchContext.set(undefined);
+			await this.fetchCommit(target.repoPath, target.sha, { force: true });
 		} catch (ex) {
 			Logger.error(ex, 'navigate back failed');
 		} finally {
@@ -262,21 +267,17 @@ export class CommitDetailsActions {
 		}
 	}
 
-	/**
-	 * Navigate forward in the commit stack.
-	 * Updates the navigation stack signal from the backend response.
-	 */
+	/** Navigate forward to the next commit in the shared frontend history. */
 	async navigateForward(): Promise<void> {
 		if (this._navigating || !this.state.canNavigateForward.get()) return;
 
+		const target = this._nav.forward();
+		if (target == null) return;
+
 		this._navigating = true;
 		try {
-			const result = await this.services.inspect.navigate('forward');
-			this.state.navigationStack.set(result.navigationStack);
-			if (result.selectedCommit != null) {
-				this.state.searchContext.set(undefined);
-				await this.fetchCommit(result.selectedCommit.repoPath, result.selectedCommit.sha, { force: true });
-			}
+			this.state.searchContext.set(undefined);
+			await this.fetchCommit(target.repoPath, target.sha, { force: true });
 		} catch (ex) {
 			Logger.error(ex, 'navigate forward failed');
 		} finally {
@@ -551,8 +552,28 @@ export class CommitDetailsActions {
 		gitActions.unstageFile(this.state.error, this.services.repository, file);
 	}
 
+	stageFiles(files: GitFileChangeShape[]): void {
+		gitActions.stageFiles(this.state.error, this.services.repository, files);
+	}
+
+	unstageFiles(files: GitFileChangeShape[]): void {
+		gitActions.unstageFiles(this.state.error, this.services.repository, files);
+	}
+
 	discardFile(file: GitFileChangeShape): void {
 		gitActions.discardFile(this.state.error, this.services.repository, file);
+	}
+
+	discardFiles(files: GitFileChangeShape[]): void {
+		gitActions.discardFiles(this.state.error, this.services.repository, files);
+	}
+
+	stashFile(file: GitFileChangeShape): void {
+		gitActions.stashFile(this.state.error, this.services.repository, file);
+	}
+
+	stashFiles(files: GitFileChangeShape[]): void {
+		gitActions.stashFiles(this.state.error, this.services.repository, files);
 	}
 
 	discardUnstagedFiles(): void {
@@ -560,6 +581,13 @@ export class CommitDetailsActions {
 		if (!repoPath) return;
 
 		gitActions.discardUnstagedFiles(this.state.error, this.services.repository, repoPath);
+	}
+
+	discardStagedFiles(): void {
+		const repoPath = this.getRepoPath();
+		if (!repoPath) return;
+
+		gitActions.discardStagedFiles(this.state.error, this.services.repository, repoPath);
 	}
 
 	openConflictChanges(file: GitFileChangeShape, side: 'current' | 'incoming'): void {
@@ -580,7 +608,7 @@ export class CommitDetailsActions {
 		if (this.state.mode.get() === 'wip') return undefined;
 
 		const commit = this.state.currentCommit.get();
-		if (commit?.sha == null) return undefined;
+		if (commit?.sha == null || isUncommitted(commit.sha)) return undefined;
 		return { ref: commit.sha, stash: commit.stashNumber != null };
 	}
 
@@ -637,11 +665,24 @@ export class CommitDetailsActions {
 	}
 
 	openOnRemote(repoPath: string | undefined, sha: string): void {
-		if (!repoPath) return;
+		if (!repoPath || isUncommitted(sha)) return;
 
 		void this.services.commands.execute('gitlens.openOnRemote', {
 			repoPath: repoPath,
 			resource: { type: 'commit' satisfies `${RemoteResourceType.Commit}`, sha: sha },
+		});
+	}
+
+	/** Delegate inspect's Review/Compose mode toggles to the graph: open it, select the target row
+	 *  (the WIP row for the uncommitted commit, else the commit), and enter the mode there — these
+	 *  modes aren't orchestrated standalone in Inspect. */
+	openCommitInGraphMode(mode: 'review' | 'compose' | 'compare', commit: CommitDetails | undefined): void {
+		if (commit?.repoPath == null || commit.sha == null) return;
+		if (mode !== 'review' && mode !== 'compose') return;
+
+		void this.services.commands.execute('gitlens.showGraph', {
+			action: mode === 'review' ? 'enter-review' : 'enter-compose',
+			target: { sha: commit.sha, worktreePath: commit.repoPath },
 		});
 	}
 
@@ -711,6 +752,24 @@ export class CommitDetailsActions {
 	 */
 	createPatchFromWip(changes: WipChange, checked: boolean | 'staged'): void {
 		fireAndForget(this.services.drafts.createPatchFromWip(changes, checked), 'create patch from WIP');
+	}
+
+	/**
+	 * Copy a WIP patch to the system clipboard.
+	 *
+	 * Scope selects which slice of the working tree to capture:
+	 * - `all`      → HEAD ↔ working tree (matches the existing Copy as Patch command).
+	 * - `staged`   → HEAD ↔ index (staged hunks only; conflicts surface here).
+	 * - `unstaged` → index ↔ working tree (unstaged hunks only).
+	 *
+	 * `uris` (optional, scope-filtered repo-relative paths) constrains the underlying
+	 * `git diff` via pathspec — required for `staged`/`unstaged` to mirror what Open
+	 * Multi-Diff shows for the same scope, especially around merge-conflict files which
+	 * raw `git diff` would otherwise emit regardless of intent. Omit for `all` so git
+	 * sees the entire working tree (including the `intentToAdd`-staged untracked files).
+	 */
+	copyWipPatchToClipboard(repoPath: string, scope: 'all' | 'staged' | 'unstaged', uris?: readonly string[]): void {
+		fireAndForget(this.services.drafts.copyWipPatchToClipboard(repoPath, scope, uris), 'copy WIP patch');
 	}
 
 	/**
@@ -833,7 +892,6 @@ export class CommitDetailsActions {
 
 			this.state.mode.set(mode);
 			this.state.pinned.set(pinned);
-			this.state.navigationStack.set(context.navigationStack);
 			this.state.inReview.set(context.inReview);
 			this.state.draftState.set({ inReview: context.inReview });
 
@@ -876,6 +934,12 @@ export class CommitDetailsActions {
 			// Already showing this commit — cancel any in-flight request
 			this.resources.commit.cancel();
 			return;
+		}
+
+		// Record genuinely-new selections into back/forward history. Skips same-commit refetches and
+		// navigation itself (navigateBack/Forward drive fetchCommit with `_navigating` set).
+		if ((current?.sha !== sha || current?.repoPath !== repoPath) && !this._navigating) {
+			this._nav.record({ sha: sha, repoPath: repoPath });
 		}
 
 		this.state.error.set(undefined);
@@ -1063,6 +1127,7 @@ export class CommitDetailsActions {
 					'workbench.tree.renderIndentGuides',
 					'workbench.tree.indent',
 					'git.enableSmartCommit',
+					'scm.defaultViewSortKey',
 				),
 				this.services.ai.isEnabled(),
 			]);
@@ -1072,7 +1137,8 @@ export class CommitDetailsActions {
 			const searchBoxFilter = getSettledValue(searchBoxFilterResult);
 			const [avatars, currentUserNameStyle, dateFormat, dateStyle, files, showSignatureBadges, autolinksEnabled] =
 				getSettledValue(configResult) ?? [];
-			const [indentGuides, indent, enableSmartCommit] = getSettledValue(coreConfigResult) ?? [];
+			const [indentGuides, indent, enableSmartCommit, workingFilesOrderBy] =
+				getSettledValue(coreConfigResult) ?? [];
 			const aiEnabled = getSettledValue(aiEnabledResult);
 
 			this.state.preferences.set({
@@ -1090,6 +1156,7 @@ export class CommitDetailsActions {
 					},
 				indentGuides: indentGuides ?? 'onHover',
 				indent: indent,
+				workingFilesOrderBy: workingFilesOrderBy ?? 'path',
 				aiEnabled: aiEnabled ?? false,
 				enableSmartCommit: enableSmartCommit ?? false,
 				showSignatureBadges: showSignatureBadges ?? false,

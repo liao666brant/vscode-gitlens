@@ -2,7 +2,7 @@ import { ThemeIcon } from 'vscode';
 import { GitStatus } from '@gitlens/git/models/status.js';
 import { createReference } from '@gitlens/git/utils/reference.utils.js';
 import { createRevisionRange } from '@gitlens/git/utils/revision.utils.js';
-import { filterMap, isStringArray } from '@gitlens/utils/array.js';
+import { isStringArray } from '@gitlens/utils/array.js';
 import { pluralize } from '@gitlens/utils/string.js';
 import { revealRepository } from '../../../git/actions/repository.js';
 import type { GlRepository } from '../../../git/models/repository.js';
@@ -39,6 +39,32 @@ function formatCommitCount(count: number, direction: 'ahead' | 'behind') {
 	return `${count} 个提交${direction === 'ahead' ? '领先' : '落后'}`;
 }
 
+/**
+ * Whether the wizard's single-repo short-circuit can use the sole available repository directly —
+ * true only when there's exactly one available repo AND either nothing was requested OR the request
+ * IS that repo. A request for a *different* path (e.g. an un-surfaced secondary worktree, which isn't
+ * in `repos`) returns `false` so the caller resolves it via {@link pickRepositoryStep} instead of
+ * silently using the only surfaced repo.
+ */
+export function canSkipRepositoryPick(repos: GlRepository[], requested: string | GlRepository | undefined): boolean {
+	if (repos.length !== 1) return false;
+	return requested == null || repos[0].path === (typeof requested === 'string' ? requested : requested.path);
+}
+
+/** Multi-repo counterpart of {@link canSkipRepositoryPick} — true only when there's exactly one
+ *  available repo AND either nothing was requested or every requested repo is it. */
+export function canSkipRepositoriesPick(
+	repos: GlRepository[],
+	requested: string[] | GlRepository[] | undefined,
+): boolean {
+	if (repos.length !== 1) return false;
+	return (
+		requested == null ||
+		requested.length === 0 ||
+		requested.every(r => repos[0].path === (typeof r === 'string' ? r : r.path))
+	);
+}
+
 export async function* pickRepositoryStep<
 	State extends PartialStepState & { repo?: string | GlRepository },
 	Context extends StepsContext<any> & { repos: GlRepository[]; associatedView: ViewsWithRepositoryFolders },
@@ -49,7 +75,10 @@ export async function* pickRepositoryStep<
 	options?: { excludeWorktrees?: boolean; picked?: string | GlRepository; placeholder?: string },
 ): AsyncStepResultGenerator<GlRepository> {
 	if (typeof state.repo === 'string') {
-		state.repo = context.container.git.getRepository(state.repo);
+		// Resolve the path, adding it un-surfaced (`opened: false`) when not already known — e.g. a
+		// secondary worktree shown in the Graph, which isn't surfaced as a repository. Without the
+		// fallback an un-surfaced worktree path wouldn't resolve and would fall through to the picker.
+		state.repo = await context.container.git.getOrAddRepository(state.repo, { opened: false });
 		if (state.repo != null) {
 			parentStep?.skip();
 			return state.repo;
@@ -63,7 +92,7 @@ export async function* pickRepositoryStep<
 				? context.container.git.getRepository(options.picked)
 				: options.picked
 			: undefined) ??
-		(await context.container.git.getOrOpenRepositoryForEditor());
+		(await context.container.git.getOrAddRepositoryForEditor());
 
 	let repos = context.repos;
 	const grouped = groupRepositories(repos);
@@ -129,7 +158,17 @@ export async function* pickRepositoriesStep<
 	let actives: GlRepository[];
 	if (state.repos != null) {
 		if (isStringArray(state.repos)) {
-			actives = filterMap(state.repos, path => context.repos.find(r => r.path === path));
+			// Resolve each path, adding it un-surfaced (`opened: false`) when not already known — e.g. a
+			// secondary worktree shown in the Graph, which isn't surfaced as a repository.
+			actives = (
+				await Promise.all(
+					state.repos.map(
+						async path =>
+							context.repos.find(r => r.path === path) ??
+							(await context.container.git.getOrAddRepository(path, { opened: false })),
+					),
+				)
+			).filter((r): r is GlRepository => r != null);
 			if (options?.skipIfPossible && actives.length && state.repos.length === actives.length) {
 				parentStep?.skip();
 				return actives;
@@ -138,7 +177,7 @@ export async function* pickRepositoriesStep<
 			actives = state.repos;
 		}
 	} else {
-		const active = await context.container.git.getOrOpenRepositoryForEditor();
+		const active = await context.container.git.getOrAddRepositoryForEditor();
 		actives = active != null ? [active] : [];
 	}
 

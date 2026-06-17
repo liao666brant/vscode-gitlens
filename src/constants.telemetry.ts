@@ -3,6 +3,7 @@ import type { AIActionType } from '@gitlens/ai/models/model.js';
 import type { GitContributionTiers } from '@gitlens/git/models/contributor.js';
 import type { Flatten } from '@gitlens/utils/object.js';
 import type { Config, GraphBranchesVisibility, GraphConfig } from './config.js';
+import type { OrganizationRole } from './plus/gk/models/organization.js';
 import type { GlCommands, GlCommandsDeprecated } from './constants.commands.js';
 import type { IntegrationIds, SupportedCloudIntegrationIds } from './constants.integrations.js';
 import type { WalkthroughSteps } from './constants.js';
@@ -88,6 +89,11 @@ export interface TelemetryEvents extends WebviewShowAbortedEvents, WebviewShownE
 	/** Sent when a user provides feedback (rating and optional details) for an AI feature */
 	'ai/feedback': AIFeedbackEvent;
 
+	/** Sent when the user clicks "Get More Credits" on the weekly AI usage-limit notification */
+	'ai/credits/addOnClicked': AICreditsNotificationEvent;
+	/** Sent when the user dismisses the weekly AI usage-limit notification */
+	'ai/credits/addOnDismissed': AICreditsNotificationEvent;
+
 	/** Sent when user dismisses the AI All Access banner */
 	'aiAllAccess/bannerDismissed': void;
 
@@ -107,6 +113,12 @@ export interface TelemetryEvents extends WebviewShowAbortedEvents, WebviewShownE
 	'agents/session/ended': AgentProviderEvent;
 	/** Sent when a permission request is resolved */
 	'agents/permission/resolved': AgentPermissionResolvedEvent;
+	/** Sent when a reconciliation poll (`list-sessions`) finds the polled session set differs from
+	 *  what the live IPC hook path had already tracked. In a single window this should be rare and
+	 *  usually means a hook event was dropped; a nonzero `sync.discovered` is expected in multi-window
+	 *  setups, where the machine-wide poll can surface a session owned by another window that never
+	 *  routed its hook events here — so don't treat every event as a dropped IPC signal */
+	'agents/session/syncDiscrepancy': AgentSyncDiscrepancyEvent;
 
 	/** Sent when a CLI install attempt is started */
 	'cli/install/started': CLIInstallStartedEvent;
@@ -546,6 +558,18 @@ interface AgentPermissionResolvedEvent {
 	'permission.decision': string;
 }
 
+interface AgentSyncDiscrepancyEvent {
+	'agent.provider': string;
+	/** Sessions the poll reported alive that the live IPC path had not tracked. */
+	'sync.discovered': number;
+	/** Tracked sessions the poll no longer reports alive (teardown the live path missed). */
+	'sync.missing': number;
+	/** Total alive sessions reported by the poll. */
+	'sync.polled': number;
+	/** Total sessions tracked (from the live path) before the poll reconciled. */
+	'sync.tracked': number;
+}
+
 interface ActivateEvent extends ConfigEventData {
 	'activation.elapsed': number;
 	'activation.mode': string | undefined;
@@ -642,6 +666,10 @@ export interface AIGenerateCommitsEventData extends AIEventDataSendBase {
 	type: 'commits';
 }
 
+export interface AIGenerateResolveConflictsEventData extends AIEventDataSendBase {
+	type: 'resolveConflicts';
+}
+
 export interface AIGenerateSearchQueryEventData extends AIEventDataSendBase {
 	type: 'searchQuery';
 }
@@ -656,6 +684,7 @@ type AIGenerateEvent =
 	| AIGenerateCreateDraftEventData
 	| AIGenerateCreatePullRequestEventData
 	| AIGenerateCommitsEventData
+	| AIGenerateResolveConflictsEventData
 	| AIGenerateSearchQueryEventData
 	| AIGenerateStashMessageEventData;
 
@@ -680,6 +709,10 @@ export interface AIFeedbackEvent extends AIEventDataBase {
 	'unhelpful.reasons'?: string;
 	/** Custom feedback provided (if any) */
 	'unhelpful.custom'?: string;
+}
+
+interface AICreditsNotificationEvent {
+	'organization.role': OrganizationRole | undefined;
 }
 
 export interface CLIInstallStartedEvent {
@@ -874,11 +907,17 @@ type DetailsModeChangedEvent = InspectContextEventData & {
 	'mode.new': 'wip' | 'commit';
 };
 
-export type GraphDetailsMode = 'commit' | 'wip' | 'multicommit' | 'review' | 'compose' | 'compare' | 'none';
+export type GraphDetailsMode = 'commit' | 'wip' | 'multicommit' | 'review' | 'compose' | 'resolve' | 'compare' | 'none';
 
 interface GraphDetailsShownEvent {
 	/** What caused the panel to be shown */
-	trigger: 'toggle' | 'auto-restore';
+	trigger:
+		| 'toggle'
+		| 'request-compare'
+		| 'request-mode'
+		| 'request-agents'
+		| 'request-graph-wip-bar'
+		| 'auto-restore';
 	/** Which graph host the panel is in: editor area or bottom panel */
 	host: 'editor' | 'panel';
 	/** Active panel mode at time of show */
@@ -1951,6 +1990,7 @@ export type TrackedGlActions =
 	| 'gitlens.ai.review.sentToChat'
 	| 'gitlens.graph.details.compareMode'
 	| 'gitlens.graph.details.composeMode'
+	| 'gitlens.graph.details.resolveMode'
 	| 'gitlens.graph.details.reviewMode'
 	| 'gitlens.graph.details.wipShown'
 	| 'gitlens.graph.overview.shown'

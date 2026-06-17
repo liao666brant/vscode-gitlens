@@ -67,6 +67,7 @@ import { configuration } from '../../system/-webview/configuration.js';
 import { getContext } from '../../system/-webview/context.js';
 import { loadChunk } from '../../system/-webview/loadChunk.js';
 import type { Storage } from '../../system/-webview/storage.js';
+import { openUrl } from '../../system/-webview/vscode/uris.js';
 import type { Serialized } from '../../system/serialize.js';
 import type { ServerConnection } from '../gk/serverConnection.js';
 import { ensureFeatureAccess } from '../gk/utils/-webview/acount.utils.js';
@@ -90,6 +91,8 @@ import {
 } from './utils/-webview/ai.utils.js';
 import type { ResolvePromptOptions } from './utils/-webview/prompt.utils.js';
 import { getLocalPromptTemplate, resolvePrompt } from './utils/-webview/prompt.utils.js';
+import type { BYOKUsage } from './utils/byokUsage.utils.js';
+import { aggregateBYOKUsage } from './utils/byokUsage.utils.js';
 
 export interface AIResponse<T = void> extends AIProviderResponse<T> {
 	readonly type: AIActionType;
@@ -412,6 +415,11 @@ export class AIProviderService implements AIService, Disposable {
 	// subscription change, and force.
 	private readonly _providerModelsCache = new Map<AIProviders, Promise<readonly AIModel[]>>();
 
+	// BYOK token usage accumulated per conversation (keyed by conversationId, then provider/model),
+	// reported as ONE usage report — and so one backend feature fee — when `flushBYOKUsage` is
+	// called at session end.
+	private readonly _pendingBYOKUsage = new Map<string, Map<string, BYOKUsage>>();
+
 	private _actions: AIActions | undefined;
 	get actions(): AIActions {
 		this._actions ??= new AIActions(this);
@@ -474,6 +482,12 @@ export class AIProviderService implements AIService, Disposable {
 	}
 
 	dispose(): void {
+		// Best-effort: report any BYOK usage still pending for unflushed conversations so it isn't
+		// silently dropped on shutdown/reload.
+		for (const conversationId of [...this._pendingBYOKUsage.keys()]) {
+			void this.flushBYOKUsage(conversationId);
+		}
+
 		this._disposable.dispose();
 		this._onDidChangeModel.dispose();
 		this._providerDisposable?.dispose();
@@ -1154,6 +1168,11 @@ export class AIProviderService implements AIService, Disposable {
 		source: Source,
 		options?: {
 			cancellation?: CancellationToken;
+			/** Session-scoped ID sent to the GitKraken backend (as `GK-Conversation-ID`) so its flat
+			 *  per-feature fee is charged once per session instead of once per request. Multi-call
+			 *  features should pass the same ID for every request in a user-facing session. Also defers
+			 *  BYOK usage reporting — the caller MUST call {@link flushBYOKUsage} when the session ends. */
+			conversationId?: string;
 			generating?: Deferred<AIModel>;
 			modelOptions?: { outputTokens?: number; temperature?: number };
 			progress?: ProgressOptions;
@@ -1293,7 +1312,11 @@ export class AIProviderService implements AIService, Disposable {
 							model,
 							apiKey,
 							provider.getMessages.bind(this, model, telementry.data, cancellation),
-							{ signal: controller.signal, modelOptions: options?.modelOptions },
+							{
+								signal: controller.signal,
+								modelOptions: options?.modelOptions,
+								conversationId: options?.conversationId,
+							},
 						);
 						if (!fulfilled) {
 							options?.generating?.fulfill(model);
@@ -1330,7 +1353,14 @@ export class AIProviderService implements AIService, Disposable {
 						);
 
 						if (result != null && supportedAIProviders.get(model.provider.id)?.requiresUserKey) {
-							void this.reportBYOKUsage(action, result);
+							// Within a conversation, defer reporting — each report is charged the flat
+							// per-feature fee, so the session's many calls are aggregated into ONE report
+							// sent by `flushBYOKUsage` when the session ends.
+							if (options?.conversationId != null) {
+								this.accumulateBYOKUsage(options.conversationId, action, result);
+							} else {
+								void this.reportBYOKUsage(action, result);
+							}
 						}
 
 						if (!isGkModel) {
@@ -1461,14 +1491,56 @@ export class AIProviderService implements AIService, Disposable {
 									return undefined;
 								}
 								case AIErrorReason.UserQuotaExceeded: {
-									const increaseLimit: MessageItem = { title: '提升额度' };
-									const result = await window.showErrorMessage(
-										'由于您已达到当前套餐的每周 AI 使用上限，请求无法完成。升级以解锁更多 AI 功能。',
-										increaseLimit,
-									);
+									const sub = await this.container.subscription.getSubscription();
+									const role = sub.activeOrganization?.role;
+									const canPurchase =
+										role == null || role === 'owner' || role === 'admin' || role === 'billing';
 
-									if (result === increaseLimit) {
-										void this.container.subscription.manageSubscription(source);
+									if (canPurchase) {
+										const getMoreCredits: MessageItem = {
+											title: '获取更多额度',
+										};
+										const dismiss: MessageItem = {
+											title: '关闭',
+											isCloseAffordance: true,
+										};
+										const result = await window.showErrorMessage(
+											'您的请求无法完成，因为您已达到当前套餐包含的每周使用量。请购买额外的 AI 额度以继续使用 GitKraken AI。',
+											getMoreCredits,
+											dismiss,
+										);
+
+										if (result === getMoreCredits) {
+											this.container.telemetry.sendEvent(
+												'ai/credits/addOnClicked',
+												{ 'organization.role': role },
+												source,
+											);
+											void openUrl(
+												await this.container.urls.getGkDevUrl('subscription/credit-add-on'),
+											);
+										} else {
+											this.container.telemetry.sendEvent(
+												'ai/credits/addOnDismissed',
+												{ 'organization.role': role },
+												source,
+											);
+										}
+									} else {
+										const ok: MessageItem = {
+											title: '确定',
+											isCloseAffordance: true,
+										};
+										await window.showErrorMessage(
+											'您的请求无法完成，因为您已达到当前套餐包含的每周使用量。请联系您的组织管理员或所有者以申请更多 AI 额度。',
+											ok,
+										);
+
+										this.container.telemetry.sendEvent(
+											'ai/credits/addOnDismissed',
+											{ 'organization.role': role },
+											source,
+										);
 									}
 
 									if (options?.throwAIErrors) throw error;
@@ -1591,16 +1663,86 @@ export class AIProviderService implements AIService, Disposable {
 		// API requires total_tokens >= 1
 		if (totalTokens < 1) return;
 
+		await this.postBYOKUsageReport(model.provider.id, model.id, action, totalTokens, promptTokens);
+	}
+
+	/**
+	 * Accumulates a BYOK response's token usage under its conversation instead of reporting it
+	 * immediately — the backend charges a flat per-feature fee per report, so a multi-call session
+	 * reports once, via {@link flushBYOKUsage}, when it ends.
+	 */
+	private accumulateBYOKUsage(
+		conversationId: string,
+		action: AIActionType,
+		response: AIProviderResponse<void>,
+	): void {
+		const model = response.model;
+		const promptTokens = response.usage?.promptTokens;
+		const completionTokens = response.usage?.completionTokens;
+		const totalTokens = response.usage?.totalTokens ?? (promptTokens ?? 0) + (completionTokens ?? 0);
+		if (totalTokens < 1) return;
+
+		let buckets = this._pendingBYOKUsage.get(conversationId);
+		if (buckets == null) {
+			buckets = new Map();
+			this._pendingBYOKUsage.set(conversationId, buckets);
+		}
+
+		const key = `${model.provider.id}/${model.id}`;
+		const bucket = buckets.get(key);
+		if (bucket == null) {
+			buckets.set(key, {
+				provider: model.provider.id,
+				model: model.id,
+				action: action,
+				totalTokens: totalTokens,
+				inputTokens: promptTokens ?? 0,
+			});
+		} else {
+			bucket.totalTokens += totalTokens;
+			bucket.inputTokens += promptTokens ?? 0;
+		}
+	}
+
+	/**
+	 * Sends the single aggregated BYOK usage report for a conversation started via `sendRequest`'s
+	 * `conversationId` option. Call when the user-facing session ends (applied/discarded/disposed).
+	 * No-op when nothing was accumulated, so it's safe to call repeatedly (e.g. discard then dispose).
+	 */
+	async flushBYOKUsage(conversationId: string): Promise<void> {
+		const buckets = this._pendingBYOKUsage.get(conversationId);
+		this._pendingBYOKUsage.delete(conversationId);
+		if (buckets == null) return;
+
+		const usage = aggregateBYOKUsage(buckets.values());
+		if (usage == null) return;
+
+		await this.postBYOKUsageReport(
+			usage.provider,
+			usage.model,
+			usage.action,
+			usage.totalTokens,
+			usage.inputTokens > 0 ? usage.inputTokens : undefined,
+		);
+	}
+
+	private async postBYOKUsageReport(
+		provider: AIProviders,
+		model: string,
+		action: AIActionType,
+		totalTokens: number,
+		inputTokens?: number,
+	): Promise<void> {
 		try {
 			await this.connection.fetchGkApi('v1/ai-tasks/usage/reports', {
 				method: 'POST',
 				body: JSON.stringify({
-					provider: model.provider.id,
-					model: model.id,
+					provider: provider,
+					model: model,
 					task_type: 'message-prompt',
 					action: action,
 					total_tokens: totalTokens,
-					...(promptTokens != null && { input_tokens: promptTokens }),
+					...(inputTokens != null && { input_tokens: inputTokens }),
 				}),
 			});
 		} catch {}

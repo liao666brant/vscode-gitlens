@@ -42,6 +42,11 @@ export type CommitFileChange = GitFileChangeShape & { stats?: GitFileChangeStats
 export interface CommitDetails extends CommitSummary {
 	files?: readonly CommitFileChange[];
 	stats?: GitCommitStats;
+	/**
+	 * `true` when the commit is reachable from a worktree other than the one this panel is scoped to,
+	 * so its files have a working copy elsewhere. Drives the file context-menu's "Open Worktree File".
+	 */
+	reachableFromOtherWorktrees?: boolean;
 }
 
 export interface CompareDiff {
@@ -49,6 +54,9 @@ export interface CompareDiff {
 	stats?: GitCommitStats;
 	commitCount?: number;
 }
+
+/** Sort order for the working (WIP) file list, mirroring VS Code's `scm.defaultViewSortKey`. */
+export type WorkingFileSorting = 'name' | 'path' | 'status';
 
 export interface Preferences {
 	pullRequestExpanded: boolean;
@@ -59,6 +67,8 @@ export interface Preferences {
 	files: Config['views']['commitDetails']['files'];
 	indent: number | undefined;
 	indentGuides: 'none' | 'onHover' | 'always';
+	/** Working (WIP) file list sort, honoring VS Code's `scm.defaultViewSortKey` (list layout only). */
+	workingFilesOrderBy: WorkingFileSorting;
 	aiEnabled: boolean;
 	enableSmartCommit: boolean;
 	showSignatureBadges: boolean;
@@ -133,11 +143,6 @@ export interface State extends WebviewState<'gitlens.views.commitDetails'> {
 	mode: Mode;
 
 	pinned: boolean;
-	navigationStack: {
-		count: number;
-		position: number;
-		hint?: string;
-	};
 	preferences: Preferences;
 	orgSettings: {
 		ai: boolean;

@@ -10,12 +10,8 @@ import e18e from '@e18e/eslint-plugin';
 import importX from 'eslint-plugin-import-x';
 import { configs as litConfigs } from 'eslint-plugin-lit';
 import { configs as wcConfigs } from 'eslint-plugin-wc';
-import noSrcImports from './scripts/eslint-rules/no-src-imports.mjs';
-import noSelfPackageImports from './scripts/eslint-rules/no-self-package-imports.mjs';
-import noEnvWithoutJs from './scripts/eslint-rules/no-env-without-js.mjs';
-import logScopeUsage from './scripts/eslint-rules/scoped-logger-usage.mjs';
-import requireBlockBody from './scripts/eslint-rules/require-block-body.mjs';
-import newlineAfterControlFlow from './scripts/eslint-rules/newline-after-control-flow.mjs';
+import oxlint from 'eslint-plugin-oxlint';
+import gitlens from './scripts/eslint-plugin-gitlens.mjs';
 import { fileURLToPath } from 'node:url';
 
 /** @type {Awaited<import('typescript-eslint').Config>[number]['languageOptions']} */
@@ -190,22 +186,13 @@ export default defineConfig(
 			// @ts-ignore
 			'anti-trojan-source': antiTrojanSource,
 			// @ts-ignore
-			'@gitlens': {
-				rules: {
-					'no-src-imports': noSrcImports,
-					'no-self-package-imports': noSelfPackageImports,
-					'no-env-without-js': noEnvWithoutJs,
-					'scoped-logger-usage': logScopeUsage,
-					'require-block-body': requireBlockBody,
-					'newline-after-control-flow': newlineAfterControlFlow,
-				},
-			},
+			'@gitlens': gitlens,
 		},
 		rules: {
 			// Custom rules
 			'@gitlens/no-src-imports': 'error',
 			'@gitlens/no-self-package-imports': 'error',
-			'@gitlens/no-env-without-js': 'error',
+			'@gitlens/require-js-extension': 'error',
 			'@gitlens/scoped-logger-usage': 'error',
 			'@gitlens/require-block-body': 'error',
 			'@gitlens/newline-after-control-flow': 'warn',
@@ -549,4 +536,11 @@ export default defineConfig(
 			],
 		},
 	},
+
+	// Oxlint integration - appended at the end to disable rules oxlint already enforces (avoids
+	// true duplication in `lint:ci`, where oxlint runs first). Rules oxlint does NOT enforce —
+	// including ones it can't implement or diverges on — stay enabled here so eslint remains the
+	// complete gate. (Any oxlint-recommended rule we leave off in .oxlintrc.json is re-enabled
+	// there so this disable stays a true duplicate, not a coverage hole.)
+	oxlint.configs['flat/recommended'],
 );

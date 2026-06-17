@@ -35,6 +35,33 @@ minimumReleaseAgeExclude:
     - '@eamodio/*'
     - '@gitkraken/*'
     - '@vscode/*'
+    - '@oxlint/binding-android-arm-eabi@1.68.0'
+    - '@oxlint/binding-android-arm64@1.68.0'
+    - '@oxlint/binding-darwin-arm64@1.68.0'
+    - '@oxlint/binding-darwin-x64@1.68.0'
+    - '@oxlint/binding-freebsd-x64@1.68.0'
+    - '@oxlint/binding-linux-arm-gnueabihf@1.68.0'
+    - '@oxlint/binding-linux-arm-musleabihf@1.68.0'
+    - '@oxlint/binding-linux-arm64-gnu@1.68.0'
+    - '@oxlint/binding-linux-arm64-musl@1.68.0'
+    - '@oxlint/binding-linux-ppc64-gnu@1.68.0'
+    - '@oxlint/binding-linux-riscv64-gnu@1.68.0'
+    - '@oxlint/binding-linux-riscv64-musl@1.68.0'
+    - '@oxlint/binding-linux-s390x-gnu@1.68.0'
+    - '@oxlint/binding-linux-x64-gnu@1.68.0'
+    - '@oxlint/binding-linux-x64-musl@1.68.0'
+    - '@oxlint/binding-openharmony-arm64@1.68.0'
+    - '@oxlint/binding-win32-arm64-msvc@1.68.0'
+    - '@oxlint/binding-win32-ia32-msvc@1.68.0'
+    - '@oxlint/binding-win32-x64-msvc@1.68.0'
+    - oxlint@1.68.0
+    - '@oxlint/plugins@1.68.0'
+
+overrides:
+    '@types/vscode': '1.101.0'
+    esbuild: '0.28.0'
+    handlebars: '4.7.9'
+    'serialize-javascript@<7.0.5': '7.0.5'
 
 packageExtensions:
     '@gitkraken/gitkraken-components':

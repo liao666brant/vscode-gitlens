@@ -16,6 +16,7 @@ import { getScopedCounter } from '@gitlens/utils/counter.js';
 import type { Deferrable } from '@gitlens/utils/debounce.js';
 import { debounce } from '@gitlens/utils/debounce.js';
 import { Logger } from '@gitlens/utils/logger.js';
+import { basename } from '@gitlens/utils/path.js';
 import type { GraphDetailsMode } from '../../../../constants.telemetry.js';
 import type { CommitDetails } from '../../../commitDetails/protocol.js';
 import type {
@@ -30,6 +31,7 @@ import type {
 	VisualizationMode,
 } from '../../../plus/graph/protocol.js';
 import {
+	createSecondaryWipSha,
 	createWipSha,
 	DismissVisualizationsButtonCalloutCommand,
 	GetRowHoverRequest,
@@ -37,33 +39,45 @@ import {
 	GetWipStatsRequest,
 	isSecondaryWipSha,
 	isWipSha,
+	ResetGraphFiltersCommand,
 	TrackGraphDetailsCompareModeCommand,
 	TrackGraphDetailsComposeModeCommand,
+	TrackGraphDetailsResolveModeCommand,
 	TrackGraphDetailsReviewModeCommand,
 	TrackGraphDetailsWipShownCommand,
 	TrackGraphScopeChangedCommand,
 	UpdateGraphConfigurationCommand,
 	UpdateGraphDisplayModeCommand,
 } from '../../../plus/graph/protocol.js';
+import {
+	formatAgentElapsed,
+	indexAgentSessionsByRepoAndWorktree,
+	matchAgentSessionsForWorktree,
+} from '../../shared/agentUtils.js';
 import type { CustomEventType } from '../../shared/components/element.js';
 import { ipcContext } from '../../shared/contexts/ipc.js';
 import type { TelemetryContext } from '../../shared/contexts/telemetry.js';
 import { telemetryContext } from '../../shared/contexts/telemetry.js';
+import type { NavigationState } from '../../shared/controllers/navigationStack.js';
+import { NavigationStack } from '../../shared/controllers/navigationStack.js';
 import { emitTelemetrySentEvent } from '../../shared/telemetry.js';
 import type { GlGraphDetailsPanel } from './components/gl-graph-details-panel.js';
+import type { GlGraphKeyboardShortcuts } from './components/gl-graph-keyboard-shortcuts.js';
 import type {
 	GlGraphTimelineCommitSelectDetail,
 	GlGraphTimelineConfigChangeDetail,
 } from './components/gl-graph-timeline.js';
 import type { GraphTreemapModeChangeDetail } from './components/gl-graph-treemap.js';
 import type { GraphVisualizationModeChangeDetail } from './components/gl-graph-visualizations.js';
+import type { WipBarItem, WipBarSelectDetail, WipBarStatsNeededDetail } from './components/gl-graph-wip-bar.js';
+import { pickWipRowAgentStatus } from './components/wipRowAgentStatus.js';
 import type { AppState } from './context.js';
 import { graphServicesContext, graphStateContext } from './context.js';
 import { getEffectiveDisplayMode } from './displayMode.js';
 import type { GlGraphHeader } from './graph-header.js';
 import type { GlGraphWrapper } from './graph-wrapper/graph-wrapper.js';
 import type { GraphCrossPaneState } from './graphCrossPaneState.js';
-import { createGraphCrossPaneState, graphCrossPaneContext } from './graphCrossPaneState.js';
+import { abortRunningOperations, createGraphCrossPaneState, graphCrossPaneContext } from './graphCrossPaneState.js';
 import type { GlGraphHover } from './hover/graphHover.js';
 import type { GlGraphMinimapContainer, GraphMinimapConfigChangeEventDetail } from './minimap/minimap-container.js';
 import type { GraphMinimapDaySelectedEventDetail, GraphMinimapWheelEvent } from './minimap/minimap.js';
@@ -71,7 +85,10 @@ import type { GlGraphSidebarPanel, GraphSidebarPanelSelectEventDetail } from './
 import type { GraphSidebarDisplayModeChangeEventDetail, GraphSidebarToggleEventDetail } from './sidebar/sidebar.js';
 import type { SelectionBranch } from './utils/branchSelection.utils.js';
 import { getOverviewBranchSelectionSha } from './utils/branchSelection.utils.js';
+import { getSelectedRepoPath } from './utils/repository.utils.js';
 import { getCommitDateFromRow } from './utils/row.utils.js';
+import { serializeWipContext } from './utils/rowContext.utils.js';
+import { shouldShowPrimaryWipRow } from './utils/wip.utils.js';
 import './gate.js';
 import './graph-header.js';
 import './graph-wrapper/graph-wrapper.js';
@@ -85,8 +102,25 @@ import '../../shared/components/button.js';
 import '../../shared/components/code-icon.js';
 import './components/gl-graph-details-panel.js';
 import './components/gl-graph-kanban.js';
+import './components/gl-graph-keyboard-shortcuts.js';
+import './components/gl-graph-wip-bar.js';
 import './components/gl-graph-timeline.js';
 import './components/gl-graph-visualizations.js';
+
+/** Extract the user-visible branch name from a ref id of the form `{repoPath}|heads/{name}`. */
+function branchNameFromRef(branchRef: string | undefined): string | undefined {
+	if (branchRef == null) return undefined;
+
+	const idx = branchRef.indexOf('|heads/');
+	return idx >= 0 ? branchRef.slice(idx + '|heads/'.length) : undefined;
+}
+
+/** Derives a user-friendly label for the primary worktree when no branch is checked out
+ *  (detached HEAD). Uses the worktree directory basename — matches how worktrees typically
+ *  appear in VS Code's worktree list and tooling. Falls back to `(detached)` for safety. */
+function primaryFallbackLabel(repoPath: string): string {
+	return basename(repoPath) || '(detached)';
+}
 
 const sidebarDefaultPct = 20;
 const sidebarMinPct = 15;
@@ -169,6 +203,22 @@ export class GraphApp extends SignalWatcher(LitElement) {
 		return pos;
 	};
 
+	/** Shared back/forward history of visited single commits, mirrored into {@link _navState} for
+	 *  the details header. Re-driving selection via {@link navigateTo} is guarded by
+	 *  {@link _navExpectedSha} so the resulting (async) selection echo isn't recorded as new. */
+	private readonly _nav = new NavigationStack<{ sha: string; repoPath: string; commitLite?: CommitDetails }>(
+		10,
+		undefined,
+		s => (this._navState = s),
+	);
+
+	@state()
+	private _navState: NavigationState = { count: 0, position: 0, canBack: false, canForward: false };
+
+	/** Sha of an in-flight back/forward re-drive — sha-based (not boolean) because the
+	 *  `ensureAndSelectCommit` re-drive re-emits the selection asynchronously through React. */
+	private _navExpectedSha?: string;
+
 	/** Graph-mode single selection. Don't read directly for what the details panel shows — go
 	 *  through {@link activeSelection}, which picks the slot matching the active `displayMode`. */
 	@state()
@@ -212,14 +262,36 @@ export class GraphApp extends SignalWatcher(LitElement) {
 		return { single: this._selectedCommit, multi: this._selectedCommits };
 	}
 
+	/** The GRAPH-ROW sha(s) of the current inspection anchor, for the wrapper's derived highlight
+	 *  (`highlight = anchorShas ∩ renderableRows`). `undefined` in alt modes (the graph is hidden, so
+	 *  nothing to highlight) — the alt slot drives details independently. Multi-select carries real
+	 *  commit shas (WIP rows are excluded from compare). For the single anchor the row sha is derived
+	 *  from `(sha, repoPath)`: a real sha is itself; `uncommitted` maps to the primary `work-dir-changes`
+	 *  row when its repoPath is the opened repo, else to the secondary worktree's synthetic row sha
+	 *  (`repoPath` IS the worktree path for a secondary WIP, so the reconstruction is exact). */
+	private get activeAnchorShas(): readonly string[] | undefined {
+		if (this.effectiveDisplayMode !== 'graph') return undefined;
+		if (this._selectedCommits != null) return this._selectedCommits.shas;
+
+		const single = this._selectedCommit;
+		if (single == null) return undefined;
+
+		if (single.sha !== uncommitted) return [single.sha];
+
+		// A WIP anchor is the SECONDARY-worktree row only when its repoPath differs from the opened
+		// repo's. Guard on a resolved `fallbackRepoPath`: during a repo-switch/reload tick it can be
+		// transiently undefined, and treating that as "different" would mis-map a PRIMARY WIP anchor to
+		// a `worktree-wip::` sha that matches no row (dropping the highlight). Default to the primary row.
+		const fallbackRepoPath = this.fallbackRepoPath;
+		const rowSha =
+			fallbackRepoPath != null && single.repoPath !== '' && single.repoPath !== fallbackRepoPath
+				? createSecondaryWipSha(single.repoPath)
+				: ('work-dir-changes' satisfies GitGraphRowType);
+		return [rowSha];
+	}
+
 	private get fallbackRepoPath(): string | undefined {
-		const repoId = this.graphState.selectedRepository;
-		const repos = this.graphState.repositories;
-		if (repoId != null) {
-			const found = repos?.find(r => r.id === repoId)?.path;
-			if (found != null) return found;
-		}
-		return repos?.[0]?.path;
+		return getSelectedRepoPath(this.graphState);
 	}
 
 	/** Graph's currently-selected repo "family" — `commonPath` when available, otherwise the
@@ -279,6 +351,9 @@ export class GraphApp extends SignalWatcher(LitElement) {
 
 	@query('gl-graph-details-panel')
 	private readonly detailsPanelEl: GlGraphDetailsPanel | undefined;
+
+	@query('gl-graph-keyboard-shortcuts')
+	private readonly keyboardShortcutsEl: GlGraphKeyboardShortcuts | undefined;
 
 	/** One-shot file/folder scope pushed into the embedded timeline (Visual History) by a graph
 	 *  context-menu action. Cleared once `gl-graph-timeline` reports it applied. */
@@ -346,6 +421,8 @@ export class GraphApp extends SignalWatcher(LitElement) {
 
 	override disconnectedCallback(): void {
 		super.disconnectedCallback?.();
+		// Abort in-flight AI runs — this element owns the registry, so teardown cancels them here.
+		abortRunningOperations(this._crossPaneState);
 		// Flush any pending debounced persist write so close-within-200ms-of-a-toggle doesn't
 		// lose the last visualization choice. The debouncer is leading-trailing by default;
 		// `flush()` runs the queued trailing call immediately, no-ops if nothing's queued.
@@ -613,7 +690,7 @@ export class GraphApp extends SignalWatcher(LitElement) {
 
 	private async consumePendingAction(pending: {
 		action: GraphShowAction;
-		target?: { sha: string; worktreePath: string };
+		target?: { sha: string; worktreePath: string; filePaths?: string[] };
 		commitMessage?: string;
 	}): Promise<void> {
 		const { action, target, commitMessage } = pending;
@@ -628,6 +705,16 @@ export class GraphApp extends SignalWatcher(LitElement) {
 		const sha = target?.sha ?? uncommitted;
 		this._selectedCommit = { sha: sha, repoPath: repoPath };
 		this._selectedCommits = undefined;
+
+		// Reliably select the target row in the graph itself, not just the details panel. The host's
+		// selection notification is prop-driven and can drop the synthetic WIP row to a render race
+		// (the row is injected by `getDecoratedRows` only after Lit+React catch up), which surfaces as
+		// review/compose updating the details but leaving the row unselected. `ensureAndSelectCommit`
+		// normalizes `uncommitted`→the WIP row and retries across frames until it's injected. Skip for
+		// compare (it drives its own range selection).
+		if (action !== 'open-compare') {
+			this.graph?.ensureAndSelectCommit(sha);
+		}
 
 		const showDetails = () => {
 			this.setDetailsVisible(true, 'request-mode');
@@ -655,11 +742,21 @@ export class GraphApp extends SignalWatcher(LitElement) {
 		}
 
 		showDetails();
-		await this.updateComplete;
-		if (action === 'enter-review' || action === 'enter-compose') {
-			this.detailsPanelEl?.enterModeForWip(action === 'enter-review' ? 'review' : 'compose', repoPath, sha);
+
+		if (action === 'enter-review' || action === 'enter-compose' || action === 'enter-resolve') {
+			// On a cold graph open the details panel mounts only after the initial graph data/layout
+			// settles. Poll for the element directly (independent of this app's `updateComplete`,
+			// which can stay pending through the busy cold load) so the mode request doesn't silently
+			// no-op via the `?.` below. `enterModeForWip` builds its own selection from repoPath/sha,
+			// so it doesn't need the panel to have reconciled to the row first.
+			const panel = await this.waitForDetailsPanel();
+			const mode = action === 'enter-review' ? 'review' : action === 'enter-compose' ? 'compose' : 'resolve';
+			// `filePaths` (resolve only) scopes the run to specific conflicted files; undefined = all conflicts.
+			panel?.enterModeForWip(mode, repoPath, sha, target?.filePaths);
+			return;
 		}
 
+		await this.updateComplete;
 		// Seed the WIP details commit input AFTER the panel has reconciled to the target row —
 		// the panel clears `commitMessage` when its repo identity changes, so writing before
 		// reconciliation can be wiped out. Used after Undo Commit so the user can immediately
@@ -667,6 +764,18 @@ export class GraphApp extends SignalWatcher(LitElement) {
 		if (commitMessage != null && action === 'show-wip') {
 			this.detailsPanelEl?.setCommitMessage(repoPath, commitMessage);
 		}
+	}
+
+	/** Resolve the details panel element, waiting across update cycles for it to mount. The panel
+	 *  renders a few frames after `setDetailsVisible(true)` on a cold graph (initial data/layout),
+	 *  so callers that act on it immediately after `showDetails()` would otherwise hit a null query.
+	 *  Returns undefined if it never mounts within the cap (caller no-ops, same as before). */
+	private async waitForDetailsPanel(timeoutMs = 8000): Promise<GlGraphDetailsPanel | undefined> {
+		const start = performance.now();
+		while (this.detailsPanelEl == null && performance.now() - start < timeoutMs) {
+			await new Promise<void>(resolve => setTimeout(resolve, 30));
+		}
+		return this.detailsPanelEl;
 	}
 
 	private async scopeToBranch(): Promise<void> {
@@ -691,14 +800,260 @@ export class GraphApp extends SignalWatcher(LitElement) {
 		}
 	}
 
-	/** Handles a WIP-row inline-button click (Compose / Review / agent indicator). Selects the
-	 *  row, opens the details panel, and routes to the requested target. Compose/Review enter
-	 *  the matching workflow mode; `agents` expands the agents section. The graph component
-	 *  fires its own selection-change for the row click in parallel; setting `_selectedCommit`
+	/** Shared WIP selection + details-open flow. Used by both the inline graph WIP row
+	 *  affordance and the WIP drawer above the graph. Sets the active selection, opens
+	 *  the details panel, and optionally drives a mode-switch action. The graph component
+	 *  fires its own selection-change for a row click in parallel; setting `_selectedCommit`
 	 *  explicitly here ensures the details panel is on the right anchor before we drive the
 	 *  target-specific action, regardless of dispatch ordering. */
+	private async openWipDetails(
+		repoPath: string,
+		sha: string,
+		target: 'compose' | 'review' | 'resolve' | 'agents' | undefined,
+		trigger: 'request-mode' | 'request-agents' | 'request-graph-wip-bar',
+	): Promise<void> {
+		this._selectedCommit = { sha: sha, repoPath: repoPath };
+		this._selectedCommits = undefined;
+		this.setDetailsVisible(true, trigger);
+		this.ensureDetailsPosition();
+		// Wait for the details panel to render with the new selection before invoking the
+		// target-specific action — otherwise both `toggleMode` (for compose/review) and the
+		// agents-section query would see stale selection in their snapshots.
+		await this.updateComplete;
+		if (target === 'agents') {
+			this.detailsPanelEl?.expandAgentsForWip();
+		} else if (target != null) {
+			this.detailsPanelEl?.enterModeForWip(target, repoPath, sha);
+		}
+	}
+
+	private handleWipBarSelect = async (e: CustomEvent<WipBarSelectDetail>): Promise<void> => {
+		const { id, repoPath } = e.detail;
+		// Bar is a global WIP affordance; clicking it always lands the user in graph mode
+		// so the corresponding WIP row is visible (matches the stated user intent: "select that
+		// WIP row in the graph and reveal the WIP details panel").
+		const gs = this.graphState;
+		// Snapshot pre-state — `persistState()` can flow back through host and flip visibility
+		// between the mode switch and the visibility check, so capture both up front.
+		const wasVisible = gs.details?.visible === true;
+		if (gs.displayMode !== 'graph') {
+			gs.displayMode = 'graph';
+			this.persistState();
+		}
+		// Drop the active scope when the clicked WIP isn't part of it, so the worktree's row
+		// materializes in the now-unscoped graph and `ensureAndSelectCommit` below can reveal it.
+		// Leave the scope untouched when the pill already matches it. Uses the canonical clear
+		// (`deferScopeClear` + `ResetGraphFilters`): the host's filter-reset reloads unscoped rows and
+		// fires the deferred clear in the same pass. (Pills hidden purely by `branchesVisibility` are
+		// out of this rule's scope — the product decision is scope-only.)
+		const scopeCleared = gs.scope != null && !this.isWipPillInScope(id, gs.scope);
+		if (scopeCleared) {
+			gs.deferScopeClear();
+			this._ipc.sendCommand(ResetGraphFiltersCommand, undefined);
+		}
+		// Anchor the selection synchronously, normalized to `uncommitted` — every WIP row (primary
+		// and secondary alike) collapses to that sha and is distinguished by `repoPath`, matching
+		// what `handleWipRowOpen` and the graph's own selection path produce. Setting it here, before
+		// the telemetry emit below, ensures the already-visible `graphDetails/shown` event reflects
+		// the newly-selected WIP rather than the prior selection. `openWipDetails` re-applies the
+		// same values.
+		this._selectedCommit = { sha: uncommitted, repoPath: repoPath };
+		this._selectedCommits = undefined;
+		// Pre-await telemetry — covers the setDetailsVisible-short-circuit case inside openWipDetails:
+		// if the details panel is already visible, downstream telemetry would lose this bar-click
+		// intent. Emitting pre-await also avoids a race where visibility flips off/on during the await.
+		if (wasVisible) {
+			this.emitDetailsVisibilityTelemetry(true, 'request-graph-wip-bar');
+		}
+		await this.openWipDetails(repoPath, uncommitted, undefined, 'request-graph-wip-bar');
+		// When we cleared the scope above, the unscoped rows arrive via a host round-trip
+		// (`ResetGraphFilters` → `DidChangeRefsVisibilityNotification`), which can take longer than
+		// `ensureAndSelectCommit`'s short row-retry window. Wait for the scope to actually clear first
+		// so that retry window starts against the settled (unscoped) state instead of expiring before
+		// the worktree's row materializes.
+		if (scopeCleared) {
+			await this.waitForScopeCleared();
+		}
+		// Select + reveal the WIP row in the graph itself — the bar's stated intent. The `id` is the
+		// row's sha (`uncommitted` for the primary, `worktree-wip::<path>` for secondaries);
+		// `ensureAndSelectCommit` normalizes/handles both and retries through the render + scope
+		// catch-up. The `openWipDetails` await above ensures the graph is mounted (e.g. after the
+		// displayMode switch) before we call it.
+		this.graph?.ensureAndSelectCommit(id);
+	};
+
+	/** Resolves once the active scope has cleared (or a safety timeout elapses). Used after a
+	 *  scope-clearing WIP-bar click: the clear lands via a host round-trip, so this lets the
+	 *  subsequent `ensureAndSelectCommit` run against the settled unscoped state rather than racing
+	 *  the reload. Polls with `setTimeout` (not RAF) so it still resolves if the webview is hidden. */
+	private waitForScopeCleared(timeoutMs = 2000): Promise<void> {
+		if (this.graphState.scope == null) return Promise.resolve();
+
+		return new Promise<void>(resolve => {
+			const start = Date.now();
+			const check = (): void => {
+				if (this.graphState.scope == null || Date.now() - start >= timeoutMs) {
+					resolve();
+					return;
+				}
+
+				setTimeout(check, 32);
+			};
+			setTimeout(check, 32);
+		});
+	}
+
+	/** Whether a clicked WIP pill's worktree is part of the active graph scope. The primary WIP
+	 *  (`uncommitted`) matches when the scoped branch is HEAD's branch; a secondary matches when its
+	 *  worktree branch is the scope's focal or one of its additional refs. Detached secondaries (no
+	 *  `branchRef`) never match a branch scope. */
+	private isWipPillInScope(id: string, scope: NonNullable<typeof this.graphState.scope>): boolean {
+		if (id === uncommitted) return scope.branchRef === this.graphState.branch?.id;
+
+		const branchRef = this.graphState.wipMetadataBySha?.[id]?.branchRef;
+		if (branchRef == null) return false;
+		return scope.branchRef === branchRef || scope.additionalBranchRefs?.includes(branchRef) === true;
+	}
+
+	/** In-flight set so repeated hovers over a stats-less pill fire at most one fetch per worktree. */
+	private readonly _wipStatsInFlight = new Set<string>();
+
+	/** Lazily fetches a hovered secondary WIP pill's stats (primary's come from `workingTreeStats`).
+	 *  Skips when `graph.showWorktreeWipStats` is off: hover isn't selection, so it mustn't trigger a
+	 *  per-worktree `git status` (clicking still reveals the breakdown). Backstop to the bar's own
+	 *  `statsOnHover` suppression. */
+	private handleWipBarStatsNeeded = (e: CustomEvent<WipBarStatsNeededDetail>): void => {
+		const { id } = e.detail;
+		if (id === uncommitted || this._wipStatsInFlight.has(id)) return;
+		if (this.graphState.config?.showWorktreeWipStats === false) return;
+
+		const meta = this.graphState.wipMetadataBySha?.[id];
+		if (meta == null || (meta.workDirStats != null && !meta.workDirStatsStale)) return;
+
+		this._wipStatsInFlight.add(id);
+		void this.fetchSelectedWorktreeWipStats(id).finally(() => this._wipStatsInFlight.delete(id));
+	};
+
+	/** Computes WIP entries for the bar from real graph state: the primary worktree's WIP
+	 *  (when there are changes) plus one entry per secondary worktree with WIP. Agent state is
+	 *  resolved per-worktree via the existing session-by-worktree index. Returns an empty array
+	 *  when no WIPs exist — the bar renders nothing in that case. */
+	private get wipBarItems(): readonly WipBarItem[] {
+		const gs = this.graphState;
+		const fallbackRepoPath = this.fallbackRepoPath;
+		if (fallbackRepoPath == null) return [];
+
+		const now = Date.now();
+		const items: WipBarItem[] = [];
+
+		// The bar is a GLOBAL working-changes affordance: it surfaces every worktree that has working
+		// changes, independent of the graph's active scope / branchesVisibility. (The in-graph WIP
+		// rows ARE scope/visibility-filtered — see `getDecoratedRows` — so the bar can intentionally
+		// show worktrees the graph has filtered out.)
+
+		// Resolve agent state per worktree through a single index (O(sessions) to build, O(1) per
+		// lookup) instead of re-scanning every session per worktree — mirrors `getAgentStatusByRowSha`
+		// in graph-wrapper so the bar and the in-graph WIP rows surface the same indicator.
+		const sessionIndex = indexAgentSessionsByRepoAndWorktree(gs.agentSessions);
+		const pickAgent = (repoPath: string): Pick<WipBarItem, 'agent' | 'lastActivity'> => {
+			const status = pickWipRowAgentStatus(
+				matchAgentSessionsForWorktree(sessionIndex, { repoPath: repoPath, worktreePath: repoPath }),
+				now,
+			);
+			if (status == null) return {};
+
+			// The row collapses the worktree's sessions to one indicator; surface their most-recent
+			// activity as the "Updated … ago" hint.
+			const latest = status.sessions.reduce((max, s) => Math.max(max, s.lastActivity.getTime()), 0);
+			return { agent: status.category, lastActivity: formatAgentElapsed(latest) };
+		};
+
+		// Primary worktree's WIP, whenever it has changes — shown regardless of scope/visibility
+		// (`workingTreeStats` is computed independent of the graph's filters). WorkDirStats fields are
+		// FILE counts: `added` (new files), `modified` (changed files), `deleted` (removed files).
+		// When no branch is checked out (detached HEAD), fall back to the worktree directory basename
+		// so the user still sees their primary WIP entry in the bar.
+		// Unpushed comes free from `branchState.ahead` (tracked branch); a primary on a local-only
+		// branch is intentionally NOT probed — those commits are already visible in the main graph,
+		// unlike a hidden secondary's.
+		const primary = gs.workingTreeStats;
+		const primaryDirty = primary != null && (primary.added > 0 || primary.modified > 0 || primary.deleted > 0);
+		const primaryAhead = gs.branchState?.ahead ?? 0;
+		if (primaryDirty || primaryAhead > 0) {
+			items.push({
+				id: uncommitted,
+				branch: gs.branch?.name ?? primaryFallbackLabel(fallbackRepoPath),
+				repoPath: fallbackRepoPath,
+				hasWorkingChanges: primaryDirty,
+				...(primary != null && primaryDirty
+					? {
+							files: primary.added + primary.modified + primary.deleted,
+							added: primary.added,
+							modified: primary.modified,
+							deleted: primary.deleted,
+						}
+					: {}),
+				...(primaryAhead > 0 ? { hasUnpushed: true, ahead: primaryAhead } : {}),
+				...pickAgent(fallbackRepoPath),
+				isPrimary: true,
+				context: serializeWipContext(fallbackRepoPath, false),
+			});
+		}
+
+		// Secondary worktrees — one pill per worktree that has working changes OR unpushed commits, NOT
+		// scope/visibility filtered (unlike the graph's WIP rows). A worktree is "dirty" by its fetched
+		// `workDirStats` when present, else by the host's cheap `hasChanges` probe — so the pill appears
+		// before the full breakdown is fetched (lazily, on hover). `hasUnpushed` is host-computed (free
+		// ahead for tracked branches; a `rev-list` probe for local-only). Ordered by HEAD commit date,
+		// most-recent first (`parentDate`); the primary pushed above stays first.
+		const wipMetadata = gs.wipMetadataBySha;
+		if (wipMetadata != null) {
+			const secondaries = Object.entries(wipMetadata)
+				.map(([sha, meta]) => {
+					const stats = meta.workDirStats;
+					const dirty =
+						stats != null ? stats.added + stats.modified + stats.deleted > 0 : meta.hasChanges === true;
+					return { sha: sha, meta: meta, dirty: dirty };
+				})
+				.filter(({ meta, dirty }) => dirty || meta.hasUnpushed === true)
+				.sort((a, b) => (b.meta.parentDate ?? 0) - (a.meta.parentDate ?? 0));
+
+			for (const { sha, meta, dirty } of secondaries) {
+				const stats = meta.workDirStats;
+				items.push({
+					id: sha,
+					branch: branchNameFromRef(meta.branchRef) ?? meta.label,
+					repoPath: meta.repoPath,
+					hasWorkingChanges: dirty,
+					// Stats omitted until hover fetches them — the pill renders from the dirty signal.
+					// `workDirStatsStale === false` with no `workDirStats` means a forced fetch settled
+					// without a breakdown (failed/cancelled), so flag it for the hover's terminal state
+					// instead of leaving the tooltip stuck on "Loading changes…".
+					...(stats != null
+						? {
+								files: stats.added + stats.modified + stats.deleted,
+								added: stats.added,
+								modified: stats.modified,
+								deleted: stats.deleted,
+							}
+						: meta.workDirStatsStale === false
+							? { statsUnavailable: true }
+							: {}),
+					...(meta.hasUnpushed === true
+						? { hasUnpushed: true, ...(meta.ahead != null && meta.ahead > 0 ? { ahead: meta.ahead } : {}) }
+						: {}),
+					...pickAgent(meta.repoPath),
+					isPrimary: false,
+					context: serializeWipContext(meta.repoPath, true),
+				});
+			}
+		}
+
+		return items;
+	}
+
 	private handleWipRowOpen = async (
-		e: CustomEvent<{ target: 'compose' | 'review' | 'agents'; row: GraphRow }>,
+		e: CustomEvent<{ target: 'compose' | 'review' | 'resolve' | 'agents'; row: GraphRow }>,
 	): Promise<void> => {
 		const { target, row } = e.detail;
 		const fallbackRepoPath = this.fallbackRepoPath ?? '';
@@ -707,22 +1062,7 @@ export class GraphApp extends SignalWatcher(LitElement) {
 		const isSecondary = isSecondaryWipSha(row.sha);
 		const repoPath = isSecondary ? getSecondaryWipPath(row.sha) : fallbackRepoPath;
 		const sha = row.type === ('work-dir-changes' satisfies GitGraphRowType) ? uncommitted : row.sha;
-
-		this._selectedCommit = { sha: sha, repoPath: repoPath };
-		this._selectedCommits = undefined;
-
-		this.setDetailsVisible(true, target === 'agents' ? 'request-agents' : 'request-mode');
-		this.ensureDetailsPosition();
-
-		// Wait for the details panel to render with the new selection before invoking the
-		// target-specific action — otherwise both `toggleMode` (for compose/review) and the
-		// agents-section query would see stale selection in their snapshots.
-		await this.updateComplete;
-		if (target === 'agents') {
-			this.detailsPanelEl?.expandAgentsForWip();
-		} else {
-			this.detailsPanelEl?.enterModeForWip(target, repoPath, sha);
-		}
+		await this.openWipDetails(repoPath, sha, target, target === 'agents' ? 'request-agents' : 'request-mode');
 	};
 
 	override updated(changedProperties: Map<PropertyKey, unknown>): void {
@@ -734,8 +1074,14 @@ export class GraphApp extends SignalWatcher(LitElement) {
 		// apply a stale intent. Drop the one-shot scope alongside it for the same reason.
 		const selectedRepository = this.graphState.selectedRepository;
 		if (selectedRepository !== this._wasSelectedRepository) {
-			if (this._wasSelectedRepository !== undefined && this._modeBeforeScope != null) {
+			const isRepoSwitch = this._wasSelectedRepository !== undefined;
+			if (isRepoSwitch && this._modeBeforeScope != null) {
 				this.clearTimelineScope();
+			}
+			// Back/forward history must not jump across repos — drop it on an actual switch.
+			if (isRepoSwitch) {
+				this._nav.reset();
+				this._navExpectedSha = undefined;
 			}
 			this._wasSelectedRepository = selectedRepository;
 		}
@@ -890,6 +1236,7 @@ export class GraphApp extends SignalWatcher(LitElement) {
 					@toggle-details=${this.handleToggleDetails}
 					@show-details=${this.handleShowDetails}
 					@toggle-minimap=${this.handleToggleMinimap}
+					@jump-to-wip=${this.handleJumpToWip}
 					@gl-graph-scope-to-branch=${this.handleScopeToBranchFromHeader}
 				></gl-graph-header>
 				<div class="graph__workspace">
@@ -937,7 +1284,10 @@ export class GraphApp extends SignalWatcher(LitElement) {
 					.commitLites=${multi?.commitLites}
 					.showSearchBox=${this.graphState.details?.showSearchBox ?? true}
 					.searchBoxFilter=${this.graphState.details?.searchBoxFilter ?? true}
+					.navigation=${this._navState}
 					@select-commit=${this.handleSelectCommit}
+					@gl-nav-back=${this.handleNavBack}
+					@gl-nav-forward=${this.handleNavForward}
 					@gl-graph-details-mode-changed=${this.handleDetailsModeChanged}
 					@gl-show-search-box-change=${this.handleDetailsShowSearchBoxChange}
 					@gl-search-box-filter-change=${this.handleDetailsSearchBoxFilterChange}
@@ -996,12 +1346,15 @@ export class GraphApp extends SignalWatcher(LitElement) {
 					this.graphState.config?.sidebar,
 					() =>
 						html`<gl-graph-sidebar
-							active-panel=${this.graphState.sidebar?.activePanel ?? nothing}
-							.sidebarVisible=${this.graphState.sidebar?.visible ?? false}
-							@gl-graph-sidebar-toggle=${this.handleSidebarToggle}
-							@gl-graph-sidebar-display-mode-change=${this.handleDisplayModeChange}
-							@gl-graph-sidebar-visualizations-callout-dismiss=${this.handleVisualizationsCalloutDismiss}
-						></gl-graph-sidebar>`,
+								active-panel=${this.graphState.sidebar?.activePanel ?? nothing}
+								.sidebarVisible=${this.graphState.sidebar?.visible ?? false}
+								@gl-graph-sidebar-toggle=${this.handleSidebarToggle}
+								@gl-graph-sidebar-display-mode-change=${this.handleDisplayModeChange}
+								@gl-graph-sidebar-visualizations-callout-dismiss=${this
+									.handleVisualizationsCalloutDismiss}
+								@gl-graph-sidebar-show-shortcuts=${this.handleShowShortcuts}
+							></gl-graph-sidebar>
+							<gl-graph-keyboard-shortcuts></gl-graph-keyboard-shortcuts>`,
 				)}
 				${this.graphState.config?.sidebar
 					? this.renderSidebarSplit(!isGraphMode)
@@ -1019,6 +1372,10 @@ export class GraphApp extends SignalWatcher(LitElement) {
 	private renderKanbanMain() {
 		return html`<gl-graph-kanban @gl-graph-kanban-close=${this.handleAlternateModeClose}></gl-graph-kanban>`;
 	}
+
+	private handleShowShortcuts = (): void => {
+		this.keyboardShortcutsEl?.show();
+	};
 
 	private handleAlternateModeClose = (): void => {
 		const gs = this.graphState;
@@ -1188,9 +1545,34 @@ export class GraphApp extends SignalWatcher(LitElement) {
 	}
 
 	private renderGraphContent(slot?: 'end') {
+		// Compute once per render — getter allocates a fresh array, and we read it twice
+		// (length check + binding). Local var dedupes the work and gives the bar a stable
+		// reference identity within a single render cycle.
+		const wipItems = this.wipBarItems;
+		// `_selectedCommit.sha` is normalized to `uncommitted` for ALL WIP selections (the graph
+		// collapses secondary WIP rows to `uncommitted` at selection time), so the selected worktree
+		// is identified by `repoPath`, not `sha`. Resolve the selected pill by repoPath so selecting a
+		// secondary WIP highlights its own pill instead of the primary's.
+		const selectedCommit = this._selectedCommit;
+		const selectedWipId =
+			selectedCommit != null && isWipSha(selectedCommit.sha)
+				? wipItems.find(i => i.repoPath === selectedCommit.repoPath)?.id
+				: undefined;
 		return html`
 			<div class="graph__graph-column" slot=${ifDefined(slot)}>
+				${wipItems.length > 0
+					? html`
+							<gl-graph-wip-bar
+								.items=${wipItems}
+								.selectedId=${selectedWipId}
+								.statsOnHover=${this.graphState.config?.showWorktreeWipStats !== false}
+								@gl-graph-wip-bar-select=${this.handleWipBarSelect}
+								@gl-graph-wip-bar-stats-needed=${this.handleWipBarStatsNeeded}
+							></gl-graph-wip-bar>
+						`
+					: nothing}
 				<gl-graph-wrapper
+					.anchorShas=${this.activeAnchorShas}
 					@gl-graph-change-selection=${this.handleGraphSelectionChanged}
 					@gl-graph-change-visible-days=${this.handleGraphVisibleDaysChanged}
 					@gl-graph-filter-column=${this.handleGraphFilterColumn}
@@ -1364,7 +1746,13 @@ export class GraphApp extends SignalWatcher(LitElement) {
 
 	private setDetailsVisible(
 		visible: boolean,
-		trigger?: 'toggle' | 'request-compare' | 'request-mode' | 'request-agents' | 'auto-restore',
+		trigger?:
+			| 'toggle'
+			| 'request-compare'
+			| 'request-mode'
+			| 'request-agents'
+			| 'request-graph-wip-bar'
+			| 'auto-restore',
 	): void {
 		const gs = this.graphState;
 		if (gs.details?.visible === visible) return;
@@ -1376,10 +1764,21 @@ export class GraphApp extends SignalWatcher(LitElement) {
 
 	private emitDetailsVisibilityTelemetry(
 		visible: boolean,
-		trigger: 'toggle' | 'request-compare' | 'request-mode' | 'request-agents' | 'auto-restore',
+		trigger:
+			| 'toggle'
+			| 'request-compare'
+			| 'request-mode'
+			| 'request-agents'
+			| 'request-graph-wip-bar'
+			| 'auto-restore',
 	): void {
 		if (visible) {
-			this._detailsShownAt = performance.now();
+			// `??=`, not `=`: the WIP-bar re-anchors an already-open panel by calling this directly
+			// (setDetailsVisible short-circuits when visibility is unchanged). Only start the dwell
+			// clock on a genuine open — a re-anchor must not reset it, or `graphDetails/closed`
+			// `duration` would measure from the last pill click instead of the original open.
+			// `_detailsShownAt` is cleared to undefined on close, so genuine opens still set it.
+			this._detailsShownAt ??= performance.now();
 			const { single, multi } = this.activeSelection;
 			const selectionCount = multi != null ? multi.shas.length : single != null ? 1 : 0;
 			const selectedSha = single?.sha;
@@ -1426,6 +1825,9 @@ export class GraphApp extends SignalWatcher(LitElement) {
 			case 'compose':
 				this._ipc.sendCommand(TrackGraphDetailsComposeModeCommand, undefined);
 				break;
+			case 'resolve':
+				this._ipc.sendCommand(TrackGraphDetailsResolveModeCommand, undefined);
+				break;
 			case 'compare':
 				this._ipc.sendCommand(TrackGraphDetailsCompareModeCommand, undefined);
 				break;
@@ -1460,6 +1862,25 @@ export class GraphApp extends SignalWatcher(LitElement) {
 			this.setDetailsVisible(true, 'toggle');
 			this.ensureDetailsPosition();
 		}
+	};
+
+	private handleJumpToWip = (): void => {
+		if (this.effectiveDisplayMode !== 'graph') return;
+
+		const scope = this.graphState.scope;
+		if (scope != null && scope.branchRef !== this.graphState.branch?.id) {
+			const wouldShow = shouldShowPrimaryWipRow(
+				this.graphState.branchesVisibility,
+				this.graphState.includeOnlyRefs,
+				this.graphState.branch?.id,
+				undefined,
+			);
+			if (!wouldShow) return;
+
+			this.graphState.clearScope();
+		}
+
+		this.graph?.ensureAndSelectCommit(uncommitted);
 	};
 
 	private handleToggleDetails(e: CustomEvent<{ altKey?: boolean } | void>) {
@@ -2026,6 +2447,12 @@ export class GraphApp extends SignalWatcher(LitElement) {
 		this.graphHover.hide();
 
 		const { selection, reachability, commits } = e.detail;
+
+		// Never clear the inspection anchor on an empty selection. The wrapper only dispatches genuine
+		// (non-empty) intent here; an empty report is a scope/visibility filter-out or a transient GK
+		// race, both of which must KEEP the details anchor (graph shows no highlight, details stay put).
+		if (selection.length === 0) return;
+
 		const fallbackRepoPath = this.fallbackRepoPath ?? '';
 
 		if (selection.length >= 2) {
@@ -2038,6 +2465,7 @@ export class GraphApp extends SignalWatcher(LitElement) {
 				// `commits` from the wrapper is already scoped to the current selection (WIP rows
 				// excluded), so it can be forwarded directly as the per-sha lite map.
 				this._selectedCommits = { shas: shas, repoPath: fallbackRepoPath, commitLites: commits };
+				// Multi-select (compare) isn't part of single-commit history; leave the guard intact.
 			} else if (shas.length === 1) {
 				// Multi-select included WIP + 1 commit — treat as single-select on the commit
 				const sha = shas[0];
@@ -2047,11 +2475,13 @@ export class GraphApp extends SignalWatcher(LitElement) {
 					commitLite: commits?.[sha],
 				};
 				this._selectedCommits = undefined;
+				this.recordNavSelection(sha, fallbackRepoPath, commits?.[sha]);
 			} else {
 				this._selectedCommit = undefined;
 				this._selectedCommits = undefined;
+				this._navExpectedSha = undefined;
 			}
-		} else if (selection.length === 1) {
+		} else {
 			const active = selection[0];
 			const sha = active.type === ('work-dir-changes' satisfies GitGraphRowType) ? uncommitted : active.id;
 			// Prefer per-row repoPath (for multi-worktree WIP); fall back to selected repo
@@ -2065,14 +2495,15 @@ export class GraphApp extends SignalWatcher(LitElement) {
 			};
 			this._selectedCommits = undefined;
 
+			// Record every viewed selection (commits, stashes, AND WIP) so back/forward is a true
+			// history of what the details panel showed — Back from WIP returns to the prior commit.
+			this.recordNavSelection(sha, repoPath, commits?.[active.id]);
+
 			// When `graph.showWorktreeWipStats` is disabled, secondary worktree WIP rows start
 			// stats-less. Force-fetch stats for the selected row so it populates its pill.
 			if (isSecondaryWipSha(active.id) && this.graphState.config?.showWorktreeWipStats === false) {
 				void this.fetchSelectedWorktreeWipStats(active.id);
 			}
-		} else {
-			this._selectedCommit = undefined;
-			this._selectedCommits = undefined;
 		}
 
 		const count = this._selectionTrackingCounter.next();
@@ -2083,6 +2514,41 @@ export class GraphApp extends SignalWatcher(LitElement) {
 					data: { rows: selection.length, count: count },
 				}),
 			);
+		}
+	}
+
+	/** Records a real (non-WIP) single-commit selection into back/forward history. Suppresses the
+	 *  selection echo(es) of our own {@link navigateTo} re-drive. The guard is STICKY (matched by
+	 *  sha, not cleared on the first match) because the graph component can re-emit the same
+	 *  selection multiple times (RAF retries / focus-row churn) — clearing on the first echo would
+	 *  let a later duplicate re-record the target and clobber the forward history. It stays armed
+	 *  until a genuinely different commit arrives, which records and disarms it. */
+	private recordNavSelection(sha: string, repoPath: string, commitLite?: CommitDetails): void {
+		if (sha === this._navExpectedSha) return;
+
+		this._navExpectedSha = undefined;
+		// Capture the commit shell so back/forward can paint synchronously (no skeleton/IPC wait),
+		// matching a row click — and so it still works when the row has since been paged out.
+		this._nav.record({ sha: sha, repoPath: repoPath, commitLite: commitLite });
+	}
+
+	private handleNavBack = (): void => this.navigateTo(this._nav.back());
+	private handleNavForward = (): void => this.navigateTo(this._nav.forward());
+
+	/** Navigates the details panel to a recorded commit. The panel always updates (we set the
+	 *  selection slot directly); re-selecting the graph row is best-effort and may no-op for
+	 *  filtered/paged-out/synthetic rows — the guard then clears on the next real selection. */
+	private navigateTo(target: { sha: string; repoPath: string; commitLite?: CommitDetails } | undefined): void {
+		if (target == null) return;
+
+		this._navExpectedSha = target.sha;
+		if (this.effectiveDisplayMode !== 'graph') {
+			this._altModeSelectedCommit = { sha: target.sha, repoPath: target.repoPath, commitLite: target.commitLite };
+		} else {
+			// Carry the recorded commit shell so the details panel paints from cache — including when
+			// the row has been paged out of the graph — then re-select the row in the graph.
+			this._selectedCommit = { sha: target.sha, repoPath: target.repoPath, commitLite: target.commitLite };
+			this.graph?.ensureAndSelectCommit(target.sha);
 		}
 	}
 

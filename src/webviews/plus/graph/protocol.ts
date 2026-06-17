@@ -25,7 +25,7 @@ import type {
 } from '@gitkraken/gitkraken-components';
 import type { GitTrackingState } from '@gitlens/git/models/branch.js';
 import type { GitDiffFileStats } from '@gitlens/git/models/diff.js';
-import type { GitGraphRowType } from '@gitlens/git/models/graph.js';
+import type { GitGraphRowType, GraphReachabilityTable } from '@gitlens/git/models/graph.js';
 import type { GitGraphSearchResultData } from '@gitlens/git/models/graphSearch.js';
 import type { GitPausedOperationStatus } from '@gitlens/git/models/pausedOperationStatus.js';
 import type { PullRequestRefs, PullRequestShape } from '@gitlens/git/models/pullRequest.js';
@@ -42,7 +42,13 @@ import type { SearchQuery } from '@gitlens/git/models/search.js';
 import type { RepositoryVisibility } from '@gitlens/git/providers/types.js';
 import type { DateTimeFormat } from '@gitlens/utils/date.js';
 import type { AgentSessionState } from '../../../agents/models/agentSessionState.js';
-import type { Config, DateStyle, GraphBranchesVisibility, GraphMultiSelectionMode } from '../../../config.js';
+import type {
+	Config,
+	DateStyle,
+	GraphActivityDecay,
+	GraphBranchesVisibility,
+	GraphMultiSelectionMode,
+} from '../../../config.js';
 import type { StoredGraphWipDraft } from '../../../constants.storage.js';
 import type { FeaturePreview } from '../../../features.js';
 import type { RepositoryShape } from '../../../git/models/repositoryShape.js';
@@ -162,7 +168,13 @@ export type GraphSidebarPanel = 'agents' | 'branches' | 'overview' | 'remotes' |
 /** Top-level rendering mode for the Graph webview. New modes (e.g. kanban) plug in here. */
 export type GraphDisplayMode = 'graph' | 'visualizations' | 'kanban';
 
-export type GraphShowAction = 'show-wip' | 'enter-review' | 'enter-compose' | 'open-compare' | 'scope-to-branch';
+export type GraphShowAction =
+	| 'show-wip'
+	| 'enter-review'
+	| 'enter-compose'
+	| 'enter-resolve'
+	| 'open-compare'
+	| 'scope-to-branch';
 
 /** Optional target row for a `GraphShowAction`. When provided, the webview routes the action
  *  to this specific row (used by context-menu invocations on secondary WIP rows where the
@@ -177,6 +189,9 @@ export type GraphShowAction = 'show-wip' | 'enter-review' | 'enter-compose' | 'o
 export interface GraphActionTarget {
 	sha: string;
 	worktreePath: string;
+	/** For `enter-resolve`: scopes the run to specific conflicted files (per-file or multi-select
+	 *  entry points). Omitted means "resolve all conflicts". Ignored by other actions. */
+	filePaths?: string[];
 }
 /** Sub-visualization shown when `displayMode === 'visualizations'`.
  *  Adding a new visualization is a 4-step extension: extend this union, render its component in
@@ -224,6 +239,11 @@ export interface State extends WebviewState<'gitlens.graph' | 'gitlens.views.gra
 	windowFocused?: boolean;
 	webroot?: string;
 	repositories?: GraphRepository[];
+	/** Absolute fsPaths of every worktree in the current repo's family (the main checkout plus
+	 *  every secondary worktree), sourced from the loaded graph. A reusable registry for any
+	 *  webview consumer that needs to map an absolute path to its worktree root — e.g. the Agent
+	 *  Activity treemap resolves agent file activity to repo-relative keys against these. */
+	worktreePaths?: string[];
 	selectedRepository?: string;
 	selectedRepositoryVisibility?: RepositoryVisibility;
 	branchesVisibility?: GraphBranchesVisibility;
@@ -233,6 +253,9 @@ export interface State extends WebviewState<'gitlens.graph' | 'gitlens.views.gra
 	selectedRows?: GraphSelectedRows;
 	subscription?: Subscription;
 	allowed: boolean;
+	/** True when the workspace has both public and private repos, so a gated (private) repo can offer
+	 *  switching to a public one. Independent of `allowed` — the gate only surfaces it when shown. */
+	allowRepoSwitch?: boolean;
 	avatars?: GraphAvatars;
 	loading?: boolean;
 	refsMetadata?: GraphRefsMetadata | null;
@@ -243,6 +266,10 @@ export interface State extends WebviewState<'gitlens.graph' | 'gitlens.views.gra
 	 *  Used by the webview to decide whether entering Timeline mode needs to eagerly show its loading
 	 *  overlay (stale `rowsStats` from a prior stats-bearing build can otherwise mask a missing refetch). */
 	rowsStatsIncluded?: boolean;
+	/** Per-graph reachability encoding (shared ref dictionary + distinct membership bitmaps); rows
+	 *  carry an index into `sets` via `contexts.reachabilityIndex`. Replaces the per-row `reachability`
+	 *  object that dominated the graph payload. */
+	reachabilityTable?: GraphReachabilityTable;
 	downstreams?: GraphDownstreams;
 	paging?: GraphPaging;
 	columns?: GraphColumnsSettings;
@@ -355,6 +382,31 @@ export interface GraphWipNodeMetadata {
 	repoPath: string;
 	/** Host-only: the worktree HEAD sha this WIP row should be anchored at (used as `parents`). */
 	parentSha: string;
+	/** Host-only: the worktree HEAD commit date (epoch ms). Used by the WIP bar to order pills by
+	 *  recency (descending). Derived from `GitWorktree.date` — no extra git work. */
+	parentDate?: number;
+	/**
+	 * Host-only: cheap clean/dirty probe (`status.hasWorkingChanges()`) so the WIP bar can surface a
+	 * dirty worktree before its `workDirStats` are fetched. Set ONLY on the graph-load build and
+	 * preserved client-side via `mergeWipMetadata`; omitted on per-tick pushes to avoid re-statting
+	 * every worktree on each FS event — so the dirty bit is only as fresh as the last graph load.
+	 * Ignored once `workDirStats` is present (clean/dirty derives from it directly).
+	 */
+	hasChanges?: boolean;
+	/**
+	 * Host-only: count of commits ahead of the worktree branch's upstream (unpushed). Free — read from
+	 * `branch.upstream.state.ahead` (the for-each-ref the worktree enumeration already runs), so it's
+	 * sent on every build and not preserved by `mergeWipMetadata`. `undefined` for local-only branches
+	 * (no upstream) — those use `hasUnpushed` instead. Consumed by the WIP bar for the hover count only.
+	 */
+	ahead?: number;
+	/**
+	 * Host-only: whether this worktree has unpushed commits — drives the WIP bar's `↑` indicator.
+	 * For TRACKED branches it's `ahead > 0` (free, every build). For LOCAL-ONLY branches it's a cheap
+	 * `rev-list --not --remotes` probe set ONLY on the graph-load build (and only when the repo has
+	 * remotes) and preserved client-side via `mergeWipMetadata`, like `hasChanges`.
+	 */
+	hasUnpushed?: boolean;
 	/** Host-only: user-visible suffix for the row message (e.g. worktree name). */
 	label: string;
 	/**
@@ -369,8 +421,6 @@ export interface GraphWipNodeMetadata {
 	 * the same indicator the action bar does. Not consumed by the GK component.
 	 */
 	pausedOpStatus?: GitPausedOperationStatus;
-	/** Host-built serialized `GraphItemContext` for the row's `contexts.row` slot (right-click menu). */
-	context?: string;
 }
 
 export type GraphWipMetadataBySha = Record<string, GraphWipNodeMetadata>;
@@ -416,6 +466,12 @@ export interface GraphComponentConfig {
 	enabledRefMetadataTypes?: GraphRefMetadataType[];
 	experimentalKanbanEnabled?: boolean;
 	experimentalVisualizationsEnabled?: boolean;
+	/** Raw setting value for the Activity-mode treemap decay window — drives the picker selection. */
+	activityDecay?: GraphActivityDecay;
+	/** Resolved decay window (ms) for the Activity-mode treemap heatmap. Drives how long a file's
+	 *  read/edit heat fades after the last tool call. Resolved host-side from `activityDecay` so
+	 *  the renderer doesn't need its own string→ms helper. */
+	activityDecayMs?: number;
 	highlightRowsOnRefHover?: boolean;
 	idLength?: number;
 	minimap?: boolean;
@@ -426,6 +482,7 @@ export interface GraphComponentConfig {
 	onlyFollowFirstParent?: boolean;
 	scrollMarkerTypes?: GraphScrollMarkerTypes[];
 	scrollRowPadding?: number;
+	searchAutocompleteOnFocus?: boolean;
 	showGhostRefsOnRowHover?: boolean;
 	showRemoteNamesOnRefs?: boolean;
 	showWorktreeWipStats?: boolean;
@@ -498,18 +555,25 @@ export const OpenPullRequestDetailsCommand = new IpcCommand<OpenPullRequestDetai
 	'pullRequest/openDetails',
 );
 
-export type RowAction =
-	| 'open-changes'
-	| 'open-changes-with-working'
-	| 'stash-apply'
-	| 'stash-drop'
-	| 'stash-pop'
-	| 'stash-save';
+export type RowAction = RowActionParams['action'];
 
-export interface RowActionParams {
-	action: RowAction;
-	row: { id: string; type: GitGraphRowType };
+interface RowActionRowRef {
+	id: string;
+	type: GitGraphRowType;
 }
+
+/** Discriminated union — action-specific fields are only structurally present on their case so the
+ *  compiler catches accidental cross-action leakage (e.g. shipping `worktreePath` on a stash action). */
+export type RowActionParams =
+	| { action: 'open-changes' | 'open-changes-with-working'; row: RowActionRowRef }
+	| { action: 'push-to-commit'; row: RowActionRowRef }
+	| { action: 'stash-apply' | 'stash-drop' | 'stash-pop' | 'stash-save'; row: RowActionRowRef }
+	| {
+			action: 'undo-commit';
+			row: RowActionRowRef;
+			/** Worktree path the action targets. Omit for the active worktree. */
+			worktreePath?: string;
+	  };
 export const RowActionCommand = new IpcCommand<RowActionParams>(scope, 'row/action');
 
 export interface TreemapFileActionParams {
@@ -801,13 +865,9 @@ export interface DidRequestWipRefetchParams {
 	/** Repo path of the WIP that should be re-fetched. */
 	repoPath: string;
 	/** Pre-fetched WIP payload — same shape as `DidChangeWorkingTreeNotification`'s `wip`. The
-	 *  panel applies this directly so the round-trip `getWip` RPC is avoided. */
+	 *  panel applies this directly so the round-trip `getWip` RPC is avoided. The working-tree
+	 *  stats travel embedded as `wip.stats`, so no sibling `stats` field is needed. */
 	wip?: Wip;
-	/** Pre-computed working-tree stats for this repo. Carried alongside `wip` so the webview
-	 *  doesn't have to re-derive them — the host already paid for the `git status` that produced
-	 *  the WIP payload. Used by the webview to refresh `workingTreeStats` (when this repo is the
-	 *  selected one) and the secondary row's `workDirStats`. */
-	stats?: GraphWorkingTreeStats;
 }
 /** Host → panel: push fresh WIP after host-side mutating actions whose effects don't reach the
  *  panel via the active-repo working-tree watcher (e.g. context-menu conflict-resolution
@@ -1093,6 +1153,7 @@ export const TrackGraphOverviewShownCommand = new IpcCommand(scope, 'track/overv
 export const TrackGraphScopeChangedCommand = new IpcCommand(scope, 'track/scope/changed');
 export const TrackGraphDetailsReviewModeCommand = new IpcCommand(scope, 'track/details/reviewMode');
 export const TrackGraphDetailsComposeModeCommand = new IpcCommand(scope, 'track/details/composeMode');
+export const TrackGraphDetailsResolveModeCommand = new IpcCommand(scope, 'track/details/resolveMode');
 export const TrackGraphDetailsCompareModeCommand = new IpcCommand(scope, 'track/details/compareMode');
 export const TrackGraphDetailsWipShownCommand = new IpcCommand(scope, 'track/details/wipShown');
 
@@ -1164,6 +1225,8 @@ export interface DidChangeRowsParams {
 	rowsStats?: Record<string, GraphRowStats>;
 	rowsStatsLoading: boolean;
 	rowsStatsIncluded?: boolean;
+	/** Per-graph reachability encoding for the rows in this payload (see {@link State.reachabilityTable}). */
+	reachabilityTable?: GraphReachabilityTable;
 	search?: DidSearchParams;
 	selectedRows?: GraphSelectedRows;
 }
@@ -1216,13 +1279,12 @@ export interface DidRequestSearchParams {
 export const DidRequestSearchNotification = new IpcNotification<DidRequestSearchParams>(scope, 'search/didRequest');
 
 export interface DidChangeWorkingTreeParams {
-	stats: WorkDirStats;
 	wipMetadataBySha?: GraphWipMetadataBySha;
 	/**
-	 * Primary-repo WIP, captured from the same `git status` that produced `stats`. Lets the
-	 * details panel render fresh file lists without an extra `getWip` RPC. Omitted only when
-	 * the underlying status fetch fails — callers should fall back to their existing path
-	 * (resource fetch on selection) in that case.
+	 * Primary-repo WIP, captured from a single `git status`. Lets the details panel render fresh
+	 * file lists without an extra `getWip` RPC. The working-tree stats travel embedded as
+	 * `wip.stats`. Omitted only when the underlying status fetch fails — callers should fall back
+	 * to their existing path (resource fetch on selection) in that case.
 	 */
 	wip?: Wip;
 	/** Path of the repo whose working tree changed. Used by the webview's WIP cache to key the
@@ -1337,7 +1399,9 @@ export interface GraphBranchContextValue {
 export interface GraphCommitContextValue {
 	type: 'commit';
 	ref: GitRevisionReference;
-	/** Set when this context represents a worktree sidebar row — the worktree's filesystem path. */
+	/** The worktree's filesystem path. Set for a WIP row, and for a commit row that is the HEAD of a
+	 *  non-active worktree (the `+worktreeHEAD` Undo-Commit routing target). `ref.repoPath` stays the
+	 *  primary repo so other commands don't retarget; `_undoCommit` reads this to route to the worktree. */
 	worktreePath?: string;
 }
 

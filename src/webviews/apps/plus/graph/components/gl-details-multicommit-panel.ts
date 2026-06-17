@@ -212,6 +212,10 @@ export class GlDetailsMultiCommitPanel extends LitElement {
 
 	override render() {
 		const isInitialLoad = this.loading && !this.commitFrom && !this.commitTo;
+		// Once the commit poles paint from lite/cached shells, `isInitialLoad` is false even though
+		// the comparison diff is still in flight — show a spinner in the file tree rather than the
+		// "No Files" empty text. Mirrors gl-details-compare-mode-panel's files-section loading.
+		const filesLoadingEmpty = this._comparisonChanging && !this.files?.length;
 		// Use a single template so the header element persists across mode toggles,
 		// allowing the CSS transition on .mode-header to animate. `cache` keeps both
 		// body sub-trees alive across sub-panel toggles so the explain input and file
@@ -249,16 +253,31 @@ export class GlDetailsMultiCommitPanel extends LitElement {
 													.searchContext=${this.searchContext}
 													.showSearchBox=${this.showSearchBox}
 													.searchBoxFilter=${this.searchBoxFilter}
+													empty-text=${filesLoadingEmpty ? '' : 'No Files'}
 													.buttons=${this.getMultiDiffRefs()
 														? ['layout', 'search', 'multi-diff']
 														: undefined}
+													?multi-selectable=${true}
 													@file-compare-previous=${this.handleFileCompareBetween}
 													@file-open=${this.redispatch}
 													@file-compare-working=${this.redispatch}
 													@file-more-actions=${this.redispatch}
 													@change-files-layout=${this.redispatch}
 													@gl-file-tree-pane-open-multi-diff=${this.handleOpenMultiDiff}
-												></gl-file-tree-pane>
+													@gl-file-tree-pane-open-selected-changes=${this
+														.handleOpenSelectedChanges}
+												>
+													${filesLoadingEmpty
+														? html`<div
+																slot="before-tree"
+																class="compare-files--loading"
+																aria-busy="true"
+															>
+																<code-icon icon="loading" modifier="spin"></code-icon>
+																<span>Loading changes…</span>
+															</div>`
+														: nothing}
+												</gl-file-tree-pane>
 											</webview-pane-group>
 										</div>`,
 						)}
@@ -342,18 +361,40 @@ export class GlDetailsMultiCommitPanel extends LitElement {
 		);
 	};
 
+	private handleOpenSelectedChanges = (e: CustomEvent<{ files: readonly GitFileChangeShape[] }>): void => {
+		const refs = this.getMultiDiffRefs();
+		const selectedPaths = new Set(e.detail?.files?.map(f => f.path));
+		const files = (this.files ?? []).filter(f => selectedPaths.has(f.path));
+		if (!refs || !files.length) return;
+
+		this.dispatchEvent(
+			new CustomEvent('open-multiple-changes', {
+				detail: {
+					files: files,
+					repoPath: refs.repoPath,
+					lhs: refs.lhs,
+					rhs: refs.rhs,
+					title: refs.title,
+				} satisfies OpenMultipleChangesArgs,
+				bubbles: true,
+				composed: true,
+			}),
+		);
+	};
+
 	private redispatch = redispatch.bind(this);
 
 	private renderCompareHeader() {
-		// Review is the only mode here. Compare is invoked separately as a sheet — render a
-		// dedicated action chip in the actions slot when no mode is active so the user can pivot
-		// the existing comparison through the compare-refs picker.
+		// Review is the only mode here. Compare is invoked separately as a sheet — the header
+		// renders a grouped Compare entry-point chip (via `compareEnabled`) when no mode is
+		// active so the user can pivot the existing comparison through the compare-refs picker.
 		const modes = this.aiEnabled ? (['review'] as const) : ([] as const);
 		return html`<gl-details-header
 			.activeMode=${this.activeMode}
 			.modeStatus=${this.modeStatus}
 			.loading=${this.loading}
 			.modes=${modes}
+			.compareEnabled=${true}
 			?in-results-view=${this.inResultsView}
 		>
 			<span class="compare-header__title">
@@ -364,22 +405,6 @@ export class GlDetailsMultiCommitPanel extends LitElement {
 						</span>`
 					: html`Comparing References`}
 			</span>
-			${this.activeMode == null
-				? html`<gl-action-chip
-						slot="actions"
-						icon="compare-changes"
-						label="Compare"
-						overlay="tooltip"
-						@click=${() =>
-							this.dispatchEvent(
-								new CustomEvent('toggle-mode', {
-									detail: { mode: 'compare' },
-									bubbles: true,
-									composed: true,
-								}),
-							)}
-					></gl-action-chip>`
-				: nothing}
 		</gl-details-header>`;
 	}
 

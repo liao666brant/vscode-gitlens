@@ -85,6 +85,27 @@ export interface GitServiceConfig {
 		/** Maximum search items (0 = unlimited). */
 		readonly maxSearchItems?: number;
 	};
+
+	/** Force-push preferences. */
+	readonly push?: {
+		/** Whether to use `--force-with-lease` instead of a plain `--force` when force-pushing. Defaults to `true`. */
+		readonly useForceWithLease?: boolean;
+		/**
+		 * Whether to add `--force-if-includes` when force-pushing. Only applies when `useForceWithLease` is `true`
+		 * and the installed Git supports it. Defaults to `true`.
+		 */
+		readonly useForceIfIncludes?: boolean;
+	};
+
+	/** Commit-signing preferences. */
+	readonly signing?: {
+		/**
+		 * Host-level override for whether commit signing is enabled (e.g. VS Code's `git.enableCommitSigning`).
+		 * When `true`, signing is treated as enabled even if the repo's `commit.gpgsign` is unset/false. It never
+		 * forces signing off.
+		 */
+		readonly enabled?: boolean;
+	};
 }
 
 /** Git command types that can produce conflicts. */

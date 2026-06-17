@@ -72,6 +72,7 @@ export const detailsCommitPanelStyles = css`
 	:host([variant='embedded']) {
 		--gl-tree-view-margin-top: -0.2rem;
 		--gl-tree-view-filterable-margin-top: -0.4rem;
+		--action-item-foreground: var(--vscode-sideBarSectionHeader-foreground);
 	}
 
 	/* ── Zone 1: Author header (standalone fallback when panelActions=false) ── */
@@ -240,6 +241,9 @@ export const detailsCommitPanelStyles = css`
 		font-size: var(--gl-font-base);
 		color: var(--vscode-gitlens-graphScrollMarkerLocalBranchesColor, #4ec9b0);
 		text-transform: lowercase;
+	}
+	:host([variant='embedded']) .metadata-bar__branch--tag {
+		color: color-mix(in srgb, var(--vscode-editorWarning-foreground, #cca700) 70%, var(--color-foreground) 30%);
 	}
 
 	:host([variant='embedded']) .metadata-bar__branch-unreachable {

@@ -1,5 +1,4 @@
 import type { GitBranchReference, GitReference } from '@gitlens/git/models/reference.js';
-import { getRemoteNameFromBranchName } from '@gitlens/git/utils/branch.utils.js';
 import { getReferenceLabel, isBranchReference } from '@gitlens/git/utils/reference.utils.js';
 import { isStringArray } from '@gitlens/utils/array.js';
 import { fromNow } from '@gitlens/utils/date.js';
@@ -24,7 +23,11 @@ import { StepResultBreak } from '../quick-wizard/models/steps.js';
 import type { QuickPickStep } from '../quick-wizard/models/steps.quickpick.js';
 import { FetchQuickInputButton } from '../quick-wizard/quickButtons.js';
 import { QuickCommand } from '../quick-wizard/quickCommand.js';
-import { pickRepositoriesStep, pickRepositoryStep } from '../quick-wizard/steps/repositories.js';
+import {
+	canSkipRepositoriesPick,
+	pickRepositoriesStep,
+	pickRepositoryStep,
+} from '../quick-wizard/steps/repositories.js';
 import { StepsController } from '../quick-wizard/stepsController.js';
 import { appendReposToTitle, assertStepState, canPickStepContinue } from '../quick-wizard/utils/steps.utils.js';
 
@@ -108,8 +111,8 @@ export class PushGitCommand extends QuickCommand<State> {
 			context.title = this.title;
 
 			if (steps.isAtStep(Steps.PickRepos) || !state.repos?.length || isStringArray(state.repos)) {
-				// Only show the picker if there are multiple repositories
-				if (context.repos.length === 1) {
+				// Skip the picker only when the sole available repo is the one requested
+				if (canSkipRepositoriesPick(context.repos, state.repos)) {
 					state.repos = context.repos;
 				} else if (state.reference != null) {
 					// If a reference is specified, only allow picking the repository that contains it
@@ -357,12 +360,10 @@ export class PushGitCommand extends QuickCommand<State> {
 							[],
 							createDirectiveQuickPickItem(Directive.Cancel, true, {
 								label: '确定',
-								detail: `没有领先于 ${getRemoteNameFromBranchName(status.upstream?.name)} 的提交`,
+								detail: `没有领先于 ${status.upstream?.name} 的提交`,
 							}),
 							{
-								placeholder: `无可推送内容；没有领先于 ${getRemoteNameFromBranchName(
-									status.upstream?.name,
-								)} 的提交`,
+								placeholder: `无可推送内容；没有领先于 ${status.upstream?.name} 的提交`,
 							},
 						);
 					}
@@ -374,20 +375,19 @@ export class PushGitCommand extends QuickCommand<State> {
 						lastFetchedOn = `${pad(GlyphChars.Dot, 2, 2)}上次抓取于 ${fromNow(new Date(lastFetched))}`;
 					}
 
-					const upstreamRemoteName = status?.upstream
-						? getRemoteNameFromBranchName(status.upstream?.name)
-						: undefined;
 					let pushDetails;
 					if (state.reference != null) {
-						pushDetails = `截至并包括 ${getReferenceLabel(state.reference, {
-							label: false,
-						})} 的提交${upstreamRemoteName ? ` 到 ${upstreamRemoteName}` : ''}`;
-					} else {
 						pushDetails = `${
 							status?.upstream?.state.ahead
-								? formatCommitCount(status.upstream.state.ahead)
-								: '当前分支的提交'
-						}${upstreamRemoteName ? ` 到 ${upstreamRemoteName}` : ''}`;
+								? ` 提交截至并包括 ${getReferenceLabel(state.reference, {
+										label: false,
+									})}`
+								: ''
+						}${status?.upstream ? ` 到 ${status.upstream.name}` : ''}`;
+					} else {
+						pushDetails = `${
+							status?.upstream?.state.ahead ? ` ${formatCommitCount(status.upstream.state.ahead)}` : ''
+						}${status?.upstream ? ` 到 ${status.upstream.name}` : ''}`;
 					}
 
 					step = this.createConfirmStep(
@@ -406,7 +406,7 @@ export class PushGitCommand extends QuickCommand<State> {
 								description: forcePushDescription,
 								detail: `将强制推送 ${pushDetails}${
 									status?.upstream?.state.behind
-										? `，覆盖 ${status?.upstream ? `${getRemoteNameFromBranchName(status.upstream?.name)} 上的 ` : ''}${formatCommitCount(
+										? `，覆盖 ${status?.upstream ? `${status.upstream.name} 上的 ` : ''}${formatCommitCount(
 												status.upstream.state.behind,
 											)}`
 										: ''
@@ -417,7 +417,7 @@ export class PushGitCommand extends QuickCommand<State> {
 							? createDirectiveQuickPickItem(Directive.Cancel, true, {
 									label: `取消${this.title}`,
 									detail: `无法推送；${getReferenceLabel(branch)} 落后于${
-										status?.upstream ? ` ${getRemoteNameFromBranchName(status.upstream?.name)}` : ''
+										status?.upstream ? ` ${status.upstream.name}` : ''
 									} ${formatCommitCount(status.upstream.state.behind)}`,
 								})
 							: undefined,

@@ -109,6 +109,7 @@ export type DateStyle = 'absolute' | 'relative';
 export type FileAnnotationType = 'blame' | 'changes' | 'heatmap';
 export type GitCommandSorting = 'name' | 'usage';
 export type GraphBranchesVisibility = 'all' | 'smart' | 'current' | 'favorited' | 'agents';
+export type GraphActivityDecay = '30s' | '1m' | '2m' | '5m' | '10m' | '30m';
 export type GraphMultiSelectionMode = boolean | 'topological';
 export type GraphScrollMarkersAdditionalTypes =
 	| 'localBranches'
@@ -207,6 +208,9 @@ export interface AdvancedConfig {
 		readonly closeOnFocusOut: boolean;
 	};
 	readonly resolveSymlinks: boolean;
+	readonly repositorySearch: {
+		readonly enabled: boolean;
+	};
 	readonly repositorySearchDepth: number | null;
 	readonly similarityThreshold: number | null;
 	readonly skipOnboarding: boolean;
@@ -434,6 +438,7 @@ export interface GraphConfig {
 		};
 		readonly visualizations: {
 			readonly enabled: boolean;
+			readonly activityDecay: GraphActivityDecay;
 		};
 	};
 	readonly highlightRowsOnRefHover: boolean;
@@ -459,6 +464,7 @@ export interface GraphConfig {
 		readonly additionalTypes: GraphScrollMarkersAdditionalTypes[];
 	};
 	readonly scrollRowPadding: number;
+	readonly searchAutocompleteOnFocus: boolean;
 	readonly searchItemLimit: number;
 	readonly showGhostRefsOnRowHover: boolean;
 	readonly showRemoteNames: boolean;
@@ -1122,6 +1128,9 @@ export type CoreConfig = {
 		readonly proxy: string;
 		readonly proxySupport: 'fallback' | 'off' | 'on' | 'override';
 		readonly proxyStrictSSL: boolean;
+	};
+	readonly scm: {
+		readonly defaultViewSortKey: 'name' | 'path' | 'status';
 	};
 	readonly search: {
 		readonly exclude: Record<string, boolean>;

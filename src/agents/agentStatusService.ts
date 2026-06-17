@@ -109,6 +109,9 @@ export class AgentStatusService implements Disposable {
 		);
 
 		this.startProviders();
+		// Resolve hooks-installed state once (async, off the providers' poll interval) and push it
+		// down so providers can gate their reconciliation poll from the start.
+		void this.pushHooksInstalledToProviders();
 	}
 
 	dispose(): void {
@@ -125,15 +128,40 @@ export class AgentStatusService implements Disposable {
 	}
 
 	private async invalidateHooksState(): Promise<void> {
+		// Drop the stale agent cache, re-read, and push the fresh state to providers (the re-read
+		// also warms the cache so the next webview read returns the new state without a delay).
+		await this.pushHooksInstalledToProviders({ invalidate: true });
+		this._onDidChangeHooksInstallState.fire();
+	}
+
+	/** Resolves the host's Claude hooks-installed state and pushes it to all providers so they can
+	 *  gate their reconciliation poll (the CLI `list-sessions` call). Resolves to `false` when the
+	 *  agent can't be detected (e.g. the browser stub's `getClaudeAgent()` returns `undefined`); fails
+	 *  *open* (`installed = true`) only if env resolution throws unexpectedly, so a transient failure
+	 *  never wrongly suppresses polling. The browser has no providers to receive the push regardless.
+	 *  Pass `invalidate` after an install/uninstall so the stale agent cache is dropped before re-reading.
+	 *
+	 *  Note: an external `gk ai hook install` (run outside GitLens) isn't observed here until
+	 *  something else re-reads — acceptable per the staleness window documented in
+	 *  `src/env/node/gk/cli/agents.ts`, and the poll gate opens anyway the moment any session
+	 *  appears (a non-empty session list always polls). */
+	private async pushHooksInstalledToProviders(options?: { invalidate?: boolean }): Promise<void> {
+		let installed = true;
 		try {
 			const env = await import('@env/providers.js');
-			env.invalidateAgentsCache();
-			// Warm the cache so the next read returns the new state without a delay.
-			await env.getClaudeAgent();
+			if (options?.invalidate) {
+				env.invalidateAgentsCache();
+			}
+			const claude = await env.getClaudeAgent();
+			installed = claude?.hooksInstalled ?? false;
 		} catch {
-			// Browser build: silently skip — webviews will refresh on the next state pull.
+			// Unexpected env-resolution/detection failure — leave fail-open (assume installed) so a
+			// transient error doesn't wrongly suppress polling. (The browser stub doesn't throw; it
+			// returns undefined above, yielding installed=false, and has no providers anyway.)
 		}
-		this._onDidChangeHooksInstallState.fire();
+		for (const provider of this._providers) {
+			provider.setClaudeHooksInstalled?.(installed);
+		}
 	}
 
 	get sessions(): readonly AgentSession[] {
@@ -332,7 +360,9 @@ export class AgentStatusService implements Disposable {
 		return [
 			registerCommand('gitlens.agents.installClaudeHook', async () => {
 				try {
-					const { installClaudeHook } = await import('@env/agents/installClaudeHook.js');
+					const { installClaudeHook } = await import(
+						/* webpackChunkName: "agents" */ '@env/agents/installClaudeHook.js'
+					);
 					await installClaudeHook();
 					await this.invalidateHooksState();
 					this.container.telemetry.sendEvent('agents/hookInstalled', { 'agent.provider': 'claudeCode' });
@@ -345,7 +375,9 @@ export class AgentStatusService implements Disposable {
 			}),
 			registerCommand('gitlens.agents.uninstallClaudeHook', async () => {
 				try {
-					const { uninstallClaudeHook } = await import('@env/agents/uninstallClaudeHook.js');
+					const { uninstallClaudeHook } = await import(
+						/* webpackChunkName: "agents" */ '@env/agents/uninstallClaudeHook.js'
+					);
 					await uninstallClaudeHook();
 					await this.invalidateHooksState();
 					this.container.telemetry.sendEvent('agents/hookUninstalled', { 'agent.provider': 'claudeCode' });
@@ -358,7 +390,9 @@ export class AgentStatusService implements Disposable {
 			}),
 			registerCommand('gitlens.agents.openSession', (sessionId?: string) => this.openSession(sessionId)),
 			registerCommand('gitlens.agents.switchDefaultAgent', async () => {
-				const { pickAndSetDefaultAgent } = await import('../plus/agents/agentPicker.js');
+				const { pickAndSetDefaultAgent } = await import(
+					/* webpackChunkName: "agents" */ '../plus/agents/agentPicker.js'
+				);
 				await pickAndSetDefaultAgent();
 			}),
 			registerCommand('gitlens.agents.openPlanFile', async (planFilePath?: string) => {
@@ -473,7 +507,9 @@ export class AgentStatusService implements Disposable {
 		// its array between the user's pick and this dispatch.
 		const provider = this._providers.find(p => p.sessions.some(s => s.id === session.id));
 
-		const { classifyClaudeSessionHost } = await import('@env/agents/claudeSessionFile.js');
+		const { classifyClaudeSessionHost } = await import(
+			/* webpackChunkName: "agents" */ '@env/agents/claudeSessionFile.js'
+		);
 		const host = session.pid != null ? await classifyClaudeSessionHost(session.pid) : undefined;
 
 		// For extension-hosted sessions, determine whether this VS Code window owns the live
@@ -620,12 +656,14 @@ export class AgentStatusService implements Disposable {
 	 *  is a *different* extension host (another window's), so this resolves to `false` — that's the
 	 *  dispatcher's signal to route through the peer-notify path instead of opening locally. */
 	private async isExtensionSessionLocallyHosted(pid: number): Promise<boolean> {
-		const { isDescendantOfThisExtensionHost } = await import('@env/focusWindow.js');
+		const { isDescendantOfThisExtensionHost } = await import(
+			/* webpackChunkName: "agents" */ '@env/focusWindow.js'
+		);
 		return isDescendantOfThisExtensionHost(pid);
 	}
 
 	private async tryFocusProcessWindow(pid: number): Promise<boolean> {
-		const { focusProcessWindow } = await import('@env/focusWindow.js');
+		const { focusProcessWindow } = await import(/* webpackChunkName: "agents" */ '@env/focusWindow.js');
 		return focusProcessWindow(pid);
 	}
 

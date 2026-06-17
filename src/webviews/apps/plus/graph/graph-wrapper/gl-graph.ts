@@ -51,6 +51,9 @@ export class GlGraph extends LitElement {
 	@property({ type: String })
 	activeRow?: GraphWrapperProps['activeRow'];
 
+	@property({ type: String })
+	repoPath?: GraphWrapperProps['repoPath'];
+
 	@property({ type: Object })
 	avatars?: GraphWrapperProps['avatars'];
 
@@ -113,6 +116,9 @@ export class GlGraph extends LitElement {
 
 	@property({ type: Object })
 	agentStatusByRowSha?: GraphWrapperProps['agentStatusByRowSha'];
+
+	@property({ type: Object })
+	unpublishedShas?: GraphWrapperProps['unpublishedShas'];
 
 	@property({ type: Object })
 	wipMetadataBySha?: GraphWrapperProps['wipMetadataBySha'];
@@ -204,6 +210,7 @@ export class GlGraph extends LitElement {
 				searchMode: this.searchMode ?? 'normal',
 				searchResults: this.searchResults,
 				selectedRows: this.selectedRows,
+				repoPath: this.repoPath,
 				theming: this.theming,
 				windowFocused: this.windowFocused,
 				workingTreeStats: this.workingTreeStats,
@@ -213,6 +220,7 @@ export class GlGraph extends LitElement {
 				scope: this.scope,
 				runningOperationByRowSha: this.runningOperationByRowSha,
 				agentStatusByRowSha: this.agentStatusByRowSha,
+				unpublishedShas: this.unpublishedShas,
 
 				onChangeColumns: this.handleChangeColumns,
 				onScopeAnchorsUnreachable: this.handleScopeAnchorsUnreachable,
@@ -289,15 +297,22 @@ export class GlGraph extends LitElement {
 		this.dispatchEvent(new CustomEvent('refdoubleclick', { detail: detail }));
 	};
 
-	private handleRowAction = (detail: { action: RowAction; row: GraphRow }): void => {
+	private handleRowAction = (detail: { action: RowAction; row: GraphRow; worktreePath?: string }): void => {
 		this.dispatchEvent(new CustomEvent('rowaction', { detail: detail }));
 	};
 
-	private handleWipRowOpen = (detail: { target: 'compose' | 'review' | 'agents'; row: GraphRow }): void => {
+	private handleWipRowOpen = (detail: {
+		target: 'compose' | 'review' | 'resolve' | 'agents';
+		row: GraphRow;
+	}): void => {
 		this.dispatchEvent(new CustomEvent('wiprowopen', { detail: detail }));
 	};
 
-	private handleRowContextMenu = (detail: { graphZoneType: GraphZoneType; graphRow: GraphRow }): void => {
+	private handleRowContextMenu = (detail: {
+		graphZoneType: GraphZoneType;
+		graphRow: GraphRow;
+		isAvatar: boolean;
+	}): void => {
 		this.dispatchEvent(new CustomEvent('rowcontextmenu', { detail: detail }));
 	};
 
@@ -388,8 +403,8 @@ declare global {
 		missingrefsmetadata: CustomEvent<GraphMissingRefsMetadata>;
 		morerows: CustomEvent<string | undefined>;
 		refdoubleclick: CustomEvent<{ ref: GraphRef; metadata?: GraphRefMetadataItem }>;
-		rowaction: CustomEvent<{ action: RowAction; row: GraphRow }>;
-		rowcontextmenu: CustomEvent<{ graphZoneType: GraphZoneType; graphRow: GraphRow }>;
+		rowaction: CustomEvent<{ action: RowAction; row: GraphRow; worktreePath?: string }>;
+		rowcontextmenu: CustomEvent<{ graphZoneType: GraphZoneType; graphRow: GraphRow; isAvatar: boolean }>;
 		rowdoubleclick: CustomEvent<{ row: GraphRow; preserveFocus?: boolean }>;
 		rowhover: CustomEvent<{
 			graphZoneType: GraphZoneType;

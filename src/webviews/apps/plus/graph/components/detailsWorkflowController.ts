@@ -1,16 +1,25 @@
 import type { ReactiveController, ReactiveControllerHost } from 'lit';
 import type { AIReviewDetailResult } from '@gitlens/ai/models/results.js';
+import { uncommitted } from '@gitlens/git/models/revision.js';
 import type { GitCommitReachability } from '@gitlens/git/providers/commits.js';
 import { areEqual } from '@gitlens/utils/array.js';
 import { getScopedCounter } from '@gitlens/utils/counter.js';
 import type { CommitDetails } from '../../../../commitDetails/protocol.js';
-import type { ComposeResult, ReviewResult, ScopeSelection } from '../../../../plus/graph/graphService.js';
+import type {
+	ComposeResult,
+	ResolvedFileSummary,
+	ResolveResult,
+	ReviewResult,
+	ScopeSelection,
+} from '../../../../plus/graph/graphService.js';
 import { subscribeAll } from '../../../shared/events/subscriptions.js';
 import type { GraphCrossPaneState } from '../graphCrossPaneState.js';
+import { abortRunningOperations } from '../graphCrossPaneState.js';
 import type { AnchorKey, AnchorSelection } from './anchorKey.js';
 import { anchorKey } from './anchorKey.js';
 import type { DetailsActions } from './detailsActions.js';
 import type {
+	GenerateMessageResult,
 	RunningOperation,
 	RunningOperationAnchor,
 	RunningOperationBucket,
@@ -21,7 +30,7 @@ import type { ScopeItem } from './gl-commits-scope-pane.js';
 /** Modes are panel lenses on the current selection — compose/review only. Compare is no
  *  longer a mode; it has its own lifecycle via {@link DetailsWorkflowController.openCompare}
  *  / {@link DetailsWorkflowController.closeCompare} and lives in a sheet over the panel. */
-export type DetailsMode = 'review' | 'compose';
+export type DetailsMode = 'review' | 'compose' | 'resolve';
 
 /** The shape of "who/what is currently selected" that every workflow transition needs. */
 export interface DetailsSelection {
@@ -74,6 +83,11 @@ export interface DetailsWorkflowHost extends ReactiveControllerHost {
 	 *  The controller writes the running-modes registry through this so other panes (graph
 	 *  row component, etc.) can decorate rows accordingly. */
 	readonly crossPaneState: GraphCrossPaneState;
+	/** Lands a settled generate-message result: the host routes `message` to the live WIP commit
+	 *  input when that worktree is still the selected WIP (no mode active), otherwise into the
+	 *  worktree's persisted draft slot. Called by the controller from `onRunSettled` (and on
+	 *  re-engage after a disconnected settle) — never while the panel is disconnected. */
+	applyGeneratedCommitMessage(repoPath: string, message: string): void;
 }
 
 /**
@@ -128,6 +142,7 @@ export class DetailsWorkflowController implements ReactiveController {
 	 */
 	private _reviewFetchedForSelection: AnchorKey | undefined;
 	private _composeFetchedForSelection: AnchorKey | undefined;
+	private _resolveFetchedForSelection: AnchorKey | undefined;
 	// endregion
 
 	constructor(
@@ -154,8 +169,9 @@ export class DetailsWorkflowController implements ReactiveController {
 		// Registry survives panel disconnect (owned by gl-graph-app); only repo-selector
 		// switch clears it. Resource cancellation is handled by the panel's own dispose.
 		// Flag for `onRunSettled` and async subscription callbacks so they stop writing to
-		// the disposed `actions` / its resources after we're gone (the runs themselves keep
-		// going via the host-owned registry, so the settled callbacks WILL still fire).
+		// the disposed `actions` / its resources after we're gone (runs keep going via the
+		// host-owned registry, so the settled callbacks WILL still fire). Cancelling in-flight AI
+		// runs on teardown is owned by `gl-graph-app` (the registry owner), not the panel.
 		this._disconnected = true;
 		this.tearDownSubscription();
 	}
@@ -183,7 +199,7 @@ export class DetailsWorkflowController implements ReactiveController {
 				// selection's data); refetching here would land old-repo data into the just-reset
 				// new-repo signals when the in-flight RPC resolves.
 				const activeMode = this.actions.state.activeMode.get();
-				if (activeMode === 'review' || activeMode === 'compose') {
+				if (activeMode === 'review' || activeMode === 'compose' || activeMode === 'resolve') {
 					this.hideMode(this.host.currentSelection(), { skipRefetch: true });
 				}
 				if (this.actions.state.compareSheetOpen.get() || this.actions.state.compareAsPanel.get()) {
@@ -259,8 +275,9 @@ export class DetailsWorkflowController implements ReactiveController {
 		const isWip = this.actions.isWip(sha);
 		const isMultiCommit = this.actions.isMultiCommit(shas);
 
-		// Activation guards — only apply when entering a mode.
-		if (mode === 'compose' && !isWip) return;
+		// Activation guards — only apply when entering a mode. Compose and resolve are WIP-only
+		// (resolve operates on the conflicted files of a paused merge/rebase, which live on the WIP).
+		if ((mode === 'compose' || mode === 'resolve') && !isWip) return;
 
 		// Switching to a different mode while one is already active. Both kinds may coexist
 		// per anchor — the other kind's run keeps going and its chip overlay stays.
@@ -268,13 +285,16 @@ export class DetailsWorkflowController implements ReactiveController {
 			this.hideMode(selection);
 		}
 
-		// Initialize mode-specific state.
-		const scope = this.buildDefaultScope(sha, isWip, isMultiCommit);
-		if (scope) {
-			state.scope.set(scope);
-			resources.scopeFiles.cancel();
-			if (repoPath) {
-				void resources.scopeFiles.fetch(repoPath, scope);
+		// Initialize mode-specific state. Resolve has no commit/diff scope — it operates on the
+		// paused op's conflicted-file set read directly from `state.wip` — so skip scope building.
+		if (mode !== 'resolve') {
+			const scope = this.buildDefaultScope(sha, isWip, isMultiCommit);
+			if (scope) {
+				state.scope.set(scope);
+				resources.scopeFiles.cancel();
+				if (repoPath) {
+					void resources.scopeFiles.fetch(repoPath, scope);
+				}
 			}
 		}
 		const newKey = this.selectionKey(sha, shas, repoPath);
@@ -292,7 +312,7 @@ export class DetailsWorkflowController implements ReactiveController {
 			} else {
 				resources.review.cancel();
 			}
-		} else {
+		} else if (mode === 'compose') {
 			const composeHasValue = resources.compose.value.get() != null;
 			if (composeHasValue && this._composeFetchedForSelection !== newKey) {
 				resources.compose.reset();
@@ -301,6 +321,15 @@ export class DetailsWorkflowController implements ReactiveController {
 				this._composeFetchedForSelection = undefined;
 			} else {
 				resources.compose.cancel();
+			}
+		} else {
+			const resolveHasValue = resources.resolve.value.get() != null;
+			if (resolveHasValue && this._resolveFetchedForSelection !== newKey) {
+				resources.resolve.reset();
+				this.resolve.invalidateErrorRecovery();
+				this._resolveFetchedForSelection = undefined;
+			} else {
+				resources.resolve.cancel();
 			}
 		}
 		state.aiExcludedFiles.set(undefined);
@@ -617,6 +646,11 @@ export class DetailsWorkflowController implements ReactiveController {
 			this.review.invalidateErrorRecovery();
 		} else if (exitingMode === 'compose') {
 			this.compose.invalidateErrorRecovery();
+		} else if (exitingMode === 'resolve') {
+			// The focused-file scope is an input of the engagement that set it (per-file/multi-select
+			// entry points) — clear it on exit so a later chip-initiated session defaults back to all
+			// conflicted files instead of silently re-scoping to the previous session's file(s).
+			this.actions.state.resolveFocusedFilePaths.set(undefined);
 		}
 		// On repo-switch, the caller (Trigger 1 in hostUpdate) will follow up with the new
 		// repo's selection arriving. Refetching here uses `host.currentSelection()` which is
@@ -628,18 +662,34 @@ export class DetailsWorkflowController implements ReactiveController {
 		}
 	}
 
+	/** The workflow object for a mode — exposes the common `invalidateSnapshot`/`invalidateErrorRecovery`
+	 *  surface so generic hide/destroy/anchor-switch paths can call it without a per-site ternary. */
+	private workflowFor(kind: DetailsMode): { invalidateSnapshot: () => void; invalidateErrorRecovery: () => void } {
+		return kind === 'review' ? this.review : kind === 'compose' ? this.compose : this.resolve;
+	}
+
+	/** The resource for a mode — narrowed to the common `reset`/`cancel` surface (kind-specific
+	 *  `mutate`/`value` are accessed via explicit per-kind branches where their types matter). */
+	private resourceFor(kind: DetailsMode): { reset: () => void; cancel: () => void } {
+		return kind === 'review'
+			? this.actions.resources.review
+			: kind === 'compose'
+				? this.actions.resources.compose
+				: this.actions.resources.resolve;
+	}
+
 	/** Destroy the engaged anchor's `(kind)` operation — aborts the controller, removes the
 	 *  registry entry, clears the back-snapshot, resets the resource, untoggles the mode. This
 	 *  is the back-then-close gate's destroy step; reachable from the X close and from the
 	 *  active-toggle click when the engaged entry's `execState === 'backed'`. */
-	private destroyEngagedOperation(kind: 'review' | 'compose'): void {
+	private destroyEngagedOperation(kind: DetailsMode): void {
 		const anchor = this.currentAnchor();
 		const key = anchorKey(anchor);
 		const entry = this.host.crossPaneState.runningOperations.get().get(key)?.[kind];
 		entry?.abortController?.abort();
 		this.removeRunningOperation(key, kind);
-		(kind === 'review' ? this.review : this.compose).invalidateSnapshot();
-		(kind === 'review' ? this.actions.resources.review : this.actions.resources.compose).reset();
+		this.workflowFor(kind).invalidateSnapshot();
+		this.resourceFor(kind).reset();
 		// Forget on the engaged anchor (what's being destroyed), not the host's current selection —
 		// they can diverge (e.g. destroy via the active-toggle chip while the host's selection
 		// already moved to a different row).
@@ -1034,6 +1084,145 @@ export class DetailsWorkflowController implements ReactiveController {
 		);
 	}
 
+	// endregion
+
+	// region Resolve workflow
+
+	/** AI conflict-resolution workflow controls. Resolve is WIP-anchored like compose but simpler:
+	 *  no scope picker, no Back/Resume snapshot (apply is terminal). Arrow-function object so `this`
+	 *  bindings are stable. */
+	readonly resolve = {
+		// Resolve has no Back/Resume snapshot — nothing to clear. Present so the generic
+		// hide/destroy/anchor-switch paths can call it uniformly across all modes.
+		invalidateSnapshot: (): void => {
+			/* no-op */
+		},
+		invalidateErrorRecovery: (): void => {
+			this.actions.state.resolvePreErrorValue.set(undefined);
+		},
+		// "Go Back" from the error pane — resolve has no prior-result Resume, so land on clean idle
+		// (the conflicted-file list). Drop the error entry so the panel maps to idle.
+		backFromError: (): void => {
+			const anchor = this.currentAnchor();
+			this.removeRunningOperation(anchorKey(anchor), 'resolve');
+			this.actions.resources.resolve.reset();
+			this.actions.state.resolvePreErrorValue.set(undefined);
+		},
+		// Retry after error — re-run with the same scope (single file or all) and the run's prompt.
+		retryFromError: (): void => {
+			const entry = this.host.crossPaneState.runningOperations
+				.get()
+				.get(anchorKey(this.currentAnchor()))?.resolve;
+			this.runResolve(
+				this.actions.state.activeModeRepoPath.get(),
+				this.actions.state.resolveFocusedFilePaths.get(),
+				entry?.prompt,
+			);
+		},
+		// Apply the (optionally filtered) resolutions to the working tree. Terminal: on success the
+		// registry entry is removed and the mode forgotten (no Back/Resume for an applied set). On
+		// failure the entry is synced to the error state so the panel surfaces it.
+		applyResolutions: async (includedFilePaths?: readonly string[]): Promise<void> => {
+			const repoPath = this.actions.state.activeModeRepoPath.get();
+			const engagedAnchor = this.currentAnchor();
+			await this.actions.applyResolutions(repoPath, includedFilePaths);
+			if (this._disconnected) return;
+
+			const resourceValue = this.actions.resources.resolve.value.get();
+			if (resourceValue != null && 'error' in resourceValue) {
+				const entry = this.host.crossPaneState.runningOperations.get().get(anchorKey(engagedAnchor))?.resolve;
+				if (entry == null) return;
+
+				this.registerRunningOperation({ ...entry, execState: 'error', result: resourceValue });
+				return;
+			}
+
+			this.removeRunningOperation(anchorKey(engagedAnchor), 'resolve');
+			this.forgetMode(engagedAnchor);
+		},
+		// Discard the pending resolutions without applying — drop the host session, clear the entry,
+		// forget the mode, and hide the panel back to the plain WIP view.
+		discard: (): void => {
+			const repoPath = this.actions.state.activeModeRepoPath.get();
+			const anchor = this.currentAnchor();
+			void this.actions.discardResolutions(repoPath);
+			this.removeRunningOperation(anchorKey(anchor), 'resolve');
+			this.actions.resources.resolve.reset();
+			this.forgetMode(anchor);
+			this.hideMode(this.host.currentSelection());
+		},
+		// Per-file feedback retry — re-resolve just `filePath` with `feedback`, replacing its resolution
+		// in place (other files untouched). `resolveRetryingFiles` drives the row's busy spinner.
+		retryFile: async (filePath: string, feedback: string): Promise<void> => {
+			const repoPath = this.actions.state.activeModeRepoPath.get();
+			if (!repoPath) return;
+
+			const busy = this.actions.state.resolveRetryingFiles;
+			busy.set(new Set(busy.get()).add(filePath));
+			const controller = new AbortController();
+			try {
+				const result = await this.actions.reresolveFile(repoPath, filePath, feedback, controller.signal);
+				// Host may have torn down while the RPC was in flight — writing to the disposed resource
+				// or host-owned registry after that is UB (same guard as `onRunSettled`).
+				if (this._disconnected) return;
+
+				if ('result' in result) {
+					this.mergeResolvedFile(result.result);
+				}
+			} finally {
+				const next = new Set(this.actions.state.resolveRetryingFiles.get());
+				next.delete(filePath);
+				this.actions.state.resolveRetryingFiles.set(next);
+			}
+		},
+	};
+
+	/** Replaces one file's resolution in the engaged resolve result (resource + registry entry) in
+	 *  place after a per-file feedback retry — others untouched. Mirrors `review.enrichFocusAreaFindings`. */
+	private mergeResolvedFile(summary: ResolvedFileSummary): void {
+		const anchor = this.currentAnchor();
+		const key = anchorKey(anchor);
+		const entry = this.host.crossPaneState.runningOperations.get().get(key)?.resolve;
+		const current = entry?.result ?? this.actions.resources.resolve.value.get();
+		if (current == null || !('result' in current)) return;
+
+		const merged: ResolveResult = {
+			result: {
+				...current.result,
+				resolutions: current.result.resolutions.map(r => (r.filePath === summary.filePath ? summary : r)),
+			},
+		};
+		if (entry != null) {
+			this.registerRunningOperation({ ...entry, result: merged });
+		}
+		this.actions.resources.resolve.mutate(merged);
+	}
+
+	runResolve(
+		repoPath: string | undefined,
+		focusedFilePaths: readonly string[] | undefined,
+		instructions: string | undefined,
+	): void {
+		if (!repoPath) return;
+
+		this.actions.state.wipStale.set(false);
+		this.actions.state.resolveFocusedFilePaths.set(focusedFilePaths);
+		// Snapshot a prior result-bearing value for error recovery; kept symmetric with
+		// compose/review even though resolve has no Resume bar.
+		const currentValue = this.actions.resources.resolve.value.get();
+		this.actions.state.resolvePreErrorValue.set(
+			currentValue != null && 'result' in currentValue ? currentValue : undefined,
+		);
+		this._resolveFetchedForSelection = this.selectionKey();
+		this.dispatchOperation('resolve', instructions, controller =>
+			this.actions.startResolve(repoPath, focusedFilePaths, instructions, controller.signal),
+		);
+	}
+
+	// endregion
+
+	// region Dispatch
+
 	/** Common dispatch path for `runReview` / `runCompose`. Aborts any prior in-flight run on the
 	 *  same `(anchor, kind)`; clears the engaged resource; creates a fresh `AbortController`;
 	 *  invokes `start` (the direct-RPC call) with the controller's signal; registers a
@@ -1042,9 +1231,9 @@ export class DetailsWorkflowController implements ReactiveController {
 	 *  anchor remembers what was submitted for its run — drives the AI-input seed on Restart and
 	 *  the prompt that `retryFromError` resubmits. */
 	private dispatchOperation(
-		kind: 'review' | 'compose',
+		kind: DetailsMode,
 		prompt: string | undefined,
-		start: (controller: AbortController) => Promise<ReviewResult | ComposeResult>,
+		start: (controller: AbortController) => Promise<ReviewResult | ComposeResult | ResolveResult>,
 	): void {
 		const anchor = this.currentAnchor();
 		const key = anchorKey(anchor);
@@ -1056,7 +1245,7 @@ export class DetailsWorkflowController implements ReactiveController {
 
 		const controller = new AbortController();
 		// Clear the engaged resource so the panel doesn't show a stale prior result while generating.
-		(kind === 'review' ? this.actions.resources.review : this.actions.resources.compose).reset();
+		this.resourceFor(kind).reset();
 
 		const promise = start(controller);
 
@@ -1064,25 +1253,14 @@ export class DetailsWorkflowController implements ReactiveController {
 		// `prompt` on the entry from the start: subsequent `{...entry, ...}` spreads in
 		// `back()` / `backFromError()` / `onRunSettled` / `applyPlan` preserve it without each
 		// site needing to know about the field.
-		this.registerRunningOperation(
-			kind === 'review'
-				? {
-						kind: 'review',
-						anchor: anchor,
-						execState: 'generating',
-						abortController: controller,
-						promise: promise,
-						prompt: prompt,
-					}
-				: {
-						kind: 'compose',
-						anchor: anchor,
-						execState: 'generating',
-						abortController: controller,
-						promise: promise,
-						prompt: prompt,
-					},
-		);
+		this.registerRunningOperation({
+			kind: kind,
+			anchor: anchor,
+			execState: 'generating',
+			abortController: controller,
+			promise: promise,
+			prompt: prompt,
+		} as RunningOperation);
 
 		promise.then(
 			result => this.onRunSettled(kind, anchor, controller, result, undefined),
@@ -1262,12 +1440,27 @@ export class DetailsWorkflowController implements ReactiveController {
 	 *  sentinel), then projects into the engaged-anchor resource if still engaged. Always
 	 *  publishes the entry update — adornments + chip overlays refresh even when not engaged. */
 	private onRunSettled(
-		kind: 'review' | 'compose',
+		kind: 'review' | 'compose' | 'resolve' | 'generateMessage',
 		anchor: RunningOperationAnchor,
 		controller: AbortController,
-		result: ReviewResult | ComposeResult | undefined,
+		result: ReviewResult | ComposeResult | ResolveResult | GenerateMessageResult | undefined,
 		ex: unknown,
 	): void {
+		// Stale guard first — these are host-owned registry reads, safe even after disconnect, so
+		// they precede the disconnect bail below. A newer same-(anchor,kind) run replaced this entry
+		// (re-run), or the run was explicitly cancelled / repo-switched: this settlement is orphaned.
+		const key = anchorKey(anchor);
+		const current = this.host.crossPaneState.runningOperations.get().get(key)?.[kind];
+		if (current?.abortController !== controller) return;
+		if (controller.signal.aborted) return;
+
+		// generate-message routes to the WIP input/draft, not a resource, so it skips the review/compose
+		// `_disconnected` resource-write bail below (teardown aborts these runs; the guard above drops late settles).
+		if (kind === 'generateMessage') {
+			this.settleGenerateMessage(anchor, result as GenerateMessageResult | undefined, ex);
+			return;
+		}
+
 		// Disconnect guard: the panel intentionally lets in-flight runs survive disconnect
 		// (registry is host-owned), so the promise can still resolve after `actions` has been
 		// disposed. Writing to a disposed Resource is UB; bail. The registry entry stays as
@@ -1275,13 +1468,6 @@ export class DetailsWorkflowController implements ReactiveController {
 		// will resync it from the entry. Repo-switch already calls `cancelAllRunningOperations`
 		// to abort everything, so we don't strand entries indefinitely.
 		if (this._disconnected) return;
-
-		const key = anchorKey(anchor);
-		const current = this.host.crossPaneState.runningOperations.get().get(key)?.[kind];
-		// Stale guard: a newer same-(anchor,kind) run replaced this entry (re-run), or the run
-		// was explicitly cancelled / repo-switched. Either way, this settlement is orphaned.
-		if (current?.abortController !== controller) return;
-		if (controller.signal.aborted) return;
 
 		// Compose `{cancelled:true}` sentinel — host-side library cancel without an abort. Same
 		// shape as the user-clicked Cancel: preserve the entry+prompt in `'backed'` with no
@@ -1292,8 +1478,22 @@ export class DetailsWorkflowController implements ReactiveController {
 			return;
 		}
 
+		// Resolve `{cancelled:true}` sentinel — host-side cancel without an abort. Resolve has no
+		// Back/Resume, so drop the entry and return the panel to idle (the conflicted-file list).
+		if (kind === 'resolve' && result != null && 'cancelled' in result && result.cancelled === true) {
+			this.removeRunningOperation(key, 'resolve');
+			this.projectIfEngaged('resolve', anchor);
+			return;
+		}
+
 		let execState: RunningOperationExecState;
-		let value: ReviewResult | ComposeResult | undefined = result;
+		// `kind` is narrowed to 'review' | 'compose' | 'resolve' here (generate-message returned
+		// above), so the settled value is a review/compose/resolve result.
+		let value: ReviewResult | ComposeResult | ResolveResult | undefined = result as
+			| ReviewResult
+			| ComposeResult
+			| ResolveResult
+			| undefined;
 		if (ex != null) {
 			execState = 'error';
 			const message = ex instanceof Error ? ex.message : typeof ex === 'string' ? ex : 'Run failed';
@@ -1308,25 +1508,86 @@ export class DetailsWorkflowController implements ReactiveController {
 		// Carry forward the live entry's `prompt` so the run's prompt survives settlement and
 		// later seeds the AI input on Restart. `abortController` + `promise` are intentionally
 		// dropped: the run is settled, those fields are stale (per RunningOperationBase docs).
-		this.registerRunningOperation(
-			kind === 'review'
-				? {
-						kind: 'review',
-						anchor: anchor,
-						execState: execState,
-						result: value as ReviewResult,
-						prompt: current.prompt,
-					}
-				: {
-						kind: 'compose',
-						anchor: anchor,
-						execState: execState,
-						result: value as ComposeResult,
-						prompt: current.prompt,
-					},
-		);
+		this.registerRunningOperation({
+			kind: kind,
+			anchor: anchor,
+			execState: execState,
+			result: value,
+			prompt: current.prompt,
+		} as RunningOperation);
 		// If still engaged, project the result into the panel-bound Resource.
 		this.projectIfEngaged(kind, anchor);
+	}
+
+	/** Settle a generate-message run: apply a non-empty message via the host (live input or draft, host
+	 *  decides) and remove the entry. Ephemeral — nothing is stored; errors land nothing. */
+	private settleGenerateMessage(
+		anchor: RunningOperationAnchor,
+		result: GenerateMessageResult | undefined,
+		ex: unknown,
+	): void {
+		const message = ex == null ? (result?.message ?? '') : '';
+		if (message) {
+			this.host.applyGeneratedCommitMessage(anchor.repoPath, message);
+		}
+		this.removeRunningOperation(anchorKey(anchor), 'generateMessage');
+	}
+
+	/** Generate-commit-message entry point (panel sparkle). Tracks the run under its WIP anchor in the
+	 *  shared registry (survives selection changes, concurrent per worktree). A second invocation while
+	 *  generating cancels that worktree's run — the sparkle doubles as a cancel affordance. */
+	runGenerateMessage(repoPath: string | undefined): void {
+		if (!repoPath) return;
+
+		const anchor: RunningOperationAnchor = { kind: 'wip', repoPath: repoPath, sha: uncommitted };
+		const key = anchorKey(anchor);
+
+		const existing = this.host.crossPaneState.runningOperations.get().get(key)?.generateMessage;
+		if (existing?.execState === 'generating') {
+			existing.abortController?.abort();
+			this.removeRunningOperation(key, 'generateMessage');
+			return;
+		}
+
+		const controller = new AbortController();
+		const promise = this.startGenerateMessage(repoPath, controller.signal);
+		this.registerRunningOperation({
+			kind: 'generateMessage',
+			anchor: anchor,
+			execState: 'generating',
+			abortController: controller,
+			promise: promise,
+		});
+		promise.then(
+			result => this.onRunSettled('generateMessage', anchor, controller, result, undefined),
+			(ex: unknown) => this.onRunSettled('generateMessage', anchor, controller, undefined, ex),
+		);
+	}
+
+	/** Builds the generate-message RPC promise from the current WIP form state, mirroring `commit`'s
+	 *  staged-vs-all amend decision. A `null` host result maps to an empty message. */
+	private startGenerateMessage(repoPath: string, signal: AbortSignal): Promise<GenerateMessageResult> {
+		const state = this.actions.state;
+		const currentMessage = state.commitMessage.get().trim() || undefined;
+
+		let amend: { sha: string; all: boolean } | undefined;
+		if (state.amend.get()) {
+			const amendingSha = state.amendBaseSha.get();
+			if (amendingSha != null) {
+				const wip = state.wip.get();
+				const hasStagedFiles = wip?.changes?.files?.some(f => f.staged) ?? false;
+				const smartCommit = state.preferences.get()?.enableSmartCommit ?? false;
+				amend = { sha: amendingSha, all: !hasStagedFiles && smartCommit };
+			}
+		}
+
+		return this.actions.services.graphInspect
+			.generateCommitMessage(repoPath, currentMessage, amend, signal)
+			.then(result =>
+				result
+					? { message: result.body ? `${result.summary}\n\n${result.body}` : result.summary }
+					: { message: '' },
+			);
 	}
 
 	/** True when the given anchor matches the currently-engaged-mode's locked anchor. Engaged
@@ -1344,7 +1605,7 @@ export class DetailsWorkflowController implements ReactiveController {
 	}
 
 	/** Calls {@link projectEngagedAnchor} only if `anchor` is the currently-engaged anchor. */
-	private projectIfEngaged(kind: 'review' | 'compose', anchor: RunningOperationAnchor): void {
+	private projectIfEngaged(kind: DetailsMode, anchor: RunningOperationAnchor): void {
 		if (!this.isAnchorEngaged(anchor)) return;
 
 		this.projectEngagedAnchor(kind, anchor);
@@ -1354,9 +1615,9 @@ export class DetailsWorkflowController implements ReactiveController {
 	 *  right thing. `'generating'`/`'backed'` → `resource.reset()` (panel reads `execState`
 	 *  from the entry for its `mappedStatus`). `'complete'`/`'error'` with a `result` →
 	 *  `resource.mutate(result)`. No entry / wrong kind → `resource.reset()` (ENABLED-idle). */
-	private projectEngagedAnchor(kind: 'review' | 'compose', selection: AnchorSelection): void {
+	private projectEngagedAnchor(kind: DetailsMode, selection: AnchorSelection): void {
 		const entry = this.host.crossPaneState.runningOperations.get().get(anchorKey(selection))?.[kind];
-		const resource = kind === 'review' ? this.actions.resources.review : this.actions.resources.compose;
+		const resource = this.resourceFor(kind);
 		if (entry == null) {
 			resource.reset();
 			return;
@@ -1369,8 +1630,10 @@ export class DetailsWorkflowController implements ReactiveController {
 		if (entry.result != null) {
 			if (entry.kind === 'review') {
 				this.actions.resources.review.mutate(entry.result);
-			} else {
+			} else if (entry.kind === 'compose') {
 				this.actions.resources.compose.mutate(entry.result);
+			} else if (entry.kind === 'resolve') {
+				this.actions.resources.resolve.mutate(entry.result);
 			}
 		} else {
 			resource.reset();
@@ -1390,7 +1653,9 @@ export class DetailsWorkflowController implements ReactiveController {
 		if (
 			existing?.kind === op.kind &&
 			existing.execState === op.execState &&
-			existing.result === (op as { result?: unknown }).result &&
+			// `result` is absent on the generate-message arm, present on review/compose — compare via
+			// cast so the dedup is uniform across kinds (undefined === undefined for generate-message).
+			(existing as { result?: unknown }).result === (op as { result?: unknown }).result &&
 			existing.abortController === op.abortController &&
 			existing.promise === op.promise
 		) {
@@ -1404,16 +1669,27 @@ export class DetailsWorkflowController implements ReactiveController {
 
 	/** Removes a single-kind entry from the bucket at `(key)`. If the bucket becomes empty, the
 	 *  whole bucket is removed (so the row-keyed adornment translation can short-circuit). */
-	private removeRunningOperation(key: AnchorKey, kind: 'review' | 'compose'): void {
+	private removeRunningOperation(key: AnchorKey, kind: 'review' | 'compose' | 'resolve' | 'generateMessage'): void {
 		const signal = this.host.crossPaneState.runningOperations;
 		const current = signal.get();
 		const bucket = current.get(key);
 		if (bucket?.[kind] == null) return;
 
-		const nextBucket: RunningOperationBucket =
-			kind === 'review' ? { compose: bucket.compose } : { review: bucket.review };
+		// Drop only this kind; preserve the other kinds that may share the anchor. Static keys (no
+		// dynamic delete) so each slot's discriminated type is preserved.
+		const nextBucket: RunningOperationBucket = {
+			review: kind === 'review' ? undefined : bucket.review,
+			compose: kind === 'compose' ? undefined : bucket.compose,
+			resolve: kind === 'resolve' ? undefined : bucket.resolve,
+			generateMessage: kind === 'generateMessage' ? undefined : bucket.generateMessage,
+		};
 		const next = new Map(current);
-		if (nextBucket.review == null && nextBucket.compose == null) {
+		if (
+			nextBucket.review == null &&
+			nextBucket.compose == null &&
+			nextBucket.resolve == null &&
+			nextBucket.generateMessage == null
+		) {
 			next.delete(key);
 		} else {
 			next.set(key, nextBucket);
@@ -1426,19 +1702,13 @@ export class DetailsWorkflowController implements ReactiveController {
 	 *  running operations silently). NOT called on `hostDisconnected` — runs intentionally
 	 *  survive panel disconnect; the registry is owned by `gl-graph-app`. */
 	private cancelAllRunningOperations(): void {
-		const signal = this.host.crossPaneState.runningOperations;
-		const current = signal.get();
-		for (const bucket of current.values()) {
-			bucket.review?.abortController?.abort();
-			bucket.compose?.abortController?.abort();
-		}
+		// Shared abort-and-clear core (also used by gl-graph-app teardown); this method layers on the
+		// controller-only resets below.
+		abortRunningOperations(this.host.crossPaneState);
 		this._reviewBackSnapshot = undefined;
 		this._composeBackSnapshot = undefined;
 		this.actions.resources.review.reset();
 		this.actions.resources.compose.reset();
-		if (current.size > 0) {
-			signal.set(new Map());
-		}
 		// Prior repo's anchors are gone — drop their remembered modes too.
 		const modes = this.host.crossPaneState.lastModeByAnchor;
 		if (modes.get().size > 0) {
@@ -1449,7 +1719,7 @@ export class DetailsWorkflowController implements ReactiveController {
 	/** Records the user's intent to be in `mode` on `selection`'s anchor. Read by the panel on
 	 *  selection-arrival to restore the mode (see `gl-graph-details-panel.ts` `willUpdate`).
 	 *  Forgotten by explicit user-close paths; preserved across anchor navigation. */
-	private rememberMode(selection: DetailsSelection, mode: 'review' | 'compose'): void {
+	private rememberMode(selection: DetailsSelection, mode: DetailsMode): void {
 		const signal = this.host.crossPaneState.lastModeByAnchor;
 		const current = signal.get();
 		const key = anchorKey(selection);
@@ -1476,7 +1746,7 @@ export class DetailsWorkflowController implements ReactiveController {
 	}
 
 	/** Reads the remembered mode for `selection`'s anchor, or `undefined` if none. */
-	getRememberedMode(selection: DetailsSelection): 'review' | 'compose' | undefined {
+	getRememberedMode(selection: DetailsSelection): DetailsMode | undefined {
 		return this.host.crossPaneState.lastModeByAnchor.get().get(anchorKey(selection));
 	}
 
@@ -1486,17 +1756,25 @@ export class DetailsWorkflowController implements ReactiveController {
 	 *  manually kills a generating run. The entry is preserved in `'backed'` with no result so
 	 *  the run's `prompt` survives — the user gets it back on the next idle render and can adjust
 	 *  + retry without retyping. */
-	cancelOperation(kind: 'review' | 'compose'): void {
+	cancelOperation(kind: DetailsMode): void {
 		const anchor = this.currentAnchor();
 		const key = anchorKey(anchor);
 		const entry = this.host.crossPaneState.runningOperations.get().get(key)?.[kind];
 		entry?.abortController?.abort();
+		if (kind === 'resolve') {
+			// Resolve has no Back/Resume — cancelling returns to idle (the conflicted-file list).
+			this.removeRunningOperation(key, 'resolve');
+			this.actions.resources.resolve.reset();
+			return;
+		}
+
 		this.enterBackedNoResult(kind);
 	}
 
-	/** Marks running operations for the given repo paths as `'orphaned'` and aborts any
-	 *  still-`'generating'` ones (the host AI work is pointless if the anchor is gone). The
-	 *  saved result (if any) remains accessible so the user can still view it. */
+	/** Marks review/compose running operations for the given repo paths as `'orphaned'` and aborts
+	 *  any still-`'generating'` ones (the host AI work is pointless if the anchor is gone); the saved
+	 *  result (if any) remains accessible so the user can still view it. Generate-message entries are
+	 *  instead aborted and dropped — they have no `'orphaned'` UI or in-registry result to preserve. */
 	orphanRunningOperationsForRepoPaths(removedRepoPaths: ReadonlySet<string>): void {
 		const signal = this.host.crossPaneState.runningOperations;
 		const current = signal.get();
@@ -1528,8 +1806,19 @@ export class DetailsWorkflowController implements ReactiveController {
 				};
 				touched = true;
 			}
+			const generateMessage = bucket.generateMessage;
+			if (generateMessage != null && removedRepoPaths.has(generateMessage.anchor.repoPath)) {
+				generateMessage.abortController?.abort();
+				nextBucket ??= { ...bucket };
+				delete nextBucket.generateMessage;
+				touched = true;
+			}
 			if (nextBucket != null) {
-				next.set(key, nextBucket);
+				if (nextBucket.review == null && nextBucket.compose == null && nextBucket.generateMessage == null) {
+					next.delete(key);
+				} else {
+					next.set(key, nextBucket);
+				}
 			}
 		}
 		if (touched) {

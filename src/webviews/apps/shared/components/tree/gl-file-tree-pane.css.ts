@@ -108,6 +108,14 @@ export const fileTreeStyles = css`
 		white-space: nowrap;
 	}
 
+	/* The "+N Mixed" sub-badge nested inside the primary staged badge: keep it intact (don't
+	   shrink) so the staged text ellipses first under width pressure, and inset it from that text. */
+	gl-badge.checkbox-header__badge-mixed {
+		flex: 0 0 auto;
+		margin-left: 0.4rem;
+		overflow: visible;
+	}
+
 	.checkbox-header {
 		display: inline-flex;
 		align-items: center;
@@ -153,24 +161,10 @@ export const fileTreeStyles = css`
 		white-space: nowrap;
 	}
 
-	action-item.active-toggle {
+	/* Active state for the toggle chips (e.g. Show/Hide Search). Inherits the chip's own 0.5rem
+	   radius so the active background matches the hover/idle box exactly. */
+	gl-action-chip.active-toggle {
 		color: var(--vscode-inputOption-activeForeground);
 		background-color: var(--vscode-inputOption-activeBackground);
-		border-radius: 0.3rem;
-	}
-
-	/* Context-match-visibility 'mixed' icon: left half shows the filled funnel
-	   (icon: 'filter-filled'), right half shows the outline funnel (outline-icon: 'filter') —
-	   a visual cue that matches are highlighted, not filtered. Both glyphs share the same outer
-	   path so the edges align perfectly at the 50% split. */
-	action-item.context-match-visibility-mixed::part(icon) {
-		-webkit-mask-image: linear-gradient(to right, #000 50%, transparent 50%);
-		mask-image: linear-gradient(to right, #000 50%, transparent 50%);
-	}
-
-	action-item.context-match-visibility-mixed::part(icon-outline) {
-		display: inline-flex;
-		-webkit-mask-image: linear-gradient(to right, transparent 50%, #000 50%);
-		mask-image: linear-gradient(to right, transparent 50%, #000 50%);
 	}
 `;

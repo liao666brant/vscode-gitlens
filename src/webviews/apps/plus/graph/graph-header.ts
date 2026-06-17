@@ -360,10 +360,6 @@ export class GlGraphHeader extends SignalWatcher(LitElement) {
 		}
 	}
 
-	private handleJumpToWip() {
-		this.selectCommits?.(['work-dir-changes'], { ensureVisible: true });
-	}
-
 	private async jumpToSha(sha: string) {
 		const id = await this.ensureSearchResultRow(sha);
 		if (id == null) return;
@@ -1005,7 +1001,7 @@ export class GlGraphHeader extends SignalWatcher(LitElement) {
 
 		return cache(
 			html`<header class="titlebar graph-app__header">
-				<progress-indicator ?active="${this.graphState.isBusy}"></progress-indicator>
+				<progress-indicator min-visible="300" ?active="${this.graphState.isBusy}"></progress-indicator>
 				${this.renderTitlebarHeaderRow(repo)} ${this.renderTitlebarSearchRow(repo)}
 			</header>`,
 		);
@@ -1123,7 +1119,6 @@ export class GlGraphHeader extends SignalWatcher(LitElement) {
 							.lastFetched=${lastFetched}
 							.workingTreeStats=${this.graphState.workingTreeStats}
 							.state=${this.graphState}
-							@jump-to-wip=${this.handleJumpToWip}
 						></gl-git-actions-buttons>
 					`,
 				)}
@@ -1351,6 +1346,7 @@ export class GlGraphHeader extends SignalWatcher(LitElement) {
 						?resultHidden=${this._searchResultHidden}
 						?resultsLoaded=${searchResults != null}
 						?searching=${searching}
+						?showAutocompleteOnFocus=${this.graphState.config?.searchAutocompleteOnFocus ?? true}
 						step=${this.searchPosition}
 						total=${searchResults?.count ?? 0}
 						?valid=${this.searchValid}

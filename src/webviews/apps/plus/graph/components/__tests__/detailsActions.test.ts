@@ -38,6 +38,7 @@ function createResources(overrides: Partial<DetailsResources> = {}): DetailsReso
 		),
 		review: createResource(async () => ({ error: { message: 'not implemented' } })),
 		compose: createResource(async () => ({ error: { message: 'not implemented' } })),
+		resolve: createResource(async () => ({ error: { message: 'not implemented' } })),
 		scopeFiles: createResource(async (_signal, _repoPath: string, _scope: ScopeSelection) => []),
 		...overrides,
 	};
@@ -395,10 +396,10 @@ suite('DetailsActions', () => {
 			changes: undefined,
 			repositoryCount: 1,
 			repo: { uri: 'file:///repo', name: 'repo', path: '/repo', isWorktree: false },
+			stats: { added: 0, deleted: 0, modified: 0 },
 		};
-		const stats = { added: 0, deleted: 0, modified: 0 };
 		const resources = createResources({
-			wip: createResource(async (_signal, _repoPath: string) => ({ wip: wip, stats: stats })),
+			wip: createResource(async (_signal, _repoPath: string) => ({ wip: wip })),
 		});
 		const actions = new DetailsActions(state, createServices(), resources);
 
@@ -417,10 +418,10 @@ suite('DetailsActions', () => {
 			changes: undefined,
 			repositoryCount: 1,
 			repo: { uri: 'file:///repo', name: 'repo', path: '/repo', isWorktree: false },
+			stats: { added: 0, deleted: 0, modified: 0 },
 		};
-		const stats = { added: 0, deleted: 0, modified: 0 };
 		const resources = createResources({
-			wip: createResource(async (_signal, _repoPath: string) => ({ wip: wip, stats: stats })),
+			wip: createResource(async (_signal, _repoPath: string) => ({ wip: wip })),
 		});
 		const actions = new DetailsActions(state, createServices(), resources);
 
@@ -428,6 +429,43 @@ suite('DetailsActions', () => {
 
 		assert.strictEqual(state.wip.get(), wip);
 		assert.strictEqual(state.wipStale.get(), false);
+	});
+
+	test('applyPushedWip ignores host pushes for a repo while its commit is in flight', () => {
+		const state = createDetailsState();
+		const makeWip = (modified: number): Wip => ({
+			changes: undefined,
+			repositoryCount: 1,
+			repo: { uri: 'file:///repo', name: 'repo', path: '/repo', isWorktree: false },
+			stats: { added: 0, deleted: 0, modified: modified },
+		});
+		const original = makeWip(0);
+		state.wip.set(original);
+
+		const actions = new DetailsActions(state, createServices(), createResources());
+
+		// During a commit for /repo, the pre-commit hook (e.g. lint-staged) churns the working tree
+		// and the host emits transient WIP; applying it would let the optimistic clear empty the panel.
+		(actions as unknown as { _committingRepoPath?: string })._committingRepoPath = '/repo';
+
+		const transient = makeWip(1);
+		actions.applyPushedWip(transient);
+		assert.strictEqual(state.wip.get(), original, 'push for the committing repo must be ignored');
+
+		// A push for a different repo is unaffected by this repo's in-flight commit.
+		const otherRepoWip: Wip = {
+			changes: undefined,
+			repositoryCount: 1,
+			repo: { uri: 'file:///other', name: 'other', path: '/other', isWorktree: false },
+			stats: { added: 0, deleted: 0, modified: 0 },
+		};
+		actions.applyPushedWip(otherRepoWip);
+		assert.strictEqual(state.wip.get(), otherRepoWip, 'push for a different repo still applies');
+
+		// Once the commit settles, pushes for the repo apply again.
+		(actions as unknown as { _committingRepoPath?: string })._committingRepoPath = undefined;
+		actions.applyPushedWip(transient);
+		assert.strictEqual(state.wip.get(), transient, 'push after the commit settles must apply');
 	});
 
 	test('resetRepoScopedState conditionally clears signals', () => {

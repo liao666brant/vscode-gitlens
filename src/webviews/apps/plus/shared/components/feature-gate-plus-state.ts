@@ -93,6 +93,18 @@ export class GlFeatureGatePlusState extends LitElement {
 				white-space: nowrap;
 			}
 
+			/* Like .actions-row but center-aligned, for a row that mixes a text button with an
+			   icon-only button: their baselines don't match (a text baseline vs the synthesized
+			   bottom edge of the icon button's flex box), so centering the equal-height button
+			   boxes is what lines them up. */
+			.actions-row-center {
+				display: flex;
+				gap: 0.6em;
+				align-items: center;
+				justify-content: center;
+				white-space: nowrap;
+			}
+
 			.hint {
 				border-bottom: 1px dashed currentColor;
 			}
@@ -147,22 +159,18 @@ export class GlFeatureGatePlusState extends LitElement {
 		this.hidden = hidden;
 		if (hidden) return undefined;
 
-		const appearance = (this.appearance ?? 'alert') === 'alert' ? 'alert' : undefined;
-
 		switch (this.state) {
 			case SubscriptionState.VerificationRequired:
 				return html`
 					<slot name="feature"></slot>
-					<p class="centered">
+					<p class="actions-row-center">
 						<gl-button
 							class="inline"
-							appearance="${ifDefined(appearance)}"
 							href="${createCommandLink<Source>('gitlens.plus.resendVerification', this.source)}"
 							>重新发送邮件</gl-button
 						>
 						<gl-button
 							class="inline"
-							appearance="${ifDefined(appearance)}"
 							href="${createCommandLink<Source>('gitlens.plus.validate', this.source)}"
 							><code-icon icon="refresh"></code-icon
 						></gl-button>
@@ -185,7 +193,6 @@ export class GlFeatureGatePlusState extends LitElement {
 					<p class="actions-row">
 						<gl-button
 							class="inline"
-							appearance="${ifDefined(appearance)}"
 							href="${createCommandLink<Source>('gitlens.plus.signUp', this.source)}"
 							>&nbsp;试用 GitLens Pro&nbsp;</gl-button
 						><span
@@ -211,7 +218,6 @@ export class GlFeatureGatePlusState extends LitElement {
 					<p class="actions-row">
 						<gl-button
 							class="inline"
-							appearance="${ifDefined(appearance)}"
 							href="${createCommandLink<SubscriptionUpgradeCommandArgs>('gitlens.plus.upgrade', {
 								plan: 'pro',
 								...(this.source ?? { source: 'feature-gate' }),
@@ -230,7 +236,6 @@ export class GlFeatureGatePlusState extends LitElement {
 					<p class="actions-row">
 						<gl-button
 							class="inline"
-							appearance="${ifDefined(appearance)}"
 							href="${createCommandLink<Source>('gitlens.plus.reactivateProTrial', this.source)}"
 							>继续</gl-button
 						>
@@ -253,11 +258,7 @@ export class GlFeatureGatePlusState extends LitElement {
 		if (used === 0) {
 			return html`<slot name="feature"></slot>
 				<p class="actions-row">
-					<gl-button
-						.appearance=${ifDefined(appearance) ?? undefined}
-						href="${ifDefined(this.featurePreviewCommandLink)}"
-						>继续</gl-button
-					>
+					<gl-button href="${ifDefined(this.featurePreviewCommandLink)}">继续</gl-button>
 				</p>
 				<hr />
 				<p class="centered">
@@ -277,11 +278,7 @@ export class GlFeatureGatePlusState extends LitElement {
 		return html`
 			${this.renderFeaturePreviewStep(featurePreview, used)}
 			<p class="actions-row">
-				<gl-button
-					class="inline"
-					appearance="${ifDefined(appearance)}"
-					href="${ifDefined(this.featurePreviewCommandLink)}"
-					>继续预览</gl-button
+				<gl-button class="inline" href="${ifDefined(this.featurePreviewCommandLink)}">继续预览</gl-button
 				><span
 					>或
 					<a href="${createCommandLink<Source>('gitlens.plus.login', this.source)}" title="登录"

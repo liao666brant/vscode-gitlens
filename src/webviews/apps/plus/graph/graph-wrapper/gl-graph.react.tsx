@@ -1,4 +1,5 @@
 import type {
+	AdornmentState,
 	ColumnNumberBySha,
 	CommitType,
 	CssVariables,
@@ -29,10 +30,11 @@ import GraphContainer, {
 import type { ReactElement, ReactNode } from 'react';
 import React, { createElement, memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { getAltKeySymbol, getPlatform } from '@env/platform.js';
+import type { GitGraphRowHead } from '@gitlens/git/models/graph.js';
 import { splitCommitMessage } from '@gitlens/git/utils/commit.utils.js';
 import type { DateTimeFormat } from '@gitlens/utils/date.js';
 import { formatDate, fromNow } from '@gitlens/utils/date.js';
-import { first, groupByFilterMap } from '@gitlens/utils/iterable.js';
+import { groupByFilterMap } from '@gitlens/utils/iterable.js';
 import { hasKeys } from '@gitlens/utils/object.js';
 import { pluralize } from '@gitlens/utils/string.js';
 import type { DateStyle } from '../../../../../config.js';
@@ -58,7 +60,14 @@ import { rowAdornmentTooltipFor, statusIconFor } from '../components/runningOper
 import type { WipRowAgentStatus } from '../components/wipRowAgentStatus.js';
 import { agentIndicatorTooltipFor, agentSuffixIconFor } from '../components/wipRowAgentStatus.js';
 import type { GraphStateProvider } from '../stateProvider.js';
-import { getCommitDateFromRow } from '../utils/row.utils.js';
+import { getCommitDateFromRow, pickRowUndoTarget } from '../utils/row.utils.js';
+import {
+	buildRowCommitContext,
+	isUniqueToBranchRow,
+	needsDynamicRowContext,
+	reduceCommonWebviewItemsContext,
+	rowHasChildren,
+} from '../utils/rowContext.utils.js';
 import '../../../shared/components/button.js';
 import '../../../shared/components/code-icon.js';
 
@@ -100,7 +109,16 @@ export type GraphWrapperProps = Pick<
 		 *  resolved from `agentSessions × wipMetadataBySha` in the Lit wrapper so the React render
 		 *  is a plain prop comparison. `undefined` when no WIP row has a surfacing agent. */
 		agentStatusByRowSha?: ReadonlyMap<string, WipRowAgentStatus>;
+		/** Set of commit SHAs reachable from HEAD but not from HEAD's upstream — drives the
+		 *  always-visible Push to Commit badge + hover-revealed push button on those rows. The
+		 *  Lit wrapper projects this from `state.rows[].isUnpushed` (the gitkraken-components
+		 *  library doesn't preserve custom fields on the row objects it hands to
+		 *  `provideAdornments`). `undefined` when no commits are ahead of upstream. */
+		unpublishedShas?: ReadonlySet<string>;
 		theming?: GraphWrapperTheming;
+		/** Selected repository's filesystem path, used to rebuild lean commit rows' `contexts.row` on
+		 *  demand for the multi-select right-click context. */
+		repoPath?: string;
 		wipShasSettleDelayMs?: number;
 		/**
 		 * Controls whether the GK component auto-injects the primary "Working Changes" row.
@@ -126,9 +144,9 @@ export interface GraphWrapperEvents {
 	onMoreRows?: (id?: string) => void;
 	onRefDoubleClick?: (detail: { ref: GraphRef; metadata?: GraphRefMetadataItem }) => void;
 	onMouseLeave?: () => void;
-	onRowAction?: (detail: { action: RowAction; row: GraphRow }) => void;
-	onWipRowOpen?: (detail: { target: 'compose' | 'review' | 'agents'; row: GraphRow }) => void;
-	onRowContextMenu?: (detail: { graphZoneType: GraphZoneType; graphRow: GraphRow }) => void;
+	onRowAction?: (detail: { action: RowAction; row: GraphRow; worktreePath?: string }) => void;
+	onWipRowOpen?: (detail: { target: 'compose' | 'review' | 'resolve' | 'agents'; row: GraphRow }) => void;
+	onRowContextMenu?: (detail: { graphZoneType: GraphZoneType; graphRow: GraphRow; isAvatar: boolean }) => void;
 	onRowDoubleClick?: (detail: { row: GraphRow; preserveFocus?: boolean }) => void;
 	onRowHover?: (detail: {
 		clientX: number;
@@ -317,13 +335,10 @@ function checkUniqueBranchSelection(selectedRows: GraphRow[]): boolean {
 	const branchNames = new Set<string>();
 
 	for (const row of selectedRows) {
-		const rowContext = row.contexts?.row;
-		if (rowContext == null) return false;
-
-		const contextString = typeof rowContext === 'string' ? rowContext : JSON.stringify(rowContext);
-		if (!contextString.includes('+unique')) {
-			return false;
-		}
+		// `+unique` (reachable from exactly one local branch) comes from the row's `contexts.flags` bit.
+		// Read it directly via `isUniqueToBranchRow` — lean commit rows no longer carry a serialized
+		// `contexts.row` string to substring-match against.
+		if (!isUniqueToBranchRow(row)) return false;
 
 		if (row.heads && row.heads.length > 0) {
 			for (const head of row.heads) {
@@ -348,18 +363,29 @@ export const GlGraphReact = memo((initProps: GraphWrapperInitProps) => {
 	 * Gets the parsed context for a row, using a WeakMap cache to avoid repeated JSON.parse calls.
 	 * The cache is keyed by the row object reference, so if rows are recreated, they will be re-parsed.
 	 */
-	const getParsedSelectionContext = useCallback((row: GraphRow): GraphItemContext | undefined => {
-		if (row.contexts?.row == null) return undefined;
+	const repoPath = props.repoPath;
+	const getParsedSelectionContext = useCallback(
+		(row: GraphRow): GraphItemContext | undefined => {
+			const cache = parsedSelectionContextCache.current;
+			const cached = cache.get(row);
+			if (cached !== undefined) return cached;
 
-		const cache = parsedSelectionContextCache.current;
-		let parsed = cache.get(row);
-		if (parsed === undefined) {
-			const rawContext = row.contexts.row;
-			parsed = (typeof rawContext === 'string' ? JSON.parse(rawContext) : rawContext) as GraphItemContext;
+			let parsed: GraphItemContext | undefined;
+			if (row.contexts?.row != null) {
+				const rawContext = row.contexts.row;
+				parsed = (typeof rawContext === 'string' ? JSON.parse(rawContext) : rawContext) as GraphItemContext;
+			} else if (repoPath != null && needsDynamicRowContext(row)) {
+				// Lean commit rows ship only `contexts.flags` (no serialized `contexts.row`); reconstruct
+				// the context on demand so multi-select right-click can still boil down a common context.
+				parsed = buildRowCommitContext(row, repoPath);
+			}
+			if (parsed === undefined) return undefined;
+
 			cache.set(row, parsed);
-		}
-		return parsed;
-	}, []);
+			return parsed;
+		},
+		[repoPath],
+	);
 
 	// Register the state updater function with the subscriber if provided
 	useEffect(
@@ -617,68 +643,14 @@ export const GlGraphReact = memo((initProps: GraphWrapperInitProps) => {
 
 			const contexts: SelectionContexts['contexts'] = new Map<CommitType, SelectionContext>();
 
-			for (let [type, items] of grouped) {
-				let webviewItems: string | undefined;
+			for (const [type, items] of grouped) {
+				// Boil the rows' contexts down to a least-common-denominator `webviewItems` (shared base type +
+				// the additions common to every row). `undefined` means the group mixed base types (a context
+				// setup error that should NOT happen at runtime) — drop it so we don't surface a misleading
+				// combined context.
+				const webviewItems = reduceCommonWebviewItemsContext(items.map(item => item.webviewItem));
 
-				// Collect unique context values
-				const contextValues = new Set<string>();
-				for (const item of items) {
-					contextValues.add(item.webviewItem);
-				}
-
-				if (contextValues.size === 1) {
-					webviewItems = first(contextValues);
-				} else if (contextValues.size > 1) {
-					// If there are multiple contexts, see if they can be boiled down into a least common denominator set
-					// Contexts are of the form `gitlens:<type>+<additional-context-1>+<additional-context-2>...`, <type> can also contain multiple `:`, but assume the whole thing is the type
-
-					// Pre-split all contexts once to avoid repeated splitting
-					const splitContexts: Array<{ baseType: string; additions: string[] }> = [];
-					for (const context of contextValues) {
-						const parts = context.split('+');
-						splitContexts.push({ baseType: parts[0], additions: parts.slice(1) });
-					}
-
-					// Check if all contexts have the same base type
-					const firstBaseType = splitContexts[0].baseType;
-					const hasSameBaseType = splitContexts.every(sc => sc.baseType === firstBaseType);
-
-					if (hasSameBaseType) {
-						webviewItems = firstBaseType;
-
-						// If any context has no additional parts, we can only use the base type
-						const hasEmptyAdditions = splitContexts.some(sc => sc.additions.length === 0);
-
-						if (!hasEmptyAdditions) {
-							// Build frequency map for additional contexts in a single pass
-							const additionFrequency = new Map<string, number>();
-							for (const sc of splitContexts) {
-								for (const add of sc.additions) {
-									additionFrequency.set(add, (additionFrequency.get(add) ?? 0) + 1);
-								}
-							}
-
-							// Find common additions that appear in all items (not just unique contexts)
-							const commonAdditions: string[] = [];
-							for (const [addition, count] of additionFrequency) {
-								if (count === items.length) {
-									commonAdditions.push(addition);
-								}
-							}
-
-							if (commonAdditions.length > 0) {
-								webviewItems += `+${commonAdditions.join('+')}`;
-							}
-						}
-					} else {
-						// If we have more than one type, something is wrong with our context key setup -- should NOT happen at runtime
-						debugger;
-						webviewItems = undefined;
-						items = [];
-					}
-				}
-
-				const count = items.length;
+				const count = webviewItems != null ? items.length : 0;
 				contexts.set(type, {
 					listDoubleSelection: count === 2,
 					listMultiSelection: count > 1,
@@ -691,7 +663,9 @@ export const GlGraphReact = memo((initProps: GraphWrapperInitProps) => {
 
 			return { contexts: contexts, selectedShas: selectedShas };
 		},
-		[getParsedSelectionContext, props.rows],
+		// Depends only on `getParsedSelectionContext` — operates on the `rows` PARAMETER, never
+		// `props.rows`; the stale dep recreated this (and downstream handlers) on every rows change.
+		[getParsedSelectionContext],
 	);
 
 	const handleSelectGraphRows = useCallback(
@@ -706,8 +680,14 @@ export const GlGraphReact = memo((initProps: GraphWrapperInitProps) => {
 	);
 
 	const handleRowContextMenu = useCallback(
-		(_event: React.MouseEvent<any>, graphZoneType: GraphZoneType, graphRow: GraphRow) => {
+		(event: React.MouseEvent<any>, graphZoneType: GraphZoneType, graphRow: GraphRow) => {
 			if (graphZoneType === refZone) return;
+
+			// The avatar, the bare commit node, and the lane lines all live in the same `graph` zone, so
+			// `graphZoneType` can't tell them apart. Detect an avatar right-click from the event target
+			// (GK applies the `avatar` class to the contributor-avatar element) so the host builds the
+			// contributor context for the avatar and the commit context for the node/lanes.
+			const isAvatar = (event.target as HTMLElement | null)?.closest?.('.avatar') != null;
 
 			// If the row is in the current selection, use the typed selection context, otherwise clear it
 			const newSelectionContext = selectionContexts?.selectedShas.has(graphRow.sha)
@@ -724,7 +704,7 @@ export const GlGraphReact = memo((initProps: GraphWrapperInitProps) => {
 				},
 			});
 
-			initProps.onRowContextMenu?.({ graphZoneType: graphZoneType, graphRow: graphRow });
+			initProps.onRowContextMenu?.({ graphZoneType: graphZoneType, graphRow: graphRow, isAvatar: isAvatar });
 		},
 		[selectionContexts, context, initProps.onRowContextMenu],
 	);
@@ -870,10 +850,17 @@ export const GlGraphReact = memo((initProps: GraphWrapperInitProps) => {
 	// graph's `onInvalidate` handler destructures `e.detail`, so a plain `Event` throws there
 	// and the cache never clears. `'all'` re-runs BOTH `provideAdornments` (visibility —
 	// secondary WIPs pin their adornment visible when an operation or agent attaches to the
-	// row) AND `resolveAdornment` (the overlay icons).
+	// row) AND `resolveAdornment` (the overlay icons). `workingTreeStats` is in the deps
+	// because the WIP row's Resolve button is gated on `hasConflicts`.
 	useEffect(() => {
 		invalidateTarget.dispatchEvent(new RowAdornmentInvalidateEvent('all'));
-	}, [props.runningOperationByRowSha, props.agentStatusByRowSha, invalidateTarget]);
+	}, [
+		props.runningOperationByRowSha,
+		props.agentStatusByRowSha,
+		props.unpublishedShas,
+		props.workingTreeStats,
+		invalidateTarget,
+	]);
 
 	const rowAdornmentProvider: RowAdornmentProvider = {
 		invalidate: invalidateTarget,
@@ -896,13 +883,25 @@ export const GlGraphReact = memo((initProps: GraphWrapperInitProps) => {
 						adornments[row.sha] = {
 							visibility:
 								!isSecondaryWip || hasOperation || hasAgent ? true : ['hover', 'focus', 'selected'],
+							// Compose/Review buttons are full-strength only while their operation is active;
+							// otherwise they reveal on interaction — so resolve must re-run on hover/focus/
+							// selected changes.
+							dynamic: 'interaction',
 						};
 						break;
 					}
 					case 'stash-node':
+						adornments[row.sha] = { visibility: ['hover', 'focus', 'selected'] };
+						break;
 					case 'commit-node':
 					case 'merge-node':
-						adornments[row.sha] = { visibility: ['hover', 'focus', 'selected'] };
+						// Unpushed rows keep the overlay always-rendered for the at-rest unpushed indicator;
+						// that indicator becomes the Push to Commit action — and Undo/diff appear — on
+						// interaction, so resolve must re-run on hover/focus/selected changes. Pushed rows use
+						// the plain hover-only slot (resolve only runs while interacting, so no `dynamic`).
+						adornments[row.sha] = props.unpublishedShas?.has(row.sha)
+							? { visibility: true, dynamic: 'interaction' }
+							: { visibility: ['hover', 'focus', 'selected'] };
 						break;
 				}
 			}
@@ -913,7 +912,12 @@ export const GlGraphReact = memo((initProps: GraphWrapperInitProps) => {
 		resolveAdornment: (
 			row: ReadonlyGraphRow,
 			_context: undefined,
+			state?: AdornmentState,
 		): ReactNode | null | Promise<ReactNode | null> => {
+			// Live interaction state (hover/focus/selected) for adornments marked `dynamic: 'interaction'`,
+			// without depending on the library's internal CSS state classes. Drives the at-rest → revealed
+			// transition for idle WIP compose/review buttons and for unpushed commits' Undo/diff actions.
+			const interacting = state?.isHovered === true || state?.isFocused === true || state?.isSelected === true;
 			switch (row.type) {
 				case 'work-dir-changes': {
 					const bucket = props.runningOperationByRowSha?.get(row.sha);
@@ -929,6 +933,27 @@ export const GlGraphReact = memo((initProps: GraphWrapperInitProps) => {
 						composeHasResult,
 					);
 					const reviewTooltip = rowAdornmentTooltipFor('review', bucket?.review?.execState, reviewHasResult);
+					const resolveHasResult = bucket?.resolve?.result != null;
+					const resolveStatusIcon =
+						bucket?.resolve != null ? statusIconFor(bucket.resolve.execState, resolveHasResult) : null;
+					const resolveTooltip = rowAdornmentTooltipFor(
+						'resolve',
+						bucket?.resolve?.execState,
+						resolveHasResult,
+					);
+
+					// Compose/Review are "active" while their operation is pending or done (a bucket entry
+					// exists). Active buttons stay full-strength at rest so their status icon is readable;
+					// idle buttons reveal on interaction (hover/focus/selection, via `interacting`) and hide
+					// otherwise to keep the WIP row quiet. Note: the primary WIP row is auto-selected on load,
+					// so its idle buttons show until the user navigates to another row.
+					const composeActive = bucket?.compose != null;
+					const reviewActive = bucket?.review != null;
+					const resolveActive = bucket?.resolve != null;
+					// Conflicts are tracked on the primary repo's working-tree stats only, so the
+					// Resolve entry point is gated to the primary WIP row (secondary worktrees still
+					// get the details-header chip when their WIP is opened).
+					const hasConflicts = !isSecondaryWipSha(row.sha) && props.workingTreeStats?.hasConflicts === true;
 
 					const agentStatus = props.agentStatusByRowSha?.get(row.sha);
 					const agentSuffix = agentStatus != null ? agentSuffixIconFor(agentStatus.category) : undefined;
@@ -955,34 +980,54 @@ export const GlGraphReact = memo((initProps: GraphWrapperInitProps) => {
 									)}
 								</gl-button>
 							)}
-							<gl-button
-								onClick={() => initProps.onWipRowOpen?.({ target: 'compose', row: row })}
-								tooltip={composeTooltip}
-								aria-label={composeTooltip}
-							>
-								<code-icon icon="wand"></code-icon>
-								{composeStatusIcon != null && (
-									<code-icon
-										slot="suffix"
-										icon={composeStatusIcon}
-										modifier={composeStatusIcon === 'loading' ? 'spin' : ''}
-									></code-icon>
-								)}
-							</gl-button>
-							<gl-button
-								onClick={() => initProps.onWipRowOpen?.({ target: 'review', row: row })}
-								tooltip={reviewTooltip}
-								aria-label={reviewTooltip}
-							>
-								<code-icon icon="checklist"></code-icon>
-								{reviewStatusIcon != null && (
-									<code-icon
-										slot="suffix"
-										icon={reviewStatusIcon}
-										modifier={reviewStatusIcon === 'loading' ? 'spin' : ''}
-									></code-icon>
-								)}
-							</gl-button>
+							{(composeActive || interacting) && (
+								<gl-button
+									onClick={() => initProps.onWipRowOpen?.({ target: 'compose', row: row })}
+									tooltip={composeTooltip}
+									aria-label={composeTooltip}
+								>
+									<code-icon icon="wand"></code-icon>
+									{composeStatusIcon != null && (
+										<code-icon
+											slot="suffix"
+											icon={composeStatusIcon}
+											modifier={composeStatusIcon === 'loading' ? 'spin' : ''}
+										></code-icon>
+									)}
+								</gl-button>
+							)}
+							{(reviewActive || interacting) && (
+								<gl-button
+									onClick={() => initProps.onWipRowOpen?.({ target: 'review', row: row })}
+									tooltip={reviewTooltip}
+									aria-label={reviewTooltip}
+								>
+									<code-icon icon="checklist"></code-icon>
+									{reviewStatusIcon != null && (
+										<code-icon
+											slot="suffix"
+											icon={reviewStatusIcon}
+											modifier={reviewStatusIcon === 'loading' ? 'spin' : ''}
+										></code-icon>
+									)}
+								</gl-button>
+							)}
+							{(resolveActive || (hasConflicts && interacting)) && (
+								<gl-button
+									onClick={() => initProps.onWipRowOpen?.({ target: 'resolve', row: row })}
+									tooltip={resolveTooltip}
+									aria-label={resolveTooltip}
+								>
+									<code-icon icon="sparkle"></code-icon>
+									{resolveStatusIcon != null && (
+										<code-icon
+											slot="suffix"
+											icon={resolveStatusIcon}
+											modifier={resolveStatusIcon === 'loading' ? 'spin' : ''}
+										></code-icon>
+									)}
+								</gl-button>
+							)}
 							<div>
 								<gl-button
 									appearance="toolbar"
@@ -1002,8 +1047,8 @@ export const GlGraphReact = memo((initProps: GraphWrapperInitProps) => {
 							<gl-button
 								appearance="toolbar"
 								onClick={() => initProps.onRowAction?.({ action: 'stash-apply', row: row })}
-								tooltip="Apply Stash..."
-								aria-label="Apply Stash..."
+								tooltip="Apply / Pop Stash..."
+								aria-label="Apply / Pop Stash..."
 							>
 								<code-icon icon="git-stash-apply"></code-icon>
 							</gl-button>
@@ -1018,24 +1063,81 @@ export const GlGraphReact = memo((initProps: GraphWrapperInitProps) => {
 						</div>
 					);
 				case 'commit-node':
-				case 'merge-node':
+				case 'merge-node': {
+					// If the row is the leaf HEAD of a worktree, surface an inline Undo affordance that
+					// routes to that worktree's working copy. `pickRowUndoTarget` is shared with the host's
+					// right-click context builder so the button and the menu apply the same rules: undo is
+					// withheld for commits with children (leaf-only — see `HasChildren`); the active worktree
+					// wins (no worktreePath → host uses primary repoPath); otherwise it shows only when
+					// exactly one worktree owns this tip (multiple is ambiguous → hidden).
+					const { currentHead, worktreeHead } = pickRowUndoTarget(
+						row.heads as ReadonlyArray<GitGraphRowHead> | undefined,
+						rowHasChildren(row),
+					);
+					const showUndo = currentHead != null || worktreeHead != null;
+					const undoWorktreePath = worktreeHead?.worktree?.path;
+					const undoBranchName = worktreeHead?.name;
+					const undoLabel = undoBranchName != null ? `Undo Commit on ${undoBranchName}` : 'Undo Commit';
+
+					const isUnpushed = props.unpublishedShas?.has(row.sha) === true;
+					// Pushed rows render in a hover-only overlay (resolve runs only while interacting), so
+					// their actions always show when present. Unpushed rows render an always-present overlay
+					// (for the at-rest unpushed indicator), so their actions appear only while interacting —
+					// at rest only the indicator shows.
+					const showActions = isUnpushed ? interacting : true;
+
 					return (
 						<div className="graph-row-actions" onMouseOver={() => initProps.onRowActionHover?.()}>
-							<gl-button
-								appearance="toolbar"
-								onClick={e =>
-									initProps.onRowAction?.({
-										action: e.altKey ? 'open-changes-with-working' : 'open-changes',
-										row: row,
-									})
-								}
-								tooltip={`Open All Changes\n[${getAltKeySymbol()}] Open All Changes with Working Tree)`}
-								aria-label="Open All Changes"
-							>
-								<code-icon icon="diff-multiple"></code-icon>
-							</gl-button>
+							{showUndo && showActions && (
+								<gl-button
+									appearance="toolbar"
+									onClick={() =>
+										initProps.onRowAction?.({
+											action: 'undo-commit',
+											row: row,
+											worktreePath: undoWorktreePath,
+										})
+									}
+									tooltip={undoLabel}
+									aria-label={undoLabel}
+								>
+									<code-icon icon="discard"></code-icon>
+								</gl-button>
+							)}
+							{showActions && (
+								<gl-button
+									appearance="toolbar"
+									onClick={e =>
+										initProps.onRowAction?.({
+											action: e.altKey ? 'open-changes-with-working' : 'open-changes',
+											row: row,
+										})
+									}
+									tooltip={`Open All Changes\n[${getAltKeySymbol()}] Open All Changes with Working Tree)`}
+									aria-label="Open All Changes"
+								>
+									<code-icon icon="diff-multiple"></code-icon>
+								</gl-button>
+							)}
+							{/* The unpushed indicator IS the Push to Commit action: one cloud-upload button,
+							    colorized so it reads as an "ahead" badge at rest, that pushes on click.
+							    Always present (not gated by `interacting`) and rendered last so it stays
+							    pinned to the overlay's fixed right edge — hover-only actions grow leftward
+							    and never shift it. */}
+							{isUnpushed ? (
+								<gl-button
+									appearance="toolbar"
+									className="unpushed-push-button"
+									onClick={() => initProps.onRowAction?.({ action: 'push-to-commit', row: row })}
+									tooltip="Push to Commit..."
+									aria-label="Push to Commit..."
+								>
+									<code-icon icon="cloud-upload"></code-icon>
+								</gl-button>
+							) : null}
 						</div>
 					);
+				}
 			}
 			return null;
 		},
@@ -1195,7 +1297,7 @@ declare global {
 			graphZoneType: GraphZoneType;
 			graphRow: GraphRow;
 		}>;
-		'graph-rowcontextmenu': CustomEvent<{ graphZoneType: GraphZoneType; graphRow: GraphRow }>;
+		'graph-rowcontextmenu': CustomEvent<{ graphZoneType: GraphZoneType; graphRow: GraphRow; isAvatar: boolean }>;
 		'graph-graphmouseleave': CustomEvent<void>;
 	}
 }

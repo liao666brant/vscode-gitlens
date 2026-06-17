@@ -387,6 +387,7 @@ export class GlDetailsComposeModePanel extends LitElement {
 				<gl-file-tree-pane
 					.files=${files}
 					?checkable=${true}
+					?multi-selectable=${true}
 					?show-file-icons=${true}
 					.collapsable=${false}
 					.filesLayout=${{ layout: this.fileLayout }}
@@ -644,6 +645,7 @@ export class GlDetailsComposeModePanel extends LitElement {
 			header="文件更改"
 			empty-text=${emptyText}
 			.buttons=${['multi-diff', 'layout', 'search']}
+			?multi-selectable=${true}
 			.fileActions=${this.fileActionsForFile}
 			.fileContext=${this.getFileContext}
 			.folderContext=${(folder: { relativePath: string }) => buildFolderContext(this.repoPath, folder)}
@@ -654,6 +656,7 @@ export class GlDetailsComposeModePanel extends LitElement {
 			@file-stage=${this.redispatch}
 			@file-unstage=${this.redispatch}
 			@gl-file-tree-pane-open-multi-diff=${this.onOpenMultiDiff}
+			@gl-file-tree-pane-open-selected-changes=${this.onOpenSelectedChanges}
 			@change-files-layout=${(e: CustomEvent<{ layout: ViewFilesLayout }>) => {
 				// Share the same property as the idle-state file tree — separate slots meant
 				// the user's layout choice in one view didn't carry over to the other.
@@ -672,6 +675,22 @@ export class GlDetailsComposeModePanel extends LitElement {
 		const commit = this.commits?.find(c => c.id === this._selectedCommitId);
 		const virtualRef = commit?.virtualRef;
 		const files = commit?.files;
+		if (virtualRef == null || !files?.length) return;
+
+		this.dispatchEvent(
+			new CustomEvent('compose-open-multi-diff', {
+				detail: { virtualRef: virtualRef, files: files },
+				bubbles: true,
+				composed: true,
+			}),
+		);
+	};
+
+	private onOpenSelectedChanges = (e: CustomEvent<{ files: readonly { path: string }[] }>): void => {
+		const commit = this.commits?.find(c => c.id === this._selectedCommitId);
+		const virtualRef = commit?.virtualRef;
+		const selectedPaths = new Set(e.detail?.files?.map(f => f.path));
+		const files = commit?.files?.filter(f => selectedPaths.has(f.path));
 		if (virtualRef == null || !files?.length) return;
 
 		this.dispatchEvent(

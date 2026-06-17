@@ -152,6 +152,41 @@ const walkthroughSteps: WalkthroughStep[] = [
 	},
 
 	{
+		id: 'visualize-code-history',
+		walkthroughKey: 'visualizeCodeHistory',
+		title: 'Commit Graph: Your Command Center',
+		body: html`
+			<p>
+				The <strong>Commit Graph</strong> brings your development and agentic workflows together. Parallelize
+				your work — manage multiple active worktrees, orchestrate concurrent agents, and execute your entire Git
+				lifecycle without context-switching.
+			</p>
+			<ul>
+				<li>
+					<strong>Complete Your Entire Workflow:</strong> Review changes, stage files, compose commits, and
+					resolve conflicts — with guided next steps like pull, push, or draft a PR.
+				</li>
+				<li>
+					<strong>Orchestrate Agents:</strong> Launch, monitor, and interact with agents directly from the
+					graph to approve permissions and review execution plans inline.
+				</li>
+				<li>
+					<strong>AI Compose & Review:</strong> Restructure changes into clean, review-ready commits and catch
+					issues early with severity-tagged reviews you can delegate to an agent.
+				</li>
+				<li>
+					<strong>Unmatched Git Context:</strong> Navigate complex repositories with a searchable, color-coded
+					commit timeline. Instantly understand branch relationships, authorship patterns, and commit
+					sequences.
+				</li>
+			</ul>
+			<div class="card-part--centered">
+				<gl-button href="command:gitlens.welcome.showGraph">Discover your Commit Graph</gl-button>
+			</div>
+		`,
+	},
+
+	{
 		id: 'home-view',
 		walkthroughKey: 'homeView',
 		title: '使用 Home 视图简化工作流',
@@ -159,19 +194,6 @@ const walkthroughSteps: WalkthroughStep[] = [
 			<p>简化你的工作流，在一个直观的中心轻松跟踪、管理并协作处理分支和拉取请求。</p>
 			<div class="card-part--centered">
 				<gl-button href="command:gitlens.welcome.showHomeView">打开 Home 视图</gl-button>
-			</div>
-		`,
-	},
-
-	{
-		id: 'visualize-code-history',
-		walkthroughKey: 'visualizeCodeHistory',
-		title: '提交图谱：查看代码演进脉络',
-		body: html`
-			<p>借助可搜索、颜色编码的提交时间线，轻松浏览复杂仓库，快速理解分支关系、作者模式和提交序列。</p>
-			<p>可选择多个提交批量执行 cherry-pick 等操作，或用一条命令生成 AI 变更日志。</p>
-			<div class="card-part--centered">
-				<gl-button href="command:gitlens.welcome.showGraph">探索你的提交图谱</gl-button>
 			</div>
 		`,
 	},

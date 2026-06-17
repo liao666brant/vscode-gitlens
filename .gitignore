@@ -1,4 +1,5 @@
 .agents
+.claude/plans/**
 !.claude/settings.json
 .claude/settings.local.json
 .claude/scheduled_tasks.lock
@@ -26,3 +27,6 @@ tsconfig*.tsbuildinfo
 *.code-workspace
 localdev*.instructions.md
 *.log
+
+# Build codegen skip-cache (input fingerprints for Docs/contributions/CEM generators)
+.codegen-cache/

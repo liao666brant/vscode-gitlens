@@ -670,7 +670,8 @@ export async function openFile(
 		// An untracked file in a stash typically has no working-tree copy to open. Mirror the
 		// warning surfaced by `gitlens.openWorkingFile:command` for the same case so the click
 		// isn't a silent no-op; users wanting the stashed content can pick "Open File at Revision".
-		if (typeof fileOrUri !== 'string' && fileOrUri.status === '?') {
+		// Skip this guard for WIP refs — untracked files in the working tree are real files.
+		if (typeof fileOrUri !== 'string' && fileOrUri.status === '?' && !isUncommitted(ref.ref)) {
 			void window.showWarningMessage('Unable to open working file. File could not be found in the working tree');
 			return;
 		}
@@ -884,7 +885,7 @@ export async function restoreFile(
 	}
 
 	try {
-		await Container.instance.git.getRepositoryService(revision.repoPath).ops?.checkout(rev, { path: path });
+		await Container.instance.git.getRepositoryService(revision.repoPath).ops?.restore(path, { ref: rev });
 	} catch (ex) {
 		void showGitErrorMessage(
 			ex,
@@ -1022,8 +1023,15 @@ export async function undoCommit(
 	if (hasChanges) {
 		const confirm = { title: '撤销提交' };
 		const cancel = { title: '取消', isCloseAffordance: true };
+		// Label from `headCommit` (just confirmed to be HEAD) rather than the passed `commit` ref —
+		// its summary is the exact, un-emojified subject straight from git, so the dialog matches the
+		// commit regardless of how the caller's ref message was formatted (e.g. graph display emoji).
+		const exactRef = createReference(headCommit.ref, headCommit.repoPath, {
+			refType: 'revision',
+			message: headCommit.message ?? headCommit.summary,
+		});
 		const result = await window.showWarningMessage(
-			`工作区中有未提交更改。\n\n仍要撤销 ${getReferenceLabel(commit, {
+			`工作区中有未提交的更改。\n\n仍要撤销 ${getReferenceLabel(exactRef, {
 				capitalize: false,
 				icon: false,
 			})} 吗？`,

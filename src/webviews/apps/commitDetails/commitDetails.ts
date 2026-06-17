@@ -10,7 +10,7 @@ import type { ViewFilesLayout } from '../../../config.js';
 import type { InspectWebviewTelemetryContext } from '../../../constants.telemetry.js';
 import type { CommitDetailsServices } from '../../commitDetails/commitDetailsService.js';
 import type { ExecuteCommitActionsParams } from '../../commitDetails/protocol.js';
-import type { OpenMultipleChangesArgs } from '../shared/actions/file.js';
+import type { CopyWipPatchEventDetail, OpenMultipleChangesArgs } from '../shared/actions/file.js';
 import { SignalWatcherWebviewApp } from '../shared/appBase.js';
 import type { WebviewPane, WebviewPaneExpandedChangeEventDetail } from '../shared/components/webview-pane.js';
 import { DOM } from '../shared/dom.js';
@@ -394,8 +394,8 @@ export class GlCommitDetailsApp extends SignalWatcherWebviewApp {
 			.stashNumber=${commit.stashNumber}
 			@gl-commit-actions=${(e: CustomEvent<{ action: string; alt: boolean }>) => this.onCommitActions(e)}
 			@gl-pin=${() => actions?.togglePin()}
-			@gl-back=${() => actions?.navigateBack()}
-			@gl-forward=${() => actions?.navigateForward()}
+			@gl-nav-back=${() => actions?.navigateBack()}
+			@gl-nav-forward=${() => actions?.navigateForward()}
 		></gl-inspect-nav>`;
 	}
 
@@ -558,6 +558,7 @@ export class GlCommitDetailsApp extends SignalWatcherWebviewApp {
 							html`<gl-details-commit-panel
 								variant="embedded"
 								file-icons
+								?multi-selectable=${true}
 								?panel-actions=${false}
 								.commit=${commit}
 								.loading=${resources?.commit.loading.get() ?? false}
@@ -581,8 +582,10 @@ export class GlCommitDetailsApp extends SignalWatcherWebviewApp {
 								.searchContext=${searchCtx}
 								.reachability=${reach}
 								.reachabilityState=${reachState}
-								.branchName=${commit?.stashOnRef ?? this.getCommitBranchName(reach)}
+								.branchName=${commit?.stashOnRef}
 								.aiEnabled=${org?.ai !== false}
+								@toggle-mode=${(e: CustomEvent<{ mode: 'review' | 'compose' | 'compare' }>) =>
+									actions?.openCommitInGraphMode(e.detail.mode, commit)}
 								@gl-stash-apply=${(e: CustomEvent<StashApplyCommandArgs>) =>
 									actions?.executeCommand('gitlens.stashesApply', e.detail)}
 								@explain-commit=${(e: CustomEvent<{ prompt?: string }>) =>
@@ -636,12 +639,23 @@ export class GlCommitDetailsApp extends SignalWatcherWebviewApp {
 								@file-compare-wip=${(e: CustomEvent<FileChangeListItemDetail>) =>
 									actions?.openFileCompareWipChanges(e.detail, e.detail.showOptions)}
 								@file-stage=${(e: CustomEvent<FileChangeListItemDetail>) =>
-									actions?.stageFile(e.detail)}
+									e.detail.files?.length
+										? actions?.stageFiles([...e.detail.files])
+										: actions?.stageFile(e.detail)}
 								@file-unstage=${(e: CustomEvent<FileChangeListItemDetail>) =>
-									actions?.unstageFile(e.detail)}
+									e.detail.files?.length
+										? actions?.unstageFiles([...e.detail.files])
+										: actions?.unstageFile(e.detail)}
 								@file-discard=${(e: CustomEvent<FileChangeListItemDetail>) =>
-									actions?.discardFile(e.detail)}
+									e.detail.files?.length
+										? actions?.discardFiles([...e.detail.files])
+										: actions?.discardFile(e.detail)}
+								@file-stash=${(e: CustomEvent<FileChangeListItemDetail>) =>
+									e.detail.files?.length
+										? actions?.stashFiles([...e.detail.files])
+										: actions?.stashFile(e.detail)}
 								@discard-unstaged=${() => actions?.discardUnstagedFiles()}
+								@discard-staged=${() => actions?.discardStagedFiles()}
 								@file-open-current=${(e: CustomEvent<FileChangeListItemDetail>) =>
 									actions?.openConflictChanges(e.detail, 'current')}
 								@file-open-incoming=${(e: CustomEvent<FileChangeListItemDetail>) =>
@@ -667,6 +681,8 @@ export class GlCommitDetailsApp extends SignalWatcherWebviewApp {
 								@gl-patch-create-cancelled=${() => actions?.changeReviewMode(false)}
 								@open-multiple-changes=${(e: CustomEvent<OpenMultipleChangesArgs>) =>
 									actions?.openMultipleChanges(e.detail)}
+								@copy-wip-patch=${(e: CustomEvent<CopyWipPatchEventDetail>) =>
+									actions?.copyWipPatchToClipboard(e.detail.repoPath, e.detail.scope, e.detail.uris)}
 								@gl-show-search-box-change=${(e: CustomEvent<boolean>) =>
 									actions?.updateShowSearchBox(e.detail)}
 								@gl-search-box-filter-change=${(e: CustomEvent<boolean>) =>
@@ -681,18 +697,6 @@ export class GlCommitDetailsApp extends SignalWatcherWebviewApp {
 	// ============================================================
 	// Event handlers
 	// ============================================================
-
-	private getCommitBranchName(reachability: GitCommitReachability | undefined): string | undefined {
-		if (!reachability?.refs?.length) return undefined;
-
-		const branches = reachability.refs.filter(
-			(r): r is Extract<typeof r, { refType: 'branch' }> => r.refType === 'branch',
-		);
-		const current = branches.find(r => r.current);
-		if (current) return current.name;
-		if (branches.length > 0) return branches[0].name;
-		return undefined;
-	}
 
 	private onBranchAction(name: string): void {
 		this._actions?.handleBranchAction(name);

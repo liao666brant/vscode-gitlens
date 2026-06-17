@@ -7,8 +7,7 @@ import type { GitRevisionReference } from '@gitlens/git/models/reference.js';
 import type { Repository } from '@gitlens/git/models/repository.js';
 import { isConflictStatus } from '@gitlens/git/utils/fileStatus.utils.js';
 import { createReference } from '@gitlens/git/utils/reference.utils.js';
-import { isUncommitted, shortenRevision } from '@gitlens/git/utils/revision.utils.js';
-import { MRU } from '@gitlens/utils/mru.js';
+import { isUncommitted } from '@gitlens/git/utils/revision.utils.js';
 import { getSettledValue } from '@gitlens/utils/promise.js';
 import type { CopyMessageToClipboardCommandArgs } from '../../commands/copyMessageToClipboard.js';
 import type { CopyShaToClipboardCommandArgs } from '../../commands/copyShaToClipboard.js';
@@ -29,6 +28,7 @@ import {
 } from '../../git/utils/-webview/commit.utils.js';
 import { countConflictMarkers } from '../../git/utils/-webview/mergeConflicts.utils.js';
 import { getReferenceFromRevision } from '../../git/utils/-webview/reference.utils.js';
+import { getReachableWorktrees } from '../../git/utils/-webview/worktree.utils.js';
 import { executeCommand, executeCoreCommand, registerWebviewCommand } from '../../system/-webview/command.js';
 import { getWebviewCommand } from '../../system/decorators/command.js';
 import type { LinesChangeEvent } from '../../trackers/lineTracker.js';
@@ -44,7 +44,6 @@ import type {
 	CommitSelectionEvent,
 	ExplainResult,
 	GenerateResult,
-	NavigateResult,
 } from './commitDetailsService.js';
 import type { ComparisonContext } from './commitDetailsWebview.utils.js';
 import {
@@ -52,8 +51,9 @@ import {
 	isDetailsFileContext,
 	isDetailsFolderContext,
 	isDetailsItemContext,
+	resolveMultiFileContext,
 } from './commitDetailsWebview.utils.js';
-import { DetailsFileCommands, getDetailsFileCommands } from './detailsFileCommands.js';
+import { DetailsFileCommands, getDetailsFileCommands, getDetailsFileMultiCommands } from './detailsFileCommands.js';
 import {
 	DetailsFolderCommands,
 	getDetailsFolderCommands,
@@ -70,6 +70,7 @@ import type {
 	Wip,
 	WipChange,
 	WipFileChange,
+	WipStats,
 } from './protocol.js';
 import { messageHeadlineSplitterToken } from './protocol.js';
 import type { CommitDetailsWebviewShowingArgs } from './registration.js';
@@ -92,6 +93,8 @@ interface WipContext {
 	repositoryCount: number;
 	branch?: GitBranch;
 	repo: Repository;
+	/** Git-authoritative working-tree counts (from `status.diffStatus`). See {@link WipStats}. */
+	stats?: WipStats;
 }
 
 /**
@@ -111,9 +114,6 @@ interface WipContext {
 export class CommitDetailsWebviewProvider implements WebviewProvider<State, State, CommitDetailsWebviewShowingArgs> {
 	private readonly _disposable: Disposable;
 	private _focused = false;
-
-	/** Navigation history - backend keeps for back/forward navigation */
-	private _commitStack = new MRU<GitRevisionReference>(10, (a, b) => a.ref === b.ref);
 
 	/** Controls line tracker - set via setPin() RPC */
 	private _pinned = false;
@@ -261,10 +261,9 @@ export class CommitDetailsWebviewProvider implements WebviewProvider<State, Stat
 			data = arg;
 		}
 
-		// Add to navigation stack and capture showing context
+		// Capture showing context for getInitialContext()
 		if (data?.commit != null) {
 			const ref = getReferenceFromRevision(data.commit);
-			this._commitStack.insert(ref);
 			this._showingCommitRef = { repoPath: ref.repoPath, sha: ref.ref, refType: ref.refType };
 		} else {
 			// No explicit commit - try to resolve from event cache / line tracker
@@ -382,6 +381,24 @@ export class CommitDetailsWebviewProvider implements WebviewProvider<State, Stat
 			);
 		}
 
+		// Multi-file commands. When a multi-selection is right-clicked, the row's data-vscode-context
+		// carries `webviewItemsValues` (all selected files); resolve each to its commit+file and hand
+		// the whole set to the multi handler (one clipboard write, one stage op, etc.).
+		for (const { command: cmd, handler } of getDetailsFileMultiCommands()) {
+			subscriptions.push(
+				registerWebviewCommand(
+					getWebviewCommand(cmd, this.host.type),
+					async (item?: DetailsItemContext | ExecuteFileActionParams) => {
+						const resolved = await resolveMultiFileContext(this.container, item);
+						if (resolved.length) {
+							await handler.call(fileCommands, resolved);
+						}
+					},
+					this,
+				),
+			);
+		}
+
 		// Folder-only commands (Folder History submenu). `gitlens.views.copy:` and
 		// `gitlens.copyRelativePathToClipboard:` are intentionally NOT registered here — they share
 		// IDs with the file commands above.
@@ -460,9 +477,8 @@ export class CommitDetailsWebviewProvider implements WebviewProvider<State, Stat
 	private onCommitSelected(e: CommitSelectedEvent) {
 		if (e.data == null) return;
 
-		// Add to navigation stack and track what's being shown
+		// Track what's being shown so file/stash actions know which commit to use
 		const ref = getReferenceFromRevision(e.data.commit);
-		this._commitStack.insert(ref);
 		this._showingCommitRef = { repoPath: ref.repoPath, sha: ref.ref, refType: ref.refType };
 
 		// Forward event to webview - let webview decide what to do based on its state
@@ -597,21 +613,9 @@ export class CommitDetailsWebviewProvider implements WebviewProvider<State, Stat
 		}
 	}
 
-	private onNavigateStack(params: { direction: 'back' | 'forward' }): NavigateResult {
-		const commit = this._commitStack.navigate(params.direction);
-		let selectedCommit: NavigateResult['selectedCommit'];
-		if (commit != null) {
-			// Track what's being shown so file actions know which commit to use
-			this._showingCommitRef = { repoPath: commit.repoPath, sha: commit.ref, refType: commit.refType };
-			selectedCommit = { repoPath: commit.repoPath, sha: commit.ref };
-		}
-
-		return { navigationStack: this.getNavigationStack(), selectedCommit: selectedCommit };
-	}
-
 	private _wipConflictMarkerCache = new Map<string, { mtime: number; count: number }>();
 
-	private async getWipChange(repository: GlRepository): Promise<WipChange | undefined> {
+	private async getWipChange(repository: GlRepository): Promise<{ changes: WipChange; stats: WipStats } | undefined> {
 		const svc = this.container.git.getRepositoryService(repository.path);
 		const [statusResult, pausedOpStatusResult] = await Promise.allSettled([
 			svc.status.getStatus(),
@@ -663,16 +667,32 @@ export class CommitDetailsWebviewProvider implements WebviewProvider<State, Stat
 			}
 		}
 
-		return {
-			repository: {
-				name: repository.name,
-				path: repository.path,
-				uri: repository.uri.toString(),
-			},
-			branchName: status.branch,
-			files: files,
+		const diff = status.diffStatus;
+		// Git-authoritative counts from `diffStatus` (each path counted once). The `files` list above
+		// intentionally double-counts mixed staged+unstaged entries for display, so the header's
+		// fallback of counting `files` inflates them — embed `stats` so the header/panel use the
+		// correct counts, matching the Graph's `getWipForRepoAndStats`.
+		const stats: WipStats = {
+			added: diff.added,
+			deleted: diff.deleted,
+			modified: diff.changed,
 			hasConflicts: status.hasConflicts,
 			pausedOpStatus: pausedOpStatus,
+		};
+
+		return {
+			changes: {
+				repository: {
+					name: repository.name,
+					path: repository.path,
+					uri: repository.uri.toString(),
+				},
+				branchName: status.branch,
+				files: files,
+				hasConflicts: status.hasConflicts,
+				pausedOpStatus: pausedOpStatus,
+			},
+			stats: stats,
 		};
 	}
 
@@ -688,21 +708,6 @@ export class CommitDetailsWebviewProvider implements WebviewProvider<State, Stat
 	// Event Delivery Helper
 	// ============================================================
 
-	/** Computes navigation stack from _commitStack (on demand, not cached) */
-	private getNavigationStack(): { count: number; position: number; hint?: string } {
-		let sha = this._commitStack.get(this._commitStack.position - 1)?.ref;
-		if (sha != null) {
-			sha = shortenRevision(sha);
-		}
-		return {
-			count: this._commitStack.count,
-			position: this._commitStack.position,
-			hint: sha,
-		};
-	}
-
-	// Removed: updateNavigation - navigation is handled via onNavigateStack which fires commit selection events
-
 	private onChangeReviewModeCommand(params: { inReview: boolean; repoPath?: string }) {
 		// inReview state is owned by webview - just track telemetry
 		if (params.inReview) {
@@ -716,12 +721,15 @@ export class CommitDetailsWebviewProvider implements WebviewProvider<State, Stat
 	 */
 	private async getCoreCommitDetails(commit: GitCommit): Promise<CommitDetails> {
 		const hasDistinctCommitter = commit.committer.email != null && commit.committer.email !== commit.author.email;
-		const [commitResult, avatarUriResult, committerAvatarUriResult] = await Promise.allSettled([
+		const [commitResult, avatarUriResult, committerAvatarUriResult, worktreesResult] = await Promise.allSettled([
 			!commit.hasFullDetails()
 				? GitCommit.ensureFullDetails(commit, { include: { uncommittedFiles: true } }).then(() => commit)
 				: commit,
 			getCommitAuthorAvatarUri(commit, { size: 32 }),
 			hasDistinctCommitter ? getCommitCommitterAvatarUri(commit, { size: 32 }) : Promise.resolve(undefined),
+			commit.refType === 'stash' || commit.isUncommitted
+				? Promise.resolve([])
+				: getReachableWorktrees(this.container, commit.repoPath, commit.sha),
 		]);
 
 		commit = getSettledValue(commitResult, commit);
@@ -756,6 +764,7 @@ export class CommitDetailsWebviewProvider implements WebviewProvider<State, Stat
 				stats: f.stats,
 			})),
 			stats: commit.stats,
+			reachableFromOtherWorktrees: (getSettledValue(worktreesResult)?.length ?? 0) > 0,
 		};
 	}
 
@@ -941,7 +950,6 @@ export class CommitDetailsWebviewProvider implements WebviewProvider<State, Stat
 					Promise.resolve({
 						mode: this._showingMode,
 						pinned: this._pinned,
-						navigationStack: this.getNavigationStack(),
 						inReview: this._showingInReview,
 						initialCommit: this._showingCommitRef,
 						initialWipRepoPath: this._showingWipRepoPath,
@@ -978,8 +986,10 @@ export class CommitDetailsWebviewProvider implements WebviewProvider<State, Stat
 							: this.container.git.getBestRepositoryOrFirst();
 					if (repo == null) return undefined;
 
-					const changes = await this.getWipChange(repo);
-					if (changes == null) return undefined;
+					const wip = await this.getWipChange(repo);
+					if (wip == null) return undefined;
+
+					const { changes, stats } = wip;
 
 					signal?.throwIfAborted();
 
@@ -992,13 +1002,8 @@ export class CommitDetailsWebviewProvider implements WebviewProvider<State, Stat
 						repo: repo,
 						repositoryCount: this.container.git.openRepositoryCount,
 						branch: branch,
+						stats: stats,
 					});
-				},
-
-				// ── Navigation ──
-
-				navigate: direction => {
-					return Promise.resolve(this.onNavigateStack({ direction: direction }));
 				},
 
 				setPin: pin => {
@@ -1076,5 +1081,6 @@ function serializeWipContext(wip?: WipContext): Wip | undefined {
 			path: wip.repo.path,
 			isWorktree: wip.repo.isWorktree,
 		},
+		stats: wip.stats,
 	};
 }
