@@ -68,7 +68,7 @@ export class DraftsViewNode extends CacheableChildrenViewNode<'drafts', DraftsVi
 	}
 
 	getTreeItem(): TreeItem {
-		const item = new TreeItem('Drafts', TreeItemCollapsibleState.Expanded);
+		const item = new TreeItem('草稿', TreeItemCollapsibleState.Expanded);
 		return item;
 	}
 }

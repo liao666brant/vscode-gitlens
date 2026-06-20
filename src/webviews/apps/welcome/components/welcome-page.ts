@@ -154,34 +154,31 @@ const walkthroughSteps: WalkthroughStep[] = [
 	{
 		id: 'visualize-code-history',
 		walkthroughKey: 'visualizeCodeHistory',
-		title: 'Commit Graph: Your Command Center',
+		title: 'Commit Graph：你的指挥中心',
 		body: html`
 			<p>
-				The <strong>Commit Graph</strong> brings your development and agentic workflows together. Parallelize
-				your work — manage multiple active worktrees, orchestrate concurrent agents, and execute your entire Git
-				lifecycle without context-switching.
+				<strong>Commit Graph</strong> 将你的开发与 Agent 工作流汇聚在一起。并行开展工作 —— 管理多个活跃
+				worktree、编排并发 Agent，并在无需切换上下文的情况下执行完整 Git 生命周期。
 			</p>
 			<ul>
 				<li>
-					<strong>Complete Your Entire Workflow:</strong> Review changes, stage files, compose commits, and
-					resolve conflicts — with guided next steps like pull, push, or draft a PR.
+					<strong>完成整个工作流：</strong>审查更改、暂存文件、编排提交并解决冲突 —— 同时获得 pull、push
+					或起草 PR 等下一步引导。
 				</li>
 				<li>
-					<strong>Orchestrate Agents:</strong> Launch, monitor, and interact with agents directly from the
-					graph to approve permissions and review execution plans inline.
+					<strong>编排 Agent：</strong>直接从图谱启动、监控 Agent 并与之交互，内联批准权限和审查执行计划。
 				</li>
 				<li>
-					<strong>AI Compose & Review:</strong> Restructure changes into clean, review-ready commits and catch
-					issues early with severity-tagged reviews you can delegate to an agent.
+					<strong>AI 编排与审查：</strong>将更改重组为清晰、可审查的提交，并通过可委派给 Agent
+					的分级审查及早发现问题。
 				</li>
 				<li>
-					<strong>Unmatched Git Context:</strong> Navigate complex repositories with a searchable, color-coded
-					commit timeline. Instantly understand branch relationships, authorship patterns, and commit
-					sequences.
+					<strong>无与伦比的 Git 上下文：</strong
+					>通过可搜索、带颜色编码的提交时间线浏览复杂仓库。立即了解分支关系、作者模式和提交序列。
 				</li>
 			</ul>
 			<div class="card-part--centered">
-				<gl-button href="command:gitlens.welcome.showGraph">Discover your Commit Graph</gl-button>
+				<gl-button href="command:gitlens.welcome.showGraph">探索你的 Commit Graph</gl-button>
 			</div>
 		`,
 	},
@@ -322,18 +319,16 @@ const graphWalkthroughSteps: GraphWalkthroughStep[] = [
 	{
 		id: 'graph-agent-monitoring',
 		graphWalkthroughKey: 'graphAgentMonitoring',
-		title: 'Stay on top of every running agent',
+		title: '掌握每个运行中的 Agent',
 		body: html`
 			<p>
-				Every active agent session shows up alongside your work. See a status pill for each session on the
-				branch cards in the Home view and Graph sidebar, or see associated agents in the details panel when
-				viewing working changes. See what needs attention. Hover for the full picture. Take action &mdash;
-				resume, respond, switch &mdash; straight from the status. No more rotating through terminal tabs or chat
-				panes to figure out which agent needs you.
+				每个活跃的 Agent 会话都会与你的工作并列显示。在 Home 视图和 Graph
+				侧边栏的分支卡片上查看每个会话的状态标记，或在查看工作区更改时在详情面板中查看关联
+				Agent。快速发现需要关注的事项，悬停即可了解全貌，并可直接从状态中恢复、响应或切换。
 			</p>
 			<div class="card-part--centered">
 				<gl-button href="${createCommandLink('gitlens.showGraph', { sidebarPanel: 'overview' })}"
-					>Open the Overview Sidebar</gl-button
+					>打开概览侧边栏</gl-button
 				>
 			</div>
 		`,
@@ -341,18 +336,18 @@ const graphWalkthroughSteps: GraphWalkthroughStep[] = [
 	{
 		id: 'graph-parallel-work',
 		graphWalkthroughKey: 'graphParallelWork',
-		title: 'All your parallel work, in one Graph',
+		title: '在一个 Graph 中查看所有并行工作',
 		body: html`
 			<p>
-				With agents running across multiple worktrees, working changes used to mean opening another window or
-				directory just to remember what you (or your agent) left half-finished. Not anymore.
-				<strong>Multi-WIP visibility:</strong> every worktree's working changes are visible at the same time, in
-				the same Graph. <strong>Focused Graph mode:</strong> when you're heads-down on one branch, scope the
-				Graph to just the commits that matter &mdash; the bigger picture is always one click away.
+				当 Agent 跨多个 worktree 运行时，以前需要打开另一个窗口或目录才能想起你（或
+				Agent）还有哪些半成品更改。现在不用了。
+				<strong>多 WIP 可见性：</strong>每个 worktree 的工作区更改可同时显示在同一个 Graph 中。
+				<strong>聚焦 Graph 模式：</strong>专注于某个分支时，可将 Graph
+				限定为相关提交；需要全局视图时也只需一键。
 			</p>
 			<div class="card-part--centered">
 				<gl-button href="${createCommandLink('gitlens.showGraph', { action: 'scope-to-branch' })}"
-					>Focus the Commit Graph</gl-button
+					>聚焦 Commit Graph</gl-button
 				>
 			</div>
 		`,
@@ -360,15 +355,15 @@ const graphWalkthroughSteps: GraphWalkthroughStep[] = [
 	{
 		id: 'graph-ai-review',
 		graphWalkthroughKey: 'graphAiReview',
-		title: 'Review changes with AI in the details panel',
+		title: '在详情面板中用 AI 审查更改',
 		body: html`
 			<p>
-				The new Review mode in the details panel reads through any commits or WIP and surfaces severity-tagged
-				insights and a summary of changes, so you can ensure nothing's missed before you ship.
+				详情面板中的新 Review 模式会读取任意提交或
+				WIP，并给出带严重级别标记的洞察和更改摘要，帮助你在交付前确认没有遗漏。
 			</p>
 			<div class="card-part--centered">
 				<gl-button href="${createCommandLink('gitlens.showGraph', { action: 'enter-review' })}"
-					>Try Review Mode</gl-button
+					>试用 Review 模式</gl-button
 				>
 			</div>
 		`,
@@ -376,16 +371,15 @@ const graphWalkthroughSteps: GraphWalkthroughStep[] = [
 	{
 		id: 'graph-compose',
 		graphWalkthroughKey: 'graphCompose',
-		title: 'Compose working changes into logical Commits',
+		title: '将工作区更改编排为逻辑清晰的提交',
 		body: html`
 			<p>
-				Compose mode lives right in the details panel: select files, exclude noise, and let AI split a sprawling
-				WIP into a series of focused commits &mdash; without ever opening a separate view. Your reviewers will
-				thank you, and so will your future self.
+				Compose 模式就在详情面板中：选择文件、排除噪声，让 AI 将庞杂的 WIP
+				拆分为一系列聚焦的提交，而无需打开单独视图。审阅者会感谢你，未来的你也会。
 			</p>
 			<div class="card-part--centered">
 				<gl-button href="${createCommandLink('gitlens.showGraph', { action: 'enter-compose' })}"
-					>Try Compose Mode</gl-button
+					>试用 Compose 模式</gl-button
 				>
 			</div>
 		`,
@@ -393,16 +387,15 @@ const graphWalkthroughSteps: GraphWalkthroughStep[] = [
 	{
 		id: 'graph-compare',
 		graphWalkthroughKey: 'graphCompare',
-		title: 'Compare any refs from your Graph selection',
+		title: '比较 Graph 选择中的任意引用',
 		body: html`
 			<p>
-				Select a commit or multi-select rows in the Graph and jump straight into Compare mode in the details
-				panel. Branch vs. branch, commit vs. commit, working changes vs. anything &mdash; just select and
-				compare. It's the fastest way to get eyes on the exact diff you care about.
+				在 Graph 中选择一个提交或多选多行，即可直接进入详情面板的 Compare
+				模式。分支对分支、提交对提交、工作区更改对任意引用 —— 选中即可比较。这是查看目标 diff 的最快方式。
 			</p>
 			<div class="card-part--centered">
 				<gl-button href="${createCommandLink('gitlens.showGraph', { action: 'open-compare' })}"
-					>Open Compare Mode</gl-button
+					>打开 Compare 模式</gl-button
 				>
 			</div>
 		`,
@@ -410,17 +403,16 @@ const graphWalkthroughSteps: GraphWalkthroughStep[] = [
 	{
 		id: 'graph-next-steps',
 		graphWalkthroughKey: 'graphNextSteps',
-		title: 'Always know what to do next',
+		title: '始终知道下一步该做什么',
 		body: html`
 			<p>
-				The working changes view of the details panel is your workflow guide. Selecting on a working changes row
-				surfaces the next action that keeps the loop moving: respond to an awaiting agent, push, open a PR,
-				resolve a conflict, finish the rebase. Nothing in flight? The integrated Launchpad points you to the
-				next PR or issue worth picking up.
+				详情面板的工作区更改视图就是你的工作流指南。选择某个工作区更改行后，会显示推动流程继续前进的下一步操作：响应等待中的
+				Agent、推送、打开 PR、解决冲突或完成 rebase。当前没有进行中的事项？集成的 Launchpad
+				会指向下一个值得处理的 PR 或 Issue。
 			</p>
 			<div class="card-part--centered">
 				<gl-button href="${createCommandLink('gitlens.showGraph', { action: 'show-wip' })}"
-					>See My Working Changes</gl-button
+					>查看我的工作区更改</gl-button
 				>
 			</div>
 		`,

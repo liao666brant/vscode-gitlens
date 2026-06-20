@@ -3,7 +3,6 @@ import type { TemplateResult } from 'lit';
 import { html, LitElement, nothing } from 'lit';
 import { customElement, property } from 'lit/decorators.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
-import { pluralize } from '@gitlens/utils/string.js';
 import type { ConnectCloudIntegrationsCommandArgs } from '../../../../../commands/cloudIntegrations.js';
 import type { LaunchpadCommandArgs } from '../../../../../plus/launchpad/launchpad.js';
 import type { LaunchpadSummaryResult } from '../../../../../plus/launchpad/launchpadIndicator.js';
@@ -107,7 +106,7 @@ export class GlDetailsWipEmptyPane extends LitElement {
 		return html`<div class="hub">
 			${hasSteps
 				? html`<section class="section">
-						<h3 class="section__heading">Next steps</h3>
+						<h3 class="section__heading">下一步</h3>
 						${allSteps.map(step => this.renderNextStep(step))}
 					</section>`
 				: nothing}
@@ -125,7 +124,7 @@ export class GlDetailsWipEmptyPane extends LitElement {
 					appearance="toolbar"
 					aria-busy=${this.launchpadSummaryLoading}
 					?disabled=${this.launchpadSummaryLoading}
-					tooltip="Refresh Launchpad"
+					tooltip="刷新 Launchpad"
 					@click=${() => this.emit('refresh-launchpad')}
 				>
 					<code-icon icon="refresh"></code-icon>
@@ -137,26 +136,20 @@ export class GlDetailsWipEmptyPane extends LitElement {
 
 	private renderStartNewSection() {
 		return html`<section class="section">
-			<h3 class="section__heading">Start New</h3>
+			<h3 class="section__heading">开始新工作</h3>
 			<div class="start-new">
 				<gl-button appearance="secondary" @click=${() => this.emit('start-work', { showOpenInAgent: 'ask' })}>
-					Start Work on an Issue…
+					开始处理 Issue…
 				</gl-button>
 				<gl-button appearance="secondary" @click=${() => this.emit('start-review', { showOpenInAgent: 'ask' })}>
-					Start Review on a PR…
+					开始评审 PR…
 				</gl-button>
 				<gl-button appearance="secondary" @click=${() => this.emit('apply-stash')}>
-					Apply / Pop Stash…
+					应用 / 弹出 Stash…
 				</gl-button>
-				<gl-button appearance="secondary" @click=${() => this.emit('new-worktree')}>
-					Create Worktree…
-				</gl-button>
-				<gl-button appearance="secondary" @click=${() => this.emit('create-branch')}>
-					Create Branch…
-				</gl-button>
-				<gl-button appearance="secondary" @click=${() => this.emit('switch-branch')}>
-					Switch Branch…
-				</gl-button>
+				<gl-button appearance="secondary" @click=${() => this.emit('new-worktree')}> 创建 Worktree… </gl-button>
+				<gl-button appearance="secondary" @click=${() => this.emit('create-branch')}> 创建分支… </gl-button>
+				<gl-button appearance="secondary" @click=${() => this.emit('switch-branch')}> 切换分支… </gl-button>
 			</div>
 		</section>`;
 	}
@@ -243,13 +236,13 @@ export class GlDetailsWipEmptyPane extends LitElement {
 
 	private renderAiWorkflows(ahead: number) {
 		return html`<section class="section">
-			<h3 class="section__heading">AI workflows</h3>
+			<h3 class="section__heading">AI 工作流</h3>
 			<div class="ai-grid">
 				<gl-button class="ai-button" appearance="secondary" @click=${() => this.emit('ai-draft-pr')}>
-					<code-icon icon="sparkle"></code-icon>Draft PR description
+					<code-icon icon="sparkle"></code-icon>起草 PR 描述
 				</gl-button>
 				<gl-button class="ai-button" appearance="secondary" @click=${() => this.emit('ai-summarize-branch')}>
-					<code-icon icon="sparkle"></code-icon>Summarize branch
+					<code-icon icon="sparkle"></code-icon>总结分支
 				</gl-button>
 				${ahead > 0
 					? html`<gl-button
@@ -257,11 +250,11 @@ export class GlDetailsWipEmptyPane extends LitElement {
 							appearance="secondary"
 							@click=${() => this.emit('ai-review-unpushed')}
 						>
-							<code-icon icon="sparkle"></code-icon>Review ${pluralize('unpushed commit', ahead)}
+							<code-icon icon="sparkle"></code-icon>审查 ${ahead} 个未推送提交
 						</gl-button>`
 					: nothing}
 				<gl-button class="ai-button" appearance="secondary" @click=${() => this.emit('ai-changelog')}>
-					<code-icon icon="sparkle"></code-icon>Generate changelog entry
+					<code-icon icon="sparkle"></code-icon>生成变更日志条目
 				</gl-button>
 			</div>
 		</section>`;
@@ -279,7 +272,7 @@ export class GlDetailsWipEmptyPane extends LitElement {
 						)}
 					>
 						<code-icon class="launchpad-item__icon" icon="plug"></code-icon>
-						<span>Connect to see PRs here</span>
+						<span>连接后在此查看 PR</span>
 					</a>
 				</li>
 			</ul>`;
@@ -297,7 +290,7 @@ export class GlDetailsWipEmptyPane extends LitElement {
 
 		if (!('total' in summary)) {
 			return html`<ul class="launchpad-items">
-				<li class="launchpad-item launchpad-item--muted">Unable to load items</li>
+				<li class="launchpad-item launchpad-item--muted">无法加载项目</li>
 			</ul>`;
 		}
 
@@ -308,14 +301,14 @@ export class GlDetailsWipEmptyPane extends LitElement {
 				html`<li>
 					<span class="launchpad-item launchpad-item--muted">
 						<code-icon class="launchpad-item__icon" icon="warning"></code-icon>
-						<span>Some integrations failed to load</span>
+						<span>部分集成加载失败</span>
 					</span>
 				</li>`,
 			);
 		}
 
 		if (summary.total === 0) {
-			items.push(html`<li class="launchpad-item launchpad-item--muted">You are all caught up!</li>`);
+			items.push(html`<li class="launchpad-item launchpad-item--muted">你已全部处理完！</li>`);
 			return html`<ul class="launchpad-items">
 				${items}
 			</ul>`;
@@ -323,8 +316,8 @@ export class GlDetailsWipEmptyPane extends LitElement {
 
 		if (!summary.hasGroupedItems) {
 			items.push(
-				html`<li class="launchpad-item launchpad-item--muted">No pull requests need your attention</li>
-					<li class="launchpad-item launchpad-item--muted">(${summary.total} other pull requests)</li>`,
+				html`<li class="launchpad-item launchpad-item--muted">没有需要你关注的 PR</li>
+					<li class="launchpad-item launchpad-item--muted">（另有 ${summary.total} 个 PR）</li>`,
 			);
 			return html`<ul class="launchpad-items">
 				${items}
@@ -344,7 +337,7 @@ export class GlDetailsWipEmptyPane extends LitElement {
 								href=${this.createShowLaunchpadLink('mergeable')}
 							>
 								<code-icon class="launchpad-item__icon" icon="rocket"></code-icon>
-								<span>${pluralize('pull request', total)} can be merged</span>
+								<span>${total} 个 PR 可以合并</span>
 							</a>
 						</li>`,
 					);
@@ -358,19 +351,19 @@ export class GlDetailsWipEmptyPane extends LitElement {
 					if (summary.blocked!.unassignedReviewers) {
 						messages.push({
 							count: summary.blocked!.unassignedReviewers,
-							message: `${summary.blocked!.unassignedReviewers > 1 ? 'need' : 'needs'} reviewers`,
+							message: '需要审阅者',
 						});
 					}
 					if (summary.blocked!.failedChecks) {
 						messages.push({
 							count: summary.blocked!.failedChecks,
-							message: `${summary.blocked!.failedChecks > 1 ? 'have' : 'has'} failed CI checks`,
+							message: 'CI 检查失败',
 						});
 					}
 					if (summary.blocked!.conflicts) {
 						messages.push({
 							count: summary.blocked!.conflicts,
-							message: `${summary.blocked!.conflicts > 1 ? 'have' : 'has'} conflicts`,
+							message: '存在冲突',
 						});
 					}
 
@@ -380,7 +373,7 @@ export class GlDetailsWipEmptyPane extends LitElement {
 							html`<li>
 								<a class="launchpad-item launchpad-item--link launchpad-item--blocked" href=${href}>
 									<code-icon class="launchpad-item__icon" icon="error"></code-icon>
-									<span>${pluralize('pull request', total)} ${messages[0].message}</span>
+									<span>${total} 个 PR ${messages[0].message}</span>
 								</a>
 							</li>`,
 						);
@@ -390,7 +383,7 @@ export class GlDetailsWipEmptyPane extends LitElement {
 								<a class="launchpad-item launchpad-item--link launchpad-item--blocked" href=${href}>
 									<code-icon class="launchpad-item__icon" icon="error"></code-icon>
 									<span
-										>${pluralize('pull request', total)} ${total > 1 ? 'are' : 'is'} blocked
+										>${total} 个 PR 被阻止
 										(${messages.map(m => `${m.count} ${m.message}`).join(', ')})</span
 									>
 								</a>
@@ -410,10 +403,7 @@ export class GlDetailsWipEmptyPane extends LitElement {
 								href=${this.createShowLaunchpadLink('follow-up')}
 							>
 								<code-icon class="launchpad-item__icon" icon="report"></code-icon>
-								<span
-									>${pluralize('pull request', total)} ${total > 1 ? 'require' : 'requires'}
-									follow-up</span
-								>
+								<span>${total} 个 PR 需要跟进</span>
 							</a>
 						</li>`,
 					);
@@ -430,10 +420,7 @@ export class GlDetailsWipEmptyPane extends LitElement {
 								href=${this.createShowLaunchpadLink('needs-review')}
 							>
 								<code-icon class="launchpad-item__icon" icon="comment-unresolved"></code-icon>
-								<span
-									>${pluralize('pull request', total)} ${total > 1 ? 'need' : 'needs'} your
-									review</span
-								>
+								<span>${total} 个 PR 需要你审阅</span>
 							</a>
 						</li>`,
 					);
@@ -467,23 +454,23 @@ export class GlDetailsWipEmptyPane extends LitElement {
 		if (upstreamMissing) {
 			steps.push({
 				icon: 'cloud-upload',
-				label: `Publish ${branch.name} to ${remoteName}`,
-				actionLabel: 'Publish',
+				label: `将 ${branch.name} 发布到 ${remoteName}`,
+				actionLabel: '发布',
 				event: 'publish-branch',
 			});
 		} else {
 			if (behind > 0) {
 				steps.push({
 					icon: 'repo-pull',
-					label: `Pull ${pluralize('commit', behind)} from ${remoteName}`,
-					actionLabel: 'Pull',
+					label: `从 ${remoteName} 拉取 ${behind} 个提交`,
+					actionLabel: '拉取',
 					event: 'pull',
 				});
 			} else if (ahead > 0) {
 				steps.push({
 					icon: 'repo-push',
-					label: `Push ${pluralize('commit', ahead)} to ${remoteName}`,
-					actionLabel: 'Push',
+					label: `推送 ${ahead} 个提交到 ${remoteName}`,
+					actionLabel: '推送',
 					event: 'push',
 				});
 			}
@@ -497,15 +484,15 @@ export class GlDetailsWipEmptyPane extends LitElement {
 				const pr = this.pullRequest;
 				steps.push({
 					icon: 'git-pull-request',
-					label: `Pull Request #${pr.id}: ${pr.title}`,
-					actionLabel: 'View',
+					label: `PR #${pr.id}: ${pr.title}`,
+					actionLabel: '查看',
 					href: pr.url,
 				});
 			} else if (this.pullRequestLoading) {
 				steps.push({
 					icon: 'git-pull-request',
-					label: 'Checking for pull request…',
-					actionLabel: 'Checking',
+					label: '正在检查 PR…',
+					actionLabel: '正在检查',
 					loading: true,
 					event: '',
 				});
@@ -513,8 +500,8 @@ export class GlDetailsWipEmptyPane extends LitElement {
 				const useAI = this.aiCreatePrEnabled;
 				steps.push({
 					icon: 'git-pull-request-create',
-					label: 'Create a Pull Request',
-					actionLabel: 'Create PR',
+					label: '创建 PR',
+					actionLabel: '创建 PR',
 					actionPrefixIcon: useAI ? 'sparkle' : undefined,
 					event: useAI ? 'create-pr-ai' : 'create-pr',
 				});
@@ -548,14 +535,14 @@ export class GlDetailsWipEmptyPane extends LitElement {
 
 		const review: NextStep = {
 			icon: 'checklist',
-			label: 'Review Changes',
-			actionLabel: 'Review',
+			label: '审查更改',
+			actionLabel: '审查',
 			event: 'review-branch-changes',
 		};
 		const recompose: NextStep = {
 			icon: 'wand',
-			label: 'Recompose Branch',
-			actionLabel: 'Recompose',
+			label: '重新编排分支',
+			actionLabel: '重新编排',
 			event: 'recompose-branch-changes',
 		};
 
@@ -595,7 +582,7 @@ export class GlDetailsWipEmptyPane extends LitElement {
 		};
 
 		const isWorktree = branch.worktree != null && !branch.worktree.isDefault;
-		const deleteLabel = isWorktree ? 'Delete Worktree' : 'Delete Branch';
+		const deleteLabel = isWorktree ? '删除 Worktree' : '删除分支';
 
 		const mergedStatus = mergeTarget.mergedStatus;
 		if (mergedStatus?.merged && mergedStatus.localBranchOnly) {
@@ -605,12 +592,12 @@ export class GlDetailsWipEmptyPane extends LitElement {
 				branchName: mergedStatus.localBranchOnly.name,
 				branchUpstreamName: mergedStatus.localBranchOnly.upstream?.name,
 			};
-			const likely = mergedStatus.confidence !== 'highest' ? 'Likely ' : '';
+			const likely = mergedStatus.confidence !== 'highest' ? '可能' : '';
 			return {
 				icon: 'git-merge',
 				iconFlip: 'block',
-				label: `Branch ${likely}Merged Locally into ${mergeTarget.name}`,
-				actionLabel: `Push ${mergedStatus.localBranchOnly.name}`,
+				label: `分支${likely}已在本地合并到 ${mergeTarget.name}`,
+				actionLabel: `推送 ${mergedStatus.localBranchOnly.name}`,
 				href: this._webview.createCommandLink<BranchRef>('gitlens.pushBranch:', localTargetRef),
 				alt: {
 					actionLabel: deleteLabel,
@@ -624,11 +611,11 @@ export class GlDetailsWipEmptyPane extends LitElement {
 		}
 
 		if (mergedStatus?.merged) {
-			const likely = mergedStatus.confidence !== 'highest' ? 'Likely ' : '';
+			const likely = mergedStatus.confidence !== 'highest' ? '可能' : '';
 			return {
 				icon: 'git-merge',
 				iconFlip: 'block',
-				label: `Branch ${likely}Merged into ${mergeTarget.name}`,
+				label: `分支${likely}已合并到 ${mergeTarget.name}`,
 				actionLabel: deleteLabel,
 				href: this._webview.createCommandLink<[BranchRef, BranchRef]>('gitlens.deleteBranchOrWorktree:', [
 					branchRef,
@@ -642,12 +629,12 @@ export class GlDetailsWipEmptyPane extends LitElement {
 			return {
 				icon: 'git-merge',
 				iconFlip: 'block',
-				label: `Potential Conflicts with ${mergeTarget.name}`,
-				actionLabel: 'Rebase',
+				label: `可能与 ${mergeTarget.name} 冲突`,
+				actionLabel: '变基',
 				event: 'rebase-onto-merge-target',
 				alt: {
-					actionLabel: 'Merge',
-					tooltip: `Merge ${mergeTarget.name} into ${branch.name} instead`,
+					actionLabel: '合并',
+					tooltip: `改为将 ${mergeTarget.name} 合并到 ${branch.name}`,
 					event: 'merge-merge-target-into-current',
 				},
 			};
@@ -659,12 +646,12 @@ export class GlDetailsWipEmptyPane extends LitElement {
 		return {
 			icon: 'git-merge',
 			iconFlip: 'block',
-			label: `${pluralize('Commit', behind)} Behind ${mergeTarget.name}`,
-			actionLabel: 'Rebase',
+			label: `落后 ${mergeTarget.name} ${behind} 个提交`,
+			actionLabel: '变基',
 			event: 'rebase-onto-merge-target',
 			alt: {
-				actionLabel: 'Merge',
-				tooltip: `Merge ${mergeTarget.name} into ${branch.name} instead`,
+				actionLabel: '合并',
+				tooltip: `改为将 ${mergeTarget.name} 合并到 ${branch.name}`,
 				event: 'merge-merge-target-into-current',
 			},
 		};

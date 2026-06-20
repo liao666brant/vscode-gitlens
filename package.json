@@ -6547,24 +6547,24 @@
 			},
 			{
 				"command": "gitlens.agents.installClaudeHook",
-				"title": "Install Claude Hooks",
+				"title": "安装 Claude Hooks",
 				"category": "GitLens"
 			},
 			{
 				"command": "gitlens.agents.openSession",
-				"title": "Open AI Agent Session",
+				"title": "打开 AI Agent 会话",
 				"category": "GitLens",
 				"icon": "$(robot)"
 			},
 			{
 				"command": "gitlens.agents.switchDefaultAgent",
-				"title": "Switch Default Agent...",
+				"title": "切换默认 Agent...",
 				"category": "GitLens",
 				"icon": "$(arrow-swap)"
 			},
 			{
 				"command": "gitlens.agents.uninstallClaudeHook",
-				"title": "Uninstall Claude Hooks",
+				"title": "卸载 Claude Hooks",
 				"category": "GitLens"
 			},
 			{
@@ -6704,17 +6704,17 @@
 			},
 			{
 				"command": "gitlens.ai.mcp.selectAgents",
-				"title": "Connect GitKraken MCP to More Agents...",
+				"title": "将 GitKraken MCP 连接到更多 Agent...",
 				"category": "GitLens"
 			},
 			{
 				"command": "gitlens.ai.resolveConflicts",
-				"title": "Resolve Conflicts with AI (Preview)...",
+				"title": "使用 AI 解决冲突（预览）...",
 				"category": "GitLens"
 			},
 			{
 				"command": "gitlens.ai.resolveConflicts:views",
-				"title": "Resolve Conflict with AI (Preview)",
+				"title": "使用 AI 解决冲突（预览）",
 				"icon": "$(sparkle)"
 			},
 			{
@@ -6869,12 +6869,12 @@
 			},
 			{
 				"command": "gitlens.connectRemoteProvider:graph",
-				"title": "Connect Remote Integration",
+				"title": "连接远程集成",
 				"icon": "$(plug)"
 			},
 			{
 				"command": "gitlens.connectRemoteProvider:views",
-				"title": "Connect Remote Integration",
+				"title": "连接远程集成",
 				"icon": "$(plug)"
 			},
 			{
@@ -6992,22 +6992,22 @@
 			},
 			{
 				"command": "gitlens.copyPath:commitDetails",
-				"title": "Copy Path",
+				"title": "复制路径",
 				"icon": "$(copy)"
 			},
 			{
 				"command": "gitlens.copyPath:graphDetails",
-				"title": "Copy Path",
+				"title": "复制路径",
 				"icon": "$(copy)"
 			},
 			{
 				"command": "gitlens.copyPath.multi:commitDetails",
-				"title": "Copy Paths",
+				"title": "复制路径",
 				"icon": "$(copy)"
 			},
 			{
 				"command": "gitlens.copyPath.multi:graphDetails",
-				"title": "Copy Paths",
+				"title": "复制路径",
 				"icon": "$(copy)"
 			},
 			{
@@ -7028,12 +7028,12 @@
 			},
 			{
 				"command": "gitlens.copyRelativePathToClipboard.multi:commitDetails",
-				"title": "Copy Relative Paths",
+				"title": "复制相对路径",
 				"icon": "$(copy)"
 			},
 			{
 				"command": "gitlens.copyRelativePathToClipboard.multi:graphDetails",
-				"title": "Copy Relative Paths",
+				"title": "复制相对路径",
 				"icon": "$(copy)"
 			},
 			{
@@ -7111,12 +7111,12 @@
 			},
 			{
 				"command": "gitlens.copyRemoteRepositoryUrl:graph",
-				"title": "Copy Remote URL",
+				"title": "复制远程 URL",
 				"icon": "$(copy)"
 			},
 			{
 				"command": "gitlens.copyRemoteRepositoryUrl:views",
-				"title": "Copy Remote Repository URL",
+				"title": "复制远程仓库 URL",
 				"icon": "$(copy)"
 			},
 			{
@@ -7312,22 +7312,22 @@
 			},
 			{
 				"command": "gitlens.discardChanges:commitDetails",
-				"title": "Discard Changes...",
+				"title": "丢弃更改...",
 				"icon": "$(discard)"
 			},
 			{
 				"command": "gitlens.discardChanges:graphDetails",
-				"title": "Discard Changes...",
+				"title": "丢弃更改...",
 				"icon": "$(discard)"
 			},
 			{
 				"command": "gitlens.discardChanges.multi:commitDetails",
-				"title": "Discard Changes...",
+				"title": "丢弃更改...",
 				"icon": "$(discard)"
 			},
 			{
 				"command": "gitlens.discardChanges.multi:graphDetails",
-				"title": "Discard Changes...",
+				"title": "丢弃更改...",
 				"icon": "$(discard)"
 			},
 			{
@@ -7338,12 +7338,12 @@
 			},
 			{
 				"command": "gitlens.disconnectRemoteProvider:graph",
-				"title": "Disconnect Remote Integration",
+				"title": "断开远程集成",
 				"icon": "$(gitlens-unplug)"
 			},
 			{
 				"command": "gitlens.disconnectRemoteProvider:views",
-				"title": "Disconnect Remote Integration",
+				"title": "断开远程集成",
 				"icon": "$(gitlens-unplug)"
 			},
 			{
@@ -7383,7 +7383,7 @@
 			},
 			{
 				"command": "gitlens.fetchRemote:graph",
-				"title": "Fetch",
+				"title": "拉取更新",
 				"icon": "$(repo-fetch)",
 				"enablement": "!operationInProgress"
 			},
@@ -7797,13 +7797,13 @@
 			},
 			{
 				"command": "gitlens.graph.deleteWorktree",
-				"title": "Delete Worktree...",
+				"title": "删除工作树...",
 				"icon": "$(trash)",
 				"enablement": "!operationInProgress"
 			},
 			{
 				"command": "gitlens.graph.dropCommits.multi",
-				"title": "Drop Commits...",
+				"title": "丢弃提交...",
 				"enablement": "!operationInProgress"
 			},
 			{
@@ -7833,12 +7833,12 @@
 			},
 			{
 				"command": "gitlens.graph.modifyCommits",
-				"title": "Modify Commits from Here (Interactive Rebase)...",
+				"title": "从此处修改提交（Interactive Rebase）...",
 				"enablement": "!operationInProgress"
 			},
 			{
 				"command": "gitlens.graph.modifyCommits.multi",
-				"title": "Modify Commits (Interactive Rebase)...",
+				"title": "修改提交（Interactive Rebase）...",
 				"enablement": "!operationInProgress"
 			},
 			{
@@ -7898,7 +7898,7 @@
 			},
 			{
 				"command": "gitlens.graph.pinBranchToEdge",
-				"title": "Pin Branch to Edge"
+				"title": "将分支固定到边缘"
 			},
 			{
 				"command": "gitlens.graph.pull",
@@ -7914,7 +7914,7 @@
 			},
 			{
 				"command": "gitlens.graph.pushToCommit",
-				"title": "Push to Commit...",
+				"title": "推送到提交...",
 				"icon": "$(repo-push)",
 				"enablement": "!operationInProgress"
 			},
@@ -7980,22 +7980,22 @@
 			},
 			{
 				"command": "gitlens.graph.resolveAllConflictsWithAI:graph",
-				"title": "Resolve All Conflicts with AI (Preview)",
+				"title": "使用 AI 解决所有冲突（预览）",
 				"icon": "$(sparkle)"
 			},
 			{
 				"command": "gitlens.graph.resolveConflictsWithAI.multi:graph",
-				"title": "Resolve Conflicts with AI (Preview)",
+				"title": "使用 AI 解决冲突（预览）",
 				"icon": "$(sparkle)"
 			},
 			{
 				"command": "gitlens.graph.resolveConflictWithAI:graph",
-				"title": "Resolve Conflict with AI (Preview)",
+				"title": "使用 AI 解决冲突（预览）",
 				"icon": "$(sparkle)"
 			},
 			{
 				"command": "gitlens.graph.revealWorktreeInExplorer",
-				"title": "Reveal in File Explorer"
+				"title": "在文件资源管理器中显示"
 			},
 			{
 				"command": "gitlens.graph.revert",
@@ -8004,7 +8004,7 @@
 			},
 			{
 				"command": "gitlens.graph.rewordCommit",
-				"title": "Reword Commit...",
+				"title": "修改提交消息...",
 				"enablement": "!operationInProgress"
 			},
 			{
@@ -8087,17 +8087,17 @@
 			},
 			{
 				"command": "gitlens.graph.squashCommits.multi",
-				"title": "Squash Commits...",
+				"title": "压缩提交...",
 				"enablement": "!operationInProgress"
 			},
 			{
 				"command": "gitlens.graph.stageConflictCurrentChanges:graph",
-				"title": "Stage Current Changes",
+				"title": "暂存当前更改",
 				"icon": "$(reply)"
 			},
 			{
 				"command": "gitlens.graph.stageConflictIncomingChanges:graph",
-				"title": "Stage Incoming Changes",
+				"title": "暂存传入更改",
 				"icon": "$(forward)"
 			},
 			{
@@ -8132,13 +8132,13 @@
 			},
 			{
 				"command": "gitlens.graph.undoCommitOnWorktree",
-				"title": "Undo Commit on Worktree",
+				"title": "撤销工作树上的提交",
 				"icon": "$(discard)",
 				"enablement": "!operationInProgress"
 			},
 			{
 				"command": "gitlens.graph.unpinBranchFromEdge",
-				"title": "Unpin Branch from Edge"
+				"title": "从边缘取消固定分支"
 			},
 			{
 				"command": "gitlens.inviteToLiveShare",
@@ -8171,12 +8171,12 @@
 			},
 			{
 				"command": "gitlens.openBranchesOnRemote:graph",
-				"title": "Open Branches on Remote",
+				"title": "在远程打开分支",
 				"icon": "$(globe)"
 			},
 			{
 				"command": "gitlens.openBranchesOnRemote:views",
-				"title": "Open Branches on Remote",
+				"title": "在远程打开分支",
 				"icon": "$(globe)"
 			},
 			{
@@ -8281,12 +8281,12 @@
 			},
 			{
 				"command": "gitlens.openFileOnRemote.multi:commitDetails",
-				"title": "Open Files on Remote",
+				"title": "在远程打开文件",
 				"icon": "$(globe)"
 			},
 			{
 				"command": "gitlens.openFileOnRemote.multi:graphDetails",
-				"title": "Open Files on Remote",
+				"title": "在远程打开文件",
 				"icon": "$(globe)"
 			},
 			{
@@ -8313,11 +8313,11 @@
 			},
 			{
 				"command": "gitlens.openFolderHistory:commitDetails",
-				"title": "Open Folder History"
+				"title": "打开文件夹历史"
 			},
 			{
 				"command": "gitlens.openFolderHistory:graphDetails",
-				"title": "Open Folder History in View"
+				"title": "在视图中打开文件夹历史"
 			},
 			{
 				"command": "gitlens.openFolderHistoryInGraph",
@@ -8326,7 +8326,7 @@
 			},
 			{
 				"command": "gitlens.openFolderHistoryInGraph:commitDetails",
-				"title": "Open Folder History in Commit Graph",
+				"title": "在提交图中打开文件夹历史",
 				"icon": "$(gitlens-graph)"
 			},
 			{
@@ -8336,7 +8336,7 @@
 			},
 			{
 				"command": "gitlens.openFolderHistoryInGraph:graphDetails",
-				"title": "Open Folder History",
+				"title": "打开文件夹历史",
 				"icon": "$(gitlens-graph)"
 			},
 			{
@@ -8346,7 +8346,7 @@
 			},
 			{
 				"command": "gitlens.openInIntegratedTerminal:graph",
-				"title": "Open in Integrated Terminal",
+				"title": "在集成终端中打开",
 				"icon": "$(terminal)"
 			},
 			{
@@ -8412,12 +8412,12 @@
 			},
 			{
 				"command": "gitlens.openRepoOnRemote:graph",
-				"title": "Open on Remote",
+				"title": "在远程打开",
 				"icon": "$(globe)"
 			},
 			{
 				"command": "gitlens.openRepoOnRemote:views",
-				"title": "Open Repository on Remote",
+				"title": "在远程打开仓库",
 				"icon": "$(globe)"
 			},
 			{
@@ -8440,12 +8440,12 @@
 			},
 			{
 				"command": "gitlens.openSelectedChanges.multi:commitDetails",
-				"title": "Open Selected Changes",
+				"title": "打开选中的更改",
 				"icon": "$(diff-multiple)"
 			},
 			{
 				"command": "gitlens.openSelectedChanges.multi:graphDetails",
-				"title": "Open Selected Changes",
+				"title": "打开选中的更改",
 				"icon": "$(diff-multiple)"
 			},
 			{
@@ -8476,12 +8476,12 @@
 			},
 			{
 				"command": "gitlens.openWorktreeFile:commitDetails",
-				"title": "Open Worktree File",
+				"title": "打开工作树文件",
 				"icon": "$(go-to-file)"
 			},
 			{
 				"command": "gitlens.openWorktreeFile:graphDetails",
-				"title": "Open Worktree File",
+				"title": "打开工作树文件",
 				"icon": "$(go-to-file)"
 			},
 			{
@@ -8580,13 +8580,13 @@
 			},
 			{
 				"command": "gitlens.pruneRemote:graph",
-				"title": "Prune",
+				"title": "修剪",
 				"icon": "$(close)",
 				"enablement": "!operationInProgress"
 			},
 			{
 				"command": "gitlens.pruneRemote:views",
-				"title": "Prune",
+				"title": "修剪",
 				"enablement": "!operationInProgress"
 			},
 			{
@@ -8673,12 +8673,12 @@
 			},
 			{
 				"command": "gitlens.rebase.stageCurrentChanges:rebase",
-				"title": "Stage Current Changes",
+				"title": "暂存当前更改",
 				"icon": "$(reply)"
 			},
 			{
 				"command": "gitlens.rebase.stageIncomingChanges:rebase",
-				"title": "Stage Incoming Changes",
+				"title": "暂存传入更改",
 				"icon": "$(forward)"
 			},
 			{
@@ -8728,13 +8728,13 @@
 			},
 			{
 				"command": "gitlens.removeRemote:graph",
-				"title": "Remove Remote",
+				"title": "移除远程",
 				"icon": "$(trash)",
 				"enablement": "!operationInProgress"
 			},
 			{
 				"command": "gitlens.removeRemote:views",
-				"title": "Remove Remote...",
+				"title": "移除远程...",
 				"enablement": "!operationInProgress"
 			},
 			{
@@ -8780,16 +8780,16 @@
 			},
 			{
 				"command": "gitlens.reviewChanges:graph",
-				"title": "Review Changes (Preview)...",
+				"title": "审查更改（预览）...",
 				"icon": "$(checklist)"
 			},
 			{
 				"command": "gitlens.setRemoteAsDefault:graph",
-				"title": "Set as Default"
+				"title": "设为默认"
 			},
 			{
 				"command": "gitlens.setRemoteAsDefault:views",
-				"title": "Set as Default"
+				"title": "设为默认"
 			},
 			{
 				"command": "gitlens.setUpstream:graph",
@@ -9167,7 +9167,7 @@
 			},
 			{
 				"command": "gitlens.startWork.openInAgent",
-				"title": "Start Work with Agent",
+				"title": "使用 Agent 开始工作",
 				"category": "GitLens",
 				"icon": "$(rocket)"
 			},
@@ -9185,22 +9185,22 @@
 			},
 			{
 				"command": "gitlens.stashChanges:commitDetails",
-				"title": "Stash Changes...",
+				"title": "储藏更改...",
 				"icon": "$(gitlens-stash-save)"
 			},
 			{
 				"command": "gitlens.stashChanges:graphDetails",
-				"title": "Stash Changes...",
+				"title": "储藏更改...",
 				"icon": "$(gitlens-stash-save)"
 			},
 			{
 				"command": "gitlens.stashChanges.multi:commitDetails",
-				"title": "Stash Changes...",
+				"title": "储藏更改...",
 				"icon": "$(gitlens-stash-save)"
 			},
 			{
 				"command": "gitlens.stashChanges.multi:graphDetails",
-				"title": "Stash Changes...",
+				"title": "储藏更改...",
 				"icon": "$(gitlens-stash-save)"
 			},
 			{
@@ -9435,11 +9435,11 @@
 			},
 			{
 				"command": "gitlens.unsetRemoteAsDefault:graph",
-				"title": "Unset as Default"
+				"title": "取消设为默认"
 			},
 			{
 				"command": "gitlens.unsetRemoteAsDefault:views",
-				"title": "Unset as Default"
+				"title": "取消设为默认"
 			},
 			{
 				"command": "gitlens.unstar.branch:graph",
@@ -10446,12 +10446,12 @@
 			},
 			{
 				"command": "gitlens.views.openFile.multi:commitDetails",
-				"title": "Open Files",
+				"title": "打开文件",
 				"icon": "$(go-to-file)"
 			},
 			{
 				"command": "gitlens.views.openFile.multi:graphDetails",
-				"title": "Open Files",
+				"title": "打开文件",
 				"icon": "$(go-to-file)"
 			},
 			{
@@ -11428,12 +11428,12 @@
 			},
 			{
 				"command": "gitlens.views.stageFile.multi:commitDetails",
-				"title": "Stage Changes",
+				"title": "暂存更改",
 				"icon": "$(add)"
 			},
 			{
 				"command": "gitlens.views.stageFile.multi:graphDetails",
-				"title": "Stage Changes",
+				"title": "暂存更改",
 				"icon": "$(add)"
 			},
 			{
@@ -11625,12 +11625,12 @@
 			},
 			{
 				"command": "gitlens.views.unstageFile.multi:commitDetails",
-				"title": "Unstage Changes",
+				"title": "取消暂存更改",
 				"icon": "$(remove)"
 			},
 			{
 				"command": "gitlens.views.unstageFile.multi:graphDetails",
-				"title": "Unstage Changes",
+				"title": "取消暂存更改",
 				"icon": "$(remove)"
 			},
 			{
@@ -11874,7 +11874,7 @@
 			},
 			{
 				"command": "gitlens.visualizeHistory.folder:commitDetails",
-				"title": "Open Visual Folder History",
+				"title": "打开可视化文件夹历史",
 				"icon": "$(graph-scatter)"
 			},
 			{
@@ -11884,7 +11884,7 @@
 			},
 			{
 				"command": "gitlens.visualizeHistory.folder:graphDetails",
-				"title": "Open Visual Folder History",
+				"title": "打开可视化文件夹历史",
 				"icon": "$(graph-scatter)"
 			},
 			{
@@ -28051,7 +28051,7 @@
 			},
 			{
 				"id": "gitlens/webview/folder/history",
-				"label": "Folder History"
+				"label": "文件夹历史"
 			}
 		],
 		"keybindings": [

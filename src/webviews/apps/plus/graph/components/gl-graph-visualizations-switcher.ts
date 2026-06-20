@@ -22,10 +22,10 @@ interface VisualizationConfig {
 }
 
 const visualizationConfigs: Record<VisualizationKey, VisualizationConfig> = {
-	timeline: { mode: 'timeline', icon: 'graph-scatter', label: 'Visual History' },
-	'treemap-files': { mode: 'treemap', treemapMode: 'files', icon: 'folder', label: 'Files Treemap' },
-	'treemap-commits': { mode: 'treemap', treemapMode: 'commits', icon: 'git-commit', label: 'Commits Treemap' },
-	'treemap-activity': { mode: 'treemap', treemapMode: 'activity', icon: 'robot', label: 'Agent Activity Treemap' },
+	timeline: { mode: 'timeline', icon: 'graph-scatter', label: '可视化历史' },
+	'treemap-files': { mode: 'treemap', treemapMode: 'files', icon: 'folder', label: '文件树状图' },
+	'treemap-commits': { mode: 'treemap', treemapMode: 'commits', icon: 'git-commit', label: '提交树状图' },
+	'treemap-activity': { mode: 'treemap', treemapMode: 'activity', icon: 'robot', label: 'Agent 活动树状图' },
 };
 
 const visualizationOrder: readonly VisualizationKey[] = [
@@ -189,10 +189,10 @@ export class GlGraphVisualizationsSwitcher extends SignalWatcher(LitElement) {
 		const active = this.activeKey;
 		const commitsUnavailable = this.commitsUnavailable;
 
-		return html`<div role="tablist" aria-label="Visualization" class="visualization-tablist">
+		return html`<div role="tablist" aria-label="可视化" class="visualization-tablist">
 			${visualizationOrder.map(key => {
 				const disabled = key === 'treemap-commits' && commitsUnavailable;
-				const disabledMessage = disabled ? 'Commit history is unavailable for virtual repositories' : undefined;
+				const disabledMessage = disabled ? '虚拟仓库无法使用提交历史' : undefined;
 				return this.renderButton(key, active, disabled, disabledMessage);
 			})}
 		</div>`;
