@@ -14,7 +14,6 @@ import { Logger } from '@gitlens/utils/logger.js';
 import { areEqual } from '@gitlens/utils/object.js';
 import { extname, normalizePath } from '@gitlens/utils/path.js';
 import { getSettledValue } from '@gitlens/utils/promise.js';
-import { pluralize } from '@gitlens/utils/string.js';
 import { getAvatarUri, getAvatarUriFromGravatarEmail } from '../../avatars.js';
 import type { DiffWithCommandArgs } from '../../commands/diffWith.js';
 import type { GlWebviewCommandsOrCommandsWithSuffix } from '../../constants.commands.js';
@@ -315,7 +314,7 @@ export class RebaseWebviewProvider implements Disposable {
 		const pausedStatus = await svc.pausedOps?.getPausedOperationStatus?.();
 		if (pausedStatus?.type !== 'rebase' || pausedStatus.mergeBase == null) {
 			Logger.warn('onOpenConflictChanges: unable to open conflict changes — missing rebase status or merge base');
-			void window.showWarningMessage('Unable to open conflict changes — rebase status is no longer available');
+			void window.showWarningMessage('无法打开冲突更改 — rebase 状态不再可用');
 			return;
 		}
 
@@ -399,7 +398,7 @@ export class RebaseWebviewProvider implements Disposable {
 		const pausedStatus = await svc.pausedOps?.getPausedOperationStatus?.();
 		if (pausedStatus?.type !== 'rebase') {
 			Logger.warn('stageConflictResolution: unable to resolve — missing rebase status');
-			void window.showWarningMessage('Unable to resolve conflict — rebase status is no longer available');
+			void window.showWarningMessage('无法解决冲突 — rebase 状态不再可用');
 			return;
 		}
 
@@ -446,9 +445,9 @@ export class RebaseWebviewProvider implements Disposable {
 		const markerCount = await this.countConflictMarkers(uri);
 		if (markerCount > 0) {
 			const proceed = await window.showWarningMessage(
-				`${normalizedPath} still contains ${pluralize('unresolved conflict marker', markerCount)}.\n\nStage anyway?`,
+				`${normalizedPath} 仍包含 ${markerCount} 个未解决的冲突标记。\n\n仍要暂存吗？`,
 				{ modal: true },
-				{ title: 'Stage Anyway' },
+				{ title: '仍然暂存' },
 			);
 			if (proceed == null) return;
 		}
@@ -478,10 +477,10 @@ export class RebaseWebviewProvider implements Disposable {
 		const conflictFiles = await svc.status.getConflictingFiles();
 		if (!conflictFiles.length) return;
 
-		const confirmTitle = params.resolution === 'current' ? 'Stage All Current' : 'Stage All Incoming';
-		const discardedSide = params.resolution === 'current' ? 'incoming' : 'current';
+		const confirmTitle = params.resolution === 'current' ? '暂存全部当前更改' : '暂存全部传入更改';
+		const discardedSide = params.resolution === 'current' ? '传入' : '当前';
 		const result = await window.showWarningMessage(
-			`Resolve all ${conflictFiles.length} conflicted files by staging the ${params.resolution} side?\n\nThis will discard the ${discardedSide} changes for every conflicted file.`,
+			`通过暂存${params.resolution === 'current' ? '当前' : '传入'}一侧来解决全部 ${conflictFiles.length} 个冲突文件？\n\n这将丢弃每个冲突文件中的${discardedSide}更改。`,
 			{ modal: true },
 			{ title: confirmTitle },
 		);
@@ -565,7 +564,7 @@ export class RebaseWebviewProvider implements Disposable {
 
 		if (failedCount) {
 			void window.showErrorMessage(
-				`Failed to resolve ${failedCount} of ${attempted} conflicted ${failedCount === 1 ? 'file' : 'files'}. See logs for details.`,
+				`未能解决 ${attempted} 个冲突文件中的 ${failedCount} 个。请查看日志了解详情。`,
 			);
 			for (const f of failures) {
 				const error = f.reason instanceof Error ? f.reason : new Error(String(f.reason));

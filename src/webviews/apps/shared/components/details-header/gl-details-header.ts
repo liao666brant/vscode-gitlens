@@ -36,9 +36,9 @@ const modeConfig: Record<
 	},
 	resolve: {
 		icon: 'sparkle',
-		label: 'Resolve Conflicts',
-		closeLabel: 'Close',
-		text: 'Resolve',
+		label: '解决冲突',
+		closeLabel: '关闭',
+		text: '解决',
 		collapsible: true,
 	},
 };
@@ -177,12 +177,12 @@ export class GlDetailsHeader extends LitElement {
 		// first (widest `@container` breakpoint in `gl-details-header.css.ts`).
 		return html`<gl-action-chip
 			icon="compare-changes"
-			label="Compare"
+			label="比较"
 			overlay="tooltip"
 			class="mode-toggle mode-toggle--compare"
 			@click=${this.handleCompare}
 		>
-			<span class="mode-toggle__text">Compare</span>
+			<span class="mode-toggle__text">比较</span>
 		</gl-action-chip>`;
 	}
 

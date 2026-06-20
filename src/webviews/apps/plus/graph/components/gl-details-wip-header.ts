@@ -141,7 +141,6 @@ export class GlDetailsWipHeader extends LitElement {
 			${!isModeActive
 				? html`<gl-action-chip
 							slot="actions"
-							slot="actions"
 							icon="terminal"
 							label="在集成终端中打开"
 							overlay="tooltip"

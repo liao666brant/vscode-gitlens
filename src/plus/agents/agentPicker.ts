@@ -19,13 +19,13 @@ const passFilled = new ThemeIcon('pass-filled');
 function checkButton(isCurrentDefault: boolean, label: string): QuickInputButton {
 	return {
 		iconPath: isCurrentDefault ? passFilled : passEmpty,
-		tooltip: isCurrentDefault ? `Unset as default (${label})` : `Always ${label.toLowerCase()} (set as default)`,
+		tooltip: isCurrentDefault ? `取消默认（${label}）` : `始终使用 ${label.toLowerCase()}（设为默认）`,
 	};
 }
 
 const settingsButton: QuickInputButton = {
 	iconPath: new ThemeIcon('gear'),
-	tooltip: 'Open Default Agent Setting',
+	tooltip: '打开默认 Agent 设置',
 };
 
 interface RouteItem extends QuickPickItem {
@@ -55,9 +55,9 @@ function iconFor(kind: AgentDescriptor['kind']): ThemeIcon {
 function descriptionFor(descriptor: AgentDescriptor): string {
 	switch (descriptor.kind) {
 		case 'ide-chat':
-			return "Open in this IDE's chat";
+			return '在此 IDE 的聊天中打开';
 		case 'claude-extension':
-			return 'VS Code extension';
+			return 'VS Code 扩展';
 		case 'cli':
 			return 'CLI';
 	}
@@ -68,7 +68,7 @@ function sectionLabelFor(kind: AgentDescriptor['kind']): string | undefined {
 		case 'ide-chat':
 			return 'IDE Chat';
 		case 'claude-extension':
-			return 'Extension';
+			return '扩展';
 		case 'cli':
 			return 'CLI';
 	}
@@ -85,23 +85,23 @@ export function* pickRouteStep(options?: { showBackButton?: boolean }): StepResu
 	const buildItems = (currentDefault: AgentRoute): RouteItem[] => [
 		{
 			route: 'agent',
-			label: '$(robot) Open in an agent',
-			description: 'Open a chat or CLI session with the issue context',
+			label: '$(robot) 在 Agent 中打开',
+			description: '使用 Issue 上下文打开聊天或 CLI 会话',
 			picked: currentDefault === 'agent',
-			buttons: [checkButton(currentDefault === 'agent', 'Open in an agent')],
+			buttons: [checkButton(currentDefault === 'agent', '在 Agent 中打开')],
 		},
 		{
 			route: 'manual',
-			label: '$(arrow-right) Continue manually',
-			description: 'Creates the branch/worktree based on your previous selection',
+			label: '$(arrow-right) 手动继续',
+			description: '根据你之前的选择创建分支/工作树',
 			picked: currentDefault === 'manual',
-			buttons: [checkButton(currentDefault === 'manual', 'Continue manually')],
+			buttons: [checkButton(currentDefault === 'manual', '手动继续')],
 		},
 	];
 
 	const step = createPickStep<RouteItem>({
-		title: 'Start with Agent',
-		placeholder: 'Choose to continue with an agent or manually · mark the checkbox of a row to set as default',
+		title: '从 Agent 开始',
+		placeholder: '选择使用 Agent 或手动继续 · 勾选某一行可设为默认',
 		items: buildItems(current),
 		buttons: options?.showBackButton ? [QuickInputButtons.Back] : undefined,
 		onDidClickItemButton: async (qp, _button, item) => {
@@ -146,18 +146,18 @@ export async function* pickAgentStep(
 		if (available.length === 0) {
 			return [
 				{
-					label: '$(warning) No agents available',
-					description: 'No supported IDE chat host, no Claude extension, no detected CLIs',
+					label: '$(warning) 没有可用的 Agent',
+					description: '没有支持的 IDE 聊天宿主、Claude 扩展或检测到的 CLI',
 					kind: QuickPickItemKind.Separator,
 				},
 				{
-					label: '$(arrow-right) Continue Manually',
-					description: 'Skip the agent and proceed with manual flow',
+					label: '$(arrow-right) 手动继续',
+					description: '跳过 Agent 并继续手动流程',
 					action: 'manual',
 				},
 				{
-					label: '$(close) Close',
-					description: 'Cancel the wizard',
+					label: '$(close) 关闭',
+					description: '取消向导',
 					action: 'cancel',
 				},
 			];
@@ -178,7 +178,7 @@ export async function* pickAgentStep(
 				label: `$(${(iconFor(d.kind) as { id?: string }).id ?? 'circle-outline'}) ${d.label}`,
 				description: descriptionFor(d),
 				picked: currentDefaultId === d.id,
-				buttons: [checkButton(currentDefaultId === d.id, `Use ${d.label}`)],
+				buttons: [checkButton(currentDefaultId === d.id, `使用 ${d.label}`)],
 			});
 		}
 		return items;
@@ -190,11 +190,11 @@ export async function* pickAgentStep(
 	}
 
 	const step = createPickStep<AgentItem>({
-		title: options?.title ?? 'Choose an agent',
+		title: options?.title ?? '选择 Agent',
 		placeholder:
 			available.length === 0
-				? 'No agents available'
-				: `${options?.placeholder ?? 'Select where to proceed'} · mark the checkbox of a row to set as default`,
+				? '没有可用的 Agent'
+				: `${options?.placeholder ?? '选择继续的位置'} · 勾选某一行可设为默认`,
 		items: buildItems(currentDefault),
 		buttons: titleButtons,
 		onDidClickButton: (_qp, button) => {
@@ -244,12 +244,12 @@ export async function pickAgentStandalone(options?: AgentPickerOptions): Promise
 		if (available.length === 0) {
 			return [
 				{
-					label: '$(warning) No agents available',
-					description: 'No supported IDE chat host, no Claude extension, no detected CLIs',
+					label: '$(warning) 没有可用的 Agent',
+					description: '没有支持的 IDE 聊天宿主、Claude 扩展或检测到的 CLI',
 					kind: QuickPickItemKind.Separator,
 				},
 				{
-					label: '$(close) Close',
+					label: '$(close) 关闭',
 				},
 			];
 		}
@@ -269,18 +269,18 @@ export async function pickAgentStandalone(options?: AgentPickerOptions): Promise
 				label: `$(${(iconFor(d.kind) as { id?: string }).id ?? 'circle-outline'}) ${d.label}`,
 				description: descriptionFor(d),
 				picked: currentDefaultId === d.id,
-				buttons: [checkButton(currentDefaultId === d.id, `Use ${d.label}`)],
+				buttons: [checkButton(currentDefaultId === d.id, `使用 ${d.label}`)],
 			});
 		}
 		return items;
 	};
 
 	try {
-		qp.title = options?.title ?? 'Choose an agent';
+		qp.title = options?.title ?? '选择 Agent';
 		qp.placeholder =
 			available.length === 0
-				? 'No agents available'
-				: `${options?.placeholder ?? 'Select where to proceed'} · mark the checkbox of a row to set as default`;
+				? '没有可用的 Agent'
+				: `${options?.placeholder ?? '选择继续的位置'} · 勾选某一行可设为默认`;
 		qp.buttons = [settingsButton];
 		qp.items = buildItems(currentDefault);
 		qp.activeItems = qp.items.filter(i => i.picked);
@@ -338,12 +338,12 @@ export async function pickAndSetDefaultAgent(options?: AgentPickerOptions): Prom
 		if (available.length === 0) {
 			return [
 				{
-					label: '$(warning) No agents available',
-					description: 'No supported IDE chat host, no Claude extension, no detected CLIs',
+					label: '$(warning) 没有可用的 Agent',
+					description: '没有支持的 IDE 聊天宿主、Claude 扩展或检测到的 CLI',
 					kind: QuickPickItemKind.Separator,
 				},
 				{
-					label: '$(close) Close',
+					label: '$(close) 关闭',
 				},
 			];
 		}
@@ -368,9 +368,8 @@ export async function pickAndSetDefaultAgent(options?: AgentPickerOptions): Prom
 	};
 
 	try {
-		qp.title = options?.title ?? 'Switch Default Agent';
-		qp.placeholder =
-			available.length === 0 ? 'No agents available' : (options?.placeholder ?? 'Select the default agent');
+		qp.title = options?.title ?? '切换默认 Agent';
+		qp.placeholder = available.length === 0 ? '没有可用的 Agent' : (options?.placeholder ?? '选择默认 Agent');
 		qp.buttons = [settingsButton];
 		qp.items = buildItems();
 		const active = qp.items.find((i): i is AgentItem => 'descriptor' in i && i.descriptor?.id === currentDefault);
@@ -486,7 +485,7 @@ export async function* resolveAgentFlow(
 				return { kind: 'agent', descriptor: descriptor };
 			}
 
-			void window.showInformationMessage(`Default agent is no longer available. Choose another.`);
+			void window.showInformationMessage(`默认 Agent 不再可用。请选择另一个。`);
 		}
 
 		// Need to pick an agent. Show back button only when we got here via the pre-picker.

@@ -15,12 +15,12 @@ interface QuickPickItemOfT<T> extends QuickPickItem {
 }
 
 const negativeReasonsMap = new Map<AIFeedbackUnhelpfulReasons, string>([
-	['suggestionInaccurate', 'Inaccurate or incorrect'],
-	['notRelevant', 'Not relevant'],
-	['missedImportantContext', 'Missed important context'],
-	['unclearOrPoorlyFormatted', 'Unclear or poorly formatted'],
-	['genericOrRepetitive', 'Too generic or not detailed enough'],
-	['other', 'Other'],
+	['suggestionInaccurate', '不准确或不正确'],
+	['notRelevant', '不相关'],
+	['missedImportantContext', '遗漏重要上下文'],
+	['unclearOrPoorlyFormatted', '不清晰或格式不佳'],
+	['genericOrRepetitive', '过于笼统或不够详细'],
+	['other', '其他'],
 ]);
 
 export async function showUnhelpfulFeedbackPicker(): Promise<UnhelpfulResult | undefined> {
@@ -30,9 +30,9 @@ export async function showUnhelpfulFeedbackPicker(): Promise<UnhelpfulResult | u
 
 	// Show quick pick for preset reasons
 	const selectedReasons = await window.showQuickPick(items, {
-		title: 'What could be improved?',
+		title: '哪些方面可以改进？',
 		canPickMany: true,
-		placeHolder: 'Select all that apply (optional)',
+		placeHolder: '选择所有适用项（可选）',
 	});
 
 	if (selectedReasons == null) return undefined;
@@ -40,9 +40,9 @@ export async function showUnhelpfulFeedbackPicker(): Promise<UnhelpfulResult | u
 	let otherCustom: string | undefined;
 	if (selectedReasons?.find(r => r.item === 'other')) {
 		otherCustom = await window.showInputBox({
-			title: 'Other feedback',
-			placeHolder: 'Describe your experience...',
-			prompt: 'Enter your feedback to help us improve our AI features (optional).',
+			title: '其他反馈',
+			placeHolder: '描述你的体验...',
+			prompt: '输入你的反馈，帮助我们改进 AI 功能（可选）。',
 		});
 	}
 

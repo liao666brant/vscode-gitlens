@@ -112,7 +112,7 @@ export class DraftsService {
 		// copy the ENTIRE scope (all staged / all unstaged), contradicting the user's intent. Warn
 		// and bail instead. (`all` intentionally passes no `uris` and must not be gated here.)
 		if (scope !== 'all' && !uris?.length) {
-			void window.showWarningMessage('No changes found to copy');
+			void window.showWarningMessage('没有可复制的更改');
 			return;
 		}
 
@@ -137,18 +137,18 @@ export class DraftsService {
 
 			const diff = await git.diff.getDiff?.(to, from, uris?.length ? { uris: [...uris] } : undefined);
 			if (!diff?.contents) {
-				void window.showWarningMessage('No changes found to copy');
+				void window.showWarningMessage('没有可复制的更改');
 				return;
 			}
 
 			await env.clipboard.writeText(diff.contents);
-			void window.showInformationMessage("Copied patch — use 'Apply Copied Patch' in another window to apply it");
+			void window.showInformationMessage('已复制补丁 — 可在另一个窗口中使用“应用已复制的补丁”来应用');
 		} catch (ex) {
 			// `fireAndForget` at the actions.ts caller only logs rejections — surface a toast here
 			// so users see *something* when the copy fails (clipboard denied, git error, etc.)
 			// rather than the button appearing to no-op.
 			Logger.error(ex, `Failed to copy ${scope} WIP patch to clipboard`);
-			void window.showErrorMessage(`Unable to copy patch: ${ex instanceof Error ? ex.message : String(ex)}`);
+			void window.showErrorMessage(`无法复制补丁：${ex instanceof Error ? ex.message : String(ex)}`);
 		} finally {
 			if (untrackedPaths?.length) {
 				try {
@@ -199,7 +199,7 @@ export class DraftsService {
 		userSelections: DraftUserSelection[] | undefined;
 	}): Promise<void> {
 		if (
-			!(await ensureAccount(this.container, 'Code Suggestions are a Preview feature and require an account.', {
+			!(await ensureAccount(this.container, 'Code Suggestions 是预览功能，需要登录账号。', {
 				source: 'code-suggest',
 				detail: 'create',
 			})) ||
@@ -265,12 +265,12 @@ export class DraftsService {
 			);
 
 			async function showNotification() {
-				const view = { title: 'View Code Suggestions' };
-				const copy = { title: 'Copy Link' };
+				const view = { title: '查看 Code Suggestions' };
+				const copy = { title: '复制链接' };
 				let copied = false;
 				while (true) {
 					const result = await window.showInformationMessage(
-						`Code Suggestion successfully created${copied ? '\u2014 link copied to the clipboard' : ''}`,
+						`Code Suggestion 已成功创建${copied ? '\u2014 链接已复制到剪贴板' : ''}`,
 						view,
 						copy,
 					);
@@ -296,7 +296,7 @@ export class DraftsService {
 		} catch (ex) {
 			debugger;
 
-			void window.showErrorMessage(`Unable to create draft: ${ex instanceof Error ? ex.message : String(ex)}`);
+			void window.showErrorMessage(`无法创建草稿：${ex instanceof Error ? ex.message : String(ex)}`);
 		}
 	}
 
