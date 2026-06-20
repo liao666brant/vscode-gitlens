@@ -6,7 +6,7 @@ import { createRevisionRange } from '@gitlens/git/utils/revision.utils.js';
 import { makeHierarchical } from '@gitlens/utils/array.js';
 import { filter, flatMap, groupByMap, map } from '@gitlens/utils/iterable.js';
 import { joinPaths, normalizePath } from '@gitlens/utils/path.js';
-import { pluralize, sortCompare } from '@gitlens/utils/string.js';
+import { sortCompare } from '@gitlens/utils/string.js';
 import type { FilesComparison } from '../../git/actions/commit.js';
 import { GitUri } from '../../git/gitUri.js';
 import { getCommitDate } from '../../git/utils/-webview/commit.utils.js';

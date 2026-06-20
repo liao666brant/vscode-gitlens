@@ -8,7 +8,6 @@ import { GitStatus } from '@gitlens/git/models/status.js';
 import type { GitWorktree } from '@gitlens/git/models/worktree.js';
 import { getHighlanderProviderName } from '@gitlens/git/utils/remote.utils.js';
 import { shortenRevision } from '@gitlens/git/utils/revision.utils.js';
-import { formatTrackingTooltip } from '@gitlens/git/utils/tooltip.utils.js';
 import { debug, trace } from '@gitlens/utils/decorators/log.js';
 import { map } from '@gitlens/utils/iterable.js';
 import type { Lazy } from '@gitlens/utils/lazy.js';

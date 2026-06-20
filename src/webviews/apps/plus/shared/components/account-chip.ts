@@ -4,7 +4,6 @@ import { css, html, LitElement, nothing } from 'lit';
 import { customElement, property, query } from 'lit/decorators.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
 import { when } from 'lit/directives/when.js';
-import { pluralize } from '@gitlens/utils/string.js';
 import { urls } from '../../../../../constants.js';
 import { proTrialLengthInDays, SubscriptionState } from '../../../../../constants.subscription.js';
 import type { Source } from '../../../../../constants.telemetry.js';

@@ -5,7 +5,6 @@ import type { GitUser } from '@gitlens/git/models/user.js';
 import { createRevisionRange, shortenRevision } from '@gitlens/git/utils/revision.utils.js';
 import { debug, trace } from '@gitlens/utils/decorators/log.js';
 import { weakEvent } from '@gitlens/utils/event.js';
-import { pluralize } from '@gitlens/utils/string.js';
 import type { ViewShowBranchComparison } from '../../config.js';
 import { GlyphChars } from '../../constants.js';
 import type { StoredBranchComparison, StoredBranchComparisons, StoredNamedRef } from '../../constants.storage.js';

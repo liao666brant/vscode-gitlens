@@ -5,7 +5,6 @@ import type { GitLog } from '@gitlens/git/models/log.js';
 import { formatNumeric } from '@gitlens/utils/date.js';
 import { trace } from '@gitlens/utils/decorators/log.js';
 import { map } from '@gitlens/utils/iterable.js';
-import { pluralize } from '@gitlens/utils/string.js';
 import { getPresenceDataUri } from '../../avatars.js';
 import { GlyphChars } from '../../constants.js';
 import type { GitUri } from '../../git/gitUri.js';

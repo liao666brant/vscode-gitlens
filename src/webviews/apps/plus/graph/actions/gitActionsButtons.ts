@@ -3,7 +3,6 @@ import { css, html, LitElement, nothing } from 'lit';
 import { customElement, property } from 'lit/decorators.js';
 import { pausedOperationStatusStringsByType } from '@gitlens/git/utils/pausedOperationStatus.utils.js';
 import { fromNow } from '@gitlens/utils/date.js';
-import { pluralize } from '@gitlens/utils/string.js';
 import type { StashSaveCommandArgs } from '../../../../../commands/stashSave.js';
 import { createCommandLink } from '../../../../../system/commands.js';
 import type { BranchState, GraphAutoFetchMode, GraphWorkingTreeStats, State } from '../../../../plus/graph/protocol.js';

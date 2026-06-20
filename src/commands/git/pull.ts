@@ -3,7 +3,7 @@ import type { GitBranchReference } from '@gitlens/git/models/reference.js';
 import { getReferenceLabel, isBranchReference } from '@gitlens/git/utils/reference.utils.js';
 import { isStringArray } from '@gitlens/utils/array.js';
 import { fromNow } from '@gitlens/utils/date.js';
-import { pad, pluralize } from '@gitlens/utils/string.js';
+import { pad } from '@gitlens/utils/string.js';
 import { GlyphChars } from '../../constants.js';
 import type { Container } from '../../container.js';
 import type { GlRepository } from '../../git/models/repository.js';

@@ -39,6 +39,15 @@ if (useNpm) {
 
 const pkgMgr = useNpm ? 'npm' : 'pnpm';
 
+/**
+ * @param {string} command
+ * @param {string[]} args
+ * @param {import('child_process').SpawnSyncOptionsWithStringEncoding} options
+ */
+function spawnSyncShell(command, args, options) {
+	return spawnSync([command, ...args].join(' '), { ...options, shell: true });
+}
+
 /** @typedef {'production' | 'development' | 'none'} GlMode */
 /** @typedef { 'node' | 'webworker' } GlTarget */
 
@@ -181,13 +190,11 @@ function getCommonConfig(mode, env) {
 					mode !== 'production'
 						? undefined
 						: () =>
-								spawnSync(pkgMgr, ['run', 'icons:svgo'], {
+								spawnSyncShell(pkgMgr, ['run', 'icons:svgo'], {
 									cwd: __dirname,
 									encoding: 'utf8',
-									shell: true,
 								}),
-				onComplete: () =>
-					spawnSync(pkgMgr, ['run', 'icons:apply'], { cwd: __dirname, encoding: 'utf8', shell: true }),
+				onComplete: () => spawnSyncShell(pkgMgr, ['run', 'icons:apply'], { cwd: __dirname, encoding: 'utf8' }),
 			}),
 		);
 	}
@@ -1034,10 +1041,9 @@ class FileGeneratorPlugin {
 					logger.log(`${this.strings.starting} ${this.command.name}...`);
 					const start = Date.now();
 
-					const result = spawnSync(this.command.command, this.command.args, {
+					const result = spawnSyncShell(this.command.command, this.command.args, {
 						cwd: __dirname,
 						encoding: 'utf8',
-						shell: true,
 					});
 
 					if (result.status === 0) {
@@ -1536,10 +1542,9 @@ class CustomElementsManifestPlugin {
 				logger.log(`Generating 'custom-elements.json'...`);
 				const start = Date.now();
 
-				const result = spawnSync(pkgMgr, ['run', 'generate:customElements'], {
+				const result = spawnSyncShell(pkgMgr, ['run', 'generate:customElements'], {
 					cwd: __dirname,
 					encoding: 'utf8',
-					shell: true,
 				});
 
 				if (result.status === 0) {

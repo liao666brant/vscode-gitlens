@@ -2,7 +2,6 @@ import { consume } from '@lit/context';
 import { css, html, LitElement } from 'lit';
 import { customElement, property, query } from 'lit/decorators.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
-import { pluralize } from '@gitlens/utils/string.js';
 import { urls } from '../../../../../constants.js';
 import {
 	proFeaturePreviewUsages,

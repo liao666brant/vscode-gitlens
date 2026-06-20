@@ -32,7 +32,6 @@ import { Logger } from '@gitlens/utils/logger.js';
 import { getScopedLogger } from '@gitlens/utils/logger.scoped.js';
 import { flatten } from '@gitlens/utils/object.js';
 import { pauseOnCancelOrTimeout } from '@gitlens/utils/promise.js';
-import { pluralize } from '@gitlens/utils/string.js';
 import { satisfies } from '@gitlens/utils/version.js';
 import type { OpenWalkthroughCommandArgs } from '../../commands/walkthroughs.js';
 import type { CoreColors } from '../../constants.colors.js';

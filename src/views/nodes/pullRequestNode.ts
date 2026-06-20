@@ -8,7 +8,6 @@ import {
 	getRepositoryIdentityForPullRequest,
 } from '@gitlens/git/utils/pullRequest.utils.js';
 import { createRevisionRange } from '@gitlens/git/utils/revision.utils.js';
-import { pluralize } from '@gitlens/utils/string.js';
 import type { Colors } from '../../constants.colors.js';
 import { GitUri } from '../../git/gitUri.js';
 import type { GlRepository } from '../../git/models/repository.js';

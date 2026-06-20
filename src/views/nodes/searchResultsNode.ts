@@ -3,7 +3,6 @@ import { ThemeIcon } from 'vscode';
 import type { GitLog } from '@gitlens/git/models/log.js';
 import type { SearchQuery } from '@gitlens/git/models/search.js';
 import { md5 } from '@gitlens/utils/crypto.js';
-import { pluralize } from '@gitlens/utils/string.js';
 import { executeGitCommand } from '../../git/actions.js';
 import type { CommitsQueryResults } from '../../git/queryResults.js';
 import { getSearchQueryComparisonKey, getStoredSearchQuery } from '../../git/utils/-webview/search.utils.js';

@@ -6,7 +6,6 @@ import type { GitWorktree } from '@gitlens/git/models/worktree.js';
 import { isSha } from '@gitlens/git/utils/revision.utils.js';
 import { isCancellationError } from '@gitlens/utils/cancellation.js';
 import { Logger } from '@gitlens/utils/logger.js';
-import { pluralize } from '@gitlens/utils/string.js';
 import type { Container } from '../../../container.js';
 import type { GlRepository } from '../../../git/models/repository.js';
 import type { DirectiveQuickPickItem } from '../../../quickpicks/items/directive.js';

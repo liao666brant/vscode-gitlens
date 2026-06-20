@@ -1,4 +1,3 @@
-import { pluralize } from '@gitlens/utils/string.js';
 import type { GitPausedOperationStatus } from './models/pausedOperationStatus.js';
 
 function formatCommitCount(count: number) {

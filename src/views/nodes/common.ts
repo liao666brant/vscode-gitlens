@@ -2,7 +2,7 @@ import type { Command, Disposable, Uri } from 'vscode';
 import { commands, MarkdownString, ThemeIcon, TreeItem, TreeItemCollapsibleState } from 'vscode';
 import { getScopedCounter } from '@gitlens/utils/counter.js';
 import { isPromise } from '@gitlens/utils/promise.js';
-import { compareSubstringIgnoreCase, equalsIgnoreCase, pluralize } from '@gitlens/utils/string.js';
+import { compareSubstringIgnoreCase, equalsIgnoreCase } from '@gitlens/utils/string.js';
 import { GlyphChars } from '../../constants.js';
 import { unknownGitUri } from '../../git/gitUri.js';
 import type { GlRepository } from '../../git/models/repository.js';

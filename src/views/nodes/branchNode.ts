@@ -9,7 +9,7 @@ import type { GitUser } from '@gitlens/git/models/user.js';
 import { GitWorktree } from '@gitlens/git/models/worktree.js';
 import { getLastFetchedUpdateInterval } from '@gitlens/git/utils/fetch.utils.js';
 import { getHighlanderProviders } from '@gitlens/git/utils/remote.utils.js';
-import { formatIndicators, formatTrackingTooltip } from '@gitlens/git/utils/tooltip.utils.js';
+import { formatIndicators } from '@gitlens/git/utils/tooltip.utils.js';
 import { fromNow } from '@gitlens/utils/date.js';
 import { debug, trace } from '@gitlens/utils/decorators/log.js';
 import { memoize } from '@gitlens/utils/decorators/memoize.js';

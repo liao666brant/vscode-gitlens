@@ -36,7 +36,6 @@ import type { DateTimeFormat } from '@gitlens/utils/date.js';
 import { formatDate, fromNow } from '@gitlens/utils/date.js';
 import { groupByFilterMap } from '@gitlens/utils/iterable.js';
 import { hasKeys } from '@gitlens/utils/object.js';
-import { pluralize } from '@gitlens/utils/string.js';
 import type { DateStyle } from '../../../../../config.js';
 import type {
 	GraphAvatars,

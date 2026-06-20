@@ -2,7 +2,6 @@ import { consume } from '@lit/context';
 import { css, html, LitElement, nothing } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
-import { pluralize } from '@gitlens/utils/string.js';
 import type { SubscriptionState } from '../../../../../constants.subscription.js';
 import type { BranchAndTargetRefs, BranchRef } from '../../../../shared/branchRefs.js';
 import type { OverviewBranch, OverviewBranchMergeTarget } from '../../../../shared/overviewBranches.js';

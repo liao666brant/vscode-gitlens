@@ -10,7 +10,6 @@ import { getUpstreamStatus } from '@gitlens/git/utils/status.utils.js';
 import { fromNow } from '@gitlens/utils/date.js';
 import { trace } from '@gitlens/utils/decorators/log.js';
 import { first, last, map } from '@gitlens/utils/iterable.js';
-import { pluralize } from '@gitlens/utils/string.js';
 import type { Colors } from '../../constants.colors.js';
 import type { FilesComparison } from '../../git/actions/commit.js';
 import { GitUri } from '../../git/gitUri.js';

@@ -92,7 +92,7 @@ if (build?.includes('unit-tests')) {
 	console.log(`Running: ${buildPkgsCmd}`);
 
 	const pkgsCode = await new Promise(resolve => {
-		const pkgs = spawn(buildPkgsCmd, [], {
+		const pkgs = spawn(buildPkgsCmd, {
 			shell: true,
 			stdio: 'inherit',
 			env: env,
@@ -115,7 +115,7 @@ if (!quick && !watch) {
 	console.log(`Running: ${prettyCmd}`);
 
 	const prettyCode = await new Promise(resolve => {
-		const pretty = spawn(prettyCmd, [], {
+		const pretty = spawn(prettyCmd, {
 			shell: true,
 			stdio: 'inherit',
 			env: {
@@ -136,7 +136,7 @@ if (!quick && !watch) {
 /** @param {string} command @returns {Promise<number>} exit code (always resolves; never rejects) */
 function run(command) {
 	console.log(`Running: ${command}`);
-	const child = spawn(command, [], { shell: true, stdio: 'inherit', env: env });
+	const child = spawn(command, { shell: true, stdio: 'inherit', env: env });
 	return new Promise(resolve => {
 		child.on('exit', code => resolve(code || 0));
 		// Spawn failures emit 'error' without 'exit' — resolve as failure so the batch never hangs.

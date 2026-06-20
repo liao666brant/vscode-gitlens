@@ -5,7 +5,6 @@ import { createRevisionRange, shortenRevision } from '@gitlens/git/utils/revisio
 import type { Lazy } from '@gitlens/utils/lazy.js';
 import { lazy } from '@gitlens/utils/lazy.js';
 import { Logger } from '@gitlens/utils/logger.js';
-import { pluralize } from '@gitlens/utils/string.js';
 import type { Source } from '../constants.telemetry.js';
 import type { Container } from '../container.js';
 import { getChangesForChangelog } from '../git/utils/-webview/log.utils.js';

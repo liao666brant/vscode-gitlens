@@ -5,7 +5,6 @@ import type { SearchOperators, SearchOperatorsLongForm, SearchQuery } from '@git
 import type { SearchCommitsResult } from '@gitlens/git/providers/commits.js';
 import { getSearchQueryComparisonKey, parseSearchQuery } from '@gitlens/git/utils/search.utils.js';
 import { first, join, map } from '@gitlens/utils/iterable.js';
-import { pluralize } from '@gitlens/utils/string.js';
 import { GlyphChars } from '../../constants.js';
 import type { Container } from '../../container.js';
 import { showCommitInDetailsView } from '../../git/actions/commit.js';

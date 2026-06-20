@@ -8,7 +8,6 @@ import { getReferenceLabel, isRevisionReference } from '@gitlens/git/utils/refer
 import { createRevisionRange } from '@gitlens/git/utils/revision.utils.js';
 import { createDisposable } from '@gitlens/utils/disposable.js';
 import { Logger } from '@gitlens/utils/logger.js';
-import { pluralize } from '@gitlens/utils/string.js';
 import type { Container } from '../../container.js';
 import type { GlRepository } from '../../git/models/repository.js';
 import {

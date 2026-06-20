@@ -770,6 +770,7 @@ export class WorkspacesService implements Disposable {
 			{ title: '取消', isCloseAffordance: true },
 		);
 		if (confirmation == null || confirmation.title === '取消') return;
+
 		try {
 			const response = await this._api.deleteWorkspace(workspaceId);
 			if (response?.data?.delete_project?.id === workspaceId) {
@@ -995,6 +996,7 @@ export class WorkspacesService implements Disposable {
 			{ title: '取消', isCloseAffordance: true },
 		);
 		if (confirmation == null || confirmation.title === '取消') return;
+
 		try {
 			const response = await this._api.removeReposFromWorkspace(workspaceId, [
 				{ owner: descriptor.provider_organization_id, repoName: descriptor.name },
@@ -1289,6 +1291,7 @@ export class WorkspacesService implements Disposable {
 			);
 
 			if (openLocationChoice == null || openLocationChoice.title === '取消') return;
+
 			openLocation = openLocationChoice.location ?? 'newWindow';
 		}
 
@@ -1303,6 +1306,7 @@ export class WorkspacesService implements Disposable {
 			);
 
 			if (locateChoice?.title !== '定位') return;
+
 			const newPath = (
 				await window.showOpenDialog({
 					defaultUri: Uri.file(workspace.localPath),

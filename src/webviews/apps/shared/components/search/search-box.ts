@@ -6,7 +6,6 @@ import { when } from 'lit/directives/when.js';
 import type { Disposable } from 'vscode';
 import { isMac } from '@env/platform.js';
 import type { SearchQuery } from '@gitlens/git/models/search.js';
-import { pluralize } from '@gitlens/utils/string.js';
 import type { AppState } from '../../../plus/graph/context.js';
 import { DOM } from '../../dom.js';
 import { GlElement } from '../element.js';

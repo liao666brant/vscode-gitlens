@@ -3,7 +3,6 @@ import { GitStatus } from '@gitlens/git/models/status.js';
 import { createReference } from '@gitlens/git/utils/reference.utils.js';
 import { createRevisionRange } from '@gitlens/git/utils/revision.utils.js';
 import { isStringArray } from '@gitlens/utils/array.js';
-import { pluralize } from '@gitlens/utils/string.js';
 import { revealRepository } from '../../../git/actions/repository.js';
 import type { GlRepository } from '../../../git/models/repository.js';
 import { groupRepositories } from '../../../git/utils/-webview/repository.utils.js';

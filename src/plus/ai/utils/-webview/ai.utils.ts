@@ -8,7 +8,7 @@ import { CancellationError } from '@gitlens/utils/cancellation.js';
 import { formatNumeric } from '@gitlens/utils/date.js';
 import { Logger } from '@gitlens/utils/logger.js';
 import { getSettledValue } from '@gitlens/utils/promise.js';
-import { getPossessiveForm, pluralize } from '@gitlens/utils/string.js';
+import { getPossessiveForm } from '@gitlens/utils/string.js';
 import { Schemes } from '../../../../constants.js';
 import type { Source } from '../../../../constants.telemetry.js';
 import type { Container } from '../../../../container.js';

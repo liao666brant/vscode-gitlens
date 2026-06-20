@@ -5,7 +5,7 @@ import { trace } from '@gitlens/utils/decorators/log.js';
 import { map } from '@gitlens/utils/iterable.js';
 import { joinPaths, normalizePath } from '@gitlens/utils/path.js';
 import { cancellable, PromiseCancelledError } from '@gitlens/utils/promise.js';
-import { pluralize, sortCompare } from '@gitlens/utils/string.js';
+import { sortCompare } from '@gitlens/utils/string.js';
 import type { FilesComparison } from '../../git/actions/commit.js';
 import { GitUri } from '../../git/gitUri.js';
 import type { FilesQueryResults } from '../../git/queryResults.js';

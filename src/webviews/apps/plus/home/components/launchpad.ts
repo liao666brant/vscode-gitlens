@@ -3,7 +3,6 @@ import { SignalWatcher } from '@lit-labs/signals';
 import type { TemplateResult } from 'lit';
 import { css, html, LitElement, nothing } from 'lit';
 import { customElement } from 'lit/decorators.js';
-import { pluralize } from '@gitlens/utils/string.js';
 import type { ConnectCloudIntegrationsCommandArgs } from '../../../../../commands/cloudIntegrations.js';
 import type { LaunchpadCommandArgs } from '../../../../../plus/launchpad/launchpad.js';
 import { createCommandLink } from '../../../../../system/commands.js';

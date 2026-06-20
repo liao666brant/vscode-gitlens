@@ -7,7 +7,6 @@ import type { GitReference } from '@gitlens/git/models/reference.js';
 import { getReferenceLabel, isRevisionReference } from '@gitlens/git/utils/reference.utils.js';
 import { createRevisionRange } from '@gitlens/git/utils/revision.utils.js';
 import { Logger } from '@gitlens/utils/logger.js';
-import { pluralize } from '@gitlens/utils/string.js';
 import type { Container } from '../../container.js';
 import type { GlRepository } from '../../git/models/repository.js';
 import { showGitErrorMessage } from '../../messages.js';

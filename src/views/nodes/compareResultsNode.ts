@@ -5,7 +5,6 @@ import { createRevisionRange, shortenRevision } from '@gitlens/git/utils/revisio
 import { md5 } from '@gitlens/utils/crypto.js';
 import { debug, trace } from '@gitlens/utils/decorators/log.js';
 import { weakEvent } from '@gitlens/utils/event.js';
-import { pluralize } from '@gitlens/utils/string.js';
 import type { StoredNamedRef } from '../../constants.storage.js';
 import type { FilesComparison } from '../../git/actions/commit.js';
 import { GitUri } from '../../git/gitUri.js';

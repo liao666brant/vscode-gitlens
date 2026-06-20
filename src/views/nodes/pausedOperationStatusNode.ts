@@ -4,7 +4,6 @@ import type { GitPausedOperationStatus } from '@gitlens/git/models/pausedOperati
 import type { GitStatus } from '@gitlens/git/models/status.js';
 import { getReferenceLabel } from '@gitlens/git/utils/reference.utils.js';
 import { Lazy } from '@gitlens/utils/lazy.js';
-import { pluralize } from '@gitlens/utils/string.js';
 import type { Colors } from '../../constants.colors.js';
 import { GitUri } from '../../git/gitUri.js';
 import type { ViewsWithCommits } from '../viewBase.js';
