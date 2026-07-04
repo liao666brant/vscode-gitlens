@@ -1,7 +1,0 @@
-package.json:2068:							"Reveals commits in the _Commit Graph_",
-package.json:3390:						"markdownDescription": "Specifies whether to show signature verification badges on commits in the Commit Graph and other views",
-src/webviews/apps/settings\partials\commit-graph.html:4:			Commit Graph&nbsp;<gl-feature-badge></gl-feature-badge>
-src/webviews/apps/settings\partials\commit-graph.html:12:			<a class="command command--show-view" title="Show Commit Graph" href="command:gitlens.showGraph"
-src/webviews/apps/settings\partials\commit-graph.html:13:				>Commit Graph</a
-src/webviews/apps/settings\partials\commit-graph.html:25:							<label for="graph.layout">Prefer showing the Commit Graph in the </label>
-src/webviews/apps/settings\partials\commit-graph.html:98:							<label for="graph.scrollMarkers.enabled">Show markers on the Commit Graph scrollbar</label>

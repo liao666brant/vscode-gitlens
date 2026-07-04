@@ -1,7 +1,0 @@
-tests/e2e/pageObjects/gitLensPage.ts 270
-tests/e2e/specs/smoke.test.ts 145
-tests/e2e/specs/quickWizard.test.ts 1507
-tests/e2e/specs/graphDetails.test.ts 392
-tests/e2e/specs/graphPin.test.ts 231
-tests/e2e/specs/graphReview.test.ts 200
-tests/e2e/specs/treeView.test.ts 157

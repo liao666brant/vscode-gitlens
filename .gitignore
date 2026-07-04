@@ -30,3 +30,6 @@ localdev*.instructions.md
 
 # Build codegen skip-cache (input fingerprints for Docs/contributions/CEM generators)
 .codegen-cache/
+
+# Agent working records
+.omo/
