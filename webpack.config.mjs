@@ -398,12 +398,6 @@ function getExtensionConfig(target, mode, env) {
 				'signal-polyfill': path.resolve(__dirname, 'node_modules', 'signal-polyfill'),
 				...getLibraryAliases(),
 				...getUtilsEnvAliases(target),
-				// Stupid dependency that is used by `http[s]-proxy-agent` (via @gitkraken/provider-apis)
-				debug: path.resolve(__dirname, 'patches', 'debug.js'),
-				// This dependency is very large, and isn't needed for our use-case
-				tr46: path.resolve(__dirname, 'patches', 'tr46.js'),
-				// This dependency is unnecessary for our use-case
-				'whatwg-url': path.resolve(__dirname, 'patches', 'whatwg-url.js'),
 			},
 			extensionAlias: { '.js': ['.ts', '.js'], '.jsx': ['.tsx', '.jsx'] },
 			fallback: {
@@ -742,7 +736,6 @@ function getWebviewConfig(webviews, overrides, mode, env) {
 				...getLibraryAliases(),
 				...getUtilsEnvAliases('webworker'),
 				react: path.resolve(__dirname, 'node_modules', 'react'),
-				'react-dom': path.resolve(__dirname, 'node_modules', 'react-dom'),
 				...overrides.alias,
 			},
 			extensionAlias: { '.js': ['.ts', '.js'], '.jsx': ['.tsx', '.jsx'] },
@@ -751,10 +744,6 @@ function getWebviewConfig(webviews, overrides, mode, env) {
 			modules: [basePath, 'node_modules'],
 			conditionNames: ['browser', 'import', 'module', 'default'],
 		},
-		ignoreWarnings: [
-			// Ignore warnings about findDOMNode being removed from React 19
-			{ module: /@gitkraken[\\/]gitkraken-components/, message: /export 'findDOMNode'/ },
-		],
 		plugins: plugins,
 		infrastructureLogging: mode === 'production' ? undefined : { level: 'log' }, // enables logging required for problem matchers
 		stats: stats,

@@ -11545,30 +11545,6 @@
 				]
 			}
 		},
-		"gitlens/graph/commit/changes": {
-			"label": "打开更改",
-			"menus": {
-				"webview/context": [
-					{
-						"when": "webviewItem =~ /gitlens:(commit|stash|wip)\\b/ && !listMultiSelection",
-						"group": "2_gitlens_quickopen",
-						"order": 1
-					}
-				]
-			}
-		},
-		"gitlens/graph/markers": {
-			"label": "滚动标记",
-			"menus": {
-				"webview/context": [
-					{
-						"when": "webviewItem =~ /gitlens:graph:(columns|settings)\\b/",
-						"group": "0_markers",
-						"order": 0
-					}
-				]
-			}
-		},
 		"gitlens/scm/resourceFolder/changes": {
 			"label": "打开更改方式",
 			"menus": {

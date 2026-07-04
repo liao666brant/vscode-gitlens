@@ -32,7 +32,6 @@ minimumReleaseAge: 7200
 
 minimumReleaseAgeExclude:
     - '@eamodio/*'
-    - '@gitkraken/*'
     - '@vscode/*'
     - '@oxlint/binding-android-arm-eabi@1.68.0'
     - '@oxlint/binding-android-arm64@1.68.0'
@@ -61,12 +60,6 @@ overrides:
     esbuild: '0.28.0'
     handlebars: '4.7.9'
     'serialize-javascript@<7.0.5': '7.0.5'
-
-packageExtensions:
-    '@gitkraken/gitkraken-components':
-        dependencies:
-            '@types/react': '*'
-            '@types/react-dom': '*'
 
 patchedDependencies:
     fantasticon@4.1.0: patches/fantasticon@4.1.0.patch

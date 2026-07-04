@@ -126,7 +126,6 @@ const restrictedImports = {
 				'vm',
 				'zlib',
 				// Specific import restrictions
-				{ name: 'react-dom', importNames: ['Container'], message: 'Use our Container instead' },
 				{ name: 'vscode', importNames: ['CancellationError'], message: 'Use our CancellationError instead' },
 			],
 			patterns: [
@@ -160,7 +159,6 @@ const restrictedImports = {
 		'error',
 		{
 			paths: [
-				{ name: 'react-dom', importNames: ['Container'], message: 'Use our Container instead' },
 				{ name: 'vscode', importNames: ['CancellationError'], message: 'Use our CancellationError instead' },
 			],
 		},

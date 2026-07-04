@@ -377,11 +377,6 @@
 							"vm",
 							"zlib",
 							{
-								"name": "react-dom",
-								"importNames": ["Container"],
-								"message": "Use our Container instead"
-							},
-							{
 								"name": "vscode",
 								"importNames": ["CancellationError"],
 								"message": "Use our CancellationError instead"
@@ -460,11 +455,6 @@
 					"error",
 					{
 						"paths": [
-							{
-								"name": "react-dom",
-								"importNames": ["Container"],
-								"message": "Use our Container instead"
-							},
 							{
 								"name": "vscode",
 								"importNames": ["CancellationError"],
@@ -681,11 +671,6 @@
 							"util",
 							"vm",
 							"zlib",
-							{
-								"name": "react-dom",
-								"importNames": ["Container"],
-								"message": "Use our Container instead"
-							},
 							{
 								"name": "vscode",
 								"importNames": ["CancellationError"],

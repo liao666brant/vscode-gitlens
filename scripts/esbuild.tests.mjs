@@ -48,16 +48,6 @@ async function buildTests(target) {
 		'@gitlens/ipc': path.resolve(__dirname, 'packages', 'ipc', 'src'),
 		'@gitlens/git': path.resolve(__dirname, 'packages', 'git', 'src'),
 		'@gitlens/git-cli': path.resolve(__dirname, 'packages', 'git-cli', 'src'),
-		'@gitlens/git-github': path.resolve(__dirname, 'packages', 'plus', 'git-github', 'src'),
-		'@gitlens/ai': path.resolve(__dirname, 'packages', 'plus', 'ai', 'src'),
-		'@gitlens/agents': path.resolve(__dirname, 'packages', 'plus', 'agents', 'src'),
-
-		// Stupid dependency that is used by `http[s]-proxy-agent` (via @gitkraken/provider-apis)
-		debug: path.resolve(__dirname, 'patches', 'debug.js'),
-		// This dependency is very large, and isn't needed for our use-case
-		tr46: path.resolve(__dirname, 'patches', 'tr46.js'),
-		// This dependency is unnecessary for our use-case
-		'whatwg-url': path.resolve(__dirname, 'patches', 'whatwg-url.js'),
 	};
 
 	if (target === 'webworker') {
