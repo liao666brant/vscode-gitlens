@@ -38,13 +38,6 @@ type InternalViewCommands =
 	| 'gitlens.views.setShowRelativeDateMarkersOff'
 	| 'gitlens.views.setShowRelativeDateMarkersOn';
 
-type InternalWalkthroughCommands =
-	| 'gitlens.walkthrough.gitlensInspect'
-	| 'gitlens.walkthrough.openHelpCenter'
-	| 'gitlens.walkthrough.openWalkthrough';
-
-type InternalWelcomeCommands = 'gitlens.welcome.openHelpCenter';
-
 type InternalGlCommands =
 	| `gitlens.action.${string}`
 	| 'gitlens.diffWith'
@@ -53,7 +46,6 @@ type InternalGlCommands =
 	| 'gitlens.diffWithWorking:command'
 	| 'gitlens.diffWithWorking:views'
 	| 'gitlens.openOnRemote'
-	| 'gitlens.openWalkthrough'
 	| 'gitlens.openWorkingFile:command'
 	| 'gitlens.regenerateMarkdownDocument'
 	| 'gitlens.onboarding.dismiss'
@@ -83,9 +75,7 @@ type InternalGlCommands =
 	| 'gitlens.toggleFileHeatmap:statusbar'
 	| InternalRebaseEditorCommands
 	| InternalScmGroupedViewCommands
-	| InternalViewCommands
-	| InternalWalkthroughCommands
-	| InternalWelcomeCommands;
+	| InternalViewCommands;
 
 export type GlCommands = ContributedCommands | InternalGlCommands; // | GlCommandsDeprecated;
 /** Non-webview commands */

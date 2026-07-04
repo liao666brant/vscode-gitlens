@@ -474,7 +474,6 @@ function getWebviewsConfigs(mode, env) {
 		commitDetails: { entry: './commitDetails/commitDetails.ts' },
 		rebase: { entry: './rebase/rebase.ts' },
 		settings: { entry: './settings/settings.ts' },
-		welcome: { entry: './welcome/welcome.ts' },
 	};
 
 	if (env.webviews) {

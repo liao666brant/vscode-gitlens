@@ -42,18 +42,17 @@
  *   --pause <ms>              Wait for a specified duration
  *
  * Examples:
- *   # Inspect the welcome view heading
- *   node scripts/e2e-dev-inspect.mjs --command gitlens.showWelcomeView --query-frame h1
+ *   # Inspect the commit details view heading
+ *   node scripts/e2e-dev-inspect.mjs --command gitlens.showCommitDetailsView --query-frame h1
  *
  *   # Read a runtime value via the evaluator bridge
  *   node scripts/e2e-dev-inspect.mjs --with-evaluator \
  *     --eval "vscode.env.machineId"
  *
- *   # Click through UI, inspect result
+ *   # Open a view, inspect result
  *   node scripts/e2e-dev-inspect.mjs \
- *     --command gitlens.showWelcomeView \
+ *     --command gitlens.showCommitDetailsView \
  *     --pause 2000 \
- *     --aria-selector "[aria-label*='Home']" \
  *     --screenshot /tmp/after-click.png
  *
  *   # Check feature flag logs with dev env
@@ -622,7 +621,7 @@ async function main() {
 						await evaluate((vscode, cmd) => vscode.commands.executeCommand(cmd), action.value);
 					} else {
 						// Non-evaluator mode: opens command palette and types the value.
-						// Both command IDs (e.g. "gitlens.showWelcomeView") and display titles
+						// Both command IDs (e.g. "gitlens.showCommitDetailsView") and display titles
 						// work here — VS Code's palette fuzzy-matches against both.
 						await page.keyboard.press(process.platform === 'darwin' ? 'Meta+Shift+P' : 'Control+Shift+P');
 						await page.waitForTimeout(400);

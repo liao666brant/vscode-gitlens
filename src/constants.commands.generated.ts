@@ -54,7 +54,6 @@ export type ContributedCommands =
 	| 'gitlens.externalDiffAll'
 	| 'gitlens.fetch:views'
 	| 'gitlens.fetchRepositories'
-	| 'gitlens.getStarted'
 	| 'gitlens.inviteToLiveShare'
 	| 'gitlens.openBranchesOnRemote'
 	| 'gitlens.openBranchesOnRemote:views'
@@ -483,9 +482,7 @@ export type ContributedCommands =
 	| 'gitlens.views.title.createTag'
 	| 'gitlens.views.undoCommit'
 	| 'gitlens.views.unstageDirectory'
-	| 'gitlens.views.unstageFile'
-	| 'gitlens.views.welcome.close'
-	| 'gitlens.views.welcome.refresh';
+	| 'gitlens.views.unstageFile';
 
 export type ContributedPaletteCommands =
 	| 'gitlens.addAuthors'
@@ -525,7 +522,6 @@ export type ContributedPaletteCommands =
 	| 'gitlens.externalDiff'
 	| 'gitlens.externalDiffAll'
 	| 'gitlens.fetchRepositories'
-	| 'gitlens.getStarted'
 	| 'gitlens.git.branch'
 	| 'gitlens.git.branch.create'
 	| 'gitlens.git.branch.delete'
@@ -611,7 +607,6 @@ export type ContributedPaletteCommands =
 	| 'gitlens.showSettingsPage!autolinks'
 	| 'gitlens.showStashesView'
 	| 'gitlens.showTagsView'
-	| 'gitlens.showWelcomeView'
 	| 'gitlens.stashSave'
 	| 'gitlens.stashSave.staged:scm'
 	| 'gitlens.stashSave.unstaged:scm'

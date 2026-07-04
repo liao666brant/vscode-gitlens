@@ -56,8 +56,6 @@ export type DeprecatedGlobalStorage = {
 	'views:layout': 'gitlens' | 'scm';
 	/** @deprecated */
 	'views:commitDetails:dismissed': 'sidebar'[];
-	/** @deprecated */
-	'views:welcome:visible': boolean;
 	'mcp:banner:dismissed': boolean;
 	/** @deprecated Use OnboardingService */
 	'views:scm:grouped:welcome:dismissed': boolean;

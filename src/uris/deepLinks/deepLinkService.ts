@@ -20,7 +20,6 @@ import type { Container } from '../../container.js';
 import { openComparisonChanges, openFileAtRevision } from '../../git/actions/commit.js';
 import { executeGitCommand } from '../../git/actions.js';
 import type { GlRepository, RepositoryChangeEvent } from '../../git/models/repository.js';
-import { isWalkthroughSupported } from '../../onboarding/walkthroughStateProvider.js';
 import { ensureAccount, ensurePaidPlan } from '../../community/stubs/pro.js';
 import { createQuickPickSeparator } from '../../quickpicks/items/common.js';
 import { executeCommand } from '../../system/-webview/command.js';
@@ -34,7 +33,6 @@ import type { DeepLink, DeepLinkProgress, DeepLinkRepoOpenType, DeepLinkServiceC
 import {
 	AccountDeepLinkTypes,
 	DeepLinkActionType,
-	DeepLinkCommandType,
 	DeepLinkCommandTypeToCommand,
 	DeepLinkServiceAction,
 	DeepLinkServiceState,
@@ -1480,12 +1478,6 @@ export class DeepLinkService implements Disposable {
 				}
 				case DeepLinkServiceState.RunCommand: {
 					if (mainId == null || !isDeepLinkCommandType(mainId)) {
-						action = DeepLinkServiceAction.DeepLinkErrored;
-						message = 'Invalid command type.';
-						break;
-					}
-
-					if (mainId === DeepLinkCommandType.Walkthrough && !isWalkthroughSupported()) {
 						action = DeepLinkServiceAction.DeepLinkErrored;
 						message = 'Invalid command type.';
 						break;

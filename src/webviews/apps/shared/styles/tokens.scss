@@ -1,5 +1,5 @@
 // Shared design tokens. Applied at :root so custom properties inherit across shadow boundaries.
-// Consumed by both base.scss (graph / settings / welcome) and details-base.scss (commitDetails / rebase / timeline / etc.).
+// Consumed by both base.scss (graph / settings) and details-base.scss (commitDetails / rebase / timeline / etc.).
 
 :root {
 	// Font-size scale (1rem = 10px via html font-size: 62.5%)

@@ -324,7 +324,7 @@ export async function showWhatsNewMessage(majorVersion: string): Promise<void> {
 	if (result === releaseNotes) {
 		void openUrl(urls.releaseNotes);
 	} else if (result === openWalkthrough) {
-		void executeCommand('gitlens.showWelcomeView');
+		void openUrl(urls.getStarted);
 	}
 }
 

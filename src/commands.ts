@@ -59,5 +59,3 @@ import './commands/stashApply.js';
 import './commands/stashSave.js';
 import './commands/switchMode.js';
 import './commands/toggleFileAnnotations.js';
-import './commands/walkthroughs.js';
-import './commands/welcome.js';

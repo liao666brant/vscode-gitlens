@@ -1,7 +1,6 @@
 import { window } from 'vscode';
 import type { Container } from '../container.js';
 import { command, executeCoreCommand } from '../system/-webview/command.js';
-import type { WelcomeWebviewShowingArgs } from '../webviews/welcome/registration.js';
 import { GlCommandBase } from './commandBase.js';
 import type { CommandContext } from './commandContext.js';
 
@@ -20,12 +19,11 @@ export class ShowViewCommand extends GlCommandBase {
 			'gitlens.showSearchAndCompareView',
 			'gitlens.showStashesView',
 			'gitlens.showTagsView',
-			'gitlens.showWelcomeView',
 		]);
 	}
 
-	protected override preExecute(context: CommandContext, ...args: unknown[]): Promise<void> {
-		return this.execute(context, ...args);
+	protected override preExecute(context: CommandContext, ..._args: unknown[]): Promise<void> {
+		return this.execute(context);
 	}
 
 	async waitForRepo(): Promise<void> {
@@ -52,7 +50,7 @@ export class ShowViewCommand extends GlCommandBase {
 		}
 	}
 
-	async execute(context: CommandContext, ...args: unknown[]): Promise<void> {
+	async execute(context: CommandContext): Promise<void> {
 		const command = context.command;
 		switch (command) {
 			case 'gitlens.showBranchesView':
@@ -87,8 +85,6 @@ export class ShowViewCommand extends GlCommandBase {
 			case 'gitlens.showTagsView':
 				await this.waitForRepo();
 				return this.container.views.showView('tags');
-			case 'gitlens.showWelcomeView':
-				return this.container.views.welcome.show(undefined, ...(args as WelcomeWebviewShowingArgs));
 		}
 
 		return Promise.resolve(undefined);

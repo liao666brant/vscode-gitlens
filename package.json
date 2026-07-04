@@ -3223,7 +3223,7 @@
 					"gitlens.advanced.skipOnboarding": {
 						"type": "boolean",
 						"default": false,
-						"markdownDescription": "Specifies whether to skip onboarding experiences, such as welcome views and walkthroughs. Useful for ephemeral environments like containers or sandboxes",
+						"markdownDescription": "Specifies whether to skip onboarding experiences, such as walkthroughs and in-view guidance. Useful for ephemeral environments like containers or sandboxes",
 						"scope": "window",
 						"order": 75
 					},
@@ -4063,11 +4063,6 @@
 				"enablement": "!operationInProgress"
 			},
 			{
-				"command": "gitlens.getStarted",
-				"title": "开始使用",
-				"category": "WeGit"
-			},
-			{
 				"command": "gitlens.git.branch",
 				"title": "Git 分支...",
 				"category": "WeGit"
@@ -4709,11 +4704,6 @@
 			{
 				"command": "gitlens.showTagsView",
 				"title": "显示标签视图",
-				"category": "WeGit"
-			},
-			{
-				"command": "gitlens.showWelcomeView",
-				"title": "显示欢迎视图",
 				"category": "WeGit"
 			},
 			{
@@ -6616,16 +6606,6 @@
 				"title": "取消暂存更改",
 				"icon": "$(remove)",
 				"enablement": "!operationInProgress"
-			},
-			{
-				"command": "gitlens.views.welcome.close",
-				"title": "关闭欢迎页",
-				"icon": "$(x)"
-			},
-			{
-				"command": "gitlens.views.welcome.refresh",
-				"title": "刷新",
-				"icon": "$(refresh)"
 			}
 		],
 		"icons": {
@@ -7434,10 +7414,6 @@
 				{
 					"command": "gitlens.fetchRepositories",
 					"when": "gitlens:repos:withRemotes && !gitlens:readonly && !gitlens:untrusted && !gitlens:hasVirtualFolders"
-				},
-				{
-					"command": "gitlens.getStarted",
-					"when": "gitlens:walkthroughSupported"
 				},
 				{
 					"command": "gitlens.git.branch",
@@ -9470,14 +9446,6 @@
 				{
 					"command": "gitlens.views.unstageFile",
 					"when": "false"
-				},
-				{
-					"command": "gitlens.views.welcome.close",
-					"when": "false"
-				},
-				{
-					"command": "gitlens.views.welcome.refresh",
-					"when": "false"
 				}
 			],
 			"editor/context": [
@@ -9751,11 +9719,6 @@
 				}
 			],
 			"extension/context": [
-				{
-					"command": "gitlens.getStarted",
-					"when": "extension =~ /^liao666brant.wegit$/ && extensionStatus == installed && gitlens:walkthroughSupported",
-					"group": "9_gitlens@1"
-				},
 				{
 					"command": "gitlens.showSettingsPage",
 					"when": "extension =~ /^liao666brant.wegit$/ && extensionStatus == installed",
@@ -16035,16 +15998,6 @@
 					"command": "gitlens.showSettingsPage!tags-view",
 					"when": "view == gitlens.views.tags",
 					"group": "9_gitlens@1"
-				},
-				{
-					"command": "gitlens.views.welcome.refresh",
-					"when": "view == gitlens.views.welcome",
-					"group": "navigation@99"
-				},
-				{
-					"command": "gitlens.views.welcome.close",
-					"when": "view == gitlens.views.welcome",
-					"group": "navigation@100"
 				}
 			],
 			"webview/context": [
@@ -16615,11 +16568,6 @@
 		"viewsContainers": {
 			"activitybar": [
 				{
-					"id": "gitlens",
-					"title": "WeGit",
-					"icon": "$(gitlens-gitlens)"
-				},
-				{
 					"id": "gitlensInspect",
 					"title": "WeGit 检查",
 					"icon": "$(gitlens-gitlens-inspect)"
@@ -16785,40 +16733,8 @@
 					"initialSize": 2,
 					"visibility": "visible"
 				}
-			],
-			"gitlens": [
-				{
-					"type": "webview",
-					"id": "gitlens.views.welcome",
-					"name": "欢迎",
-					"contextualTitle": "WeGit",
-					"icon": "$(gitlens-gitlens)",
-					"initialSize": 1,
-					"visibility": "visible"
-				}
 			]
-		},
-		"walkthroughs": [
-			{
-				"id": "welcome",
-				"title": "开始使用 WeGit",
-				"description": "Supercharge Git and unlock untapped knowledge within your repo to better understand, write, and review code.",
-				"steps": [
-					{
-						"id": "git-blame",
-						"title": "通过文件 Blame 了解代码背后的原因",
-						"description": "查看谁更改了文件中的代码、何时以及为何更改。使用文件注释可以在编辑器中按需查看 blame、changes 和 heatmap。\n\n[打开文件注释设置](command:gitlens.showSettingsPage!file-annotations)",
-						"media": {
-							"markdown": "walkthroughs/welcome/git-blame.md"
-						},
-						"completionEvents": [
-							"onStepSelected",
-							"onContext:gitlens:walkthroughState:gitBlame == true"
-						]
-					}
-				]
-			}
-		]
+		}
 	},
 	"scripts": {
 		"analyze:bundle": "webpack --mode production --env analyzeBundle --env quick",

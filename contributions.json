@@ -1286,19 +1286,6 @@
 				]
 			}
 		},
-		"gitlens.getStarted": {
-			"label": "开始使用",
-			"commandPalette": "gitlens:walkthroughSupported",
-			"menus": {
-				"extension/context": [
-					{
-						"when": "extension =~ /^liao666brant.wegit$/ && extensionStatus == installed && gitlens:walkthroughSupported",
-						"group": "9_gitlens",
-						"order": 1
-					}
-				]
-			}
-		},
 		"gitlens.git.branch": {
 			"label": "Git 分支...",
 			"commandPalette": "!gitlens:disabled && !gitlens:readonly && !gitlens:untrusted && !gitlens:hasVirtualFolders"
@@ -2968,10 +2955,6 @@
 		"gitlens.showTagsView": {
 			"label": "显示标签视图",
 			"commandPalette": "gitlens:enabled"
-		},
-		"gitlens.showWelcomeView": {
-			"label": "显示欢迎视图",
-			"commandPalette": true
 		},
 		"gitlens.star.branch:views": {
 			"label": "添加到收藏夹",
@@ -11236,32 +11219,6 @@
 					}
 				]
 			}
-		},
-		"gitlens.views.welcome.close": {
-			"label": "关闭欢迎页",
-			"icon": "$(x)",
-			"menus": {
-				"view/title": [
-					{
-						"when": "view == gitlens.views.welcome",
-						"group": "navigation",
-						"order": 100
-					}
-				]
-			}
-		},
-		"gitlens.views.welcome.refresh": {
-			"label": "刷新",
-			"icon": "$(refresh)",
-			"menus": {
-				"view/title": [
-					{
-						"when": "view == gitlens.views.welcome",
-						"group": "navigation",
-						"order": 99
-					}
-				]
-			}
 		}
 	},
 	"submenus": {
@@ -12202,16 +12159,6 @@
 			"visibility": "collapsed",
 			"container": "scm",
 			"order": 5
-		},
-		"gitlens.views.welcome": {
-			"type": "webview",
-			"name": "欢迎",
-			"contextualTitle": "WeGit",
-			"icon": "$(gitlens-gitlens)",
-			"initialSize": 1,
-			"visibility": "visible",
-			"container": "gitlens",
-			"order": 0
 		}
 	}
 }

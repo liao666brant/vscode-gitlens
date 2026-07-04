@@ -21,7 +21,6 @@ import { getContext, setContext } from '../system/-webview/context.js';
 import { getViewFocusCommand } from '../system/-webview/vscode/views.js';
 import { registerCommitDetailsWebviewView } from '../webviews/commitDetails/registration.js';
 import type { WebviewsController } from '../webviews/webviewsController.js';
-import { registerWelcomeWebviewView } from '../webviews/welcome/registration.js';
 import { BranchesView } from './branchesView.js';
 import { CommitsView } from './commitsView.js';
 import { ContributorsView } from './contributorsView.js';
@@ -370,10 +369,7 @@ export class Views implements Disposable {
 	}
 
 	private registerWebviewViews(webviews: WebviewsController) {
-		return [
-			(this._commitDetailsView = registerCommitDetailsWebviewView(webviews)),
-			(this._welcomeView = registerWelcomeWebviewView(webviews)),
-		];
+		return [(this._commitDetailsView = registerCommitDetailsWebviewView(webviews))];
 	}
 
 	private readonly _scmGroupedViewProxyCache = new Map<
@@ -684,11 +680,6 @@ export class Views implements Disposable {
 	private _tagsView: TagsView | undefined;
 	get tags(): TagsView {
 		return this._tagsView ?? this.getScmGroupedView('tags');
-	}
-
-	private _welcomeView!: ReturnType<typeof registerWelcomeWebviewView>;
-	get welcome(): ReturnType<typeof registerWelcomeWebviewView> {
-		return this._welcomeView;
 	}
 
 	async revealBranch(branch: GitBranchReference, options?: RevealOptions): Promise<ViewNode | undefined> {

@@ -24,7 +24,6 @@ export enum DeepLinkType {
 
 export enum DeepLinkCommandType {
 	Inspect = 'inspect',
-	Walkthrough = 'walkthrough',
 }
 
 export function isDeepLinkCommandType(type: string): type is DeepLinkCommandType {
@@ -33,7 +32,6 @@ export function isDeepLinkCommandType(type: string): type is DeepLinkCommandType
 
 export const DeepLinkCommandTypeToCommand = new Map<DeepLinkCommandType, GlCommands>([
 	[DeepLinkCommandType.Inspect, 'gitlens.showCommitDetailsView'],
-	[DeepLinkCommandType.Walkthrough, 'gitlens.getStarted'],
 ]);
 
 export enum DeepLinkActionType {
