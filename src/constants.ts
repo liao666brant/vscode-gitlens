@@ -97,7 +97,6 @@ export const enum Schemes {
 	Git = 'git',
 	GitHub = 'github',
 	GitLens = 'gitlens',
-	GitLensAIMarkdown = 'gitlens-ai-markdown',
 	GitLensVirtual = 'gitlens-virtual',
 	PRs = 'pr',
 	Remote = 'vscode-remote',

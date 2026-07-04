@@ -39,7 +39,6 @@ import './commands/openRepoOnRemote.js';
 import './commands/openRevisionFile.js';
 import './commands/openWorkingFile.js';
 import './commands/rebaseEditor.js';
-import './commands/regenerateMarkdownDocument.js';
 import './commands/repositories.js';
 import './commands/resets.js';
 import './commands/resetViewsLayout.js';

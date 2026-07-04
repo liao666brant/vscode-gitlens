@@ -16490,13 +16490,6 @@
 					"tildify": true,
 					"workspaceSuffix": "WeGit"
 				}
-			},
-			{
-				"scheme": "gitlens-ai-markdown",
-				"authority": "*",
-				"formatting": {
-					"label": "${query.label}"
-				}
 			}
 		],
 		"viewsContainers": {

@@ -15,7 +15,6 @@ import type { ToggleFileAnnotationCommandArgs } from './commands/toggleFileAnnot
 import type { DateSource, DateStyle, Mode } from './config.js';
 import type { GlCommands } from './constants.commands.js';
 import { extensionPrefix } from './constants.js';
-import { MarkdownContentProvider } from './documents/markdown.js';
 import { EventBus } from './eventBus.js';
 import { GitFileSystemProvider } from './git/fsProvider.js';
 import { GitProviderService } from './git/gitProviderService.js';
@@ -54,7 +53,6 @@ import { configuration } from './system/-webview/configuration.js';
 import { Keyboard } from './system/-webview/keyboard.js';
 import { loadChunk } from './system/-webview/loadChunk.js';
 import type { Storage } from './system/-webview/storage.js';
-import { AIFeedbackProvider } from './telemetry/aiFeedbackProvider.js';
 import { TelemetryService } from './telemetry/telemetry.js';
 import { GitTerminalLinkProvider } from './terminal/linkProvider.js';
 import { GitDocumentTracker } from './trackers/documentTracker.js';
@@ -239,7 +237,6 @@ export class Container {
 		this._disposables.push((this._lineTracker = new LineTracker(this, this._documentTracker)));
 		this._disposables.push((this._keyboard = new Keyboard()));
 		this._disposables.push((this._vsls = new VslsController(this)));
-		this._disposables.push((this._markdownProvider = new MarkdownContentProvider(this)));
 
 		this._disposables.push((this._fileAnnotationController = new FileAnnotationController(this)));
 		this._disposables.push((this._statusBarController = new StatusBarController(this)));
@@ -344,14 +341,6 @@ export class Container {
 		return this._ai;
 	}
 
-	private _aiFeedback: AIFeedbackProvider | undefined;
-	get aiFeedback(): AIFeedbackProvider {
-		if (this._aiFeedback == null) {
-			this._disposables.push((this._aiFeedback = new AIFeedbackProvider()));
-		}
-		return this._aiFeedback;
-	}
-
 	private _autolinks: AutolinksProvider | undefined;
 	get autolinks(): AutolinksProvider {
 		if (this._autolinks == null) {
@@ -450,11 +439,6 @@ export class Container {
 	private readonly _fileAnnotationController: FileAnnotationController;
 	get fileAnnotations(): FileAnnotationController {
 		return this._fileAnnotationController;
-	}
-
-	private readonly _markdownProvider: MarkdownContentProvider;
-	get markdown(): MarkdownContentProvider {
-		return this._markdownProvider;
 	}
 
 	private readonly _virtualFs: VirtualFileSystemService;

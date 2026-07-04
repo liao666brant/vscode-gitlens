@@ -47,7 +47,6 @@ type InternalGlCommands =
 	| 'gitlens.diffWithWorking:views'
 	| 'gitlens.openOnRemote'
 	| 'gitlens.openWorkingFile:command'
-	| 'gitlens.regenerateMarkdownDocument'
 	| 'gitlens.onboarding.dismiss'
 	| 'gitlens.showQuickCommitDetails'
 	| 'gitlens.copyWorkingChangesToWorktree'
