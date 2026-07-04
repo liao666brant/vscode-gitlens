@@ -775,46 +775,6 @@
 						"markdownDescription": "Specifies whether to open multiple changes in the multi-diff editor (single tab) or in individual diff editors (multiple tabs)",
 						"scope": "window",
 						"order": 60
-					},
-					"gitlens.views.commitFileFormat": {
-						"deprecationMessage": "Deprecated. Use `gitlens.views.formats.files.label` instead",
-						"markdownDeprecationMessage": "Deprecated. Use `#gitlens.views.formats.files.label#` instead"
-					},
-					"gitlens.views.commitFileDescriptionFormat": {
-						"deprecationMessage": "Deprecated. Use `gitlens.views.formats.files.description` instead",
-						"markdownDeprecationMessage": "Deprecated. Use `#gitlens.views.formats.files.description#` instead"
-					},
-					"gitlens.views.commitFormat": {
-						"deprecationMessage": "Deprecated. Use `gitlens.views.formats.commits.label` instead",
-						"markdownDeprecationMessage": "Deprecated. Use `#gitlens.views.commits.files.label#` instead"
-					},
-					"gitlens.views.commitDescriptionFormat": {
-						"deprecationMessage": "Deprecated. Use `gitlens.views.formats.commits.description` instead",
-						"markdownDeprecationMessage": "Deprecated. Use `#gitlens.views.formats.commits.description#` instead"
-					},
-					"gitlens.views.stashFileFormat": {
-						"deprecationMessage": "Deprecated. Use `gitlens.views.formats.files.label` instead",
-						"markdownDeprecationMessage": "Deprecated. Use `#gitlens.views.formats.files.label#` instead"
-					},
-					"gitlens.views.stashFileDescriptionFormat": {
-						"deprecationMessage": "Deprecated. Use `gitlens.views.formats.files.description` instead",
-						"markdownDeprecationMessage": "Deprecated. Use `#gitlens.views.formats.files.description#` instead"
-					},
-					"gitlens.views.stashFormat": {
-						"deprecationMessage": "Deprecated. Use `gitlens.views.formats.stashes.label` instead",
-						"markdownDeprecationMessage": "Deprecated. Use `#gitlens.views.stashes.files.label#` instead"
-					},
-					"gitlens.views.stashDescriptionFormat": {
-						"deprecationMessage": "Deprecated. Use `gitlens.views.formats.stashes.description` instead",
-						"markdownDeprecationMessage": "Deprecated. Use `#gitlens.views.formats.stashes.description#` instead"
-					},
-					"gitlens.views.statusFileFormat": {
-						"deprecationMessage": "Deprecated. Use `gitlens.views.formats.files.label` instead",
-						"markdownDeprecationMessage": "Deprecated. Use `#gitlens.views.formats.files.label#` instead"
-					},
-					"gitlens.views.statusFileDescriptionFormat": {
-						"deprecationMessage": "Deprecated. Use `gitlens.views.formats.files.description` instead",
-						"markdownDeprecationMessage": "Deprecated. Use `#gitlens.views.formats.files.description#` instead"
 					}
 				}
 			},
@@ -2203,10 +2163,6 @@
 						"markdownDescription": "Specifies whether to match commit search patterns using regular expressions",
 						"scope": "window",
 						"order": 52
-					},
-					"gitlens.gitCommands.search.showResultsInView": {
-						"deprecationMessage": "Deprecated. This setting has been renamed to gitlens.gitCommands.search.showResultsInSideBar",
-						"markdownDeprecationMessage": "Deprecated. This setting has been renamed to `#gitlens.gitCommands.search.showResultsInSideBar#`"
 					}
 				}
 			},
@@ -3311,10 +3267,6 @@
 						"markdownDescription": "Specifies whether to show the What's New notification after upgrading to new feature releases",
 						"scope": "window",
 						"order": 20
-					},
-					"gitlens.outputLevel": {
-						"type": "string",
-						"markdownDeprecationMessage": "This setting is deprecated. Use the **WeGit: Enable Debug Logging** and **WeGit: Disable Debug Logging** commands, or the **Developer: Set Log Level...** command to control logging."
 					},
 					"gitlens.defaultCurrentUserNameStyle": {
 						"type": "string",

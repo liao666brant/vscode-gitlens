@@ -124,7 +124,6 @@ const defaultUserSettings: Record<string, unknown> = {
 	'files.simpleDialog.enable': true,
 	'window.dialogStyle': 'custom',
 
-	'gitlens.outputLevel': 'debug',
 	'gitlens.telemetry.enabled': false,
 	// Skip onboarding/welcome screens — ephemeral test environments shouldn't show welcome views
 	'gitlens.advanced.skipOnboarding': true,

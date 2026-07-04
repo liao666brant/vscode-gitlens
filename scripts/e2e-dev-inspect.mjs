@@ -277,7 +277,6 @@ const defaultSettings = {
 	'update.mode': 'none',
 	'files.simpleDialog.enable': true,
 	'window.dialogStyle': 'custom',
-	'gitlens.outputLevel': 'debug',
 	'gitlens.telemetry.enabled': false,
 };
 
