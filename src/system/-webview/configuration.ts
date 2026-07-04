@@ -5,7 +5,7 @@ import type { Config, CoreConfig } from '../../config.js';
 import { extensionPrefix } from '../../constants.js';
 
 interface ConfigurationOverrides {
-	get<T extends ConfigPath>(section: T, value: ConfigPathValue<T>): ConfigPathValue<T>;
+	get(section: string, value: unknown): unknown;
 	getAll(config: Config): Config;
 	onDidChange(e: ConfigurationChangeEvent): ConfigurationChangeEvent;
 }
@@ -76,7 +76,9 @@ export class Configuration implements Disposable {
 			defaultValue === undefined
 				? workspace.getConfiguration(extensionPrefix, scope).get<ConfigPathValue<S>>(section)!
 				: workspace.getConfiguration(extensionPrefix, scope).get<ConfigPathValue<S>>(section, defaultValue)!;
-		return skipOverrides || this._overrides?.get == null ? value : this._overrides.get<S>(section, value);
+		return skipOverrides || this._overrides?.get == null
+			? value
+			: (this._overrides.get(section, value) as ConfigPathValue<S>);
 	}
 
 	getAll(skipOverrides?: boolean): Config {
@@ -84,9 +86,9 @@ export class Configuration implements Disposable {
 		return skipOverrides || this._overrides?.getAll == null ? config : this._overrides.getAll(config);
 	}
 
-	getAny<S extends string, T>(section: S, scope?: ConfigurationScope | null): T | undefined;
-	getAny<S extends string, T>(section: S, scope: ConfigurationScope | null | undefined, defaultValue: T): T;
-	getAny<S extends string, T>(section: S, scope?: ConfigurationScope | null, defaultValue?: T): T | undefined {
+	getAny<T = unknown>(section: string, scope?: ConfigurationScope | null): T | undefined;
+	getAny<T = unknown>(section: string, scope: ConfigurationScope | null | undefined, defaultValue: T): T;
+	getAny<T = unknown>(section: string, scope?: ConfigurationScope | null, defaultValue?: T): T | undefined {
 		return defaultValue === undefined
 			? workspace.getConfiguration(undefined, scope).get<T>(section)
 			: workspace.getConfiguration(undefined, scope).get<T>(section, defaultValue);
@@ -123,9 +125,9 @@ export class Configuration implements Disposable {
 			: e.affectsConfiguration(`${extensionPrefix}.${section}`, scope!);
 	}
 
-	changedAny<S extends string>(
+	changedAny(
 		e: ConfigurationChangeEvent | undefined,
-		section: S | S[],
+		section: string | string[],
 		scope?: ConfigurationScope | null | undefined,
 	): boolean {
 		if (e == null) return true;
@@ -315,7 +317,9 @@ export class Configuration implements Disposable {
 		}
 	}
 
-	matches<S extends ConfigPath>(match: S, section: ConfigPath, _value: unknown): _value is ConfigPathValue<S> {
+	matches<S extends ConfigPath>(match: S, section: string, _value: unknown): _value is ConfigPathValue<S>;
+	matches(match: string, section: string, _value: unknown): boolean;
+	matches(match: string, section: string, _value: unknown): boolean {
 		return match === section;
 	}
 

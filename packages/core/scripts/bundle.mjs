@@ -1,4 +1,4 @@
-// Bundle the five internal @gitlens/* workspace packages into this core package.
+// Bundle the internal @gitlens/* workspace packages into this core package.
 //
 // Steps:
 //   1. Clean dist/ and src/ (regenerated from the sub-packages)
@@ -7,7 +7,7 @@
 //   4. Rewrite source map `sources` entries to point into packages/core/src/<dest>/
 //   5. Merge runtime dependencies from the five package.json files (stripping workspace refs)
 //   6. Generate the `exports` map from each sub-package's `exports` patterns
-//   7. Copy root LICENSE and LICENSE.plus into the package for shipping
+//   7. Copy root LICENSE into the package for shipping
 //   8. Write the updated package.json back in place
 //
 // Source packages keep `private: true` and their existing shape; only this core
@@ -28,9 +28,6 @@ const packages = [
 	{ name: '@gitlens/ipc', srcDir: 'packages/ipc', dest: 'ipc' },
 	{ name: '@gitlens/git', srcDir: 'packages/git', dest: 'git' },
 	{ name: '@gitlens/git-cli', srcDir: 'packages/git-cli', dest: 'git-cli' },
-	{ name: '@gitlens/git-github', srcDir: 'packages/plus/git-github', dest: 'plus/git-github' },
-	{ name: '@gitlens/ai', srcDir: 'packages/plus/ai', dest: 'plus/ai' },
-	{ name: '@gitlens/agents', srcDir: 'packages/plus/agents', dest: 'plus/agents' },
 ];
 
 const nameToDest = Object.fromEntries(packages.map(p => [p.name, p.dest]));
@@ -74,7 +71,6 @@ async function clean() {
 	await rm(join(coreRoot, distName), { recursive: true, force: true });
 	await rm(join(coreRoot, srcName), { recursive: true, force: true });
 	await rm(join(coreRoot, 'LICENSE'), { force: true });
-	await rm(join(coreRoot, 'LICENSE.plus'), { force: true });
 }
 
 async function copyPackageTree(pkg) {
@@ -123,11 +119,11 @@ async function* walk(dir) {
 	}
 }
 
-const specifierRegex = /(['"])@gitlens\/(utils|ipc|git|git-cli|ai|git-github)\/([^'"]+)\1/g;
+const specifierRegex = /(['"])@gitlens\/(utils|ipc|git|git-cli)\/([^'"]+)\1/g;
 // Also rewrite backtick-wrapped package mentions (typical in JSDoc) so the published tarball never
 // references the internal `@gitlens/*` names. Backticks are required to avoid false positives on
 // URLs or other incidental occurrences of the substring.
-const docMentionRegex = /`@gitlens\/(utils|ipc|git|git-cli|ai|git-github)`/g;
+const docMentionRegex = /`@gitlens\/(utils|ipc|git|git-cli)`/g;
 const publishedName = '@gitkraken/core-gitlens';
 
 async function rewriteSpecifiers() {
@@ -216,11 +212,6 @@ async function rewriteSourceMaps() {
 
 function packageDestForFile(distRoot, file) {
 	const rel = relative(distRoot, file).split(sep).join('/');
-	// Plus packages live under `plus/<name>/...`
-	if (rel.startsWith('plus/')) {
-		const second = rel.split('/')[1];
-		return `plus/${second}`;
-	}
 	const first = rel.split('/')[0];
 	return first;
 }
@@ -284,7 +275,6 @@ function remapExportTargetPath(path, destSubpath) {
 
 async function copyLicenses() {
 	await cp(join(repoRoot, 'LICENSE'), join(coreRoot, 'LICENSE'));
-	await cp(join(repoRoot, 'LICENSE.plus'), join(coreRoot, 'LICENSE.plus'));
 }
 
 async function writeUpdatedPackageJson() {

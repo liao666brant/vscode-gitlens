@@ -1,5 +1,5 @@
 import type { CancellationToken, ConfigurationChangeEvent } from 'vscode';
-import { Disposable, ProgressLocation, ThemeIcon, TreeItem, TreeItemCollapsibleState, window } from 'vscode';
+import { Disposable, ProgressLocation, TreeItem, TreeItemCollapsibleState, window } from 'vscode';
 import { GitBranch } from '@gitlens/git/models/branch.js';
 import { GitCommit } from '@gitlens/git/models/commit.js';
 import type { GitRevisionReference } from '@gitlens/git/models/reference.js';
@@ -14,10 +14,9 @@ import { GlyphChars } from '../constants.js';
 import type { Container } from '../container.js';
 import { GitUri } from '../git/gitUri.js';
 import type { RepositoryChangeEvent } from '../git/models/repository.js';
-import type { UsageChangeEvent } from '../onboarding/usageTracker.js';
 import { showContributorsPicker } from '../quickpicks/contributorsPicker.js';
 import { getRepositoryOrShowPicker } from '../quickpicks/repositoryPicker.js';
-import { createCommand, executeCommand } from '../system/-webview/command.js';
+import { executeCommand } from '../system/-webview/command.js';
 import { configuration } from '../system/-webview/configuration.js';
 import { setContext } from '../system/-webview/context.js';
 import { gate } from '../system/decorators/gate.js';
@@ -26,7 +25,6 @@ import { RepositoryFolderNode } from './nodes/abstract/repositoryFolderNode.js';
 import type { ViewNode } from './nodes/abstract/viewNode.js';
 import { BranchNode } from './nodes/branchNode.js';
 import { BranchTrackingStatusNode } from './nodes/branchTrackingStatusNode.js';
-import { CommandMessageNode } from './nodes/common.js';
 import type { GroupedViewContext, RevealOptions } from './viewBase.js';
 import { ViewBase } from './viewBase.js';
 import type { CopyNodeCommandArgs } from './viewCommands.js';
@@ -158,25 +156,6 @@ export class CommitsViewNode extends RepositoriesSubscribeableNode<CommitsView, 
 
 		const children = [];
 
-		if (
-			configuration.get('plusFeatures.enabled') &&
-			!this.view.grouped &&
-			this.view.container.usage.get('graphView:shown') == null &&
-			this.view.container.usage.get('graphWebview:shown') == null
-		) {
-			children.push(
-				new CommandMessageNode(
-					this.view,
-					this,
-					createCommand('gitlens.showGraph', '显示提交图'),
-					'在提交图中可视化提交',
-					undefined,
-					'在提交图中可视化提交',
-					new ThemeIcon('gitlens-graph'),
-				),
-			);
-		}
-
 		if (this.children.length === 1) {
 			const [child] = this.children;
 
@@ -224,14 +203,6 @@ export class CommitsView extends ViewBase<'commits', CommitsViewNode, CommitsVie
 
 	constructor(container: Container, grouped?: GroupedViewContext) {
 		super(container, 'commits', '提交', 'commitsView', grouped);
-		this.disposables.push(container.usage.onDidChange(this.onUsageChanged, this));
-	}
-
-	private onUsageChanged(e: UsageChangeEvent | void) {
-		// Refresh the view if the graph usage state has changed, since we render a node for it before the first use
-		if (e == null || e.key === 'graphView:shown' || e.key === 'graphWebview:shown') {
-			void this.refresh();
-		}
 	}
 
 	override get canReveal(): boolean {
@@ -342,7 +313,6 @@ export class CommitsView extends ViewBase<'commits', CommitsViewNode, CommitsVie
 			!configuration.changed(e, 'defaultDateStyle') &&
 			!configuration.changed(e, 'defaultGravatarsStyle') &&
 			!configuration.changed(e, 'defaultTimeFormat') &&
-			!configuration.changed(e, 'plusFeatures.enabled') &&
 			!configuration.changed(e, 'sortRepositoriesBy')
 		) {
 			return false;

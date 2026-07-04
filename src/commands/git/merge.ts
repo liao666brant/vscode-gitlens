@@ -2,7 +2,6 @@ import { ThemeIcon, window } from 'vscode';
 import { MergeError, SigningError } from '@gitlens/git/errors.js';
 import type { GitBranch } from '@gitlens/git/models/branch.js';
 import type { GitLog } from '@gitlens/git/models/log.js';
-import type { ConflictDetectionResult } from '@gitlens/git/models/mergeConflicts.js';
 import type { GitReference } from '@gitlens/git/models/reference.js';
 import { getReferenceLabel, isRevisionReference } from '@gitlens/git/utils/reference.utils.js';
 import { createRevisionRange } from '@gitlens/git/utils/revision.utils.js';
@@ -10,7 +9,6 @@ import { Logger } from '@gitlens/utils/logger.js';
 import type { Container } from '../../container.js';
 import type { GlRepository } from '../../git/models/repository.js';
 import { showGitErrorMessage } from '../../messages.js';
-import { isSubscriptionTrialOrPaidFromState } from '../../plus/gk/utils/subscription.utils.js';
 import { createQuickPickSeparator } from '../../quickpicks/items/common.js';
 import type { DirectiveQuickPickItem } from '../../quickpicks/items/directive.js';
 import { createDirectiveQuickPickItem, Directive } from '../../quickpicks/items/directive.js';
@@ -361,14 +359,10 @@ export class MergeGitCommand extends QuickCommand<State> {
 			}),
 		];
 
-		let potentialConflict: Promise<ConflictDetectionResult | undefined> | undefined;
-		const subscription = await this.container.subscription.getSubscription();
-		if (isSubscriptionTrialOrPaidFromState(subscription?.state)) {
-			potentialConflict = state.repo.git.branches.getPotentialMergeConflicts?.(
-				state.reference.name,
-				context.destination.name,
-			);
-		}
+		const potentialConflict = state.repo.git.branches.getPotentialMergeConflicts?.(
+			state.reference.name,
+			context.destination.name,
+		);
 
 		let step: QuickPickStep<DirectiveQuickPickItem | FlagsQuickPickItem<Flags>>;
 

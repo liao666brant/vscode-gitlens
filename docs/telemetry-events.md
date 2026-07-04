@@ -23,9 +23,7 @@
   'vscodeUIKind': string,
   'vscodeVersion': string
 
-  'global.account.createdOn': string,
-  'global.account.id': string,
-  'global.account.verified': boolean,
+  [`global.account.${string}`]: string,
   'global.cloudIntegrations.connected.count': number,
   'global.cloudIntegrations.connected.ids': string,
   'global.debugging': boolean,
@@ -34,7 +32,6 @@
   'global.enabled': boolean,
   'global.folders.count': number,
   'global.folders.schemes': string,
-  'global.gk.mcp.registrationCompleted': boolean,
   'global.install': boolean,
   'global.prerelease': boolean,
   'global.providers.count': number,
@@ -49,32 +46,19 @@
   'global.repositories.withHostingIntegrations': number,
   'global.repositories.withHostingIntegrationsConnected': number,
   'global.repositories.withRemotes': number,
-  'global.subscription.actual.bundle': boolean,
-  'global.subscription.actual.cancelled': boolean,
-  'global.subscription.actual.expiresOn': string,
-  'global.subscription.actual.id': 'community' | 'community-with-account' | 'student' | 'pro' | 'advanced' | 'teams' | 'enterprise',
-  'global.subscription.actual.nextTrialOptInDate': string,
-  'global.subscription.actual.organizationId': string,
-  'global.subscription.actual.startedOn': string,
-  'global.subscription.actual.trialReactivationCount': number,
-  'global.subscription.effective.bundle': boolean,
-  'global.subscription.effective.cancelled': boolean,
-  'global.subscription.effective.expiresOn': string,
-  'global.subscription.effective.id': 'community' | 'community-with-account' | 'student' | 'pro' | 'advanced' | 'teams' | 'enterprise',
-  'global.subscription.effective.nextTrialOptInDate': string,
-  'global.subscription.effective.organizationId': string,
-  'global.subscription.effective.startedOn': string,
-  'global.subscription.effective.trialReactivationCount': number,
+  'global.subscription.actual.id': 'community',
+  'global.subscription.effective.id': 'community',
   'global.subscription.featurePreviews.graph.day': number,
   [`global.subscription.featurePreviews.graph.day.${number}.startedOn`]: string,
   'global.subscription.featurePreviews.graph.startedOn': string,
   'global.subscription.featurePreviews.graph.status': 'eligible' | 'active' | 'expired',
+  'global.subscription.id': 'community',
   // Promo discount code associated with the upgrade
   'global.subscription.promo.code': string,
   // Promo key (identifier) associated with the upgrade
   'global.subscription.promo.key': string,
   'global.subscription.state': -1 | 0 | 1 | 2 | 3 | 4 | 5 | 6,
-  'global.subscription.stateString': 'verification' | 'free' | 'trial' | 'trial-expired' | 'trial-reactivation-eligible' | 'paid' | 'unknown',
+  'global.subscription.stateString': string,
   'global.upgrade': boolean,
   'global.upgradedFrom': string,
   'global.workspace.isTrusted': boolean
@@ -188,7 +172,7 @@ routed its hook events here — so don't treat every event as a dropped IPC sign
 
 ```typescript
 {
-  'organization.role': 'owner' | 'admin' | 'billing' | 'user'
+  'organization.role': string
 }
 ```
 
@@ -198,7 +182,7 @@ routed its hook events here — so don't treat every event as a dropped IPC sign
 
 ```typescript
 {
-  'organization.role': 'owner' | 'admin' | 'billing' | 'user'
+  'organization.role': string
 }
 ```
 
@@ -239,7 +223,7 @@ void
   'id': string,
   'input.length': number,
   'model.id': string,
-  'model.provider.id': 'anthropic' | 'azure' | 'deepseek' | 'gemini' | 'github' | 'gitkraken' | 'huggingface' | 'mistral' | 'ollama' | 'openai' | 'openaicompatible' | 'openrouter' | 'simulator' | 'vscode' | 'xai',
+  'model.provider.id': string,
   'model.provider.name': string,
   'output.length': number,
   'retry.count': number,
@@ -264,11 +248,11 @@ void
   'feature': string,
   'id': string,
   'model.id': string,
-  'model.provider.id': 'anthropic' | 'azure' | 'deepseek' | 'gemini' | 'github' | 'gitkraken' | 'huggingface' | 'mistral' | 'ollama' | 'openai' | 'openaicompatible' | 'openrouter' | 'simulator' | 'vscode' | 'xai',
+  'model.provider.id': string,
   'model.provider.name': string,
   'sentiment': 'helpful' | 'unhelpful',
   // The AI feature that feedback was submitted for
-  'type': 'explain-changes' | 'review-changes' | 'generate-commitMessage' | 'generate-stashMessage' | 'generate-changelog' | 'generate-create-cloudPatch' | 'generate-create-codeSuggestion' | 'generate-create-pullRequest' | 'generate-commits' | 'conflict-resolution' | 'generate-searchQuery',
+  'type': string,
   // Custom feedback provided (if any)
   'unhelpful.custom': string,
   // Unhelpful reasons selected (if any) - comma-separated list of AIFeedbackUnhelpfulReasons values
@@ -310,7 +294,7 @@ void
   'id': string,
   'input.length': number,
   'model.id': string,
-  'model.provider.id': 'anthropic' | 'azure' | 'deepseek' | 'gemini' | 'github' | 'gitkraken' | 'huggingface' | 'mistral' | 'ollama' | 'openai' | 'openaicompatible' | 'openrouter' | 'simulator' | 'vscode' | 'xai',
+  'model.provider.id': string,
   'model.provider.name': string,
   'output.length': number,
   'retry.count': number,
@@ -352,7 +336,7 @@ or
   'id': string,
   'input.length': number,
   'model.id': string,
-  'model.provider.id': 'anthropic' | 'azure' | 'deepseek' | 'gemini' | 'github' | 'gitkraken' | 'huggingface' | 'mistral' | 'ollama' | 'openai' | 'openaicompatible' | 'openrouter' | 'simulator' | 'vscode' | 'xai',
+  'model.provider.id': string,
   'model.provider.name': string,
   'output.length': number,
   'retry.count': number,
@@ -395,7 +379,7 @@ or
   'id': string,
   'input.length': number,
   'model.id': string,
-  'model.provider.id': 'anthropic' | 'azure' | 'deepseek' | 'gemini' | 'github' | 'gitkraken' | 'huggingface' | 'mistral' | 'ollama' | 'openai' | 'openaicompatible' | 'openrouter' | 'simulator' | 'vscode' | 'xai',
+  'model.provider.id': string,
   'model.provider.name': string,
   'output.length': number,
   'retry.count': number,
@@ -437,7 +421,7 @@ or
   'id': string,
   'input.length': number,
   'model.id': string,
-  'model.provider.id': 'anthropic' | 'azure' | 'deepseek' | 'gemini' | 'github' | 'gitkraken' | 'huggingface' | 'mistral' | 'ollama' | 'openai' | 'openaicompatible' | 'openrouter' | 'simulator' | 'vscode' | 'xai',
+  'model.provider.id': string,
   'model.provider.name': string,
   'output.length': number,
   'retry.count': number,
@@ -479,7 +463,7 @@ or
   'id': string,
   'input.length': number,
   'model.id': string,
-  'model.provider.id': 'anthropic' | 'azure' | 'deepseek' | 'gemini' | 'github' | 'gitkraken' | 'huggingface' | 'mistral' | 'ollama' | 'openai' | 'openaicompatible' | 'openrouter' | 'simulator' | 'vscode' | 'xai',
+  'model.provider.id': string,
   'model.provider.name': string,
   'output.length': number,
   'retry.count': number,
@@ -521,7 +505,7 @@ or
   'id': string,
   'input.length': number,
   'model.id': string,
-  'model.provider.id': 'anthropic' | 'azure' | 'deepseek' | 'gemini' | 'github' | 'gitkraken' | 'huggingface' | 'mistral' | 'ollama' | 'openai' | 'openaicompatible' | 'openrouter' | 'simulator' | 'vscode' | 'xai',
+  'model.provider.id': string,
   'model.provider.name': string,
   'output.length': number,
   'retry.count': number,
@@ -563,7 +547,7 @@ or
   'id': string,
   'input.length': number,
   'model.id': string,
-  'model.provider.id': 'anthropic' | 'azure' | 'deepseek' | 'gemini' | 'github' | 'gitkraken' | 'huggingface' | 'mistral' | 'ollama' | 'openai' | 'openaicompatible' | 'openrouter' | 'simulator' | 'vscode' | 'xai',
+  'model.provider.id': string,
   'model.provider.name': string,
   'output.length': number,
   'retry.count': number,
@@ -605,7 +589,7 @@ or
   'id': string,
   'input.length': number,
   'model.id': string,
-  'model.provider.id': 'anthropic' | 'azure' | 'deepseek' | 'gemini' | 'github' | 'gitkraken' | 'huggingface' | 'mistral' | 'ollama' | 'openai' | 'openaicompatible' | 'openrouter' | 'simulator' | 'vscode' | 'xai',
+  'model.provider.id': string,
   'model.provider.name': string,
   'output.length': number,
   'retry.count': number,
@@ -649,7 +633,7 @@ or
   'id': string,
   'input.length': number,
   'model.id': string,
-  'model.provider.id': 'anthropic' | 'azure' | 'deepseek' | 'gemini' | 'github' | 'gitkraken' | 'huggingface' | 'mistral' | 'ollama' | 'openai' | 'openaicompatible' | 'openrouter' | 'simulator' | 'vscode' | 'xai',
+  'model.provider.id': string,
   'model.provider.name': string,
   'output.length': number,
   'retry.count': number,
@@ -674,7 +658,7 @@ or
 ```typescript
 {
   'model.id': string,
-  'model.provider.id': 'anthropic' | 'azure' | 'deepseek' | 'gemini' | 'github' | 'gitkraken' | 'huggingface' | 'mistral' | 'ollama' | 'openai' | 'openaicompatible' | 'openrouter' | 'simulator' | 'vscode' | 'xai',
+  'model.provider.id': string,
   'model.provider.name': string
 }
 ```
@@ -721,7 +705,7 @@ void
   'action': 'manage' | 'connect',
   'connected': boolean,
   // Route requested by the caller for the manual-vs-agent flow; `undefined` when the caller didn't opt in.
-  'context.showOpenInAgent': 'ask' | 'manual' | 'agent',
+  'context.showOpenInAgent': string,
   'items.count': number
 }
 ```
@@ -736,7 +720,7 @@ void
   'action': 'soft-open',
   'connected': boolean,
   // Route requested by the caller for the manual-vs-agent flow; `undefined` when the caller didn't opt in.
-  'context.showOpenInAgent': 'ask' | 'manual' | 'agent',
+  'context.showOpenInAgent': string,
   [`item.${string}`]: string | number | boolean,
   'items.count': number
 }
@@ -751,7 +735,7 @@ void
   'instance': number,
   'connected': boolean,
   // Route requested by the caller for the manual-vs-agent flow; `undefined` when the caller didn't opt in.
-  'context.showOpenInAgent': 'ask' | 'manual' | 'agent',
+  'context.showOpenInAgent': string,
   [`item.${string}`]: string | number | boolean,
   'items.count': number
 }
@@ -765,20 +749,20 @@ void
 {
   'instance': number,
   // Route requested by the caller for the manual-vs-agent flow; `undefined` when the caller didn't opt in.
-  'context.showOpenInAgent': 'ask' | 'manual' | 'agent'
+  'context.showOpenInAgent': string
 }
 ```
 
 ### associateIssueWithBranch/opened
 
-> Sent when the launchpad is opened; use `instance` to correlate an Associate Issue with Branch "session"
+> Sent when Associate Issue with Branch is opened; use `instance` to correlate an Associate Issue with Branch "session"
 
 ```typescript
 {
   'instance': number,
   'connected': boolean,
   // Route requested by the caller for the manual-vs-agent flow; `undefined` when the caller didn't opt in.
-  'context.showOpenInAgent': 'ask' | 'manual' | 'agent',
+  'context.showOpenInAgent': string,
   'items.count': number
 }
 ```
@@ -792,7 +776,7 @@ void
   'instance': number,
   'connected': boolean,
   // Route requested by the caller for the manual-vs-agent flow; `undefined` when the caller didn't opt in.
-  'context.showOpenInAgent': 'ask' | 'manual' | 'agent',
+  'context.showOpenInAgent': string,
   'items.count': number
 }
 ```
@@ -806,7 +790,7 @@ void
   'instance': number,
   'connected': boolean,
   // Route requested by the caller for the manual-vs-agent flow; `undefined` when the caller didn't opt in.
-  'context.showOpenInAgent': 'ask' | 'manual' | 'agent',
+  'context.showOpenInAgent': string,
   'items.count': number
 }
 ```
@@ -821,7 +805,7 @@ void
   'action': 'connect',
   'connected': boolean,
   // Route requested by the caller for the manual-vs-agent flow; `undefined` when the caller didn't opt in.
-  'context.showOpenInAgent': 'ask' | 'manual' | 'agent',
+  'context.showOpenInAgent': string,
   'items.count': number
 }
 ```
@@ -846,7 +830,7 @@ void
   'autoInstall': boolean,
   'error.message': string,
   'insiders': boolean,
-  'source': 'account' | 'subscription' | 'graph' | 'composer' | 'patchDetails' | 'settings' | 'timeline' | 'home' | 'welcome' | 'rebaseEditor' | 'ai' | 'ai:markdown-preview' | 'ai:markdown-editor' | 'ai:picker' | 'associateIssueWithBranch' | 'cloud-patches' | 'code-suggest' | 'commandPalette' | 'deeplink' | 'editor:hover' | 'feature-badge' | 'feature-gate' | 'gk-cli-integration' | 'gk-mcp-provider' | 'graph-details' | 'graph-header' | 'graph-kanban' | 'graph-sidebar' | 'graph-treemap' | 'inspect' | 'inspect-overview' | 'integrations' | 'launchpad' | 'launchpad-indicator' | 'launchpad-view' | 'mcp' | 'mcp-welcome-message' | 'merge-target' | 'notification' | 'prompt' | 'quick-wizard' | 'remoteProvider' | 'scm' | 'scm-input' | 'startReview' | 'startWork' | 'statusbar:hover' | 'trial-indicator' | 'view' | 'view:hover' | 'walkthrough' | 'whatsnew' | 'worktrees'
+  'source': 'account' | 'subscription' | 'graph' | 'settings' | 'home' | 'welcome' | 'rebaseEditor' | 'ai' | 'ai:markdown-preview' | 'ai:markdown-editor' | 'ai:picker' | 'associateIssueWithBranch' | 'commandPalette' | 'deeplink' | 'editor:hover' | 'feature-badge' | 'feature-gate' | 'graph-details' | 'graph-header' | 'graph-kanban' | 'graph-sidebar' | 'graph-treemap' | 'inspect' | 'inspect-overview' | 'integrations' | 'merge-target' | 'notification' | 'prompt' | 'quick-wizard' | 'remoteProvider' | 'scm' | 'scm-input' | 'startReview' | 'startWork' | 'statusbar:hover' | 'view' | 'view:hover' | 'walkthrough' | 'whatsnew'
 }
 ```
 
@@ -859,7 +843,7 @@ void
   'attempts': number,
   'autoInstall': boolean,
   'insiders': boolean,
-  'source': 'account' | 'subscription' | 'graph' | 'composer' | 'patchDetails' | 'settings' | 'timeline' | 'home' | 'welcome' | 'rebaseEditor' | 'ai' | 'ai:markdown-preview' | 'ai:markdown-editor' | 'ai:picker' | 'associateIssueWithBranch' | 'cloud-patches' | 'code-suggest' | 'commandPalette' | 'deeplink' | 'editor:hover' | 'feature-badge' | 'feature-gate' | 'gk-cli-integration' | 'gk-mcp-provider' | 'graph-details' | 'graph-header' | 'graph-kanban' | 'graph-sidebar' | 'graph-treemap' | 'inspect' | 'inspect-overview' | 'integrations' | 'launchpad' | 'launchpad-indicator' | 'launchpad-view' | 'mcp' | 'mcp-welcome-message' | 'merge-target' | 'notification' | 'prompt' | 'quick-wizard' | 'remoteProvider' | 'scm' | 'scm-input' | 'startReview' | 'startWork' | 'statusbar:hover' | 'trial-indicator' | 'view' | 'view:hover' | 'walkthrough' | 'whatsnew' | 'worktrees'
+  'source': 'account' | 'subscription' | 'graph' | 'settings' | 'home' | 'welcome' | 'rebaseEditor' | 'ai' | 'ai:markdown-preview' | 'ai:markdown-editor' | 'ai:picker' | 'associateIssueWithBranch' | 'commandPalette' | 'deeplink' | 'editor:hover' | 'feature-badge' | 'feature-gate' | 'graph-details' | 'graph-header' | 'graph-kanban' | 'graph-sidebar' | 'graph-treemap' | 'inspect' | 'inspect-overview' | 'integrations' | 'merge-target' | 'notification' | 'prompt' | 'quick-wizard' | 'remoteProvider' | 'scm' | 'scm-input' | 'startReview' | 'startWork' | 'statusbar:hover' | 'view' | 'view:hover' | 'walkthrough' | 'whatsnew'
 }
 ```
 
@@ -872,7 +856,7 @@ void
   'attempts': number,
   'autoInstall': boolean,
   'insiders': boolean,
-  'source': 'account' | 'subscription' | 'graph' | 'composer' | 'patchDetails' | 'settings' | 'timeline' | 'home' | 'welcome' | 'rebaseEditor' | 'ai' | 'ai:markdown-preview' | 'ai:markdown-editor' | 'ai:picker' | 'associateIssueWithBranch' | 'cloud-patches' | 'code-suggest' | 'commandPalette' | 'deeplink' | 'editor:hover' | 'feature-badge' | 'feature-gate' | 'gk-cli-integration' | 'gk-mcp-provider' | 'graph-details' | 'graph-header' | 'graph-kanban' | 'graph-sidebar' | 'graph-treemap' | 'inspect' | 'inspect-overview' | 'integrations' | 'launchpad' | 'launchpad-indicator' | 'launchpad-view' | 'mcp' | 'mcp-welcome-message' | 'merge-target' | 'notification' | 'prompt' | 'quick-wizard' | 'remoteProvider' | 'scm' | 'scm-input' | 'startReview' | 'startWork' | 'statusbar:hover' | 'trial-indicator' | 'view' | 'view:hover' | 'walkthrough' | 'whatsnew' | 'worktrees',
+  'source': 'account' | 'subscription' | 'graph' | 'settings' | 'home' | 'welcome' | 'rebaseEditor' | 'ai' | 'ai:markdown-preview' | 'ai:markdown-editor' | 'ai:picker' | 'associateIssueWithBranch' | 'commandPalette' | 'deeplink' | 'editor:hover' | 'feature-badge' | 'feature-gate' | 'graph-details' | 'graph-header' | 'graph-kanban' | 'graph-sidebar' | 'graph-treemap' | 'inspect' | 'inspect-overview' | 'integrations' | 'merge-target' | 'notification' | 'prompt' | 'quick-wizard' | 'remoteProvider' | 'scm' | 'scm-input' | 'startReview' | 'startWork' | 'statusbar:hover' | 'view' | 'view:hover' | 'walkthrough' | 'whatsnew',
   'version': string
 }
 ```
@@ -1040,63 +1024,6 @@ or when connection refresh is skipped due to being a non-cloud session
 }
 ```
 
-### codeSuggestionArchived
-
-> Sent when a code suggestion is archived
-
-```typescript
-{
-  // Named for compatibility with other GK surfaces
-  'draftId': string,
-  'provider': string,
-  // Named for compatibility with other GK surfaces
-  'reason': 'committed' | 'rejected' | 'accepted',
-  // Named for compatibility with other GK surfaces
-  'repoPrivacy': 'private' | 'public' | 'local',
-  'repository.visibility': 'private' | 'public' | 'local'
-}
-```
-
-### codeSuggestionCreated
-
-> Sent when a code suggestion is created
-
-```typescript
-{
-  // Named for compatibility with other GK surfaces
-  'draftId': string,
-  // Named for compatibility with other GK surfaces
-  'draftPrivacy': 'private' | 'public' | 'invite_only' | 'provider_access',
-  // Named for compatibility with other GK surfaces
-  'filesChanged': number,
-  'provider': string,
-  // Named for compatibility with other GK surfaces
-  'repoPrivacy': 'private' | 'public' | 'local',
-  'repository.visibility': 'private' | 'public' | 'local',
-  // Named for compatibility with other GK surfaces
-  'source': 'reviewMode'
-}
-```
-
-### codeSuggestionViewed
-
-> Sent when a code suggestion is opened
-
-```typescript
-{
-  // Named for compatibility with other GK surfaces
-  'draftId': string,
-  // Named for compatibility with other GK surfaces
-  'draftPrivacy': 'private' | 'public' | 'invite_only' | 'provider_access',
-  'provider': string,
-  // Named for compatibility with other GK surfaces
-  'repoPrivacy': 'private' | 'public' | 'local',
-  'repository.visibility': 'private' | 'public' | 'local',
-  // Named for compatibility with other GK surfaces
-  'source': string
-}
-```
-
 ### command
 
 > Sent when a GitLens command is executed
@@ -1146,7 +1073,7 @@ or
 ```typescript
 {
   'format': 'gpg' | 'ssh' | 'x509' | 'openpgp',
-  'reason': 'unknown' | 'noKey' | 'gpgNotFound' | 'sshNotFound' | 'passphraseFailed'
+  'reason': 'noKey' | 'gpgNotFound' | 'sshNotFound' | 'passphraseFailed' | 'unknown'
 }
 ```
 
@@ -1190,7 +1117,6 @@ or
 ```typescript
 {
   'context.autolinks': number,
-  'context.codeSuggestions': number,
   'context.inReview': boolean,
   'context.mode': 'wip',
   'context.repository.closed': boolean,
@@ -1268,7 +1194,6 @@ or
 ```typescript
 {
   'context.autolinks': number,
-  'context.codeSuggestions': number,
   'context.config.autolinks.enabled': boolean,
   'context.config.autolinks.enhanced': boolean,
   'context.config.avatars': boolean,
@@ -1316,1169 +1241,6 @@ or
   'context.webview.type': string,
   'duration': number,
   'loading': boolean
-}
-```
-
-### composer/action/changeAiModel
-
-> Sent when the user changes the AI model in the Commit Composer
-
-```typescript
-{
-  'context.ai.enabled.config': boolean,
-  'context.ai.enabled.org': boolean,
-  'context.ai.model.default': boolean,
-  'context.ai.model.hidden': boolean,
-  'context.ai.model.id': string,
-  'context.ai.model.maxTokens.input': number,
-  'context.ai.model.maxTokens.output': number,
-  'context.ai.model.name': string,
-  'context.ai.model.provider.id': 'anthropic' | 'azure' | 'deepseek' | 'gemini' | 'github' | 'gitkraken' | 'huggingface' | 'mistral' | 'ollama' | 'openai' | 'openaicompatible' | 'openrouter' | 'simulator' | 'vscode' | 'xai',
-  'context.ai.model.temperature': number,
-  'context.commits.autoComposedCount': number,
-  'context.commits.composedCount': number,
-  'context.commits.finalCount': number,
-  'context.commits.initialCount': number,
-  'context.diff.files.count': number,
-  'context.diff.hash': string,
-  'context.diff.hunks.count': number,
-  'context.diff.lines.count': number,
-  'context.diff.staged.exists': boolean,
-  'context.diff.unstaged.exists': boolean,
-  'context.diff.unstaged.included': boolean,
-  'context.errors.operation.count': number,
-  'context.errors.safety.count': number,
-  'context.mode': 'experimental' | 'preview',
-  'context.onboarding.dismissed': boolean,
-  'context.onboarding.stepReached': number,
-  'context.operations.finishAndCommit.error.count': number,
-  'context.operations.generateCommitMessage.cancelled.count': number,
-  'context.operations.generateCommitMessage.count': number,
-  'context.operations.generateCommitMessage.error.count': number,
-  'context.operations.generateCommits.cancelled.count': number,
-  'context.operations.generateCommits.count': number,
-  'context.operations.generateCommits.error.count': number,
-  'context.operations.generateCommits.feedback.downvote.count': number,
-  'context.operations.generateCommits.feedback.upvote.count': number,
-  'context.operations.redo.count': number,
-  'context.operations.reset.count': number,
-  'context.operations.undo.count': number,
-  'context.session.duration': number,
-  'context.session.start': string,
-  'context.source': 'account' | 'subscription' | 'graph' | 'composer' | 'patchDetails' | 'settings' | 'timeline' | 'home' | 'welcome' | 'rebaseEditor' | 'ai' | 'ai:markdown-preview' | 'ai:markdown-editor' | 'ai:picker' | 'associateIssueWithBranch' | 'cloud-patches' | 'code-suggest' | 'commandPalette' | 'deeplink' | 'editor:hover' | 'feature-badge' | 'feature-gate' | 'gk-cli-integration' | 'gk-mcp-provider' | 'graph-details' | 'graph-header' | 'graph-kanban' | 'graph-sidebar' | 'graph-treemap' | 'inspect' | 'inspect-overview' | 'integrations' | 'launchpad' | 'launchpad-indicator' | 'launchpad-view' | 'mcp' | 'mcp-welcome-message' | 'merge-target' | 'notification' | 'prompt' | 'quick-wizard' | 'remoteProvider' | 'scm' | 'scm-input' | 'startReview' | 'startWork' | 'statusbar:hover' | 'trial-indicator' | 'view' | 'view:hover' | 'walkthrough' | 'whatsnew' | 'worktrees',
-  'context.warnings.indexChanged': boolean,
-  'context.warnings.workingDirectoryChanged': boolean,
-  'context.webview.host': 'view' | 'editor' | 'panel',
-  'context.webview.id': string,
-  'context.webview.instanceId': string,
-  'context.webview.type': string
-}
-```
-
-### composer/action/compose
-
-> Sent when the user uses auto-compose in the Commit Composer
-
-```typescript
-{
-  'context.ai.enabled.config': boolean,
-  'context.ai.enabled.org': boolean,
-  'context.ai.model.default': boolean,
-  'context.ai.model.hidden': boolean,
-  'context.ai.model.id': string,
-  'context.ai.model.maxTokens.input': number,
-  'context.ai.model.maxTokens.output': number,
-  'context.ai.model.name': string,
-  'context.ai.model.provider.id': 'anthropic' | 'azure' | 'deepseek' | 'gemini' | 'github' | 'gitkraken' | 'huggingface' | 'mistral' | 'ollama' | 'openai' | 'openaicompatible' | 'openrouter' | 'simulator' | 'vscode' | 'xai',
-  'context.ai.model.temperature': number,
-  'context.commits.autoComposedCount': number,
-  'context.commits.composedCount': number,
-  'context.commits.finalCount': number,
-  'context.commits.initialCount': number,
-  'context.diff.files.count': number,
-  'context.diff.hash': string,
-  'context.diff.hunks.count': number,
-  'context.diff.lines.count': number,
-  'context.diff.staged.exists': boolean,
-  'context.diff.unstaged.exists': boolean,
-  'context.diff.unstaged.included': boolean,
-  'context.errors.operation.count': number,
-  'context.errors.safety.count': number,
-  'context.mode': 'experimental' | 'preview',
-  'context.onboarding.dismissed': boolean,
-  'context.onboarding.stepReached': number,
-  'context.operations.finishAndCommit.error.count': number,
-  'context.operations.generateCommitMessage.cancelled.count': number,
-  'context.operations.generateCommitMessage.count': number,
-  'context.operations.generateCommitMessage.error.count': number,
-  'context.operations.generateCommits.cancelled.count': number,
-  'context.operations.generateCommits.count': number,
-  'context.operations.generateCommits.error.count': number,
-  'context.operations.generateCommits.feedback.downvote.count': number,
-  'context.operations.generateCommits.feedback.upvote.count': number,
-  'context.operations.redo.count': number,
-  'context.operations.reset.count': number,
-  'context.operations.undo.count': number,
-  'context.session.duration': number,
-  'context.session.start': string,
-  'context.source': 'account' | 'subscription' | 'graph' | 'composer' | 'patchDetails' | 'settings' | 'timeline' | 'home' | 'welcome' | 'rebaseEditor' | 'ai' | 'ai:markdown-preview' | 'ai:markdown-editor' | 'ai:picker' | 'associateIssueWithBranch' | 'cloud-patches' | 'code-suggest' | 'commandPalette' | 'deeplink' | 'editor:hover' | 'feature-badge' | 'feature-gate' | 'gk-cli-integration' | 'gk-mcp-provider' | 'graph-details' | 'graph-header' | 'graph-kanban' | 'graph-sidebar' | 'graph-treemap' | 'inspect' | 'inspect-overview' | 'integrations' | 'launchpad' | 'launchpad-indicator' | 'launchpad-view' | 'mcp' | 'mcp-welcome-message' | 'merge-target' | 'notification' | 'prompt' | 'quick-wizard' | 'remoteProvider' | 'scm' | 'scm-input' | 'startReview' | 'startWork' | 'statusbar:hover' | 'trial-indicator' | 'view' | 'view:hover' | 'walkthrough' | 'whatsnew' | 'worktrees',
-  'context.warnings.indexChanged': boolean,
-  'context.warnings.workingDirectoryChanged': boolean,
-  'context.webview.host': 'view' | 'editor' | 'panel',
-  'context.webview.id': string,
-  'context.webview.instanceId': string,
-  'context.webview.type': string,
-  'customInstructions.commitMessage.setting.length': number,
-  'customInstructions.commitMessage.setting.used': boolean,
-  'customInstructions.hash': string,
-  'customInstructions.length': number,
-  'customInstructions.setting.length': number,
-  'customInstructions.setting.used': boolean,
-  'customInstructions.used': boolean
-}
-```
-
-### composer/action/compose/failed
-
-> Sent when the user fails an auto-compose operation in the Commit Composer
-
-```typescript
-{
-  'context.ai.enabled.config': boolean,
-  'context.ai.enabled.org': boolean,
-  'context.ai.model.default': boolean,
-  'context.ai.model.hidden': boolean,
-  'context.ai.model.id': string,
-  'context.ai.model.maxTokens.input': number,
-  'context.ai.model.maxTokens.output': number,
-  'context.ai.model.name': string,
-  'context.ai.model.provider.id': 'anthropic' | 'azure' | 'deepseek' | 'gemini' | 'github' | 'gitkraken' | 'huggingface' | 'mistral' | 'ollama' | 'openai' | 'openaicompatible' | 'openrouter' | 'simulator' | 'vscode' | 'xai',
-  'context.ai.model.temperature': number,
-  'context.commits.autoComposedCount': number,
-  'context.commits.composedCount': number,
-  'context.commits.finalCount': number,
-  'context.commits.initialCount': number,
-  'context.diff.files.count': number,
-  'context.diff.hash': string,
-  'context.diff.hunks.count': number,
-  'context.diff.lines.count': number,
-  'context.diff.staged.exists': boolean,
-  'context.diff.unstaged.exists': boolean,
-  'context.diff.unstaged.included': boolean,
-  'context.errors.operation.count': number,
-  'context.errors.safety.count': number,
-  'context.mode': 'experimental' | 'preview',
-  'context.onboarding.dismissed': boolean,
-  'context.onboarding.stepReached': number,
-  'context.operations.finishAndCommit.error.count': number,
-  'context.operations.generateCommitMessage.cancelled.count': number,
-  'context.operations.generateCommitMessage.count': number,
-  'context.operations.generateCommitMessage.error.count': number,
-  'context.operations.generateCommits.cancelled.count': number,
-  'context.operations.generateCommits.count': number,
-  'context.operations.generateCommits.error.count': number,
-  'context.operations.generateCommits.feedback.downvote.count': number,
-  'context.operations.generateCommits.feedback.upvote.count': number,
-  'context.operations.redo.count': number,
-  'context.operations.reset.count': number,
-  'context.operations.undo.count': number,
-  'context.session.duration': number,
-  'context.session.start': string,
-  'context.source': 'account' | 'subscription' | 'graph' | 'composer' | 'patchDetails' | 'settings' | 'timeline' | 'home' | 'welcome' | 'rebaseEditor' | 'ai' | 'ai:markdown-preview' | 'ai:markdown-editor' | 'ai:picker' | 'associateIssueWithBranch' | 'cloud-patches' | 'code-suggest' | 'commandPalette' | 'deeplink' | 'editor:hover' | 'feature-badge' | 'feature-gate' | 'gk-cli-integration' | 'gk-mcp-provider' | 'graph-details' | 'graph-header' | 'graph-kanban' | 'graph-sidebar' | 'graph-treemap' | 'inspect' | 'inspect-overview' | 'integrations' | 'launchpad' | 'launchpad-indicator' | 'launchpad-view' | 'mcp' | 'mcp-welcome-message' | 'merge-target' | 'notification' | 'prompt' | 'quick-wizard' | 'remoteProvider' | 'scm' | 'scm-input' | 'startReview' | 'startWork' | 'statusbar:hover' | 'trial-indicator' | 'view' | 'view:hover' | 'walkthrough' | 'whatsnew' | 'worktrees',
-  'context.warnings.indexChanged': boolean,
-  'context.warnings.workingDirectoryChanged': boolean,
-  'context.webview.host': 'view' | 'editor' | 'panel',
-  'context.webview.id': string,
-  'context.webview.instanceId': string,
-  'context.webview.type': string,
-  'customInstructions.commitMessage.setting.length': number,
-  'customInstructions.commitMessage.setting.used': boolean,
-  'customInstructions.hash': string,
-  'customInstructions.length': number,
-  'customInstructions.setting.length': number,
-  'customInstructions.setting.used': boolean,
-  'customInstructions.used': boolean,
-  'failure.reason': 'cancelled'
-}
-```
-
-or
-
-```typescript
-{
-  'context.ai.enabled.config': boolean,
-  'context.ai.enabled.org': boolean,
-  'context.ai.model.default': boolean,
-  'context.ai.model.hidden': boolean,
-  'context.ai.model.id': string,
-  'context.ai.model.maxTokens.input': number,
-  'context.ai.model.maxTokens.output': number,
-  'context.ai.model.name': string,
-  'context.ai.model.provider.id': 'anthropic' | 'azure' | 'deepseek' | 'gemini' | 'github' | 'gitkraken' | 'huggingface' | 'mistral' | 'ollama' | 'openai' | 'openaicompatible' | 'openrouter' | 'simulator' | 'vscode' | 'xai',
-  'context.ai.model.temperature': number,
-  'context.commits.autoComposedCount': number,
-  'context.commits.composedCount': number,
-  'context.commits.finalCount': number,
-  'context.commits.initialCount': number,
-  'context.diff.files.count': number,
-  'context.diff.hash': string,
-  'context.diff.hunks.count': number,
-  'context.diff.lines.count': number,
-  'context.diff.staged.exists': boolean,
-  'context.diff.unstaged.exists': boolean,
-  'context.diff.unstaged.included': boolean,
-  'context.errors.operation.count': number,
-  'context.errors.safety.count': number,
-  'context.mode': 'experimental' | 'preview',
-  'context.onboarding.dismissed': boolean,
-  'context.onboarding.stepReached': number,
-  'context.operations.finishAndCommit.error.count': number,
-  'context.operations.generateCommitMessage.cancelled.count': number,
-  'context.operations.generateCommitMessage.count': number,
-  'context.operations.generateCommitMessage.error.count': number,
-  'context.operations.generateCommits.cancelled.count': number,
-  'context.operations.generateCommits.count': number,
-  'context.operations.generateCommits.error.count': number,
-  'context.operations.generateCommits.feedback.downvote.count': number,
-  'context.operations.generateCommits.feedback.upvote.count': number,
-  'context.operations.redo.count': number,
-  'context.operations.reset.count': number,
-  'context.operations.undo.count': number,
-  'context.session.duration': number,
-  'context.session.start': string,
-  'context.source': 'account' | 'subscription' | 'graph' | 'composer' | 'patchDetails' | 'settings' | 'timeline' | 'home' | 'welcome' | 'rebaseEditor' | 'ai' | 'ai:markdown-preview' | 'ai:markdown-editor' | 'ai:picker' | 'associateIssueWithBranch' | 'cloud-patches' | 'code-suggest' | 'commandPalette' | 'deeplink' | 'editor:hover' | 'feature-badge' | 'feature-gate' | 'gk-cli-integration' | 'gk-mcp-provider' | 'graph-details' | 'graph-header' | 'graph-kanban' | 'graph-sidebar' | 'graph-treemap' | 'inspect' | 'inspect-overview' | 'integrations' | 'launchpad' | 'launchpad-indicator' | 'launchpad-view' | 'mcp' | 'mcp-welcome-message' | 'merge-target' | 'notification' | 'prompt' | 'quick-wizard' | 'remoteProvider' | 'scm' | 'scm-input' | 'startReview' | 'startWork' | 'statusbar:hover' | 'trial-indicator' | 'view' | 'view:hover' | 'walkthrough' | 'whatsnew' | 'worktrees',
-  'context.warnings.indexChanged': boolean,
-  'context.warnings.workingDirectoryChanged': boolean,
-  'context.webview.host': 'view' | 'editor' | 'panel',
-  'context.webview.id': string,
-  'context.webview.instanceId': string,
-  'context.webview.type': string,
-  'customInstructions.commitMessage.setting.length': number,
-  'customInstructions.commitMessage.setting.used': boolean,
-  'customInstructions.hash': string,
-  'customInstructions.length': number,
-  'customInstructions.setting.length': number,
-  'customInstructions.setting.used': boolean,
-  'customInstructions.used': boolean,
-  'failure.error.message': string,
-  'failure.reason': 'error'
-}
-```
-
-### composer/action/finishAndCommit
-
-> Sent when the user finishes and commits in the Commit Composer
-
-```typescript
-{
-  'context.ai.enabled.config': boolean,
-  'context.ai.enabled.org': boolean,
-  'context.ai.model.default': boolean,
-  'context.ai.model.hidden': boolean,
-  'context.ai.model.id': string,
-  'context.ai.model.maxTokens.input': number,
-  'context.ai.model.maxTokens.output': number,
-  'context.ai.model.name': string,
-  'context.ai.model.provider.id': 'anthropic' | 'azure' | 'deepseek' | 'gemini' | 'github' | 'gitkraken' | 'huggingface' | 'mistral' | 'ollama' | 'openai' | 'openaicompatible' | 'openrouter' | 'simulator' | 'vscode' | 'xai',
-  'context.ai.model.temperature': number,
-  'context.commits.autoComposedCount': number,
-  'context.commits.composedCount': number,
-  'context.commits.finalCount': number,
-  'context.commits.initialCount': number,
-  'context.diff.files.count': number,
-  'context.diff.hash': string,
-  'context.diff.hunks.count': number,
-  'context.diff.lines.count': number,
-  'context.diff.staged.exists': boolean,
-  'context.diff.unstaged.exists': boolean,
-  'context.diff.unstaged.included': boolean,
-  'context.errors.operation.count': number,
-  'context.errors.safety.count': number,
-  'context.mode': 'experimental' | 'preview',
-  'context.onboarding.dismissed': boolean,
-  'context.onboarding.stepReached': number,
-  'context.operations.finishAndCommit.error.count': number,
-  'context.operations.generateCommitMessage.cancelled.count': number,
-  'context.operations.generateCommitMessage.count': number,
-  'context.operations.generateCommitMessage.error.count': number,
-  'context.operations.generateCommits.cancelled.count': number,
-  'context.operations.generateCommits.count': number,
-  'context.operations.generateCommits.error.count': number,
-  'context.operations.generateCommits.feedback.downvote.count': number,
-  'context.operations.generateCommits.feedback.upvote.count': number,
-  'context.operations.redo.count': number,
-  'context.operations.reset.count': number,
-  'context.operations.undo.count': number,
-  'context.session.duration': number,
-  'context.session.start': string,
-  'context.source': 'account' | 'subscription' | 'graph' | 'composer' | 'patchDetails' | 'settings' | 'timeline' | 'home' | 'welcome' | 'rebaseEditor' | 'ai' | 'ai:markdown-preview' | 'ai:markdown-editor' | 'ai:picker' | 'associateIssueWithBranch' | 'cloud-patches' | 'code-suggest' | 'commandPalette' | 'deeplink' | 'editor:hover' | 'feature-badge' | 'feature-gate' | 'gk-cli-integration' | 'gk-mcp-provider' | 'graph-details' | 'graph-header' | 'graph-kanban' | 'graph-sidebar' | 'graph-treemap' | 'inspect' | 'inspect-overview' | 'integrations' | 'launchpad' | 'launchpad-indicator' | 'launchpad-view' | 'mcp' | 'mcp-welcome-message' | 'merge-target' | 'notification' | 'prompt' | 'quick-wizard' | 'remoteProvider' | 'scm' | 'scm-input' | 'startReview' | 'startWork' | 'statusbar:hover' | 'trial-indicator' | 'view' | 'view:hover' | 'walkthrough' | 'whatsnew' | 'worktrees',
-  'context.warnings.indexChanged': boolean,
-  'context.warnings.workingDirectoryChanged': boolean,
-  'context.webview.host': 'view' | 'editor' | 'panel',
-  'context.webview.id': string,
-  'context.webview.instanceId': string,
-  'context.webview.type': string
-}
-```
-
-### composer/action/finishAndCommit/failed
-
-> Sent when the user fails to finish and commit in the Commit Composer
-
-```typescript
-{
-  'context.ai.enabled.config': boolean,
-  'context.ai.enabled.org': boolean,
-  'context.ai.model.default': boolean,
-  'context.ai.model.hidden': boolean,
-  'context.ai.model.id': string,
-  'context.ai.model.maxTokens.input': number,
-  'context.ai.model.maxTokens.output': number,
-  'context.ai.model.name': string,
-  'context.ai.model.provider.id': 'anthropic' | 'azure' | 'deepseek' | 'gemini' | 'github' | 'gitkraken' | 'huggingface' | 'mistral' | 'ollama' | 'openai' | 'openaicompatible' | 'openrouter' | 'simulator' | 'vscode' | 'xai',
-  'context.ai.model.temperature': number,
-  'context.commits.autoComposedCount': number,
-  'context.commits.composedCount': number,
-  'context.commits.finalCount': number,
-  'context.commits.initialCount': number,
-  'context.diff.files.count': number,
-  'context.diff.hash': string,
-  'context.diff.hunks.count': number,
-  'context.diff.lines.count': number,
-  'context.diff.staged.exists': boolean,
-  'context.diff.unstaged.exists': boolean,
-  'context.diff.unstaged.included': boolean,
-  'context.errors.operation.count': number,
-  'context.errors.safety.count': number,
-  'context.mode': 'experimental' | 'preview',
-  'context.onboarding.dismissed': boolean,
-  'context.onboarding.stepReached': number,
-  'context.operations.finishAndCommit.error.count': number,
-  'context.operations.generateCommitMessage.cancelled.count': number,
-  'context.operations.generateCommitMessage.count': number,
-  'context.operations.generateCommitMessage.error.count': number,
-  'context.operations.generateCommits.cancelled.count': number,
-  'context.operations.generateCommits.count': number,
-  'context.operations.generateCommits.error.count': number,
-  'context.operations.generateCommits.feedback.downvote.count': number,
-  'context.operations.generateCommits.feedback.upvote.count': number,
-  'context.operations.redo.count': number,
-  'context.operations.reset.count': number,
-  'context.operations.undo.count': number,
-  'context.session.duration': number,
-  'context.session.start': string,
-  'context.source': 'account' | 'subscription' | 'graph' | 'composer' | 'patchDetails' | 'settings' | 'timeline' | 'home' | 'welcome' | 'rebaseEditor' | 'ai' | 'ai:markdown-preview' | 'ai:markdown-editor' | 'ai:picker' | 'associateIssueWithBranch' | 'cloud-patches' | 'code-suggest' | 'commandPalette' | 'deeplink' | 'editor:hover' | 'feature-badge' | 'feature-gate' | 'gk-cli-integration' | 'gk-mcp-provider' | 'graph-details' | 'graph-header' | 'graph-kanban' | 'graph-sidebar' | 'graph-treemap' | 'inspect' | 'inspect-overview' | 'integrations' | 'launchpad' | 'launchpad-indicator' | 'launchpad-view' | 'mcp' | 'mcp-welcome-message' | 'merge-target' | 'notification' | 'prompt' | 'quick-wizard' | 'remoteProvider' | 'scm' | 'scm-input' | 'startReview' | 'startWork' | 'statusbar:hover' | 'trial-indicator' | 'view' | 'view:hover' | 'walkthrough' | 'whatsnew' | 'worktrees',
-  'context.warnings.indexChanged': boolean,
-  'context.warnings.workingDirectoryChanged': boolean,
-  'context.webview.host': 'view' | 'editor' | 'panel',
-  'context.webview.id': string,
-  'context.webview.instanceId': string,
-  'context.webview.type': string,
-  'failure.error.message': string,
-  'failure.reason': 'error'
-}
-```
-
-### composer/action/generateCommitMessage
-
-> Sent when the user uses generate commit message in the Commit Composer
-
-```typescript
-{
-  'context.ai.enabled.config': boolean,
-  'context.ai.enabled.org': boolean,
-  'context.ai.model.default': boolean,
-  'context.ai.model.hidden': boolean,
-  'context.ai.model.id': string,
-  'context.ai.model.maxTokens.input': number,
-  'context.ai.model.maxTokens.output': number,
-  'context.ai.model.name': string,
-  'context.ai.model.provider.id': 'anthropic' | 'azure' | 'deepseek' | 'gemini' | 'github' | 'gitkraken' | 'huggingface' | 'mistral' | 'ollama' | 'openai' | 'openaicompatible' | 'openrouter' | 'simulator' | 'vscode' | 'xai',
-  'context.ai.model.temperature': number,
-  'context.commits.autoComposedCount': number,
-  'context.commits.composedCount': number,
-  'context.commits.finalCount': number,
-  'context.commits.initialCount': number,
-  'context.diff.files.count': number,
-  'context.diff.hash': string,
-  'context.diff.hunks.count': number,
-  'context.diff.lines.count': number,
-  'context.diff.staged.exists': boolean,
-  'context.diff.unstaged.exists': boolean,
-  'context.diff.unstaged.included': boolean,
-  'context.errors.operation.count': number,
-  'context.errors.safety.count': number,
-  'context.mode': 'experimental' | 'preview',
-  'context.onboarding.dismissed': boolean,
-  'context.onboarding.stepReached': number,
-  'context.operations.finishAndCommit.error.count': number,
-  'context.operations.generateCommitMessage.cancelled.count': number,
-  'context.operations.generateCommitMessage.count': number,
-  'context.operations.generateCommitMessage.error.count': number,
-  'context.operations.generateCommits.cancelled.count': number,
-  'context.operations.generateCommits.count': number,
-  'context.operations.generateCommits.error.count': number,
-  'context.operations.generateCommits.feedback.downvote.count': number,
-  'context.operations.generateCommits.feedback.upvote.count': number,
-  'context.operations.redo.count': number,
-  'context.operations.reset.count': number,
-  'context.operations.undo.count': number,
-  'context.session.duration': number,
-  'context.session.start': string,
-  'context.source': 'account' | 'subscription' | 'graph' | 'composer' | 'patchDetails' | 'settings' | 'timeline' | 'home' | 'welcome' | 'rebaseEditor' | 'ai' | 'ai:markdown-preview' | 'ai:markdown-editor' | 'ai:picker' | 'associateIssueWithBranch' | 'cloud-patches' | 'code-suggest' | 'commandPalette' | 'deeplink' | 'editor:hover' | 'feature-badge' | 'feature-gate' | 'gk-cli-integration' | 'gk-mcp-provider' | 'graph-details' | 'graph-header' | 'graph-kanban' | 'graph-sidebar' | 'graph-treemap' | 'inspect' | 'inspect-overview' | 'integrations' | 'launchpad' | 'launchpad-indicator' | 'launchpad-view' | 'mcp' | 'mcp-welcome-message' | 'merge-target' | 'notification' | 'prompt' | 'quick-wizard' | 'remoteProvider' | 'scm' | 'scm-input' | 'startReview' | 'startWork' | 'statusbar:hover' | 'trial-indicator' | 'view' | 'view:hover' | 'walkthrough' | 'whatsnew' | 'worktrees',
-  'context.warnings.indexChanged': boolean,
-  'context.warnings.workingDirectoryChanged': boolean,
-  'context.webview.host': 'view' | 'editor' | 'panel',
-  'context.webview.id': string,
-  'context.webview.instanceId': string,
-  'context.webview.type': string,
-  'customInstructions.setting.length': number,
-  'customInstructions.setting.used': boolean,
-  'overwriteExistingMessage': boolean
-}
-```
-
-### composer/action/generateCommitMessage/failed
-
-> Sent when the user fails a generate commit message operation in the Commit Composer
-
-```typescript
-{
-  'context.ai.enabled.config': boolean,
-  'context.ai.enabled.org': boolean,
-  'context.ai.model.default': boolean,
-  'context.ai.model.hidden': boolean,
-  'context.ai.model.id': string,
-  'context.ai.model.maxTokens.input': number,
-  'context.ai.model.maxTokens.output': number,
-  'context.ai.model.name': string,
-  'context.ai.model.provider.id': 'anthropic' | 'azure' | 'deepseek' | 'gemini' | 'github' | 'gitkraken' | 'huggingface' | 'mistral' | 'ollama' | 'openai' | 'openaicompatible' | 'openrouter' | 'simulator' | 'vscode' | 'xai',
-  'context.ai.model.temperature': number,
-  'context.commits.autoComposedCount': number,
-  'context.commits.composedCount': number,
-  'context.commits.finalCount': number,
-  'context.commits.initialCount': number,
-  'context.diff.files.count': number,
-  'context.diff.hash': string,
-  'context.diff.hunks.count': number,
-  'context.diff.lines.count': number,
-  'context.diff.staged.exists': boolean,
-  'context.diff.unstaged.exists': boolean,
-  'context.diff.unstaged.included': boolean,
-  'context.errors.operation.count': number,
-  'context.errors.safety.count': number,
-  'context.mode': 'experimental' | 'preview',
-  'context.onboarding.dismissed': boolean,
-  'context.onboarding.stepReached': number,
-  'context.operations.finishAndCommit.error.count': number,
-  'context.operations.generateCommitMessage.cancelled.count': number,
-  'context.operations.generateCommitMessage.count': number,
-  'context.operations.generateCommitMessage.error.count': number,
-  'context.operations.generateCommits.cancelled.count': number,
-  'context.operations.generateCommits.count': number,
-  'context.operations.generateCommits.error.count': number,
-  'context.operations.generateCommits.feedback.downvote.count': number,
-  'context.operations.generateCommits.feedback.upvote.count': number,
-  'context.operations.redo.count': number,
-  'context.operations.reset.count': number,
-  'context.operations.undo.count': number,
-  'context.session.duration': number,
-  'context.session.start': string,
-  'context.source': 'account' | 'subscription' | 'graph' | 'composer' | 'patchDetails' | 'settings' | 'timeline' | 'home' | 'welcome' | 'rebaseEditor' | 'ai' | 'ai:markdown-preview' | 'ai:markdown-editor' | 'ai:picker' | 'associateIssueWithBranch' | 'cloud-patches' | 'code-suggest' | 'commandPalette' | 'deeplink' | 'editor:hover' | 'feature-badge' | 'feature-gate' | 'gk-cli-integration' | 'gk-mcp-provider' | 'graph-details' | 'graph-header' | 'graph-kanban' | 'graph-sidebar' | 'graph-treemap' | 'inspect' | 'inspect-overview' | 'integrations' | 'launchpad' | 'launchpad-indicator' | 'launchpad-view' | 'mcp' | 'mcp-welcome-message' | 'merge-target' | 'notification' | 'prompt' | 'quick-wizard' | 'remoteProvider' | 'scm' | 'scm-input' | 'startReview' | 'startWork' | 'statusbar:hover' | 'trial-indicator' | 'view' | 'view:hover' | 'walkthrough' | 'whatsnew' | 'worktrees',
-  'context.warnings.indexChanged': boolean,
-  'context.warnings.workingDirectoryChanged': boolean,
-  'context.webview.host': 'view' | 'editor' | 'panel',
-  'context.webview.id': string,
-  'context.webview.instanceId': string,
-  'context.webview.type': string,
-  'customInstructions.setting.length': number,
-  'customInstructions.setting.used': boolean,
-  'failure.reason': 'cancelled',
-  'overwriteExistingMessage': boolean
-}
-```
-
-or
-
-```typescript
-{
-  'context.ai.enabled.config': boolean,
-  'context.ai.enabled.org': boolean,
-  'context.ai.model.default': boolean,
-  'context.ai.model.hidden': boolean,
-  'context.ai.model.id': string,
-  'context.ai.model.maxTokens.input': number,
-  'context.ai.model.maxTokens.output': number,
-  'context.ai.model.name': string,
-  'context.ai.model.provider.id': 'anthropic' | 'azure' | 'deepseek' | 'gemini' | 'github' | 'gitkraken' | 'huggingface' | 'mistral' | 'ollama' | 'openai' | 'openaicompatible' | 'openrouter' | 'simulator' | 'vscode' | 'xai',
-  'context.ai.model.temperature': number,
-  'context.commits.autoComposedCount': number,
-  'context.commits.composedCount': number,
-  'context.commits.finalCount': number,
-  'context.commits.initialCount': number,
-  'context.diff.files.count': number,
-  'context.diff.hash': string,
-  'context.diff.hunks.count': number,
-  'context.diff.lines.count': number,
-  'context.diff.staged.exists': boolean,
-  'context.diff.unstaged.exists': boolean,
-  'context.diff.unstaged.included': boolean,
-  'context.errors.operation.count': number,
-  'context.errors.safety.count': number,
-  'context.mode': 'experimental' | 'preview',
-  'context.onboarding.dismissed': boolean,
-  'context.onboarding.stepReached': number,
-  'context.operations.finishAndCommit.error.count': number,
-  'context.operations.generateCommitMessage.cancelled.count': number,
-  'context.operations.generateCommitMessage.count': number,
-  'context.operations.generateCommitMessage.error.count': number,
-  'context.operations.generateCommits.cancelled.count': number,
-  'context.operations.generateCommits.count': number,
-  'context.operations.generateCommits.error.count': number,
-  'context.operations.generateCommits.feedback.downvote.count': number,
-  'context.operations.generateCommits.feedback.upvote.count': number,
-  'context.operations.redo.count': number,
-  'context.operations.reset.count': number,
-  'context.operations.undo.count': number,
-  'context.session.duration': number,
-  'context.session.start': string,
-  'context.source': 'account' | 'subscription' | 'graph' | 'composer' | 'patchDetails' | 'settings' | 'timeline' | 'home' | 'welcome' | 'rebaseEditor' | 'ai' | 'ai:markdown-preview' | 'ai:markdown-editor' | 'ai:picker' | 'associateIssueWithBranch' | 'cloud-patches' | 'code-suggest' | 'commandPalette' | 'deeplink' | 'editor:hover' | 'feature-badge' | 'feature-gate' | 'gk-cli-integration' | 'gk-mcp-provider' | 'graph-details' | 'graph-header' | 'graph-kanban' | 'graph-sidebar' | 'graph-treemap' | 'inspect' | 'inspect-overview' | 'integrations' | 'launchpad' | 'launchpad-indicator' | 'launchpad-view' | 'mcp' | 'mcp-welcome-message' | 'merge-target' | 'notification' | 'prompt' | 'quick-wizard' | 'remoteProvider' | 'scm' | 'scm-input' | 'startReview' | 'startWork' | 'statusbar:hover' | 'trial-indicator' | 'view' | 'view:hover' | 'walkthrough' | 'whatsnew' | 'worktrees',
-  'context.warnings.indexChanged': boolean,
-  'context.warnings.workingDirectoryChanged': boolean,
-  'context.webview.host': 'view' | 'editor' | 'panel',
-  'context.webview.id': string,
-  'context.webview.instanceId': string,
-  'context.webview.type': string,
-  'customInstructions.setting.length': number,
-  'customInstructions.setting.used': boolean,
-  'failure.error.message': string,
-  'failure.reason': 'error',
-  'overwriteExistingMessage': boolean
-}
-```
-
-### composer/action/includedUnstagedChanges
-
-> Sent when the user adds unstaged changes to draft commits in the Commit Composer
-
-```typescript
-{
-  'context.ai.enabled.config': boolean,
-  'context.ai.enabled.org': boolean,
-  'context.ai.model.default': boolean,
-  'context.ai.model.hidden': boolean,
-  'context.ai.model.id': string,
-  'context.ai.model.maxTokens.input': number,
-  'context.ai.model.maxTokens.output': number,
-  'context.ai.model.name': string,
-  'context.ai.model.provider.id': 'anthropic' | 'azure' | 'deepseek' | 'gemini' | 'github' | 'gitkraken' | 'huggingface' | 'mistral' | 'ollama' | 'openai' | 'openaicompatible' | 'openrouter' | 'simulator' | 'vscode' | 'xai',
-  'context.ai.model.temperature': number,
-  'context.commits.autoComposedCount': number,
-  'context.commits.composedCount': number,
-  'context.commits.finalCount': number,
-  'context.commits.initialCount': number,
-  'context.diff.files.count': number,
-  'context.diff.hash': string,
-  'context.diff.hunks.count': number,
-  'context.diff.lines.count': number,
-  'context.diff.staged.exists': boolean,
-  'context.diff.unstaged.exists': boolean,
-  'context.diff.unstaged.included': boolean,
-  'context.errors.operation.count': number,
-  'context.errors.safety.count': number,
-  'context.mode': 'experimental' | 'preview',
-  'context.onboarding.dismissed': boolean,
-  'context.onboarding.stepReached': number,
-  'context.operations.finishAndCommit.error.count': number,
-  'context.operations.generateCommitMessage.cancelled.count': number,
-  'context.operations.generateCommitMessage.count': number,
-  'context.operations.generateCommitMessage.error.count': number,
-  'context.operations.generateCommits.cancelled.count': number,
-  'context.operations.generateCommits.count': number,
-  'context.operations.generateCommits.error.count': number,
-  'context.operations.generateCommits.feedback.downvote.count': number,
-  'context.operations.generateCommits.feedback.upvote.count': number,
-  'context.operations.redo.count': number,
-  'context.operations.reset.count': number,
-  'context.operations.undo.count': number,
-  'context.session.duration': number,
-  'context.session.start': string,
-  'context.source': 'account' | 'subscription' | 'graph' | 'composer' | 'patchDetails' | 'settings' | 'timeline' | 'home' | 'welcome' | 'rebaseEditor' | 'ai' | 'ai:markdown-preview' | 'ai:markdown-editor' | 'ai:picker' | 'associateIssueWithBranch' | 'cloud-patches' | 'code-suggest' | 'commandPalette' | 'deeplink' | 'editor:hover' | 'feature-badge' | 'feature-gate' | 'gk-cli-integration' | 'gk-mcp-provider' | 'graph-details' | 'graph-header' | 'graph-kanban' | 'graph-sidebar' | 'graph-treemap' | 'inspect' | 'inspect-overview' | 'integrations' | 'launchpad' | 'launchpad-indicator' | 'launchpad-view' | 'mcp' | 'mcp-welcome-message' | 'merge-target' | 'notification' | 'prompt' | 'quick-wizard' | 'remoteProvider' | 'scm' | 'scm-input' | 'startReview' | 'startWork' | 'statusbar:hover' | 'trial-indicator' | 'view' | 'view:hover' | 'walkthrough' | 'whatsnew' | 'worktrees',
-  'context.warnings.indexChanged': boolean,
-  'context.warnings.workingDirectoryChanged': boolean,
-  'context.webview.host': 'view' | 'editor' | 'panel',
-  'context.webview.id': string,
-  'context.webview.instanceId': string,
-  'context.webview.type': string
-}
-```
-
-### composer/action/recompose
-
-> Sent when the user uses recompose in the Commit Composer
-
-```typescript
-{
-  'context.ai.enabled.config': boolean,
-  'context.ai.enabled.org': boolean,
-  'context.ai.model.default': boolean,
-  'context.ai.model.hidden': boolean,
-  'context.ai.model.id': string,
-  'context.ai.model.maxTokens.input': number,
-  'context.ai.model.maxTokens.output': number,
-  'context.ai.model.name': string,
-  'context.ai.model.provider.id': 'anthropic' | 'azure' | 'deepseek' | 'gemini' | 'github' | 'gitkraken' | 'huggingface' | 'mistral' | 'ollama' | 'openai' | 'openaicompatible' | 'openrouter' | 'simulator' | 'vscode' | 'xai',
-  'context.ai.model.temperature': number,
-  'context.commits.autoComposedCount': number,
-  'context.commits.composedCount': number,
-  'context.commits.finalCount': number,
-  'context.commits.initialCount': number,
-  'context.diff.files.count': number,
-  'context.diff.hash': string,
-  'context.diff.hunks.count': number,
-  'context.diff.lines.count': number,
-  'context.diff.staged.exists': boolean,
-  'context.diff.unstaged.exists': boolean,
-  'context.diff.unstaged.included': boolean,
-  'context.errors.operation.count': number,
-  'context.errors.safety.count': number,
-  'context.mode': 'experimental' | 'preview',
-  'context.onboarding.dismissed': boolean,
-  'context.onboarding.stepReached': number,
-  'context.operations.finishAndCommit.error.count': number,
-  'context.operations.generateCommitMessage.cancelled.count': number,
-  'context.operations.generateCommitMessage.count': number,
-  'context.operations.generateCommitMessage.error.count': number,
-  'context.operations.generateCommits.cancelled.count': number,
-  'context.operations.generateCommits.count': number,
-  'context.operations.generateCommits.error.count': number,
-  'context.operations.generateCommits.feedback.downvote.count': number,
-  'context.operations.generateCommits.feedback.upvote.count': number,
-  'context.operations.redo.count': number,
-  'context.operations.reset.count': number,
-  'context.operations.undo.count': number,
-  'context.session.duration': number,
-  'context.session.start': string,
-  'context.source': 'account' | 'subscription' | 'graph' | 'composer' | 'patchDetails' | 'settings' | 'timeline' | 'home' | 'welcome' | 'rebaseEditor' | 'ai' | 'ai:markdown-preview' | 'ai:markdown-editor' | 'ai:picker' | 'associateIssueWithBranch' | 'cloud-patches' | 'code-suggest' | 'commandPalette' | 'deeplink' | 'editor:hover' | 'feature-badge' | 'feature-gate' | 'gk-cli-integration' | 'gk-mcp-provider' | 'graph-details' | 'graph-header' | 'graph-kanban' | 'graph-sidebar' | 'graph-treemap' | 'inspect' | 'inspect-overview' | 'integrations' | 'launchpad' | 'launchpad-indicator' | 'launchpad-view' | 'mcp' | 'mcp-welcome-message' | 'merge-target' | 'notification' | 'prompt' | 'quick-wizard' | 'remoteProvider' | 'scm' | 'scm-input' | 'startReview' | 'startWork' | 'statusbar:hover' | 'trial-indicator' | 'view' | 'view:hover' | 'walkthrough' | 'whatsnew' | 'worktrees',
-  'context.warnings.indexChanged': boolean,
-  'context.warnings.workingDirectoryChanged': boolean,
-  'context.webview.host': 'view' | 'editor' | 'panel',
-  'context.webview.id': string,
-  'context.webview.instanceId': string,
-  'context.webview.type': string,
-  'customInstructions.commitMessage.setting.length': number,
-  'customInstructions.commitMessage.setting.used': boolean,
-  'customInstructions.hash': string,
-  'customInstructions.length': number,
-  'customInstructions.setting.length': number,
-  'customInstructions.setting.used': boolean,
-  'customInstructions.used': boolean
-}
-```
-
-### composer/action/recompose/failed
-
-> Sent when the user fails a recompose operation in the Commit Composer
-
-```typescript
-{
-  'context.ai.enabled.config': boolean,
-  'context.ai.enabled.org': boolean,
-  'context.ai.model.default': boolean,
-  'context.ai.model.hidden': boolean,
-  'context.ai.model.id': string,
-  'context.ai.model.maxTokens.input': number,
-  'context.ai.model.maxTokens.output': number,
-  'context.ai.model.name': string,
-  'context.ai.model.provider.id': 'anthropic' | 'azure' | 'deepseek' | 'gemini' | 'github' | 'gitkraken' | 'huggingface' | 'mistral' | 'ollama' | 'openai' | 'openaicompatible' | 'openrouter' | 'simulator' | 'vscode' | 'xai',
-  'context.ai.model.temperature': number,
-  'context.commits.autoComposedCount': number,
-  'context.commits.composedCount': number,
-  'context.commits.finalCount': number,
-  'context.commits.initialCount': number,
-  'context.diff.files.count': number,
-  'context.diff.hash': string,
-  'context.diff.hunks.count': number,
-  'context.diff.lines.count': number,
-  'context.diff.staged.exists': boolean,
-  'context.diff.unstaged.exists': boolean,
-  'context.diff.unstaged.included': boolean,
-  'context.errors.operation.count': number,
-  'context.errors.safety.count': number,
-  'context.mode': 'experimental' | 'preview',
-  'context.onboarding.dismissed': boolean,
-  'context.onboarding.stepReached': number,
-  'context.operations.finishAndCommit.error.count': number,
-  'context.operations.generateCommitMessage.cancelled.count': number,
-  'context.operations.generateCommitMessage.count': number,
-  'context.operations.generateCommitMessage.error.count': number,
-  'context.operations.generateCommits.cancelled.count': number,
-  'context.operations.generateCommits.count': number,
-  'context.operations.generateCommits.error.count': number,
-  'context.operations.generateCommits.feedback.downvote.count': number,
-  'context.operations.generateCommits.feedback.upvote.count': number,
-  'context.operations.redo.count': number,
-  'context.operations.reset.count': number,
-  'context.operations.undo.count': number,
-  'context.session.duration': number,
-  'context.session.start': string,
-  'context.source': 'account' | 'subscription' | 'graph' | 'composer' | 'patchDetails' | 'settings' | 'timeline' | 'home' | 'welcome' | 'rebaseEditor' | 'ai' | 'ai:markdown-preview' | 'ai:markdown-editor' | 'ai:picker' | 'associateIssueWithBranch' | 'cloud-patches' | 'code-suggest' | 'commandPalette' | 'deeplink' | 'editor:hover' | 'feature-badge' | 'feature-gate' | 'gk-cli-integration' | 'gk-mcp-provider' | 'graph-details' | 'graph-header' | 'graph-kanban' | 'graph-sidebar' | 'graph-treemap' | 'inspect' | 'inspect-overview' | 'integrations' | 'launchpad' | 'launchpad-indicator' | 'launchpad-view' | 'mcp' | 'mcp-welcome-message' | 'merge-target' | 'notification' | 'prompt' | 'quick-wizard' | 'remoteProvider' | 'scm' | 'scm-input' | 'startReview' | 'startWork' | 'statusbar:hover' | 'trial-indicator' | 'view' | 'view:hover' | 'walkthrough' | 'whatsnew' | 'worktrees',
-  'context.warnings.indexChanged': boolean,
-  'context.warnings.workingDirectoryChanged': boolean,
-  'context.webview.host': 'view' | 'editor' | 'panel',
-  'context.webview.id': string,
-  'context.webview.instanceId': string,
-  'context.webview.type': string,
-  'customInstructions.commitMessage.setting.length': number,
-  'customInstructions.commitMessage.setting.used': boolean,
-  'customInstructions.hash': string,
-  'customInstructions.length': number,
-  'customInstructions.setting.length': number,
-  'customInstructions.setting.used': boolean,
-  'customInstructions.used': boolean,
-  'failure.reason': 'cancelled'
-}
-```
-
-or
-
-```typescript
-{
-  'context.ai.enabled.config': boolean,
-  'context.ai.enabled.org': boolean,
-  'context.ai.model.default': boolean,
-  'context.ai.model.hidden': boolean,
-  'context.ai.model.id': string,
-  'context.ai.model.maxTokens.input': number,
-  'context.ai.model.maxTokens.output': number,
-  'context.ai.model.name': string,
-  'context.ai.model.provider.id': 'anthropic' | 'azure' | 'deepseek' | 'gemini' | 'github' | 'gitkraken' | 'huggingface' | 'mistral' | 'ollama' | 'openai' | 'openaicompatible' | 'openrouter' | 'simulator' | 'vscode' | 'xai',
-  'context.ai.model.temperature': number,
-  'context.commits.autoComposedCount': number,
-  'context.commits.composedCount': number,
-  'context.commits.finalCount': number,
-  'context.commits.initialCount': number,
-  'context.diff.files.count': number,
-  'context.diff.hash': string,
-  'context.diff.hunks.count': number,
-  'context.diff.lines.count': number,
-  'context.diff.staged.exists': boolean,
-  'context.diff.unstaged.exists': boolean,
-  'context.diff.unstaged.included': boolean,
-  'context.errors.operation.count': number,
-  'context.errors.safety.count': number,
-  'context.mode': 'experimental' | 'preview',
-  'context.onboarding.dismissed': boolean,
-  'context.onboarding.stepReached': number,
-  'context.operations.finishAndCommit.error.count': number,
-  'context.operations.generateCommitMessage.cancelled.count': number,
-  'context.operations.generateCommitMessage.count': number,
-  'context.operations.generateCommitMessage.error.count': number,
-  'context.operations.generateCommits.cancelled.count': number,
-  'context.operations.generateCommits.count': number,
-  'context.operations.generateCommits.error.count': number,
-  'context.operations.generateCommits.feedback.downvote.count': number,
-  'context.operations.generateCommits.feedback.upvote.count': number,
-  'context.operations.redo.count': number,
-  'context.operations.reset.count': number,
-  'context.operations.undo.count': number,
-  'context.session.duration': number,
-  'context.session.start': string,
-  'context.source': 'account' | 'subscription' | 'graph' | 'composer' | 'patchDetails' | 'settings' | 'timeline' | 'home' | 'welcome' | 'rebaseEditor' | 'ai' | 'ai:markdown-preview' | 'ai:markdown-editor' | 'ai:picker' | 'associateIssueWithBranch' | 'cloud-patches' | 'code-suggest' | 'commandPalette' | 'deeplink' | 'editor:hover' | 'feature-badge' | 'feature-gate' | 'gk-cli-integration' | 'gk-mcp-provider' | 'graph-details' | 'graph-header' | 'graph-kanban' | 'graph-sidebar' | 'graph-treemap' | 'inspect' | 'inspect-overview' | 'integrations' | 'launchpad' | 'launchpad-indicator' | 'launchpad-view' | 'mcp' | 'mcp-welcome-message' | 'merge-target' | 'notification' | 'prompt' | 'quick-wizard' | 'remoteProvider' | 'scm' | 'scm-input' | 'startReview' | 'startWork' | 'statusbar:hover' | 'trial-indicator' | 'view' | 'view:hover' | 'walkthrough' | 'whatsnew' | 'worktrees',
-  'context.warnings.indexChanged': boolean,
-  'context.warnings.workingDirectoryChanged': boolean,
-  'context.webview.host': 'view' | 'editor' | 'panel',
-  'context.webview.id': string,
-  'context.webview.instanceId': string,
-  'context.webview.type': string,
-  'customInstructions.commitMessage.setting.length': number,
-  'customInstructions.commitMessage.setting.used': boolean,
-  'customInstructions.hash': string,
-  'customInstructions.length': number,
-  'customInstructions.setting.length': number,
-  'customInstructions.setting.used': boolean,
-  'customInstructions.used': boolean,
-  'failure.error.message': string,
-  'failure.reason': 'error'
-}
-```
-
-### composer/action/reset
-
-> Sent when the user uses the reset button in the Commit Composer
-
-```typescript
-{
-  'context.ai.enabled.config': boolean,
-  'context.ai.enabled.org': boolean,
-  'context.ai.model.default': boolean,
-  'context.ai.model.hidden': boolean,
-  'context.ai.model.id': string,
-  'context.ai.model.maxTokens.input': number,
-  'context.ai.model.maxTokens.output': number,
-  'context.ai.model.name': string,
-  'context.ai.model.provider.id': 'anthropic' | 'azure' | 'deepseek' | 'gemini' | 'github' | 'gitkraken' | 'huggingface' | 'mistral' | 'ollama' | 'openai' | 'openaicompatible' | 'openrouter' | 'simulator' | 'vscode' | 'xai',
-  'context.ai.model.temperature': number,
-  'context.commits.autoComposedCount': number,
-  'context.commits.composedCount': number,
-  'context.commits.finalCount': number,
-  'context.commits.initialCount': number,
-  'context.diff.files.count': number,
-  'context.diff.hash': string,
-  'context.diff.hunks.count': number,
-  'context.diff.lines.count': number,
-  'context.diff.staged.exists': boolean,
-  'context.diff.unstaged.exists': boolean,
-  'context.diff.unstaged.included': boolean,
-  'context.errors.operation.count': number,
-  'context.errors.safety.count': number,
-  'context.mode': 'experimental' | 'preview',
-  'context.onboarding.dismissed': boolean,
-  'context.onboarding.stepReached': number,
-  'context.operations.finishAndCommit.error.count': number,
-  'context.operations.generateCommitMessage.cancelled.count': number,
-  'context.operations.generateCommitMessage.count': number,
-  'context.operations.generateCommitMessage.error.count': number,
-  'context.operations.generateCommits.cancelled.count': number,
-  'context.operations.generateCommits.count': number,
-  'context.operations.generateCommits.error.count': number,
-  'context.operations.generateCommits.feedback.downvote.count': number,
-  'context.operations.generateCommits.feedback.upvote.count': number,
-  'context.operations.redo.count': number,
-  'context.operations.reset.count': number,
-  'context.operations.undo.count': number,
-  'context.session.duration': number,
-  'context.session.start': string,
-  'context.source': 'account' | 'subscription' | 'graph' | 'composer' | 'patchDetails' | 'settings' | 'timeline' | 'home' | 'welcome' | 'rebaseEditor' | 'ai' | 'ai:markdown-preview' | 'ai:markdown-editor' | 'ai:picker' | 'associateIssueWithBranch' | 'cloud-patches' | 'code-suggest' | 'commandPalette' | 'deeplink' | 'editor:hover' | 'feature-badge' | 'feature-gate' | 'gk-cli-integration' | 'gk-mcp-provider' | 'graph-details' | 'graph-header' | 'graph-kanban' | 'graph-sidebar' | 'graph-treemap' | 'inspect' | 'inspect-overview' | 'integrations' | 'launchpad' | 'launchpad-indicator' | 'launchpad-view' | 'mcp' | 'mcp-welcome-message' | 'merge-target' | 'notification' | 'prompt' | 'quick-wizard' | 'remoteProvider' | 'scm' | 'scm-input' | 'startReview' | 'startWork' | 'statusbar:hover' | 'trial-indicator' | 'view' | 'view:hover' | 'walkthrough' | 'whatsnew' | 'worktrees',
-  'context.warnings.indexChanged': boolean,
-  'context.warnings.workingDirectoryChanged': boolean,
-  'context.webview.host': 'view' | 'editor' | 'panel',
-  'context.webview.id': string,
-  'context.webview.instanceId': string,
-  'context.webview.type': string
-}
-```
-
-### composer/action/undo
-
-> Sent when the user uses the undo button in the Commit Composer
-
-```typescript
-{
-  'context.ai.enabled.config': boolean,
-  'context.ai.enabled.org': boolean,
-  'context.ai.model.default': boolean,
-  'context.ai.model.hidden': boolean,
-  'context.ai.model.id': string,
-  'context.ai.model.maxTokens.input': number,
-  'context.ai.model.maxTokens.output': number,
-  'context.ai.model.name': string,
-  'context.ai.model.provider.id': 'anthropic' | 'azure' | 'deepseek' | 'gemini' | 'github' | 'gitkraken' | 'huggingface' | 'mistral' | 'ollama' | 'openai' | 'openaicompatible' | 'openrouter' | 'simulator' | 'vscode' | 'xai',
-  'context.ai.model.temperature': number,
-  'context.commits.autoComposedCount': number,
-  'context.commits.composedCount': number,
-  'context.commits.finalCount': number,
-  'context.commits.initialCount': number,
-  'context.diff.files.count': number,
-  'context.diff.hash': string,
-  'context.diff.hunks.count': number,
-  'context.diff.lines.count': number,
-  'context.diff.staged.exists': boolean,
-  'context.diff.unstaged.exists': boolean,
-  'context.diff.unstaged.included': boolean,
-  'context.errors.operation.count': number,
-  'context.errors.safety.count': number,
-  'context.mode': 'experimental' | 'preview',
-  'context.onboarding.dismissed': boolean,
-  'context.onboarding.stepReached': number,
-  'context.operations.finishAndCommit.error.count': number,
-  'context.operations.generateCommitMessage.cancelled.count': number,
-  'context.operations.generateCommitMessage.count': number,
-  'context.operations.generateCommitMessage.error.count': number,
-  'context.operations.generateCommits.cancelled.count': number,
-  'context.operations.generateCommits.count': number,
-  'context.operations.generateCommits.error.count': number,
-  'context.operations.generateCommits.feedback.downvote.count': number,
-  'context.operations.generateCommits.feedback.upvote.count': number,
-  'context.operations.redo.count': number,
-  'context.operations.reset.count': number,
-  'context.operations.undo.count': number,
-  'context.session.duration': number,
-  'context.session.start': string,
-  'context.source': 'account' | 'subscription' | 'graph' | 'composer' | 'patchDetails' | 'settings' | 'timeline' | 'home' | 'welcome' | 'rebaseEditor' | 'ai' | 'ai:markdown-preview' | 'ai:markdown-editor' | 'ai:picker' | 'associateIssueWithBranch' | 'cloud-patches' | 'code-suggest' | 'commandPalette' | 'deeplink' | 'editor:hover' | 'feature-badge' | 'feature-gate' | 'gk-cli-integration' | 'gk-mcp-provider' | 'graph-details' | 'graph-header' | 'graph-kanban' | 'graph-sidebar' | 'graph-treemap' | 'inspect' | 'inspect-overview' | 'integrations' | 'launchpad' | 'launchpad-indicator' | 'launchpad-view' | 'mcp' | 'mcp-welcome-message' | 'merge-target' | 'notification' | 'prompt' | 'quick-wizard' | 'remoteProvider' | 'scm' | 'scm-input' | 'startReview' | 'startWork' | 'statusbar:hover' | 'trial-indicator' | 'view' | 'view:hover' | 'walkthrough' | 'whatsnew' | 'worktrees',
-  'context.warnings.indexChanged': boolean,
-  'context.warnings.workingDirectoryChanged': boolean,
-  'context.webview.host': 'view' | 'editor' | 'panel',
-  'context.webview.id': string,
-  'context.webview.instanceId': string,
-  'context.webview.type': string
-}
-```
-
-### composer/closed
-
-```typescript
-{
-  [`context.${string}`]: string | number | boolean,
-  'context.webview.host': 'view' | 'editor' | 'panel',
-  'context.webview.id': string,
-  'context.webview.instanceId': string,
-  'context.webview.type': string
-}
-```
-
-### composer/loaded
-
-> Sent when the Commit Composer is first loaded with repo data
-
-```typescript
-{
-  'context.ai.enabled.config': boolean,
-  'context.ai.enabled.org': boolean,
-  'context.ai.model.default': boolean,
-  'context.ai.model.hidden': boolean,
-  'context.ai.model.id': string,
-  'context.ai.model.maxTokens.input': number,
-  'context.ai.model.maxTokens.output': number,
-  'context.ai.model.name': string,
-  'context.ai.model.provider.id': 'anthropic' | 'azure' | 'deepseek' | 'gemini' | 'github' | 'gitkraken' | 'huggingface' | 'mistral' | 'ollama' | 'openai' | 'openaicompatible' | 'openrouter' | 'simulator' | 'vscode' | 'xai',
-  'context.ai.model.temperature': number,
-  'context.commits.autoComposedCount': number,
-  'context.commits.composedCount': number,
-  'context.commits.finalCount': number,
-  'context.commits.initialCount': number,
-  'context.diff.files.count': number,
-  'context.diff.hash': string,
-  'context.diff.hunks.count': number,
-  'context.diff.lines.count': number,
-  'context.diff.staged.exists': boolean,
-  'context.diff.unstaged.exists': boolean,
-  'context.diff.unstaged.included': boolean,
-  'context.errors.operation.count': number,
-  'context.errors.safety.count': number,
-  'context.mode': 'experimental' | 'preview',
-  'context.onboarding.dismissed': boolean,
-  'context.onboarding.stepReached': number,
-  'context.operations.finishAndCommit.error.count': number,
-  'context.operations.generateCommitMessage.cancelled.count': number,
-  'context.operations.generateCommitMessage.count': number,
-  'context.operations.generateCommitMessage.error.count': number,
-  'context.operations.generateCommits.cancelled.count': number,
-  'context.operations.generateCommits.count': number,
-  'context.operations.generateCommits.error.count': number,
-  'context.operations.generateCommits.feedback.downvote.count': number,
-  'context.operations.generateCommits.feedback.upvote.count': number,
-  'context.operations.redo.count': number,
-  'context.operations.reset.count': number,
-  'context.operations.undo.count': number,
-  'context.session.duration': number,
-  'context.session.start': string,
-  'context.source': 'account' | 'subscription' | 'graph' | 'composer' | 'patchDetails' | 'settings' | 'timeline' | 'home' | 'welcome' | 'rebaseEditor' | 'ai' | 'ai:markdown-preview' | 'ai:markdown-editor' | 'ai:picker' | 'associateIssueWithBranch' | 'cloud-patches' | 'code-suggest' | 'commandPalette' | 'deeplink' | 'editor:hover' | 'feature-badge' | 'feature-gate' | 'gk-cli-integration' | 'gk-mcp-provider' | 'graph-details' | 'graph-header' | 'graph-kanban' | 'graph-sidebar' | 'graph-treemap' | 'inspect' | 'inspect-overview' | 'integrations' | 'launchpad' | 'launchpad-indicator' | 'launchpad-view' | 'mcp' | 'mcp-welcome-message' | 'merge-target' | 'notification' | 'prompt' | 'quick-wizard' | 'remoteProvider' | 'scm' | 'scm-input' | 'startReview' | 'startWork' | 'statusbar:hover' | 'trial-indicator' | 'view' | 'view:hover' | 'walkthrough' | 'whatsnew' | 'worktrees',
-  'context.warnings.indexChanged': boolean,
-  'context.warnings.workingDirectoryChanged': boolean,
-  'context.webview.host': 'view' | 'editor' | 'panel',
-  'context.webview.id': string,
-  'context.webview.instanceId': string,
-  'context.webview.type': string,
-  'failure.error.message': string,
-  'failure.reason': 'error'
-}
-```
-
-### composer/reloaded
-
-> Sent when the Commit Composer is reloaded
-
-```typescript
-{
-  'context.ai.enabled.config': boolean,
-  'context.ai.enabled.org': boolean,
-  'context.ai.model.default': boolean,
-  'context.ai.model.hidden': boolean,
-  'context.ai.model.id': string,
-  'context.ai.model.maxTokens.input': number,
-  'context.ai.model.maxTokens.output': number,
-  'context.ai.model.name': string,
-  'context.ai.model.provider.id': 'anthropic' | 'azure' | 'deepseek' | 'gemini' | 'github' | 'gitkraken' | 'huggingface' | 'mistral' | 'ollama' | 'openai' | 'openaicompatible' | 'openrouter' | 'simulator' | 'vscode' | 'xai',
-  'context.ai.model.temperature': number,
-  'context.commits.autoComposedCount': number,
-  'context.commits.composedCount': number,
-  'context.commits.finalCount': number,
-  'context.commits.initialCount': number,
-  'context.diff.files.count': number,
-  'context.diff.hash': string,
-  'context.diff.hunks.count': number,
-  'context.diff.lines.count': number,
-  'context.diff.staged.exists': boolean,
-  'context.diff.unstaged.exists': boolean,
-  'context.diff.unstaged.included': boolean,
-  'context.errors.operation.count': number,
-  'context.errors.safety.count': number,
-  'context.mode': 'experimental' | 'preview',
-  'context.onboarding.dismissed': boolean,
-  'context.onboarding.stepReached': number,
-  'context.operations.finishAndCommit.error.count': number,
-  'context.operations.generateCommitMessage.cancelled.count': number,
-  'context.operations.generateCommitMessage.count': number,
-  'context.operations.generateCommitMessage.error.count': number,
-  'context.operations.generateCommits.cancelled.count': number,
-  'context.operations.generateCommits.count': number,
-  'context.operations.generateCommits.error.count': number,
-  'context.operations.generateCommits.feedback.downvote.count': number,
-  'context.operations.generateCommits.feedback.upvote.count': number,
-  'context.operations.redo.count': number,
-  'context.operations.reset.count': number,
-  'context.operations.undo.count': number,
-  'context.session.duration': number,
-  'context.session.start': string,
-  'context.source': 'account' | 'subscription' | 'graph' | 'composer' | 'patchDetails' | 'settings' | 'timeline' | 'home' | 'welcome' | 'rebaseEditor' | 'ai' | 'ai:markdown-preview' | 'ai:markdown-editor' | 'ai:picker' | 'associateIssueWithBranch' | 'cloud-patches' | 'code-suggest' | 'commandPalette' | 'deeplink' | 'editor:hover' | 'feature-badge' | 'feature-gate' | 'gk-cli-integration' | 'gk-mcp-provider' | 'graph-details' | 'graph-header' | 'graph-kanban' | 'graph-sidebar' | 'graph-treemap' | 'inspect' | 'inspect-overview' | 'integrations' | 'launchpad' | 'launchpad-indicator' | 'launchpad-view' | 'mcp' | 'mcp-welcome-message' | 'merge-target' | 'notification' | 'prompt' | 'quick-wizard' | 'remoteProvider' | 'scm' | 'scm-input' | 'startReview' | 'startWork' | 'statusbar:hover' | 'trial-indicator' | 'view' | 'view:hover' | 'walkthrough' | 'whatsnew' | 'worktrees',
-  'context.warnings.indexChanged': boolean,
-  'context.warnings.workingDirectoryChanged': boolean,
-  'context.webview.host': 'view' | 'editor' | 'panel',
-  'context.webview.id': string,
-  'context.webview.instanceId': string,
-  'context.webview.type': string,
-  'failure.error.message': string,
-  'failure.reason': 'error'
-}
-```
-
-### composer/showAborted
-
-```typescript
-{
-  'context.webview.host': 'view' | 'editor' | 'panel',
-  'context.webview.id': string,
-  'context.webview.instanceId': string,
-  'context.webview.type': string,
-  'duration': number,
-  'loading': boolean
-}
-```
-
-### composer/shown
-
-```typescript
-{
-  [`context.${string}`]: string | number | boolean,
-  'context.webview.host': 'view' | 'editor' | 'panel',
-  'context.webview.id': string,
-  'context.webview.instanceId': string,
-  'context.webview.type': string,
-  'duration': number,
-  'loading': boolean
-}
-```
-
-### composer/warning/indexChanged
-
-> Sent when the user is warned that the index has changed in the Commit Composer
-
-```typescript
-{
-  'context.ai.enabled.config': boolean,
-  'context.ai.enabled.org': boolean,
-  'context.ai.model.default': boolean,
-  'context.ai.model.hidden': boolean,
-  'context.ai.model.id': string,
-  'context.ai.model.maxTokens.input': number,
-  'context.ai.model.maxTokens.output': number,
-  'context.ai.model.name': string,
-  'context.ai.model.provider.id': 'anthropic' | 'azure' | 'deepseek' | 'gemini' | 'github' | 'gitkraken' | 'huggingface' | 'mistral' | 'ollama' | 'openai' | 'openaicompatible' | 'openrouter' | 'simulator' | 'vscode' | 'xai',
-  'context.ai.model.temperature': number,
-  'context.commits.autoComposedCount': number,
-  'context.commits.composedCount': number,
-  'context.commits.finalCount': number,
-  'context.commits.initialCount': number,
-  'context.diff.files.count': number,
-  'context.diff.hash': string,
-  'context.diff.hunks.count': number,
-  'context.diff.lines.count': number,
-  'context.diff.staged.exists': boolean,
-  'context.diff.unstaged.exists': boolean,
-  'context.diff.unstaged.included': boolean,
-  'context.errors.operation.count': number,
-  'context.errors.safety.count': number,
-  'context.mode': 'experimental' | 'preview',
-  'context.onboarding.dismissed': boolean,
-  'context.onboarding.stepReached': number,
-  'context.operations.finishAndCommit.error.count': number,
-  'context.operations.generateCommitMessage.cancelled.count': number,
-  'context.operations.generateCommitMessage.count': number,
-  'context.operations.generateCommitMessage.error.count': number,
-  'context.operations.generateCommits.cancelled.count': number,
-  'context.operations.generateCommits.count': number,
-  'context.operations.generateCommits.error.count': number,
-  'context.operations.generateCommits.feedback.downvote.count': number,
-  'context.operations.generateCommits.feedback.upvote.count': number,
-  'context.operations.redo.count': number,
-  'context.operations.reset.count': number,
-  'context.operations.undo.count': number,
-  'context.session.duration': number,
-  'context.session.start': string,
-  'context.source': 'account' | 'subscription' | 'graph' | 'composer' | 'patchDetails' | 'settings' | 'timeline' | 'home' | 'welcome' | 'rebaseEditor' | 'ai' | 'ai:markdown-preview' | 'ai:markdown-editor' | 'ai:picker' | 'associateIssueWithBranch' | 'cloud-patches' | 'code-suggest' | 'commandPalette' | 'deeplink' | 'editor:hover' | 'feature-badge' | 'feature-gate' | 'gk-cli-integration' | 'gk-mcp-provider' | 'graph-details' | 'graph-header' | 'graph-kanban' | 'graph-sidebar' | 'graph-treemap' | 'inspect' | 'inspect-overview' | 'integrations' | 'launchpad' | 'launchpad-indicator' | 'launchpad-view' | 'mcp' | 'mcp-welcome-message' | 'merge-target' | 'notification' | 'prompt' | 'quick-wizard' | 'remoteProvider' | 'scm' | 'scm-input' | 'startReview' | 'startWork' | 'statusbar:hover' | 'trial-indicator' | 'view' | 'view:hover' | 'walkthrough' | 'whatsnew' | 'worktrees',
-  'context.warnings.indexChanged': boolean,
-  'context.warnings.workingDirectoryChanged': boolean,
-  'context.webview.host': 'view' | 'editor' | 'panel',
-  'context.webview.id': string,
-  'context.webview.instanceId': string,
-  'context.webview.type': string
-}
-```
-
-### composer/warning/workingDirectoryChanged
-
-> Sent when the user is warned that the working directory has changed in the Commit Composer
-
-```typescript
-{
-  'context.ai.enabled.config': boolean,
-  'context.ai.enabled.org': boolean,
-  'context.ai.model.default': boolean,
-  'context.ai.model.hidden': boolean,
-  'context.ai.model.id': string,
-  'context.ai.model.maxTokens.input': number,
-  'context.ai.model.maxTokens.output': number,
-  'context.ai.model.name': string,
-  'context.ai.model.provider.id': 'anthropic' | 'azure' | 'deepseek' | 'gemini' | 'github' | 'gitkraken' | 'huggingface' | 'mistral' | 'ollama' | 'openai' | 'openaicompatible' | 'openrouter' | 'simulator' | 'vscode' | 'xai',
-  'context.ai.model.temperature': number,
-  'context.commits.autoComposedCount': number,
-  'context.commits.composedCount': number,
-  'context.commits.finalCount': number,
-  'context.commits.initialCount': number,
-  'context.diff.files.count': number,
-  'context.diff.hash': string,
-  'context.diff.hunks.count': number,
-  'context.diff.lines.count': number,
-  'context.diff.staged.exists': boolean,
-  'context.diff.unstaged.exists': boolean,
-  'context.diff.unstaged.included': boolean,
-  'context.errors.operation.count': number,
-  'context.errors.safety.count': number,
-  'context.mode': 'experimental' | 'preview',
-  'context.onboarding.dismissed': boolean,
-  'context.onboarding.stepReached': number,
-  'context.operations.finishAndCommit.error.count': number,
-  'context.operations.generateCommitMessage.cancelled.count': number,
-  'context.operations.generateCommitMessage.count': number,
-  'context.operations.generateCommitMessage.error.count': number,
-  'context.operations.generateCommits.cancelled.count': number,
-  'context.operations.generateCommits.count': number,
-  'context.operations.generateCommits.error.count': number,
-  'context.operations.generateCommits.feedback.downvote.count': number,
-  'context.operations.generateCommits.feedback.upvote.count': number,
-  'context.operations.redo.count': number,
-  'context.operations.reset.count': number,
-  'context.operations.undo.count': number,
-  'context.session.duration': number,
-  'context.session.start': string,
-  'context.source': 'account' | 'subscription' | 'graph' | 'composer' | 'patchDetails' | 'settings' | 'timeline' | 'home' | 'welcome' | 'rebaseEditor' | 'ai' | 'ai:markdown-preview' | 'ai:markdown-editor' | 'ai:picker' | 'associateIssueWithBranch' | 'cloud-patches' | 'code-suggest' | 'commandPalette' | 'deeplink' | 'editor:hover' | 'feature-badge' | 'feature-gate' | 'gk-cli-integration' | 'gk-mcp-provider' | 'graph-details' | 'graph-header' | 'graph-kanban' | 'graph-sidebar' | 'graph-treemap' | 'inspect' | 'inspect-overview' | 'integrations' | 'launchpad' | 'launchpad-indicator' | 'launchpad-view' | 'mcp' | 'mcp-welcome-message' | 'merge-target' | 'notification' | 'prompt' | 'quick-wizard' | 'remoteProvider' | 'scm' | 'scm-input' | 'startReview' | 'startWork' | 'statusbar:hover' | 'trial-indicator' | 'view' | 'view:hover' | 'walkthrough' | 'whatsnew' | 'worktrees',
-  'context.warnings.indexChanged': boolean,
-  'context.warnings.workingDirectoryChanged': boolean,
-  'context.webview.host': 'view' | 'editor' | 'panel',
-  'context.webview.id': string,
-  'context.webview.instanceId': string,
-  'context.webview.type': string
 }
 ```
 
@@ -2610,18 +1372,6 @@ background-upgraded the extension while the host kept running the old build
 }
 ```
 
-### graph/closed
-
-```typescript
-{
-  [`context.${string}`]: string | number | boolean,
-  'context.webview.host': 'view' | 'editor' | 'panel',
-  'context.webview.id': string,
-  'context.webview.instanceId': string,
-  'context.webview.type': string
-}
-```
-
 ### graph/columns/changed
 
 > Sent when the user changes the columns on the Commit Graph
@@ -2630,7 +1380,6 @@ background-upgraded the extension while the host kept running the old build
 {
   [`column.${string}.isHidden`]: boolean,
   [`column.${string}.mode`]: string,
-  [`column.${string}.order`]: number,
   [`column.${string}.width`]: number,
   'context.repository.closed': boolean,
   'context.repository.folder.scheme': string,
@@ -2785,7 +1534,7 @@ background-upgraded the extension while the host kept running the old build
 
 ### graph/row/hovered
 
-> Sent when the user hovers over a row on the Commit Graph (first time and every 100 times after)
+> Sent when the user points at a row on the Commit Graph (first time and every 100 times after)
 
 ```typescript
 {
@@ -2903,22 +1652,9 @@ background-upgraded the extension while the host kept running the old build
   'failed': boolean,
   'failed.error': string,
   'failed.error.detail': string,
-  'failed.reason': 'cancelled' | 'error',
+  'failed.reason': 'error' | 'cancelled',
   'matches': number,
   'types': string
-}
-```
-
-### graph/showAborted
-
-```typescript
-{
-  'context.webview.host': 'view' | 'editor' | 'panel',
-  'context.webview.id': string,
-  'context.webview.instanceId': string,
-  'context.webview.type': string,
-  'duration': number,
-  'loading': boolean
 }
 ```
 
@@ -3216,407 +1952,6 @@ void
 void
 ```
 
-### launchpad/action
-
-> Sent when the user takes an action on a launchpad item
-
-```typescript
-{
-  'instance': number,
-  'items.error': string,
-  'action': 'soft-open' | 'code-suggest' | 'merge' | 'switch' | 'open' | 'open-worktree' | 'switch-and-code-suggest' | 'show-overview' | 'open-changes' | 'open-in-graph' | 'pin' | 'unpin' | 'snooze' | 'unsnooze' | 'open-suggestion' | 'open-suggestion-browser',
-  'groups.blocked.collapsed': boolean,
-  'groups.blocked.count': number,
-  'groups.count': number,
-  'groups.current-branch.collapsed': boolean,
-  'groups.current-branch.count': number,
-  'groups.draft.collapsed': boolean,
-  'groups.draft.count': number,
-  'groups.follow-up.collapsed': boolean,
-  'groups.follow-up.count': number,
-  'groups.mergeable.collapsed': boolean,
-  'groups.mergeable.count': number,
-  'groups.needs-review.collapsed': boolean,
-  'groups.needs-review.count': number,
-  'groups.other.collapsed': boolean,
-  'groups.other.count': number,
-  'groups.pinned.collapsed': boolean,
-  'groups.pinned.count': number,
-  'groups.snoozed.collapsed': boolean,
-  'groups.snoozed.count': number,
-  'groups.waiting-for-review.collapsed': boolean,
-  'groups.waiting-for-review.count': number,
-  'initialState.group': string,
-  'initialState.selectTopItem': boolean,
-  [`item.${string}`]: string | number | boolean,
-  'items.count': number,
-  'items.timings.codeSuggestionCounts': number,
-  'items.timings.enrichedItems': number,
-  'items.timings.prs': number
-}
-```
-
-### launchpad/configurationChanged
-
-> Sent when the user changes launchpad configuration settings
-
-```typescript
-{
-  'config.launchpad.ignoredOrganizations': number,
-  'config.launchpad.ignoredRepositories': number,
-  'config.launchpad.includedOrganizations': number,
-  'config.launchpad.indicator.enabled': boolean,
-  'config.launchpad.indicator.groups': string,
-  'config.launchpad.indicator.icon': 'default' | 'group',
-  'config.launchpad.indicator.label': false | 'item' | 'counts',
-  'config.launchpad.indicator.polling.enabled': boolean,
-  'config.launchpad.indicator.polling.interval': number,
-  'config.launchpad.indicator.useColors': boolean,
-  'config.launchpad.staleThreshold': number
-}
-```
-
-### launchpad/groupToggled
-
-> Sent when the user expands/collapses a launchpad group
-
-```typescript
-{
-  'instance': number,
-  'items.error': string,
-  'collapsed': boolean,
-  'group': 'other' | 'pinned' | 'current-branch' | 'mergeable' | 'blocked' | 'follow-up' | 'needs-review' | 'waiting-for-review' | 'draft' | 'snoozed',
-  'groups.blocked.collapsed': boolean,
-  'groups.blocked.count': number,
-  'groups.count': number,
-  'groups.current-branch.collapsed': boolean,
-  'groups.current-branch.count': number,
-  'groups.draft.collapsed': boolean,
-  'groups.draft.count': number,
-  'groups.follow-up.collapsed': boolean,
-  'groups.follow-up.count': number,
-  'groups.mergeable.collapsed': boolean,
-  'groups.mergeable.count': number,
-  'groups.needs-review.collapsed': boolean,
-  'groups.needs-review.count': number,
-  'groups.other.collapsed': boolean,
-  'groups.other.count': number,
-  'groups.pinned.collapsed': boolean,
-  'groups.pinned.count': number,
-  'groups.snoozed.collapsed': boolean,
-  'groups.snoozed.count': number,
-  'groups.waiting-for-review.collapsed': boolean,
-  'groups.waiting-for-review.count': number,
-  'initialState.group': string,
-  'initialState.selectTopItem': boolean,
-  'items.count': number,
-  'items.timings.codeSuggestionCounts': number,
-  'items.timings.enrichedItems': number,
-  'items.timings.prs': number
-}
-```
-
-### launchpad/indicator/firstLoad
-
-> Sent when the launchpad indicator loads (with data) for the first time ever for this device
-
-```typescript
-void
-```
-
-### launchpad/indicator/hidden
-
-> Sent when the user hides the launchpad indicator
-
-```typescript
-void
-```
-
-### launchpad/open
-
-> Sent when the user opens launchpad; use `instance` to correlate a launchpad "session"
-
-```typescript
-{
-  'instance': number,
-  'initialState.group': string,
-  'initialState.selectTopItem': boolean
-}
-```
-
-### launchpad/opened
-
-> Sent when the launchpad is opened; use `instance` to correlate a launchpad "session"
-
-```typescript
-{
-  'instance': number,
-  'items.error': string,
-  'connected': boolean,
-  'groups.blocked.collapsed': boolean,
-  'groups.blocked.count': number,
-  'groups.count': number,
-  'groups.current-branch.collapsed': boolean,
-  'groups.current-branch.count': number,
-  'groups.draft.collapsed': boolean,
-  'groups.draft.count': number,
-  'groups.follow-up.collapsed': boolean,
-  'groups.follow-up.count': number,
-  'groups.mergeable.collapsed': boolean,
-  'groups.mergeable.count': number,
-  'groups.needs-review.collapsed': boolean,
-  'groups.needs-review.count': number,
-  'groups.other.collapsed': boolean,
-  'groups.other.count': number,
-  'groups.pinned.collapsed': boolean,
-  'groups.pinned.count': number,
-  'groups.snoozed.collapsed': boolean,
-  'groups.snoozed.count': number,
-  'groups.waiting-for-review.collapsed': boolean,
-  'groups.waiting-for-review.count': number,
-  'initialState.group': string,
-  'initialState.selectTopItem': boolean,
-  'items.count': number,
-  'items.timings.codeSuggestionCounts': number,
-  'items.timings.enrichedItems': number,
-  'items.timings.prs': number
-}
-```
-
-### launchpad/operation/slow
-
-> Sent when a launchpad operation is taking longer than a set timeout to complete
-
-```typescript
-{
-  'duration': number,
-  'operation': 'getPullRequest' | 'searchPullRequests' | 'getMyPullRequests' | 'getCodeSuggestions' | 'getEnrichedItems' | 'getCodeSuggestionCounts',
-  'timeout': number
-}
-```
-
-### launchpad/steps/connect
-
-> Sent when the launchpad has "reloaded" (while open, e.g. user refreshed or back button) and is disconnected; use `instance` to correlate a launchpad "session"
-
-```typescript
-{
-  'instance': number,
-  'items.error': string,
-  'connected': boolean,
-  'groups.blocked.collapsed': boolean,
-  'groups.blocked.count': number,
-  'groups.count': number,
-  'groups.current-branch.collapsed': boolean,
-  'groups.current-branch.count': number,
-  'groups.draft.collapsed': boolean,
-  'groups.draft.count': number,
-  'groups.follow-up.collapsed': boolean,
-  'groups.follow-up.count': number,
-  'groups.mergeable.collapsed': boolean,
-  'groups.mergeable.count': number,
-  'groups.needs-review.collapsed': boolean,
-  'groups.needs-review.count': number,
-  'groups.other.collapsed': boolean,
-  'groups.other.count': number,
-  'groups.pinned.collapsed': boolean,
-  'groups.pinned.count': number,
-  'groups.snoozed.collapsed': boolean,
-  'groups.snoozed.count': number,
-  'groups.waiting-for-review.collapsed': boolean,
-  'groups.waiting-for-review.count': number,
-  'initialState.group': string,
-  'initialState.selectTopItem': boolean,
-  'items.count': number,
-  'items.timings.codeSuggestionCounts': number,
-  'items.timings.enrichedItems': number,
-  'items.timings.prs': number
-}
-```
-
-### launchpad/steps/details
-
-> Sent when the user opens the details of a launchpad item (e.g. click on an item); use `instance` to correlate a launchpad "session"
-
-```typescript
-{
-  'instance': number,
-  'items.error': string,
-  'action': 'select',
-  'groups.blocked.collapsed': boolean,
-  'groups.blocked.count': number,
-  'groups.count': number,
-  'groups.current-branch.collapsed': boolean,
-  'groups.current-branch.count': number,
-  'groups.draft.collapsed': boolean,
-  'groups.draft.count': number,
-  'groups.follow-up.collapsed': boolean,
-  'groups.follow-up.count': number,
-  'groups.mergeable.collapsed': boolean,
-  'groups.mergeable.count': number,
-  'groups.needs-review.collapsed': boolean,
-  'groups.needs-review.count': number,
-  'groups.other.collapsed': boolean,
-  'groups.other.count': number,
-  'groups.pinned.collapsed': boolean,
-  'groups.pinned.count': number,
-  'groups.snoozed.collapsed': boolean,
-  'groups.snoozed.count': number,
-  'groups.waiting-for-review.collapsed': boolean,
-  'groups.waiting-for-review.count': number,
-  'initialState.group': string,
-  'initialState.selectTopItem': boolean,
-  [`item.${string}`]: string | number | boolean,
-  'items.count': number,
-  'items.timings.codeSuggestionCounts': number,
-  'items.timings.enrichedItems': number,
-  'items.timings.prs': number
-}
-```
-
-### launchpad/steps/main
-
-> Sent when the launchpad has "reloaded" (while open, e.g. user refreshed or back button) and is connected; use `instance` to correlate a launchpad "session"
-
-```typescript
-{
-  'instance': number,
-  'items.error': string,
-  'connected': boolean,
-  'groups.blocked.collapsed': boolean,
-  'groups.blocked.count': number,
-  'groups.count': number,
-  'groups.current-branch.collapsed': boolean,
-  'groups.current-branch.count': number,
-  'groups.draft.collapsed': boolean,
-  'groups.draft.count': number,
-  'groups.follow-up.collapsed': boolean,
-  'groups.follow-up.count': number,
-  'groups.mergeable.collapsed': boolean,
-  'groups.mergeable.count': number,
-  'groups.needs-review.collapsed': boolean,
-  'groups.needs-review.count': number,
-  'groups.other.collapsed': boolean,
-  'groups.other.count': number,
-  'groups.pinned.collapsed': boolean,
-  'groups.pinned.count': number,
-  'groups.snoozed.collapsed': boolean,
-  'groups.snoozed.count': number,
-  'groups.waiting-for-review.collapsed': boolean,
-  'groups.waiting-for-review.count': number,
-  'initialState.group': string,
-  'initialState.selectTopItem': boolean,
-  'items.count': number,
-  'items.timings.codeSuggestionCounts': number,
-  'items.timings.enrichedItems': number,
-  'items.timings.prs': number
-}
-```
-
-### launchpad/title/action
-
-> Sent when the user takes an action on the Launchpad title bar
-
-```typescript
-{
-  'instance': number,
-  'items.error': string,
-  'action': 'settings' | 'connect' | 'feedback' | 'open-on-gkdev' | 'refresh',
-  'groups.blocked.collapsed': boolean,
-  'groups.blocked.count': number,
-  'groups.count': number,
-  'groups.current-branch.collapsed': boolean,
-  'groups.current-branch.count': number,
-  'groups.draft.collapsed': boolean,
-  'groups.draft.count': number,
-  'groups.follow-up.collapsed': boolean,
-  'groups.follow-up.count': number,
-  'groups.mergeable.collapsed': boolean,
-  'groups.mergeable.count': number,
-  'groups.needs-review.collapsed': boolean,
-  'groups.needs-review.count': number,
-  'groups.other.collapsed': boolean,
-  'groups.other.count': number,
-  'groups.pinned.collapsed': boolean,
-  'groups.pinned.count': number,
-  'groups.snoozed.collapsed': boolean,
-  'groups.snoozed.count': number,
-  'groups.waiting-for-review.collapsed': boolean,
-  'groups.waiting-for-review.count': number,
-  'initialState.group': string,
-  'initialState.selectTopItem': boolean,
-  'items.count': number,
-  'items.timings.codeSuggestionCounts': number,
-  'items.timings.enrichedItems': number,
-  'items.timings.prs': number
-}
-```
-
-### mcp/agents/selected
-
-> Sent when user selects agents for MCP installation
-
-```typescript
-{
-  'agents.count': number,
-  'agents.ids': string,
-  'source': 'account' | 'subscription' | 'graph' | 'composer' | 'patchDetails' | 'settings' | 'timeline' | 'home' | 'welcome' | 'rebaseEditor' | 'ai' | 'ai:markdown-preview' | 'ai:markdown-editor' | 'ai:picker' | 'associateIssueWithBranch' | 'cloud-patches' | 'code-suggest' | 'commandPalette' | 'deeplink' | 'editor:hover' | 'feature-badge' | 'feature-gate' | 'gk-cli-integration' | 'gk-mcp-provider' | 'graph-details' | 'graph-header' | 'graph-kanban' | 'graph-sidebar' | 'graph-treemap' | 'inspect' | 'inspect-overview' | 'integrations' | 'launchpad' | 'launchpad-indicator' | 'launchpad-view' | 'mcp' | 'mcp-welcome-message' | 'merge-target' | 'notification' | 'prompt' | 'quick-wizard' | 'remoteProvider' | 'scm' | 'scm-input' | 'startReview' | 'startWork' | 'statusbar:hover' | 'trial-indicator' | 'view' | 'view:hover' | 'walkthrough' | 'whatsnew' | 'worktrees'
-}
-```
-
-### mcp/registration/failed
-
-> Sent when GitKraken MCP registration fails
-
-```typescript
-{
-  'agents.failed': string,
-  'cli.version': string,
-  'error.message': string,
-  'reason': string,
-  'source': 'account' | 'subscription' | 'graph' | 'composer' | 'patchDetails' | 'settings' | 'timeline' | 'home' | 'welcome' | 'rebaseEditor' | 'ai' | 'ai:markdown-preview' | 'ai:markdown-editor' | 'ai:picker' | 'associateIssueWithBranch' | 'cloud-patches' | 'code-suggest' | 'commandPalette' | 'deeplink' | 'editor:hover' | 'feature-badge' | 'feature-gate' | 'gk-cli-integration' | 'gk-mcp-provider' | 'graph-details' | 'graph-header' | 'graph-kanban' | 'graph-sidebar' | 'graph-treemap' | 'inspect' | 'inspect-overview' | 'integrations' | 'launchpad' | 'launchpad-indicator' | 'launchpad-view' | 'mcp' | 'mcp-welcome-message' | 'merge-target' | 'notification' | 'prompt' | 'quick-wizard' | 'remoteProvider' | 'scm' | 'scm-input' | 'startReview' | 'startWork' | 'statusbar:hover' | 'trial-indicator' | 'view' | 'view:hover' | 'walkthrough' | 'whatsnew' | 'worktrees'
-}
-```
-
-### mcp/setup/completed
-
-> Sent when GitKraken MCP setup is completed
-
-```typescript
-{
-  'agents.failed': string,
-  'agents.succeeded': string,
-  'agents.userAction': string,
-  'cli.version': string,
-  'requiresUserCompletion': boolean,
-  'source': 'account' | 'subscription' | 'graph' | 'composer' | 'patchDetails' | 'settings' | 'timeline' | 'home' | 'welcome' | 'rebaseEditor' | 'ai' | 'ai:markdown-preview' | 'ai:markdown-editor' | 'ai:picker' | 'associateIssueWithBranch' | 'cloud-patches' | 'code-suggest' | 'commandPalette' | 'deeplink' | 'editor:hover' | 'feature-badge' | 'feature-gate' | 'gk-cli-integration' | 'gk-mcp-provider' | 'graph-details' | 'graph-header' | 'graph-kanban' | 'graph-sidebar' | 'graph-treemap' | 'inspect' | 'inspect-overview' | 'integrations' | 'launchpad' | 'launchpad-indicator' | 'launchpad-view' | 'mcp' | 'mcp-welcome-message' | 'merge-target' | 'notification' | 'prompt' | 'quick-wizard' | 'remoteProvider' | 'scm' | 'scm-input' | 'startReview' | 'startWork' | 'statusbar:hover' | 'trial-indicator' | 'view' | 'view:hover' | 'walkthrough' | 'whatsnew' | 'worktrees'
-}
-```
-
-### mcp/setup/failed
-
-> Sent when GitKraken MCP setup fails
-
-```typescript
-{
-  'agents.failed': string,
-  'cli.version': string,
-  'error.message': string,
-  'reason': string,
-  'source': 'account' | 'subscription' | 'graph' | 'composer' | 'patchDetails' | 'settings' | 'timeline' | 'home' | 'welcome' | 'rebaseEditor' | 'ai' | 'ai:markdown-preview' | 'ai:markdown-editor' | 'ai:picker' | 'associateIssueWithBranch' | 'cloud-patches' | 'code-suggest' | 'commandPalette' | 'deeplink' | 'editor:hover' | 'feature-badge' | 'feature-gate' | 'gk-cli-integration' | 'gk-mcp-provider' | 'graph-details' | 'graph-header' | 'graph-kanban' | 'graph-sidebar' | 'graph-treemap' | 'inspect' | 'inspect-overview' | 'integrations' | 'launchpad' | 'launchpad-indicator' | 'launchpad-view' | 'mcp' | 'mcp-welcome-message' | 'merge-target' | 'notification' | 'prompt' | 'quick-wizard' | 'remoteProvider' | 'scm' | 'scm-input' | 'startReview' | 'startWork' | 'statusbar:hover' | 'trial-indicator' | 'view' | 'view:hover' | 'walkthrough' | 'whatsnew' | 'worktrees'
-}
-```
-
-### mcp/setup/started
-
-> Sent when GitKraken MCP setup is started
-
-```typescript
-{
-  'source': 'account' | 'subscription' | 'graph' | 'composer' | 'patchDetails' | 'settings' | 'timeline' | 'home' | 'welcome' | 'rebaseEditor' | 'ai' | 'ai:markdown-preview' | 'ai:markdown-editor' | 'ai:picker' | 'associateIssueWithBranch' | 'cloud-patches' | 'code-suggest' | 'commandPalette' | 'deeplink' | 'editor:hover' | 'feature-badge' | 'feature-gate' | 'gk-cli-integration' | 'gk-mcp-provider' | 'graph-details' | 'graph-header' | 'graph-kanban' | 'graph-sidebar' | 'graph-treemap' | 'inspect' | 'inspect-overview' | 'integrations' | 'launchpad' | 'launchpad-indicator' | 'launchpad-view' | 'mcp' | 'mcp-welcome-message' | 'merge-target' | 'notification' | 'prompt' | 'quick-wizard' | 'remoteProvider' | 'scm' | 'scm-input' | 'startReview' | 'startWork' | 'statusbar:hover' | 'trial-indicator' | 'view' | 'view:hover' | 'walkthrough' | 'whatsnew' | 'worktrees'
-}
-```
-
 ### op/gate/deadlock
 
 ```typescript
@@ -3687,46 +2022,7 @@ void
   'repoPrivacy': 'private' | 'public' | 'local',
   'repository.visibility': 'private' | 'public' | 'local',
   // Provided for compatibility with other GK surfaces
-  'source': 'account' | 'subscription' | 'graph' | 'composer' | 'patchDetails' | 'settings' | 'timeline' | 'home' | 'welcome' | 'rebaseEditor' | 'ai' | 'ai:markdown-preview' | 'ai:markdown-editor' | 'ai:picker' | 'associateIssueWithBranch' | 'cloud-patches' | 'code-suggest' | 'commandPalette' | 'deeplink' | 'editor:hover' | 'feature-badge' | 'feature-gate' | 'gk-cli-integration' | 'gk-mcp-provider' | 'graph-details' | 'graph-header' | 'graph-kanban' | 'graph-sidebar' | 'graph-treemap' | 'inspect' | 'inspect-overview' | 'integrations' | 'launchpad' | 'launchpad-indicator' | 'launchpad-view' | 'mcp' | 'mcp-welcome-message' | 'merge-target' | 'notification' | 'prompt' | 'quick-wizard' | 'remoteProvider' | 'scm' | 'scm-input' | 'startReview' | 'startWork' | 'statusbar:hover' | 'trial-indicator' | 'view' | 'view:hover' | 'walkthrough' | 'whatsnew' | 'worktrees'
-}
-```
-
-### patchDetails/closed
-
-```typescript
-{
-  [`context.${string}`]: string | number | boolean,
-  'context.webview.host': 'view' | 'editor' | 'panel',
-  'context.webview.id': string,
-  'context.webview.instanceId': string,
-  'context.webview.type': string
-}
-```
-
-### patchDetails/showAborted
-
-```typescript
-{
-  'context.webview.host': 'view' | 'editor' | 'panel',
-  'context.webview.id': string,
-  'context.webview.instanceId': string,
-  'context.webview.type': string,
-  'duration': number,
-  'loading': boolean
-}
-```
-
-### patchDetails/shown
-
-```typescript
-{
-  [`context.${string}`]: string | number | boolean,
-  'context.webview.host': 'view' | 'editor' | 'panel',
-  'context.webview.id': string,
-  'context.webview.instanceId': string,
-  'context.webview.type': string,
-  'duration': number,
-  'loading': boolean
+  'source': 'account' | 'subscription' | 'graph' | 'settings' | 'home' | 'welcome' | 'rebaseEditor' | 'ai' | 'ai:markdown-preview' | 'ai:markdown-editor' | 'ai:picker' | 'associateIssueWithBranch' | 'commandPalette' | 'deeplink' | 'editor:hover' | 'feature-badge' | 'feature-gate' | 'graph-details' | 'graph-header' | 'graph-kanban' | 'graph-sidebar' | 'graph-treemap' | 'inspect' | 'inspect-overview' | 'integrations' | 'merge-target' | 'notification' | 'prompt' | 'quick-wizard' | 'remoteProvider' | 'scm' | 'scm-input' | 'startReview' | 'startWork' | 'statusbar:hover' | 'view' | 'view:hover' | 'walkthrough' | 'whatsnew'
 }
 ```
 
@@ -3880,28 +2176,6 @@ void
   'context.isPaused': boolean,
   'context.isRebasing': boolean,
   'context.preservesMerges': boolean,
-  'context.session.start': string,
-  'context.todo.count': number,
-  'context.webview.host': 'view' | 'editor' | 'panel',
-  'context.webview.id': string,
-  'context.webview.instanceId': string,
-  'context.webview.type': string
-}
-```
-
-### rebaseEditor/action/recompose
-
-> Sent when the user opens the Commit Composer from the rebase editor
-
-```typescript
-{
-  'context.ascending': boolean,
-  'context.done.count': number,
-  'context.hasConflicts': boolean,
-  'context.isPaused': boolean,
-  'context.isRebasing': boolean,
-  'context.preservesMerges': boolean,
-  'context.session.duration': number,
   'context.session.start': string,
   'context.todo.count': number,
   'context.webview.host': 'view' | 'editor' | 'panel',
@@ -4424,7 +2698,7 @@ void
   'action': 'manage' | 'connect',
   'connected': boolean,
   // Route requested by the caller for the manual-vs-agent flow; `undefined` when the caller didn't opt in.
-  'context.showOpenInAgent': 'ask' | 'manual' | 'agent',
+  'context.showOpenInAgent': string,
   'items.count': number
 }
 ```
@@ -4439,7 +2713,7 @@ void
   'agent.resolution': 'manual' | 'cancel',
   'connected': boolean,
   // Route requested by the caller for the manual-vs-agent flow; `undefined` when the caller didn't opt in.
-  'context.showOpenInAgent': 'ask' | 'manual' | 'agent',
+  'context.showOpenInAgent': string,
   'items.count': number
 }
 ```
@@ -4450,11 +2724,11 @@ or
 {
   'instance': number,
   'agent.id': string,
-  'agent.kind': 'ide-chat' | 'claude-extension' | 'cli',
+  'agent.kind': string,
   'agent.resolution': 'agent',
   'connected': boolean,
   // Route requested by the caller for the manual-vs-agent flow; `undefined` when the caller didn't opt in.
-  'context.showOpenInAgent': 'ask' | 'manual' | 'agent',
+  'context.showOpenInAgent': string,
   'items.count': number
 }
 ```
@@ -4467,20 +2741,20 @@ or
 {
   'instance': number,
   // Route requested by the caller for the manual-vs-agent flow; `undefined` when the caller didn't opt in.
-  'context.showOpenInAgent': 'ask' | 'manual' | 'agent'
+  'context.showOpenInAgent': string
 }
 ```
 
 ### startReview/opened
 
-> Sent when the launchpad is opened; use `instance` to correlate a StartReview "session"
+> Sent when Start Review is opened; use `instance` to correlate a StartReview "session"
 
 ```typescript
 {
   'instance': number,
   'connected': boolean,
   // Route requested by the caller for the manual-vs-agent flow; `undefined` when the caller didn't opt in.
-  'context.showOpenInAgent': 'ask' | 'manual' | 'agent',
+  'context.showOpenInAgent': string,
   'items.count': number
 }
 ```
@@ -4495,7 +2769,7 @@ or
   'action': 'soft-open',
   'connected': boolean,
   // Route requested by the caller for the manual-vs-agent flow; `undefined` when the caller didn't opt in.
-  'context.showOpenInAgent': 'ask' | 'manual' | 'agent',
+  'context.showOpenInAgent': string,
   [`item.${string}`]: string | number | boolean,
   'items.count': number
 }
@@ -4510,7 +2784,7 @@ or
   'instance': number,
   'connected': boolean,
   // Route requested by the caller for the manual-vs-agent flow; `undefined` when the caller didn't opt in.
-  'context.showOpenInAgent': 'ask' | 'manual' | 'agent',
+  'context.showOpenInAgent': string,
   [`item.${string}`]: string | number | boolean,
   'items.count': number
 }
@@ -4525,7 +2799,7 @@ or
   'instance': number,
   'connected': boolean,
   // Route requested by the caller for the manual-vs-agent flow; `undefined` when the caller didn't opt in.
-  'context.showOpenInAgent': 'ask' | 'manual' | 'agent',
+  'context.showOpenInAgent': string,
   'items.count': number
 }
 ```
@@ -4539,7 +2813,7 @@ or
   'instance': number,
   'connected': boolean,
   // Route requested by the caller for the manual-vs-agent flow; `undefined` when the caller didn't opt in.
-  'context.showOpenInAgent': 'ask' | 'manual' | 'agent',
+  'context.showOpenInAgent': string,
   'items.count': number
 }
 ```
@@ -4554,7 +2828,7 @@ or
   'action': 'connect',
   'connected': boolean,
   // Route requested by the caller for the manual-vs-agent flow; `undefined` when the caller didn't opt in.
-  'context.showOpenInAgent': 'ask' | 'manual' | 'agent',
+  'context.showOpenInAgent': string,
   'items.count': number
 }
 ```
@@ -4569,7 +2843,7 @@ or
   'action': 'manage' | 'connect',
   'connected': boolean,
   // Route requested by the caller for the manual-vs-agent flow; `undefined` when the caller didn't opt in.
-  'context.showOpenInAgent': 'ask' | 'manual' | 'agent',
+  'context.showOpenInAgent': string,
   'items.count': number
 }
 ```
@@ -4584,7 +2858,7 @@ or
   'agent.resolution': 'manual' | 'cancel',
   'connected': boolean,
   // Route requested by the caller for the manual-vs-agent flow; `undefined` when the caller didn't opt in.
-  'context.showOpenInAgent': 'ask' | 'manual' | 'agent',
+  'context.showOpenInAgent': string,
   'items.count': number
 }
 ```
@@ -4595,11 +2869,11 @@ or
 {
   'instance': number,
   'agent.id': string,
-  'agent.kind': 'ide-chat' | 'claude-extension' | 'cli',
+  'agent.kind': string,
   'agent.resolution': 'agent',
   'connected': boolean,
   // Route requested by the caller for the manual-vs-agent flow; `undefined` when the caller didn't opt in.
-  'context.showOpenInAgent': 'ask' | 'manual' | 'agent',
+  'context.showOpenInAgent': string,
   'items.count': number
 }
 ```
@@ -4614,7 +2888,7 @@ or
   'action': 'soft-open',
   'connected': boolean,
   // Route requested by the caller for the manual-vs-agent flow; `undefined` when the caller didn't opt in.
-  'context.showOpenInAgent': 'ask' | 'manual' | 'agent',
+  'context.showOpenInAgent': string,
   [`item.${string}`]: string | number | boolean,
   'items.count': number
 }
@@ -4629,7 +2903,7 @@ or
   'instance': number,
   'connected': boolean,
   // Route requested by the caller for the manual-vs-agent flow; `undefined` when the caller didn't opt in.
-  'context.showOpenInAgent': 'ask' | 'manual' | 'agent',
+  'context.showOpenInAgent': string,
   [`item.${string}`]: string | number | boolean,
   'items.count': number
 }
@@ -4643,20 +2917,20 @@ or
 {
   'instance': number,
   // Route requested by the caller for the manual-vs-agent flow; `undefined` when the caller didn't opt in.
-  'context.showOpenInAgent': 'ask' | 'manual' | 'agent'
+  'context.showOpenInAgent': string
 }
 ```
 
 ### startWork/opened
 
-> Sent when the launchpad is opened; use `instance` to correlate a StartWork "session"
+> Sent when Start Work is opened; use `instance` to correlate a StartWork "session"
 
 ```typescript
 {
   'instance': number,
   'connected': boolean,
   // Route requested by the caller for the manual-vs-agent flow; `undefined` when the caller didn't opt in.
-  'context.showOpenInAgent': 'ask' | 'manual' | 'agent',
+  'context.showOpenInAgent': string,
   'items.count': number
 }
 ```
@@ -4670,7 +2944,7 @@ or
   'instance': number,
   'connected': boolean,
   // Route requested by the caller for the manual-vs-agent flow; `undefined` when the caller didn't opt in.
-  'context.showOpenInAgent': 'ask' | 'manual' | 'agent',
+  'context.showOpenInAgent': string,
   'items.count': number
 }
 ```
@@ -4684,7 +2958,7 @@ or
   'instance': number,
   'connected': boolean,
   // Route requested by the caller for the manual-vs-agent flow; `undefined` when the caller didn't opt in.
-  'context.showOpenInAgent': 'ask' | 'manual' | 'agent',
+  'context.showOpenInAgent': string,
   'items.count': number
 }
 ```
@@ -4699,7 +2973,7 @@ or
   'action': 'connect',
   'connected': boolean,
   // Route requested by the caller for the manual-vs-agent flow; `undefined` when the caller didn't opt in.
-  'context.showOpenInAgent': 'ask' | 'manual' | 'agent',
+  'context.showOpenInAgent': string,
   'items.count': number
 }
 ```
@@ -4710,35 +2984,20 @@ or
 
 ```typescript
 {
-  'account.createdOn': string,
-  'account.id': string,
-  'account.verified': boolean,
-  'subscription.actual.bundle': boolean,
-  'subscription.actual.cancelled': boolean,
-  'subscription.actual.expiresOn': string,
-  'subscription.actual.id': 'community' | 'community-with-account' | 'student' | 'pro' | 'advanced' | 'teams' | 'enterprise',
-  'subscription.actual.nextTrialOptInDate': string,
-  'subscription.actual.organizationId': string,
-  'subscription.actual.startedOn': string,
-  'subscription.actual.trialReactivationCount': number,
-  'subscription.effective.bundle': boolean,
-  'subscription.effective.cancelled': boolean,
-  'subscription.effective.expiresOn': string,
-  'subscription.effective.id': 'community' | 'community-with-account' | 'student' | 'pro' | 'advanced' | 'teams' | 'enterprise',
-  'subscription.effective.nextTrialOptInDate': string,
-  'subscription.effective.organizationId': string,
-  'subscription.effective.startedOn': string,
-  'subscription.effective.trialReactivationCount': number,
+  [`account.${string}`]: string,
+  'subscription.actual.id': 'community',
+  'subscription.effective.id': 'community',
   'subscription.featurePreviews.graph.day': number,
   [`subscription.featurePreviews.graph.day.${number}.startedOn`]: string,
   'subscription.featurePreviews.graph.startedOn': string,
   'subscription.featurePreviews.graph.status': 'eligible' | 'active' | 'expired',
+  'subscription.id': 'community',
   // Promo discount code associated with the upgrade
   'subscription.promo.code': string,
   // Promo key (identifier) associated with the upgrade
   'subscription.promo.key': string,
   'subscription.state': -1 | 0 | 1 | 2 | 3 | 4 | 5 | 6,
-  'subscription.stateString': 'verification' | 'free' | 'trial' | 'trial-expired' | 'trial-reactivation-eligible' | 'paid' | 'unknown'
+  'subscription.stateString': string
 }
 ```
 
@@ -4748,7 +3007,7 @@ or
 
 ```typescript
 {
-  'action': 'manage' | 'sign-up' | 'sign-in' | 'sign-out' | 'manage-subscription' | 'reactivate' | 'refer-friend' | 'resend-verification' | 'pricing' | 'start-preview-trial'
+  'action': 'manage' | 'sign-up' | 'sign-in' | 'sign-out' | 'manage-subscription' | 'reactivate' | 'refer-friend' | 'resend-verification' | 'pricing'
 }
 ```
 
@@ -4775,223 +3034,30 @@ or
 }
 ```
 
-or
-
-```typescript
-{
-  'action': 'start-preview-trial:graph',
-  'day': number,
-  [`day.${number}.startedOn`]: string,
-  'feature': 'graph',
-  'startedOn': string,
-  'status': 'eligible' | 'active' | 'expired'
-}
-```
-
 ### subscription/changed
 
 > Sent when the subscription changes
 
 ```typescript
 {
-  'account.createdOn': string,
-  'account.id': string,
-  'account.verified': boolean,
-  'previous.account.createdOn': string,
-  'previous.account.id': string,
-  'previous.account.verified': boolean,
-  'previous.subscription.actual.bundle': boolean,
-  'previous.subscription.actual.cancelled': boolean,
-  'previous.subscription.actual.expiresOn': string,
-  'previous.subscription.actual.id': 'community' | 'community-with-account' | 'student' | 'pro' | 'advanced' | 'teams' | 'enterprise',
-  'previous.subscription.actual.nextTrialOptInDate': string,
-  'previous.subscription.actual.organizationId': string,
-  'previous.subscription.actual.startedOn': string,
-  'previous.subscription.actual.trialReactivationCount': number,
-  'previous.subscription.effective.bundle': boolean,
-  'previous.subscription.effective.cancelled': boolean,
-  'previous.subscription.effective.expiresOn': string,
-  'previous.subscription.effective.id': 'community' | 'community-with-account' | 'student' | 'pro' | 'advanced' | 'teams' | 'enterprise',
-  'previous.subscription.effective.nextTrialOptInDate': string,
-  'previous.subscription.effective.organizationId': string,
-  'previous.subscription.effective.startedOn': string,
-  'previous.subscription.effective.trialReactivationCount': number,
-  'subscription.actual.bundle': boolean,
-  'subscription.actual.cancelled': boolean,
-  'subscription.actual.expiresOn': string,
-  'subscription.actual.id': 'community' | 'community-with-account' | 'student' | 'pro' | 'advanced' | 'teams' | 'enterprise',
-  'subscription.actual.nextTrialOptInDate': string,
-  'subscription.actual.organizationId': string,
-  'subscription.actual.startedOn': string,
-  'subscription.actual.trialReactivationCount': number,
-  'subscription.effective.bundle': boolean,
-  'subscription.effective.cancelled': boolean,
-  'subscription.effective.expiresOn': string,
-  'subscription.effective.id': 'community' | 'community-with-account' | 'student' | 'pro' | 'advanced' | 'teams' | 'enterprise',
-  'subscription.effective.nextTrialOptInDate': string,
-  'subscription.effective.organizationId': string,
-  'subscription.effective.startedOn': string,
-  'subscription.effective.trialReactivationCount': number,
+  [`account.${string}`]: string,
+  [`previous.account.${string}`]: string,
+  'previous.subscription.actual.id': 'community',
+  'previous.subscription.effective.id': 'community',
+  'previous.subscription.id': 'community',
+  'subscription.actual.id': 'community',
+  'subscription.effective.id': 'community',
   'subscription.featurePreviews.graph.day': number,
   [`subscription.featurePreviews.graph.day.${number}.startedOn`]: string,
   'subscription.featurePreviews.graph.startedOn': string,
   'subscription.featurePreviews.graph.status': 'eligible' | 'active' | 'expired',
+  'subscription.id': 'community',
   // Promo discount code associated with the upgrade
   'subscription.promo.code': string,
   // Promo key (identifier) associated with the upgrade
   'subscription.promo.key': string,
   'subscription.state': -1 | 0 | 1 | 2 | 3 | 4 | 5 | 6,
-  'subscription.stateString': 'verification' | 'free' | 'trial' | 'trial-expired' | 'trial-reactivation-eligible' | 'paid' | 'unknown'
-}
-```
-
-### timeline/action/openInEditor
-
-> Sent when the user clicks on the "Open in Editor" button on the Visual History
-
-```typescript
-{
-  'context.period': 'all' | `${number}|D` | `${number}|M` | `${number}|Y`,
-  'context.scope.hasBase': boolean,
-  'context.scope.hasHead': boolean,
-  'context.scope.type': 'file' | 'folder' | 'repo',
-  'context.showAllBranches': boolean,
-  'context.sliceBy': 'branch' | 'author',
-  'context.webview.host': 'view' | 'editor' | 'panel',
-  'context.webview.id': string,
-  'context.webview.instanceId': string,
-  'context.webview.type': string,
-  'scope.hasBase': boolean,
-  'scope.hasHead': boolean,
-  'scope.type': 'file' | 'folder' | 'repo'
-}
-```
-
-### timeline/closed
-
-```typescript
-{
-  [`context.${string}`]: string | number | boolean,
-  'context.webview.host': 'view' | 'editor' | 'panel',
-  'context.webview.id': string,
-  'context.webview.instanceId': string,
-  'context.webview.type': string
-}
-```
-
-### timeline/commit/selected
-
-> Sent when the user selects (clicks on) a commit on the Visual History
-
-```typescript
-{
-  'context.period': 'all' | `${number}|D` | `${number}|M` | `${number}|Y`,
-  'context.scope.hasBase': boolean,
-  'context.scope.hasHead': boolean,
-  'context.scope.type': 'file' | 'folder' | 'repo',
-  'context.showAllBranches': boolean,
-  'context.sliceBy': 'branch' | 'author',
-  'context.webview.host': 'view' | 'editor' | 'panel',
-  'context.webview.id': string,
-  'context.webview.instanceId': string,
-  'context.webview.type': string
-}
-```
-
-### timeline/config/changed
-
-> Sent when the user changes the configuration of the Visual History (e.g. period, show all branches, etc)
-
-```typescript
-{
-  'context.period': 'all' | `${number}|D` | `${number}|M` | `${number}|Y`,
-  'context.scope.hasBase': boolean,
-  'context.scope.hasHead': boolean,
-  'context.scope.type': 'file' | 'folder' | 'repo',
-  'context.showAllBranches': boolean,
-  'context.sliceBy': 'branch' | 'author',
-  'context.webview.host': 'view' | 'editor' | 'panel',
-  'context.webview.id': string,
-  'context.webview.instanceId': string,
-  'context.webview.type': string,
-  'period': 'all' | `${number}|D` | `${number}|M` | `${number}|Y`,
-  'showAllBranches': boolean,
-  'sliceBy': 'branch' | 'author'
-}
-```
-
-### timeline/editor/changed
-
-> Sent when the editor changes on the Visual History
-
-```typescript
-{
-  'context.period': 'all' | `${number}|D` | `${number}|M` | `${number}|Y`,
-  'context.scope.hasBase': boolean,
-  'context.scope.hasHead': boolean,
-  'context.scope.type': 'file' | 'folder' | 'repo',
-  'context.showAllBranches': boolean,
-  'context.sliceBy': 'branch' | 'author',
-  'context.webview.host': 'view' | 'editor' | 'panel',
-  'context.webview.id': string,
-  'context.webview.instanceId': string,
-  'context.webview.type': string
-}
-```
-
-### timeline/scope/changed
-
-> Sent when the scope (file/folder/repo) changes on the Visual History
-
-```typescript
-{
-  'context.period': 'all' | `${number}|D` | `${number}|M` | `${number}|Y`,
-  'context.scope.hasBase': boolean,
-  'context.scope.hasHead': boolean,
-  'context.scope.type': 'file' | 'folder' | 'repo',
-  'context.showAllBranches': boolean,
-  'context.sliceBy': 'branch' | 'author',
-  'context.webview.host': 'view' | 'editor' | 'panel',
-  'context.webview.id': string,
-  'context.webview.instanceId': string,
-  'context.webview.type': string
-}
-```
-
-### timeline/showAborted
-
-```typescript
-{
-  'context.webview.host': 'view' | 'editor' | 'panel',
-  'context.webview.id': string,
-  'context.webview.instanceId': string,
-  'context.webview.type': string,
-  'duration': number,
-  'loading': boolean
-}
-```
-
-### timeline/shown
-
-> Sent when the Visual History is shown
-
-```typescript
-{
-  'context.config.allowMultiple': boolean,
-  'context.config.editorOpeningBehavior': 'active' | 'auto',
-  'context.config.queryLimit': number,
-  'context.period': 'all' | `${number}|D` | `${number}|M` | `${number}|Y`,
-  'context.scope.hasBase': boolean,
-  'context.scope.hasHead': boolean,
-  'context.scope.type': 'file' | 'folder' | 'repo',
-  'context.showAllBranches': boolean,
-  'context.sliceBy': 'branch' | 'author',
-  'context.webview.host': 'view' | 'editor' | 'panel',
-  'context.webview.id': string,
-  'context.webview.instanceId': string,
-  'context.webview.type': string,
-  'duration': number,
-  'loading': boolean
+  'subscription.stateString': string
 }
 ```
 
@@ -5012,7 +3078,7 @@ or
 
 ```typescript
 {
-  'step': 'welcome-in-trial' | 'welcome-paid' | 'welcome-in-trial-expired-eligible' | 'welcome-in-trial-expired' | 'get-started-community' | 'visualize-code-history' | 'accelerate-pr-reviews' | 'improve-workflows-with-integrations',
+  'step': 'get-started-community' | 'visualize-code-history' | 'improve-workflows-with-integrations',
   'usingFallbackUrl': boolean
 }
 ```
@@ -5025,7 +3091,7 @@ or
 {
   'command': string,
   'detail': string,
-  'name': 'open/ai-custom-instructions-settings' | 'open/ai-enable-setting' | 'open/ai-settings' | 'open/help-center/ai-features' | 'open/help-center/accelerate-pr-reviews' | 'open/help-center/interactive-code-history' | 'open/help-center/community-vs-pro' | 'open/devex-platform' | 'open/drafts' | 'connect/integrations' | 'open/composer' | 'open/graph' | 'open/launchpad' | 'create/worktree' | 'open/help-center' | 'plus/login' | 'plus/sign-up' | 'plus/upgrade' | 'plus/reactivate' | 'open/walkthrough' | 'open/inspect' | 'switch/ai-model',
+  'name': 'open/help-center/interactive-code-history' | 'connect/integrations' | 'create/worktree' | 'open/help-center' | 'open/walkthrough' | 'open/inspect',
   'type': 'command'
 }
 ```
@@ -5035,7 +3101,7 @@ or
 ```typescript
 {
   'detail': string,
-  'name': 'open/ai-custom-instructions-settings' | 'open/ai-enable-setting' | 'open/ai-settings' | 'open/help-center/ai-features' | 'open/help-center/accelerate-pr-reviews' | 'open/help-center/interactive-code-history' | 'open/help-center/community-vs-pro' | 'open/devex-platform' | 'open/drafts' | 'connect/integrations' | 'open/composer' | 'open/graph' | 'open/launchpad' | 'create/worktree' | 'open/help-center' | 'plus/login' | 'plus/sign-up' | 'plus/upgrade' | 'plus/reactivate' | 'open/walkthrough' | 'open/inspect' | 'switch/ai-model',
+  'name': 'open/help-center/interactive-code-history' | 'connect/integrations' | 'create/worktree' | 'open/help-center' | 'open/walkthrough' | 'open/inspect',
   'type': 'url',
   'url': string
 }
@@ -5066,7 +3132,7 @@ or
 ```typescript
 {
   'command': string,
-  'name': 'open/help-center/community-vs-pro' | 'open/composer' | 'open/graph' | 'open/launchpad' | 'open/help-center' | 'plus/login' | 'plus/sign-up' | 'plus/upgrade' | 'plus/reactivate' | 'shown' | 'dismiss' | 'open/home-view',
+  'name': 'open/help-center' | 'shown' | 'dismiss' | 'open/home-view',
   'type': 'command'
 }
 ```
@@ -5075,7 +3141,7 @@ or
 
 ```typescript
 {
-  'name': 'open/help-center/community-vs-pro' | 'open/composer' | 'open/graph' | 'open/launchpad' | 'open/help-center' | 'plus/login' | 'plus/sign-up' | 'plus/upgrade' | 'plus/reactivate' | 'shown' | 'dismiss' | 'open/home-view',
+  'name': 'open/help-center' | 'shown' | 'dismiss' | 'open/home-view',
   'type': 'url',
   'url': string
 }

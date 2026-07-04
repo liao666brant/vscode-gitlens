@@ -12,8 +12,8 @@ export const walkthroughProgressSteps: Record<WalkthroughContextKeys, string> = 
 	homeView: 'Home View',
 	visualizeCodeHistory: 'Visualize Code History',
 	aiFeatures: 'AI Features',
-	gitBlame: 'Inline Blame',
-	prReviews: 'Launchpad',
+	gitBlame: 'File Blame',
+	prReviews: 'Pull Request Reviews',
 	mcpFeatures: 'MCP Features',
 };
 

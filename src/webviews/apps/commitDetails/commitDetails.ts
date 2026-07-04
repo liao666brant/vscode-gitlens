@@ -18,12 +18,11 @@ import { getHost } from '../shared/host/context.js';
 import { RpcController } from '../shared/rpc/rpcController.js';
 import type { ResourceStatus } from '../shared/state/resource.js';
 import { createResource } from '../shared/state/resource.js';
-import type { CommitDetailsActions, CommitDetailsResources } from './actions.js';
 import { createActions } from './actions.js';
+import type { CommitDetailsActions, CommitDetailsResources, ResolvedServices } from './actions.js';
 import type { FileChangeListItemDetail } from './components/gl-details-base.js';
-import type { CreatePatchEventDetail } from './components/gl-inspect-patch.js';
 import { setupSubscriptions } from './events.js';
-import type { CommitDetailsState, ExplainState, GenerateState } from './state.js';
+import type { CommitDetailsState, ExplainState } from './state.js';
 import { createCommitDetailsState } from './state.js';
 import '../shared/components/code-icon.js';
 import '../shared/components/gl-error-banner.js';
@@ -119,7 +118,6 @@ export class GlCommitDetailsApp extends SignalWatcherWebviewApp {
 		this._resources?.wip.dispose();
 		this._resources?.reachability.dispose();
 		this._resources?.explain.dispose();
-		this._resources?.generate.dispose();
 		this._resources = undefined;
 
 		// Disconnect remote signal bridges
@@ -215,23 +213,6 @@ export class GlCommitDetailsApp extends SignalWatcherWebviewApp {
 					return { error: { message: 'Error retrieving content' } };
 				}
 			}),
-			generate: createResource<GenerateState | undefined>(async signal => {
-				const repoPath = s.wipState.get()?.repo?.path ?? s.currentCommit.get()?.repoPath;
-				if (repoPath == null) return undefined;
-
-				try {
-					const result = await inspect.generateDescription(repoPath, signal);
-					if (result.error) {
-						return { error: { message: result.error.message ?? 'Error retrieving content' } };
-					}
-					if (result.title || result.description) {
-						return { title: result.title, description: result.description };
-					}
-					return undefined;
-				} catch (_ex) {
-					return { error: { message: 'Error retrieving content' } };
-				}
-			}),
 		};
 		this._resources = resources;
 
@@ -250,7 +231,7 @@ export class GlCommitDetailsApp extends SignalWatcherWebviewApp {
 			files: files,
 			pullRequests: pullRequests,
 			telemetry: telemetry,
-		};
+		} as unknown as ResolvedServices;
 
 		// Create actions instance with resolved sub-services and resources
 		this._actions = createActions(s, resolvedServices, resources);
@@ -264,7 +245,12 @@ export class GlCommitDetailsApp extends SignalWatcherWebviewApp {
 		// Set up event subscriptions FIRST (so we don't miss events during fetch)
 		this._unsubscribeEvents = await setupSubscriptions(
 			s,
-			{ inspect: inspect, repositories: repositories, config: config, integrations: integrations },
+			{
+				inspect: inspect,
+				repositories: repositories,
+				config: config,
+				integrations: integrations,
+			} as unknown as Parameters<typeof setupSubscriptions>[1],
 			this._actions,
 		);
 
@@ -316,13 +302,11 @@ export class GlCommitDetailsApp extends SignalWatcherWebviewApp {
 			DOM.on('[data-action="details"]', 'click', () => actions.switchMode('commit')),
 			DOM.on('[data-action="search-commit"]', 'click', () => actions.searchCommit()),
 			DOM.on('[data-action="files-layout"]', 'click', e => this.onToggleFilesLayout(e)),
-			DOM.on('[data-action="create-patch"]', 'click', () => this.onCreatePatchFromWip(true)),
 			DOM.on<WebviewPane, WebviewPaneExpandedChangeEventDetail>(
 				'[data-region="pullrequest-pane"]',
 				'expanded-change',
 				e => this.onExpandedChange(e.detail, 'pullrequest'),
 			),
-			DOM.on('[data-action="switch-ai"]', 'click', () => actions.executeCommand('gitlens.ai.switchProvider')),
 		);
 	}
 
@@ -343,7 +327,6 @@ export class GlCommitDetailsApp extends SignalWatcherWebviewApp {
 		if (mode === 'wip') {
 			context = {
 				'context.autolinks': 0,
-				'context.codeSuggestions': s.codeSuggestions.get()?.length ?? 0,
 			};
 		} else {
 			const commit = s.currentCommit.get();
@@ -540,12 +523,10 @@ export class GlCommitDetailsApp extends SignalWatcherWebviewApp {
 		const prefs = s.preferences.get();
 		const org = s.orgSettings.get();
 		const explain = resources?.explain.value.get();
-		const generate = resources?.generate.value.get();
 		const reach = resources?.reachability.value.get();
 		const reachStatus = resources?.reachability.status.get() ?? 'idle';
 		const reachState = mapReachabilityStatus(reachStatus);
 		const searchCtx = s.searchContext.get();
-		const draft = s.draftState.get();
 
 		return html`
 			<div class="commit-detail-panel scrollable">
@@ -618,20 +599,13 @@ export class GlCommitDetailsApp extends SignalWatcherWebviewApp {
 							html`<gl-details-wip-panel
 								.wip=${wip}
 								.pullRequest=${s.pullRequest.get()}
-								.codeSuggestions=${s.codeSuggestions.get()}
 								.files=${wip?.changes?.files}
 								.preferences=${prefs}
 								.showSearchBox=${prefs?.showSearchBox ?? true}
 								.searchBoxFilter=${prefs?.searchBoxFilter ?? true}
 								.orgSettings=${org}
-								.generate=${generate}
 								.isUncommitted=${true}
 								.emptyText=${'No working changes'}
-								.draftState=${draft}
-								@draft-state-changed=${(e: CustomEvent<{ inReview: boolean }>) =>
-									actions?.changeReviewMode(e.detail.inReview)}
-								@create-patch=${(e: CustomEvent<{ checked: boolean | 'staged' }>) =>
-									this.onCreatePatchFromWip(e.detail.checked)}
 								@file-open=${(e: CustomEvent<FileChangeListItemDetail>) =>
 									actions?.openFile(e.detail, e.detail.showOptions)}
 								@file-compare-previous=${(e: CustomEvent<FileChangeListItemDetail>) =>
@@ -661,15 +635,6 @@ export class GlCommitDetailsApp extends SignalWatcherWebviewApp {
 								@file-open-incoming=${(e: CustomEvent<FileChangeListItemDetail>) =>
 									actions?.openConflictChanges(e.detail, 'incoming')}
 								@data-action=${(e: CustomEvent<{ name: string }>) => this.onBranchAction(e.detail.name)}
-								@gl-inspect-create-suggestions=${(e: CustomEvent<CreatePatchEventDetail>) =>
-									actions?.suggestChanges(e.detail)}
-								@gl-patch-generate-title=${() => void actions?.generateDescription()}
-								@gl-show-code-suggestion=${(e: CustomEvent<{ id: string }>) => {
-									const draft = s.codeSuggestions.get()?.find(d => d.id === e.detail.id);
-									if (draft) {
-										actions?.showCodeSuggestion(draft);
-									}
-								}}
 								@gl-patch-file-compare-previous=${(e: CustomEvent<FileChangeListItemDetail>) =>
 									actions?.openFileComparePrevious(e.detail, e.detail.showOptions)}
 								@gl-patch-file-open=${(e: CustomEvent<FileChangeListItemDetail>) =>
@@ -678,7 +643,6 @@ export class GlCommitDetailsApp extends SignalWatcherWebviewApp {
 									actions?.stageFile(e.detail)}
 								@gl-patch-file-unstage=${(e: CustomEvent<FileChangeListItemDetail>) =>
 									actions?.unstageFile(e.detail)}
-								@gl-patch-create-cancelled=${() => actions?.changeReviewMode(false)}
 								@open-multiple-changes=${(e: CustomEvent<OpenMultipleChangesArgs>) =>
 									actions?.openMultipleChanges(e.detail)}
 								@copy-wip-patch=${(e: CustomEvent<CopyWipPatchEventDetail>) =>
@@ -700,13 +664,6 @@ export class GlCommitDetailsApp extends SignalWatcherWebviewApp {
 
 	private onBranchAction(name: string): void {
 		this._actions?.handleBranchAction(name);
-	}
-
-	private onCreatePatchFromWip(checked: boolean | 'staged' = true): void {
-		const wip = this._state.wipState.get();
-		if (wip?.changes == null) return;
-
-		this._actions?.createPatchFromWip(wip.changes, checked);
 	}
 
 	private onToggleFilesLayout(e: MouseEvent): void {

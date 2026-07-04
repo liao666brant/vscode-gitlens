@@ -13,7 +13,6 @@ import type { HierarchicalItem } from '@gitlens/utils/array.js';
 import { makeHierarchical } from '@gitlens/utils/array.js';
 import { filterMap, some } from '@gitlens/utils/iterable.js';
 import { pluralize } from '@gitlens/utils/string.js';
-import { isSubscriptionTrialOrPaidFromState } from '../../../plus/gk/utils/subscription.utils.js';
 import type {
 	ConflictFileInfo,
 	RebaseActiveStatus,
@@ -34,7 +33,6 @@ import {
 	MoveEntryCommand,
 	OpenConflictChangesCommand,
 	OpenConflictFileCommand,
-	RecomposeCommand,
 	ReorderCommand,
 	ResolveAllConflictsCommand,
 	RevealRefCommand,
@@ -1074,10 +1072,6 @@ export class GlRebaseEditor extends GlAppHost<State, RebaseStateProvider> {
 		this._ipc.sendCommand(SearchCommand, undefined);
 	}
 
-	private onRecomposeCommitsClicked() {
-		this._ipc.sendCommand(RecomposeCommand, undefined);
-	}
-
 	private onDocumentKeyDown = (e: KeyboardEvent) => {
 		// Global shortcuts with Ctrl/Cmd
 		if (e.ctrlKey || e.metaKey) {
@@ -1245,13 +1239,8 @@ export class GlRebaseEditor extends GlAppHost<State, RebaseStateProvider> {
 			}
 		}
 
-		// Schedule the initial check once we have a valid planning state and the user is pro.
-		// Covers both first load and the pro-upgrade transition (no editor reopen needed).
-		const canRunInitial =
-			!this.isRebasing &&
-			this.state?.branch != null &&
-			this.state?.onto != null &&
-			isSubscriptionTrialOrPaidFromState(this.state?.subscription?.state);
+		// Schedule the initial check once we have a valid planning state.
+		const canRunInitial = !this.isRebasing && this.state?.branch != null && this.state?.onto != null;
 		if (
 			canRunInitial &&
 			!this._hasCompletedInitialCheck &&
@@ -1330,7 +1319,6 @@ export class GlRebaseEditor extends GlAppHost<State, RebaseStateProvider> {
 						this.ascending,
 						preservesMerges,
 						this.rebaseStatus,
-						this.state.subscription?.state,
 						this._conflictsLoading,
 						this._conflictResult,
 						this._conflictingShas,
@@ -1450,13 +1438,11 @@ export class GlRebaseEditor extends GlAppHost<State, RebaseStateProvider> {
 			return nothing;
 		}
 
-		const isPro = isSubscriptionTrialOrPaidFromState(this.state?.subscription?.state);
 		// When a re-check is running AND we have a prior result, keep showing that result's
 		// colored box with a spin overlay — visual continuity beats flashing into a bland
 		// loading state for 500ms.
-		const status: 'loading' | 'clean' | 'conflicts' | 'error' | 'upgrade' = !isPro
-			? 'upgrade'
-			: loading && result == null
+		const status: 'loading' | 'clean' | 'conflicts' | 'error' =
+			loading && result == null
 				? 'loading'
 				: result?.status === 'error'
 					? 'error'
@@ -1470,7 +1456,6 @@ export class GlRebaseEditor extends GlAppHost<State, RebaseStateProvider> {
 			.result=${result}
 			.stale=${this.conflictDetectionStale || (loading && result != null)}
 			.checking=${loading}
-			.subscriptionState=${this.state.subscription?.state}
 		></gl-rebase-conflict-indicator>`;
 	}
 
@@ -1897,9 +1882,6 @@ export class GlRebaseEditor extends GlAppHost<State, RebaseStateProvider> {
 	}
 
 	private scheduleConflictCheck(trigger: 'initial' | 'todo', immediate = false): void {
-		// Conflict detection is a Pro feature — don't schedule / clear state / fire IPC for non-Pro users
-		if (!isSubscriptionTrialOrPaidFromState(this.state?.subscription?.state)) return;
-
 		if (this._conflictCheckTimer != null) {
 			clearTimeout(this._conflictCheckTimer);
 			this._conflictCheckTimer = undefined;
@@ -2008,7 +1990,6 @@ export class GlRebaseEditor extends GlAppHost<State, RebaseStateProvider> {
 				<span class="shortcut"><kbd>/</kbd><span class="label">search</span></span>
 			</div>
 			<div class="actions">
-				${this.renderRecomposeAction(isActive)}
 				${isActive ? this.renderActiveRebaseActions(hasConflicts) : this.renderStartRebaseActions()}
 			</div>
 		</footer>`;
@@ -2061,28 +2042,6 @@ export class GlRebaseEditor extends GlAppHost<State, RebaseStateProvider> {
 				<span slot="suffix" class="button-shortcut">Ctrl+Enter</span>
 			</gl-button>
 			<gl-button appearance="secondary" @click=${this.onAbortClicked}>Abort</gl-button>`;
-	}
-
-	private renderRecomposeAction(isActive: boolean) {
-		const isInPlace = this.state?.isInPlace ?? false;
-		const message = isInPlace
-			? 'Let AI intelligently reorganize these commits with clearer messages and better logical grouping.'
-			: 'Let AI intelligently reorganize these commits with clearer messages and better logical grouping. <br><br> After recomposition, simply rebase again to apply these commits onto the target branch.';
-
-		return html`<gl-popover-confirm
-			heading="Abort Rebase &amp; Recompose"
-			message=${message}
-			confirm="Abort &gt; Recompose"
-			confirm-variant=${ifDefined(isActive ? 'danger' : undefined)}
-			initial-focus=${isActive ? 'cancel' : 'confirm'}
-			icon=${isActive ? 'error' : 'warning'}
-			@gl-confirm=${this.onRecomposeCommitsClicked}
-		>
-			<gl-button slot="anchor" appearance="secondary" tooltip="Open Commit Composer &amp; Recompose using AI">
-				<code-icon slot=${ifDefined(isActive ? undefined : 'prefix')} icon="sparkle"></code-icon>
-				${isActive ? nothing : 'Recompose...'}
-			</gl-button>
-		</gl-popover-confirm>`;
 	}
 
 	private renderActiveRebaseActions(hasConflicts: boolean) {

@@ -7,10 +7,9 @@
  *
  * Domain-scoped contexts (shared across webviews):
  * - integrationsContext — integration connection state
- * - aiContext — AI model and MCP state
+ * - aiContext — AI model state
  * - onboardingContext — banner visibility and walkthrough progress
  * - commandsContext — command dispatch service
- * - launchpadContext — launchpad summary and service
  * - subscriptionContext — host-pushed subscription signals
  *
  * Home-specific context:
@@ -20,12 +19,11 @@
 import type { Remote } from '@eamodio/supertalk';
 import { createContext } from '@lit/context';
 import type { HomeServices } from '../../home/homeService.js';
-import type { AgentSessionState, OverviewFilters } from '../../home/protocol.js';
+import type { OverviewFilters } from '../../home/protocol.js';
 import type { RepositoriesState } from '../../rpc/services/types.js';
 import type { AIContextState } from '../shared/contexts/ai.js';
 import type { CommandsState } from '../shared/contexts/commands.js';
 import type { IntegrationsState } from '../shared/contexts/integrations.js';
-import type { LaunchpadState } from '../shared/contexts/launchpad.js';
 import type { OnboardingState } from '../shared/contexts/onboarding.js';
 import type { HostStorage } from '../shared/host/storage.js';
 import { createStateGroup } from '../shared/state/signals.js';
@@ -79,9 +77,6 @@ export function createHomeState(storage?: HostStorage) {
 		newInstall: signal(false),
 		/** Host application name. */
 		hostAppName: signal(''),
-		/** Active agent sessions. */
-		agentSessions: signal<AgentSessionState[]>([]),
-
 		/** Resolved `home` sub-service from RPC. Available after RPC connection. Set once, not reactive. */
 		homeService: undefined as ResolvedHome | undefined,
 
@@ -113,6 +108,5 @@ export interface HomeRootState {
 	integrations: IntegrationsState;
 	ai: AIContextState;
 	onboarding: OnboardingState;
-	launchpad: LaunchpadState;
 	commands: CommandsState;
 }

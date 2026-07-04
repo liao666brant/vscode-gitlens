@@ -1,5 +1,5 @@
 // The webview `style-src` CSP forbids inline styles (no `'unsafe-inline'`), so any `style="…"`
-// attribute the browser parses is blocked. Host-generated markdown (commit hovers, autolinks)
+// attribute the browser parses is blocked. Host-generated markdown (commit details, autolinks)
 // embeds inline-styled `<span>`s for VS Code's native renderer; when rendered here via
 // `unsafeHTML` those attributes trip the CSP. These helpers move such styles off the `style`
 // attribute and re-apply them through CSSOM, which the CSP does not restrict — the same approach

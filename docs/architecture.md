@@ -47,20 +47,17 @@ pnpm run watch          # Watch mode (includes E2E tests)
 - Manages 30+ services with lazy initialization
 - All services registered in constructor and exposed as getters
 - Handles lifecycle, configuration changes, and service coordination
-- Example services: GitProviderService, SubscriptionService, TelemetryService, AIProviderService
+- Example services: GitProviderService, TelemetryService, WebviewsController
 
 ### 2. Provider Pattern for Git Operations
 
-- `GitProviderService` manages multiple Git providers (local, remote, GitHub, etc.)
+- `GitProviderService` manages Git providers for local and supported virtual repositories.
 - Allows environment-specific implementations:
   - **LocalGitProvider** (`src/env/node/git/localGitProvider.ts`): Executes Git via `child_process` for Node.js
-  - **GitHubGitProvider** (`src/plus/integrations/providers/github/githubGitProvider.ts`): Uses GitHub API for browser
 - Each provider implements the `GitProvider` interface
   - Both providers use a shared set of sub-providers (in `src/git/sub-providers/`) for specific Git operations
   - LocalGitProvider uses 15 specialized sub-providers (in `src/env/node/git/sub-providers/`):
     - `branches`, `commits`, `config`, `contributors`, `diff`, `graph`, `patch`, `refs`, `remotes`, `revision`, `staging`, `stash`, `status`, `tags`, `worktrees`
-  - GitHubGitProvider uses 11 specialized sub-providers (in `src/plus/integrations/providers/github/sub-providers/`):
-    - `branches`, `commits`, `config`, `contributors`, `diff`, `graph`, `refs`, `remotes`, `revision`, `status`, `tags`
 
 ### 3. Layered Architecture
 
@@ -69,9 +66,9 @@ VS Code Extension API
     ↓
 Commands (100+ command handlers in src/commands/)
     ↓
-Controllers (Webviews, Views, Annotations, CodeLens)
+Controllers (Webviews, Views, Annotations)
     ↓
-Services (Git, Telemetry, Storage, Integrations, AI, Subscription)
+Services (Git, Telemetry, Storage)
     ↓
 Git Providers (LocalGitProvider, GitHubGitProvider, etc.)
     ↓
@@ -88,9 +85,7 @@ Git Execution (Node: child_process | Browser: APIs (GitHub))
 - **Host-Guest Communication**: IPC between extension host and webviews
 - Webviews built with **Lit Elements only** for reactive UI components
 - **State Management**: Context providers with Lit reactive patterns and signals
-- **Major webviews**:
-  - **Community**: Commit Details, Rebase, Settings
-  - **Pro** (`apps/plus/`): Home (includes Launchpad), Commit Graph, Timeline, Patch Details, Commit Composer
+- **Major webviews**: Commit Details, Home, Rebase, Settings, Welcome
 - Webviews bundled separately from extension (separate webpack config)
 
 ### 5. Caching Strategy
@@ -106,11 +101,8 @@ Git Execution (Node: child_process | Browser: APIs (GitHub))
 **Core Services** (accessed via Container)
 
 - **GitProviderService** - Core Git operations and repository management
-- **SubscriptionService** - GitLens Pro subscription and account management
-- **IntegrationService** - GitHub/GitLab/Bitbucket/Azure DevOps integrations
-- **AIProviderService** - AI features (commit messages, explanations, changelogs)
 - **TelemetryService** - Usage analytics and error reporting
-- **WebviewsController** - Manages all webview panels (Graph, Home, Settings, etc.)
+- **WebviewsController** - Manages webview panels
 - **AutolinksProvider** - Auto-linking issues/PRs in commit messages
 - **DocumentTracker** - Tracks file changes and editor state
 - **FileAnnotationController** - Blame, heatmap, and change annotations
@@ -153,9 +145,7 @@ The extension supports both Node.js (desktop) and browser (web) environments:
 
 **Browser Environment** (`src/env/browser/`)
 
-- Uses GitHub API for Git operations
-- Virtual file system via VS Code's File System API
-- Limited to supported Git hosting providers
+- Uses VS Code browser APIs and virtual file systems
 - WebWorker support for browser extension compatibility
 
 **Build Configuration**
@@ -180,20 +170,6 @@ dist/
     ├── *.js                # Individual webview apps
     └── media/              # Webview assets
 ```
-
-## Pro Features (Plus)
-
-Files in or under directories named "plus" fall under `LICENSE.plus` (non-OSS):
-
-- **Commit Graph** - Visual commit history with advanced actions
-- **Worktrees** - Multi-branch workflow support
-- **Launchpad** - PR/issue management hub
-- **Visual File History** - Timeline visualization
-- **Cloud Patches** - Private code sharing
-- **Code Suggest** - In-IDE code suggestions for PRs
-- **AI Features** - Commit generation, explanations using various providers
-
-Pro features integrate with GitKraken accounts and require authentication via SubscriptionService.
 
 ## Webview Development
 
@@ -258,8 +234,6 @@ Strongly typed Git entities throughout the codebase (located in `src/git/models/
    - Shared sub-operations: `src/git/sub-providers/`
    - For Local (Node.js): `src/env/node/git/localGitProvider.ts`
    - For Local sub-operations: `src/env/node/git/sub-providers/`
-   - For GitHub (browser): `src/plus/integrations/providers/github/githubGitProvider.ts`
-   - For GitHub sub-operations: `src/plus/integrations/providers/github/sub-providers/`
 2. Update provider method with new logic
 3. Update Git command execution in `src/env/node/git/git.ts` if needed (for LocalGitProvider)
 4. Update parsers in `src/git/parsers/` if output format changes

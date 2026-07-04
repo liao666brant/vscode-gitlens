@@ -58,7 +58,6 @@ export class GutterHeatmapBlameAnnotationProvider extends BlameAnnotationProvide
 			sw?.stop({ suffix: ' to apply all heatmap annotations' });
 		}
 
-		// this.registerHoverProviders(configuration.get('hovers.annotations'));
 		return true;
 	}
 }

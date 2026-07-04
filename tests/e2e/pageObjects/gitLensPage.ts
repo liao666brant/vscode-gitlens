@@ -1,5 +1,5 @@
 import type { FrameLocator, Locator } from '@playwright/test';
-import type { SimulationState } from '../../../src/plus/gk/__debug__accountDebug.js';
+import type { SimulationState } from '../../../src/community/stubs/pro.js';
 import { MaxTimeout, ShortTimeout } from '../baseTest.js';
 import { VSCodePage } from './vscodePage.js';
 

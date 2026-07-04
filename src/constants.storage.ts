@@ -1,4 +1,17 @@
-import type { AIProviderAndModel, AIProviders } from '@gitlens/ai/constants.js';
+import type {
+	AIProviderAndModel,
+	AIProviders,
+	GraphDisplayMode,
+	GraphSidebarPanel,
+	GraphTreemapMode,
+	IntegrationConnectedKey,
+	OrganizationSettings,
+	PaidSubscriptionPlanIds,
+	Subscription,
+	TimelinePeriod,
+	TimelineSliceBy,
+	VisualizationMode,
+} from './community/stubs/pro.js';
 import type { GitRevisionRangeNotation } from '@gitlens/git/models/revision.js';
 import type { GraphBranchesVisibility, ViewShowBranchComparison } from './config.js';
 import type { IntegrationIds } from './constants.integrations.js';
@@ -8,17 +21,7 @@ import type { GroupableTreeViewTypes, TreeViewTypes } from './constants.views.js
 import type { Environment } from './container.js';
 import type { FeaturePreviews } from './features.js';
 import type { OnboardingStorage } from './onboarding/models/onboarding.js';
-import type { OrganizationSettings } from './plus/gk/models/organization.js';
-import type { PaidSubscriptionPlanIds, Subscription } from './plus/gk/models/subscription.js';
-import type { IntegrationConnectedKey } from './plus/integrations/models/integration.js';
 import type { DeepLinkServiceState } from './uris/deepLinks/deepLink.js';
-import type {
-	GraphDisplayMode,
-	GraphSidebarPanel,
-	GraphTreemapMode,
-	VisualizationMode,
-} from './webviews/plus/graph/protocol.js';
-import type { TimelinePeriod, TimelineSliceBy } from './webviews/plus/timeline/protocol.js';
 import type { OverviewRecentThreshold } from './webviews/shared/overviewBranches.js';
 
 export type SecretKeys =
@@ -103,10 +106,6 @@ interface GlobalStorageCore {
 	'product:config': Stored<StoredProductConfig>;
 	'confirm:draft:storage': boolean;
 	'home:sections:collapsed': string[];
-	'launchpad:groups:collapsed': StoredLaunchpadGroup[];
-	'launchpad:indicator:hasLoaded': boolean;
-	'launchpad:indicator:hasInteracted': string;
-	'launchpadView:groups:expanded': StoredLaunchpadGroup[];
 	'graph:searchMode': StoredGraphSearchMode;
 	'graph:useNaturalLanguageSearch': boolean;
 	'integrations:configured': StoredIntegrationConfigurations;
@@ -122,7 +121,6 @@ type GlobalStorageDynamic = Record<`plus:preview:${FeaturePreviews}:usages`, Sto
 	Record<`provider:authentication:skip:${string}`, boolean> &
 	Record<`gk:promo:${string}:ai:allAccess:dismissed`, boolean> &
 	Record<`gk:promo:${string}:ai:allAccess:notified`, boolean> &
-	Record<`gk:${string}:checkin`, Stored<StoredGKCheckInResponse>> &
 	Record<`gk:${string}:organizations`, Stored<StoredOrganization[]>> &
 	Record<`jira:${string}:organizations`, Stored<StoredJiraOrganization[] | undefined>> &
 	Record<`jira:${string}:projects`, Stored<StoredJiraProject[] | undefined>> &
@@ -234,59 +232,6 @@ export interface Stored<T, SchemaVersion extends number = 1> {
 	data: T;
 	timestamp?: number;
 }
-
-export type StoredGKLicenses = Partial<Record<StoredGKLicenseType, StoredGKLicense>>;
-
-export interface StoredGKCheckInResponse {
-	user: StoredGKUser;
-	licenses: {
-		paidLicenses: StoredGKLicenses;
-		effectiveLicenses: StoredGKLicenses;
-	};
-}
-
-export interface StoredGKUser {
-	id: string;
-	name: string;
-	email: string;
-	status: 'activated' | 'pending';
-	createdDate: string;
-	firstGitLensCheckIn?: string;
-}
-
-export interface StoredGKLicense {
-	latestStatus: 'active' | 'canceled' | 'cancelled' | 'expired' | 'in_trial' | 'non_renewing' | 'trial';
-	latestStartDate: string;
-	latestEndDate: string;
-	organizationId: string | undefined;
-	reactivationCount?: number;
-}
-
-export type StoredGKLicenseType =
-	| 'gitlens-pro'
-	| 'gitlens-advanced'
-	| 'gitlens-teams'
-	| 'gitlens-hosted-enterprise'
-	| 'gitlens-self-hosted-enterprise'
-	| 'gitlens-standalone-enterprise'
-	| 'bundle-pro'
-	| 'bundle-advanced'
-	| 'bundle-teams'
-	| 'bundle-hosted-enterprise'
-	| 'bundle-self-hosted-enterprise'
-	| 'bundle-standalone-enterprise'
-	| 'gitkraken_v1-pro'
-	| 'gitkraken_v1-advanced'
-	| 'gitkraken_v1-teams'
-	| 'gitkraken_v1-hosted-enterprise'
-	| 'gitkraken_v1-self-hosted-enterprise'
-	| 'gitkraken_v1-standalone-enterprise'
-	| 'gitkraken-v1-pro'
-	| 'gitkraken-v1-advanced'
-	| 'gitkraken-v1-teams'
-	| 'gitkraken-v1-hosted-enterprise'
-	| 'gitkraken-v1-self-hosted-enterprise'
-	| 'gitkraken-v1-standalone-enterprise';
 
 export interface StoredOrganization {
 	id: string;
@@ -533,18 +478,6 @@ export type StoredSearchAndCompareItem = StoredComparison | StoredSearch;
 export type StoredSearchAndCompareItems = Record<string, StoredSearchAndCompareItem>;
 export type StoredStarred = Record<string, boolean>;
 export type StoredRecentUsage = Record<string, number>;
-
-export type StoredLaunchpadGroup =
-	| 'current-branch'
-	| 'pinned'
-	| 'mergeable'
-	| 'blocked'
-	| 'follow-up'
-	| 'needs-review'
-	| 'waiting-for-review'
-	| 'draft'
-	| 'other'
-	| 'snoozed';
 
 export interface StoredFeaturePreviewUsagePeriod {
 	startedOn: string;

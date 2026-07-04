@@ -1,9 +1,8 @@
 ﻿import type { Uri } from 'vscode';
 import type { GitWorktree } from '@gitlens/git/models/worktree.js';
-import { proBadge, proBadgeSuperscript } from '../../constants.js';
 import type { Container } from '../../container.js';
 import type { GlRepository } from '../../git/models/repository.js';
-import type { ViewsWithRepositoryFolders } from '../../views/viewBase.js';
+import type { ViewsWithWorktrees } from '../../views/viewBase.js';
 import type { StepsContext } from '../quick-wizard/models/steps.js';
 import type { SubcommandState } from '../quick-wizard/quickCommandWithSubcommands.js';
 import { QuickCommandWithSubcommands } from '../quick-wizard/quickCommandWithSubcommands.js';
@@ -31,7 +30,7 @@ type Subcommands = State['subcommand'];
 
 export interface WorktreeContext<TStepNames extends StepNames = StepNames> extends StepsContext<TStepNames> {
 	repos: GlRepository[];
-	associatedView: ViewsWithRepositoryFolders;
+	associatedView: ViewsWithWorktrees;
 	defaultUri?: Uri;
 	pickedRootFolder?: Uri;
 	pickedSpecificFolder?: Uri;
@@ -48,8 +47,8 @@ export interface WorktreeGitCommandArgs {
 
 export class WorktreeGitCommand extends QuickCommandWithSubcommands<Subcommands, State, WorktreeContext> {
 	constructor(container: Container, args?: WorktreeGitCommandArgs) {
-		super(container, 'worktree', 'worktree', `工作树 ${proBadgeSuperscript}`, {
-			description: `${proBadge}\u00a0\u00a0打开、创建或删除工作树`,
+		super(container, 'worktree', 'worktree', '工作树', {
+			description: '打开、创建或删除工作树',
 		});
 
 		this.initialState = { confirm: args?.confirm, ...args?.state };
@@ -60,7 +59,7 @@ export class WorktreeGitCommand extends QuickCommandWithSubcommands<Subcommands,
 			...context,
 			container: this.container,
 			repos: this.container.git.openRepositories,
-			associatedView: this.container.views.worktrees,
+			associatedView: this.container.views.repositories,
 			showTags: false,
 			title: this.title,
 		};

@@ -2,7 +2,6 @@ import type { ExtensionContext } from 'vscode';
 import { version as codeVersion, env, ExtensionMode, LogLevel, Uri, window, workspace } from 'vscode';
 import { isWeb } from '@env/platform.js';
 import { defaultResolver as envDefaultResolver } from '@env/resolver.js';
-import { getBranchNameWithoutRemote } from '@gitlens/git/utils/branch.utils.js';
 import { setAbbreviatedShaLength } from '@gitlens/git/utils/revision.utils.js';
 import { setDefaultDateLocales } from '@gitlens/utils/date.js';
 import { setDefaultResolver } from '@gitlens/utils/decorators/resolver.js';
@@ -15,28 +14,14 @@ import { flatten } from '@gitlens/utils/object.js';
 import { Stopwatch } from '@gitlens/utils/stopwatch.js';
 import { compare, fromString, satisfies } from '@gitlens/utils/version.js';
 import { Api } from './api/api.js';
-import type {
-	CreatePullRequestActionContext,
-	GitLensApi,
-	OpenIssueActionContext,
-	OpenPullRequestActionContext,
-} from './api/gitlens.d.js';
-import type { CreatePullRequestOnRemoteCommandArgs } from './commands/createPullRequestOnRemote.js';
+import type { GitLensApi, OpenIssueActionContext } from './api/gitlens.d.js';
 import type { OpenIssueOnRemoteCommandArgs } from './commands/openIssueOnRemote.js';
-import type { OpenPullRequestOnRemoteCommandArgs } from './commands/openPullRequestOnRemote.js';
 import { trackableSchemes } from './constants.js';
 import { SyncedStorageKeys } from './constants.storage.js';
 import { Container } from './container.js';
 import { isGitUri } from './git/gitUri.js';
-import {
-	showCursorMcpCleanupMessage,
-	showDebugLoggingWarningMessage,
-	showMcpMessage,
-	showPreReleaseExpiredErrorMessage,
-	showWhatsNewMessage,
-} from './messages.js';
+import { showDebugLoggingWarningMessage, showPreReleaseExpiredErrorMessage, showWhatsNewMessage } from './messages.js';
 import { registerPartnerActionRunners } from './partners.js';
-import { needsCursorMcpCleanupNotice } from './plus/gk/utils/-webview/mcp.utils.js';
 import { executeCommand, registerCommands } from './system/-webview/command.js';
 import { configuration, Configuration } from './system/-webview/configuration.js';
 import { setContext } from './system/-webview/context.js';
@@ -215,7 +200,6 @@ export async function activate(context: ExtensionContext): Promise<GitLensApi | 
 		}
 
 		void showWhatsNew(container, gitlensVersion, prerelease, previousVersion);
-		showMcp(container, gitlensVersion, previousVersion);
 
 		void storage.store(prerelease ? 'preVersion' : 'version', gitlensVersion).catch();
 
@@ -253,7 +237,9 @@ export async function activate(context: ExtensionContext): Promise<GitLensApi | 
 	await container.ready();
 
 	// TODO@eamodio do we want to capture any vscode settings that are relevant to GitLens?
-	const flatCfg = flatten(configuration.getAll(true), 'config', { joinArrays: true });
+	const flatCfg = flatten(configuration.getAll(true) as unknown as Record<string, unknown>, 'config', {
+		joinArrays: true,
+	});
 
 	container.telemetry.setGlobalAttributes({
 		debugging: container.debugging,
@@ -316,35 +302,6 @@ function setKeysForSync(context: ExtensionContext, ...keys: (SyncedStorageKeys |
 
 function registerBuiltInActionRunners(container: Container): void {
 	container.context.subscriptions.push(
-		container.actionRunners.registerBuiltIn<CreatePullRequestActionContext>('createPullRequest', {
-			label: ctx => `在 ${ctx.remote?.provider?.name ?? '远程'} 上创建拉取请求`,
-			run: async ctx => {
-				if (ctx.type !== 'createPullRequest') return;
-
-				void (await executeCommand<CreatePullRequestOnRemoteCommandArgs>('gitlens.createPullRequestOnRemote', {
-					base: undefined,
-					compare: ctx.branch.isRemote
-						? getBranchNameWithoutRemote(ctx.branch.name)
-						: ctx.branch.upstream
-							? getBranchNameWithoutRemote(ctx.branch.upstream)
-							: ctx.branch.name,
-					remote: ctx.remote?.name ?? '',
-					repoPath: ctx.repoPath,
-					describeWithAI: ctx.describeWithAI,
-					source: ctx.source,
-				}));
-			},
-		}),
-		container.actionRunners.registerBuiltIn<OpenPullRequestActionContext>('openPullRequest', {
-			label: ctx => `在 ${ctx.provider?.name ?? '远程'} 上打开拉取请求`,
-			run: async ctx => {
-				if (ctx.type !== 'openPullRequest') return;
-
-				void (await executeCommand<OpenPullRequestOnRemoteCommandArgs>('gitlens.openPullRequestOnRemote', {
-					pr: { url: ctx.pullRequest.url },
-				}));
-			},
-		}),
 		container.actionRunners.registerBuiltIn<OpenIssueActionContext>('openIssue', {
 			label: ctx => `在 ${ctx.provider?.name ?? '远程'} 上打开议题`,
 			run: async ctx => {
@@ -411,23 +368,4 @@ async function showWhatsNew(
 			container.context.subscriptions.push(disposable);
 		}
 	}
-}
-
-function showMcp(container: Container, version: string, previousVersion: string | undefined): void {
-	if (needsCursorMcpCleanupNotice(container)) {
-		void showCursorMcpCleanupMessage();
-		return;
-	}
-
-	if (
-		isWeb ||
-		previousVersion == null ||
-		version === previousVersion ||
-		compare(version, previousVersion) !== 1 ||
-		satisfies(fromString(previousVersion), '>= 17.5')
-	) {
-		return;
-	}
-
-	void showMcpMessage(container, version);
 }

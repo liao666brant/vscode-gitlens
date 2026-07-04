@@ -7,17 +7,13 @@ import type { GitRemote } from '@gitlens/git/models/remote.js';
 import { missingRepositoryId } from '@gitlens/git/models/repositoryIdentities.js';
 import type { GitTag } from '@gitlens/git/models/tag.js';
 import { getBranchNameWithoutRemote } from '@gitlens/git/utils/branch.utils.js';
-import { createReference } from '@gitlens/git/utils/reference.utils.js';
 import { parseGitRemoteUrl } from '@gitlens/git/utils/remote.utils.js';
 import { isSha } from '@gitlens/git/utils/revision.utils.js';
-import { fromBase64ToString } from '@gitlens/utils/base64.js';
 import { trace } from '@gitlens/utils/decorators/log.js';
 import { once } from '@gitlens/utils/event.js';
 import { Logger } from '@gitlens/utils/logger.js';
 import { getScopedLogger } from '@gitlens/utils/logger.scoped.js';
 import { maybeUri, normalizePath } from '@gitlens/utils/path.js';
-import type { OpenChatActionCommandArgs } from '../../commands/openChatAction.js';
-import type { OpenCloudPatchCommandArgs } from '../../commands/patches.js';
 import { isIntegrationId, isSupportedCloudIntegrationId } from '../../constants.integrations.js';
 import type { StoredDeepLinkContext, StoredNamedRef } from '../../constants.storage.js';
 import type { Container } from '../../container.js';
@@ -25,9 +21,7 @@ import { openComparisonChanges, openFileAtRevision } from '../../git/actions/com
 import { executeGitCommand } from '../../git/actions.js';
 import type { GlRepository, RepositoryChangeEvent } from '../../git/models/repository.js';
 import { isWalkthroughSupported } from '../../onboarding/walkthroughStateProvider.js';
-import { isAgentDescriptor } from '../../plus/agents/agentDescriptor.js';
-import { ensureAccount } from '../../plus/gk/utils/-webview/acount.utils.js';
-import { ensurePaidPlan } from '../../plus/gk/utils/-webview/plus.utils.js';
+import { ensureAccount, ensurePaidPlan } from '../../community/stubs/pro.js';
 import { createQuickPickSeparator } from '../../quickpicks/items/common.js';
 import { executeCommand } from '../../system/-webview/command.js';
 import { configuration } from '../../system/-webview/configuration.js';
@@ -36,7 +30,6 @@ import type { OpenWorkspaceLocation } from '../../system/-webview/vscode/workspa
 import { openWorkspace } from '../../system/-webview/vscode/workspaces.js';
 import { showInspectView } from '../../webviews/commitDetails/actions.js';
 import type { ShowWipArgs } from '../../webviews/commitDetails/protocol.js';
-import type { ShowInCommitGraphCommandArgs } from '../../webviews/plus/graph/registration.js';
 import type { DeepLink, DeepLinkProgress, DeepLinkRepoOpenType, DeepLinkServiceContext, UriTypes } from './deepLink.js';
 import {
 	AccountDeepLinkTypes,
@@ -244,10 +237,6 @@ export class DeepLinkService implements Disposable {
 
 				return DeepLinkServiceAction.DeepLinkErrored;
 			}
-			case DeepLinkServiceState.StartReview:
-				return DeepLinkServiceAction.StartReview;
-			case DeepLinkServiceState.StartWork:
-				return DeepLinkServiceAction.StartWork;
 			default:
 				return DeepLinkServiceAction.DeepLinkErrored;
 		}
@@ -348,12 +337,6 @@ export class DeepLinkService implements Disposable {
 		} catch {
 			Logger.warn(scope, `Failed to parse pending deep link issue data: ${pendingDeepLink.issueData}`);
 		}
-		// Agent descriptor and worktree path for Start Work / Start Review chat actions that
-		// were stored with an explicit agent selection (see `storeChatActionDeepLink`).
-		this._context.agent = isAgentDescriptor(pendingDeepLink.agent) ? pendingDeepLink.agent : undefined;
-		this._context.worktreePath =
-			typeof pendingDeepLink.worktreePath === 'string' ? pendingDeepLink.worktreePath : undefined;
-
 		if (this.container.git.isDiscoveringRepositories) {
 			await this.container.git.isDiscoveringRepositories;
 		}
@@ -611,8 +594,7 @@ export class DeepLinkService implements Disposable {
 	}
 
 	// TODO @axosoft-ramint: Move all the logic for matching a repo, prompting to add repo, matching remote, etc. for a target (branch, PR, etc.)
-	// to a separate service where it can be used outside of the context of deep linking. Then the deep link service should leverage it,
-	// and we should stop using deep links to process things like Launchpad switch actions, Open in Worktree command, etc.
+	// to a separate service where it can be used outside of the context of deep linking.
 	@trace()
 	private async processDeepLink(
 		initialAction: DeepLinkServiceAction = DeepLinkServiceAction.DeepLinkEventFired,
@@ -739,7 +721,7 @@ export class DeepLinkService implements Disposable {
 					if (
 						!(await ensurePaidPlan(
 							this.container,
-							`Opening ${deepLinkTypeToString(targetType)} links is a Pro feature.`,
+							`Opening ${deepLinkTypeToString(targetType)} links is unavailable in this community build.`,
 							{
 								source: 'deeplink',
 								detail: {
@@ -751,7 +733,7 @@ export class DeepLinkService implements Disposable {
 						))
 					) {
 						action = DeepLinkServiceAction.DeepLinkErrored;
-						message = 'GitLens Pro is required to open link';
+						message = 'This link targets a feature that is unavailable in this community build';
 						break;
 					}
 
@@ -1215,33 +1197,8 @@ export class DeepLinkService implements Disposable {
 					break;
 				}
 				case DeepLinkServiceState.OpenGraph: {
-					if (!repo || !targetType) {
-						action = DeepLinkServiceAction.DeepLinkErrored;
-						message = 'Missing repository or target type.';
-						break;
-					}
-
-					if (targetType === DeepLinkType.Repository) {
-						void (await executeCommand<ShowInCommitGraphCommandArgs>('gitlens.showInCommitGraph', {
-							repository: repo,
-							source: { source: 'deeplink' },
-						}));
-						action = DeepLinkServiceAction.DeepLinkResolved;
-						break;
-					}
-
-					if (!targetSha) {
-						action = DeepLinkServiceAction.DeepLinkErrored;
-						message = `Cannot find target ${targetType} in repo.`;
-						break;
-					}
-
-					void (await executeCommand<ShowInCommitGraphCommandArgs>('gitlens.showInCommitGraph', {
-						ref: createReference(targetSha, repo.path),
-						source: { source: 'deeplink' },
-					}));
-
-					action = DeepLinkServiceAction.DeepLinkResolved;
+					action = DeepLinkServiceAction.DeepLinkErrored;
+					message = 'Commit Graph is not available in this build.';
 					break;
 				}
 				case DeepLinkServiceState.OpenComparison: {
@@ -1273,41 +1230,13 @@ export class DeepLinkService implements Disposable {
 					break;
 				}
 				case DeepLinkServiceState.OpenDraft: {
-					if (!targetId) {
-						action = DeepLinkServiceAction.DeepLinkErrored;
-						message = 'Missing cloud patch id.';
-						break;
-					}
-
-					const type = this._context.params?.get('type');
-					let prEntityId = this._context.params?.get('prEntityId') ?? undefined;
-					if (prEntityId != null) {
-						prEntityId = fromBase64ToString(prEntityId);
-					}
-
-					void (await executeCommand<OpenCloudPatchCommandArgs>('gitlens.openCloudPatch', {
-						type: type === 'suggested_pr_change' ? 'code_suggestion' : 'patch',
-						id: targetId,
-						patchId: secondaryTargetId,
-						prEntityId: prEntityId,
-					}));
-					action = DeepLinkServiceAction.DeepLinkResolved;
+					action = DeepLinkServiceAction.DeepLinkErrored;
+					message = 'Patch links are not available in this community build.';
 					break;
 				}
 				case DeepLinkServiceState.OpenWorkspace: {
-					if (!mainId) {
-						action = DeepLinkServiceAction.DeepLinkErrored;
-						message = 'Missing workspace id.';
-						break;
-					}
-
-					await this.container.views.workspaces.revealWorkspaceNode(mainId, {
-						select: true,
-						focus: true,
-						expand: true,
-					});
-
-					action = DeepLinkServiceAction.DeepLinkResolved;
+					action = DeepLinkServiceAction.DeepLinkErrored;
+					message = 'Cloud Workspaces are not available in this build.';
 					break;
 				}
 				case DeepLinkServiceState.OpenFile: {
@@ -1503,7 +1432,7 @@ export class DeepLinkService implements Disposable {
 						type: 'wip',
 						inReview: this._context.action === DeepLinkActionType.SwitchToAndSuggestPullRequest,
 						repository: repo,
-						source: 'launchpad',
+						source: 'deeplink',
 					} satisfies ShowWipArgs);
 					const { params } = this._context;
 					if (
@@ -1559,17 +1488,6 @@ export class DeepLinkService implements Disposable {
 					if (mainId === DeepLinkCommandType.Walkthrough && !isWalkthroughSupported()) {
 						action = DeepLinkServiceAction.DeepLinkErrored;
 						message = 'Invalid command type.';
-						break;
-					}
-
-					// Handle special command types that need custom processing
-					if (mainId === DeepLinkCommandType.StartReview) {
-						action = DeepLinkServiceAction.StartReview;
-						break;
-					}
-
-					if (mainId === DeepLinkCommandType.StartWork) {
-						action = DeepLinkServiceAction.StartWork;
 						break;
 					}
 
@@ -1648,70 +1566,13 @@ export class DeepLinkService implements Disposable {
 					break;
 				}
 				case DeepLinkServiceState.StartReview: {
-					// Get PR data from context
-					const pr = this._context.prData;
-					if (!pr) {
-						action = DeepLinkServiceAction.DeepLinkErrored;
-						message = 'Missing PR data.';
-						break;
-					}
-
-					// Open all the changes in the PR
-					const prHeadRef = pr.refs?.head;
-					const prBaseRef = pr.refs?.base;
-					if (repoPath && prHeadRef && prBaseRef) {
-						await openComparisonChanges(
-							this.container,
-							{
-								repoPath: repoPath,
-								lhs: prBaseRef.sha,
-								rhs: prHeadRef.sha,
-							},
-							{ title: `Changes in Pull Request ${pr.title ? `"${pr.title}"` : `#${pr.id}`}` },
-						);
-					}
-
-					try {
-						await executeCommand('gitlens.openChatAction', {
-							chatAction: {
-								type: 'startReview',
-								pr: pr,
-								instructions: this._context.instructions,
-								agent: this._context.agent,
-								worktreePath: this._context.worktreePath,
-							},
-						} as OpenChatActionCommandArgs);
-						action = DeepLinkServiceAction.DeepLinkResolved;
-					} catch (ex) {
-						action = DeepLinkServiceAction.DeepLinkErrored;
-						message = `Failed to start review: ${ex instanceof Error ? ex.message : String(ex)}`;
-					}
+					action = DeepLinkServiceAction.DeepLinkErrored;
+					message = 'Start Review is not available in this build.';
 					break;
 				}
 				case DeepLinkServiceState.StartWork: {
-					// Get issue data from context
-					const issue = this._context.issueData;
-					if (!issue) {
-						action = DeepLinkServiceAction.DeepLinkErrored;
-						message = 'Missing issue data.';
-						break;
-					}
-
-					try {
-						await executeCommand('gitlens.openChatAction', {
-							chatAction: {
-								type: 'startWork',
-								issue: issue,
-								instructions: this._context.instructions,
-								agent: this._context.agent,
-								worktreePath: this._context.worktreePath,
-							},
-						} as OpenChatActionCommandArgs);
-						action = DeepLinkServiceAction.DeepLinkResolved;
-					} catch (ex) {
-						action = DeepLinkServiceAction.DeepLinkErrored;
-						message = `Failed to start work: ${ex instanceof Error ? ex.message : String(ex)}`;
-					}
+					action = DeepLinkServiceAction.DeepLinkErrored;
+					message = 'Start Work is not available in this build.';
 					break;
 				}
 

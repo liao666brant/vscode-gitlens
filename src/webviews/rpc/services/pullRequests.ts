@@ -8,13 +8,11 @@
 
 import type { PullRequestRefs, PullRequestShape } from '@gitlens/git/models/pullRequest.js';
 import { getComparisonRefsForPullRequest, serializePullRequest } from '@gitlens/git/utils/pullRequest.utils.js';
-import type { OpenPullRequestOnRemoteCommandArgs } from '../../../commands/openPullRequestOnRemote.js';
 import type { Container } from '../../../container.js';
 import { openComparisonChanges } from '../../../git/actions/commit.js';
 import { getBranchAssociatedPullRequest } from '../../../git/utils/-webview/branch.utils.js';
 import { getCommitAssociatedPullRequest } from '../../../git/utils/-webview/commit.utils.js';
-import { getBestRemoteWithIntegration, getRemoteIntegration } from '../../../git/utils/-webview/remote.utils.js';
-import { executeCommand } from '../../../system/-webview/command.js';
+import { openUrl } from '../../../system/-webview/vscode/uris.js';
 
 export class PullRequestsService {
 	constructor(private readonly container: Container) {}
@@ -88,10 +86,8 @@ export class PullRequestsService {
 	 * Delegates to the `gitlens.openPullRequestOnRemote` command which
 	 * handles opening the PR URL in the default browser.
 	 */
-	async openPullRequestOnRemote(prUrl: string): Promise<void> {
-		await executeCommand<OpenPullRequestOnRemoteCommandArgs>('gitlens.openPullRequestOnRemote', {
-			pr: { url: prUrl },
-		});
+	openPullRequestOnRemote(prUrl: string): Promise<void> {
+		return openUrl(prUrl).then(() => undefined);
 	}
 
 	/**
@@ -106,30 +102,7 @@ export class PullRequestsService {
 	 * legacy behavior preserved for callers that don't have id/provider context (e.g.,
 	 * single-WIP scenarios where the current branch IS the PR's branch).
 	 */
-	async openPullRequestDetails(repoPath: string, prId: string, prProvider: string): Promise<void> {
-		if (prId && prProvider) {
-			const remote = await getBestRemoteWithIntegration(repoPath, {
-				filter: r => r.provider.id === prProvider,
-			});
-			if (remote != null) {
-				const integration = await getRemoteIntegration(remote);
-				const pr = await integration?.getPullRequest(remote.provider.repoDesc, prId);
-				if (pr != null) {
-					void this.container.views.pullRequest.showPullRequest(pr, repoPath);
-					return;
-				}
-			}
-		}
-
-		// Fallback: resolve via the repo's current branch.
-		const repoService = this.container.git.getRepositoryService(repoPath);
-		const status = await repoService.status.getStatus();
-		if (status?.branch == null) return;
-
-		const branch = await repoService.branches.getBranch(status.branch);
-		const pr = branch != null ? await getBranchAssociatedPullRequest(this.container, branch) : undefined;
-		if (pr == null) return;
-
-		void this.container.views.pullRequest.showPullRequest(pr, repoPath);
+	openPullRequestDetails(_repoPath: string, _prId: string, _prProvider: string): Promise<void> {
+		return Promise.resolve();
 	}
 }

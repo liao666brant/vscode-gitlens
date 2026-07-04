@@ -23,7 +23,6 @@
  * Note: subscription events (onSubscriptionChanged, onOrgSettingsChanged) are handled
  * via signal bridges — see commitDetails.ts _onRpcReady.
  */
-import type { Remote } from '@eamodio/supertalk';
 import type {
 	CommitDetailsServices,
 	CommitSelectionEvent,
@@ -38,10 +37,10 @@ import type { CommitDetailsState } from './state.js';
  * Resolved domain services needed for event subscriptions.
  */
 interface SubscriptionServices {
-	readonly inspect: Awaited<Remote<CommitDetailsServices>['inspect']>;
-	readonly repositories: Awaited<Remote<CommitDetailsServices>['repositories']>;
-	readonly config: Awaited<Remote<CommitDetailsServices>['config']>;
-	readonly integrations: Awaited<Remote<CommitDetailsServices>['integrations']>;
+	readonly inspect: Awaited<CommitDetailsServices['inspect']>;
+	readonly repositories: Awaited<CommitDetailsServices['repositories']>;
+	readonly config: Awaited<CommitDetailsServices['config']>;
+	readonly integrations: Awaited<CommitDetailsServices['integrations']>;
 }
 
 /**
@@ -68,7 +67,7 @@ export function setupSubscriptions(
 		// Note: onOrgSettingsChanged removed — orgSettings signal bridged from host
 		() =>
 			services.integrations.onIntegrationsChanged(data => handleIntegrationsChanged(state, data.hasAnyConnected)),
-		// Host requests WIP mode on an already-live webview (Launchpad, deep links, etc.)
+		// Host requests WIP mode on an already-live webview (deep links, etc.)
 		() => services.inspect.onShowWip((event: ShowWipEvent) => handleShowWip(state, event, actions)),
 	]);
 }
@@ -151,7 +150,7 @@ function handleIntegrationsChanged(state: CommitDetailsState, hasConnected: bool
 
 /**
  * Handle host requesting WIP mode on an already-live webview.
- * Fired when Launchpad, deep links, or code review opens WIP in the existing Inspect panel.
+ * Fired when deep links or code review open WIP in the existing Inspect panel.
  */
 function handleShowWip(state: CommitDetailsState, event: ShowWipEvent, actions: CommitDetailsActions): void {
 	state.mode.set('wip');

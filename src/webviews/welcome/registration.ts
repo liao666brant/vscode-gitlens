@@ -2,7 +2,7 @@ import { loadChunk } from '../../system/-webview/loadChunk.js';
 import type { WebviewsController, WebviewViewProxy } from '../webviewsController.js';
 import type { State } from './protocol.js';
 
-export type WelcomeWebviewShowingArgs = [{ mode?: 'main' | 'graph' }?];
+export type WelcomeWebviewShowingArgs = [undefined?];
 
 export function registerWelcomeWebviewView(
 	controller: WebviewsController,

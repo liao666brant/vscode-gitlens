@@ -1,15 +1,11 @@
-import type { CancellationToken, DecorationOptions, Disposable, TextDocument, TextEditor } from 'vscode';
-import { Hover, languages, Position, Range, Selection, TextEditorRevealType } from 'vscode';
-import type { GitCommit } from '@gitlens/git/models/commit.js';
-import type { ParsedGitDiffHunks } from '@gitlens/git/models/diff.js';
+import type { DecorationOptions, TextEditor } from 'vscode';
+import { Position, Range, Selection, TextEditorRevealType } from 'vscode';
 import { debug } from '@gitlens/utils/decorators/log.js';
 import { getScopedLogger } from '@gitlens/utils/logger.scoped.js';
 import { getSettledValue } from '@gitlens/utils/promise.js';
 import { maybeStopWatch } from '@gitlens/utils/stopwatch.js';
 import type { Container } from '../container.js';
 import { getStatusFilePseudoCommits } from '../git/utils/-webview/statusFile.utils.js';
-import { localChangesMessage } from '../hovers/hovers.js';
-import { configuration } from '../system/-webview/configuration.js';
 import type { TrackedGitDocument } from '../trackers/trackedDocument.js';
 import type { AnnotationContext, AnnotationState, DidChangeStatusCallback } from './annotationProvider.js';
 import { AnnotationProviderBase } from './annotationProvider.js';
@@ -24,9 +20,7 @@ export interface ChangesAnnotationContext extends AnnotationContext {
 }
 
 export class GutterChangesAnnotationProvider extends AnnotationProviderBase<ChangesAnnotationContext> {
-	private hoverProviderDisposable: Disposable | undefined;
 	private sortedHunkStarts: number[] | undefined;
-	private state: { commit: GitCommit | undefined; diffs: ParsedGitDiffHunks[] } | undefined;
 
 	constructor(
 		container: Container,
@@ -39,15 +33,6 @@ export class GutterChangesAnnotationProvider extends AnnotationProviderBase<Chan
 
 	override canReuse(context?: ChangesAnnotationContext): boolean {
 		return !(this.annotationContext?.sha !== context?.sha || this.annotationContext?.only !== context?.only);
-	}
-
-	override clear(): Promise<void> {
-		this.state = undefined;
-		if (this.hoverProviderDisposable != null) {
-			this.hoverProviderDisposable.dispose();
-			this.hoverProviderDisposable = undefined;
-		}
-		return super.clear();
 	}
 
 	override nextChange(): void {
@@ -106,8 +91,6 @@ export class GutterChangesAnnotationProvider extends AnnotationProviderBase<Chan
 		let rev1 = this.trackedDocument.uri.sha;
 		let rev2 = context?.sha != null && context.sha !== rev1 ? `${context.sha}^` : undefined;
 
-		let commit: GitCommit | undefined;
-
 		const svc = this.container.git.getRepositoryService(this.trackedDocument.uri.repoPath!);
 
 		let localChanges = rev1 == null && rev2 == null;
@@ -115,7 +98,7 @@ export class GutterChangesAnnotationProvider extends AnnotationProviderBase<Chan
 			let rev = await svc.commits.getOldestUnpushedShaForPath(this.trackedDocument.uri);
 			if (rev != null) {
 				rev = `${rev}^`;
-				commit = await svc.commits.getCommitForFile(this.trackedDocument.uri, rev);
+				const commit = await svc.commits.getCommitForFile(this.trackedDocument.uri, rev);
 				if (commit != null) {
 					if (rev2 != null) {
 						rev2 = rev;
@@ -131,7 +114,6 @@ export class GutterChangesAnnotationProvider extends AnnotationProviderBase<Chan
 				const commits =
 					status != null ? getStatusFilePseudoCommits(status, await svc.config.getCurrentUser()) : undefined;
 				if (commits?.length) {
-					commit = await svc.commits.getCommitForFile(this.trackedDocument.uri);
 					rev1 = 'HEAD';
 				} else if (this.trackedDocument.dirty) {
 					rev1 = 'HEAD';
@@ -142,7 +124,7 @@ export class GutterChangesAnnotationProvider extends AnnotationProviderBase<Chan
 		}
 
 		if (!localChanges) {
-			commit = await svc.commits.getCommitForFile(this.trackedDocument.uri, rev2 ?? rev1);
+			const commit = await svc.commits.getCommitForFile(this.trackedDocument.uri, rev2 ?? rev1);
 
 			if (commit != null) {
 				if (rev2 != null) {
@@ -251,67 +233,6 @@ export class GutterChangesAnnotationProvider extends AnnotationProviderBase<Chan
 			}
 		}
 
-		this.state = { commit: commit, diffs: diffs };
-		this.registerHoverProvider();
 		return true;
-	}
-
-	registerHoverProvider(): void {
-		const cfg = configuration.get('hovers');
-		if (!cfg.enabled || !cfg.annotations.enabled) return;
-
-		this.hoverProviderDisposable?.dispose();
-		this.hoverProviderDisposable = languages.registerHoverProvider(
-			{ pattern: this.editor.document.uri.fsPath },
-			{
-				provideHover: (document: TextDocument, position: Position, token: CancellationToken) =>
-					this.provideHover(document, position, token),
-			},
-		);
-	}
-
-	async provideHover(
-		document: TextDocument,
-		position: Position,
-		_token: CancellationToken,
-	): Promise<Hover | undefined> {
-		if (this.state == null) return undefined;
-		if (configuration.get('hovers.annotations.over') !== 'line' && position.character !== 0) return undefined;
-
-		const { commit, diffs } = this.state;
-
-		for (const diff of diffs) {
-			for (const hunk of diff.hunks) {
-				// If we have a "mixed" diff hunk, check if we have more deleted lines than added, to include a trailing line for the deleted indicator
-				const hasMoreDeletedLines = /*hunk.state === 'changed' &&*/ hunk.previous.count > hunk.current.count;
-				if (
-					position.line >= hunk.current.position.start - 1 &&
-					position.line <= hunk.current.position.end - (hasMoreDeletedLines ? 0 : 1)
-				) {
-					const markdown = await localChangesMessage(
-						commit,
-						this.trackedDocument.uri,
-						position.line,
-						hunk,
-						'editor:hover',
-					);
-					if (markdown == null) return undefined;
-
-					return new Hover(
-						markdown,
-						document.validateRange(
-							new Range(
-								hunk.current.position.start - 1,
-								0,
-								hunk.current.position.end - (hasMoreDeletedLines ? 0 : 1),
-								maxSmallIntegerV8,
-							),
-						),
-					);
-				}
-			}
-		}
-
-		return undefined;
 	}
 }

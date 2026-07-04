@@ -1,16 +1,14 @@
 # @gitkraken/core-gitlens
 
-Shared Git, AI, and GitHub primitives from [GitLens](https://github.com/gitkraken/vscode-gitlens), bundled for consumption by internal GitKraken products.
+Shared Git primitives from [GitLens](https://github.com/gitkraken/vscode-gitlens).
 
-This package flattens five internal workspace packages into a single tarball:
+This package flattens the MIT-licensed workspace packages into a single tarball:
 
-| Subpath             | Source package        | License        |
-| ------------------- | --------------------- | -------------- |
-| `utils/*`           | `@gitlens/utils`      | See `LICENSE`  |
-| `git/*`             | `@gitlens/git`        | See `LICENSE`  |
-| `git-cli/*`         | `@gitlens/git-cli`    | See `LICENSE`  |
-| `plus/ai/*`         | `@gitlens/ai`         | `LICENSE.plus` |
-| `plus/git-github/*` | `@gitlens/git-github` | `LICENSE.plus` |
+| Subpath     | Source package     | License       |
+| ----------- | ------------------ | ------------- |
+| `utils/*`   | `@gitlens/utils`   | See `LICENSE` |
+| `git/*`     | `@gitlens/git`     | See `LICENSE` |
+| `git-cli/*` | `@gitlens/git-cli` | See `LICENSE` |
 
 ## Usage
 
@@ -19,10 +17,6 @@ import { Logger } from '@gitkraken/core-gitlens/utils/logger.js';
 import { GitService } from '@gitkraken/core-gitlens/git/service.js';
 import { Repository } from '@gitkraken/core-gitlens/git/models/repository.js';
 import { CliGitProvider } from '@gitkraken/core-gitlens/git-cli/cliGitProvider.js';
-
-// Plus subpaths (proprietary)
-import { GitHubProvider } from '@gitkraken/core-gitlens/plus/git-github/providers/githubProvider.js';
-import { AiService } from '@gitkraken/core-gitlens/plus/ai/service.js';
 ```
 
 All exports are fully typed and source-mapped back to the original TypeScript sources shipped in `src/`.
@@ -38,12 +32,11 @@ No consumer configuration required — the runtime / bundler picks the right var
 
 ### Tree-shaking
 
-The package is marked `"sideEffects": false` and uses per-file subpath exports. If you only import from `git/*` or `utils/*`, the `plus/*` code (including octokit dependencies) will never be loaded by Node nor included in a webpack/Rollup/esbuild bundle.
+The package is marked `"sideEffects": false` and uses per-file subpath exports.
 
 ## Licensing
 
-- `LICENSE` — governs `utils/`, `git/`, and `git-cli/`.
-- `LICENSE.plus` — governs everything under `plus/` (currently `plus/ai/` and `plus/git-github/`). Proprietary; not for redistribution.
+`LICENSE` governs all bundled package contents.
 
 ## Versioning
 

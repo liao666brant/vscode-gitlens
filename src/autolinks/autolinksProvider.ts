@@ -20,15 +20,17 @@ import type { Source } from '../constants.telemetry.js';
 import type { Container } from '../container.js';
 import { getIssueOrPullRequestHtmlIcon, getIssueOrPullRequestMarkdownIcon } from '../git/utils/-webview/icons.js';
 import { getRemoteIntegration, isRemoteMaybeIntegrationConnected } from '../git/utils/-webview/remote.utils.js';
-import type { ConfiguredIntegrationsChangeEvent } from '../plus/integrations/authentication/configuredIntegrationService.js';
-import type { GitHostIntegration } from '../plus/integrations/models/gitHostIntegration.js';
-import type { Integration } from '../plus/integrations/models/integration.js';
-import { IntegrationBase } from '../plus/integrations/models/integration.js';
-import type { IssuesIntegration } from '../plus/integrations/models/issuesIntegration.js';
 import {
 	convertRemoteProviderIdToIntegrationId,
 	getIntegrationIdForRemote,
-} from '../plus/integrations/utils/-webview/integration.utils.js';
+	IntegrationBase,
+} from '../community/stubs/pro.js';
+import type {
+	ConfiguredIntegrationsChangeEvent,
+	GitHostIntegration,
+	Integration,
+	IssuesIntegration,
+} from '../community/stubs/pro.js';
 import { configuration } from '../system/-webview/configuration.js';
 import type {
 	Autolink,

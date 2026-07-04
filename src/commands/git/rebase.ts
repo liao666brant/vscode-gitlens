@@ -2,7 +2,6 @@ import { ThemeIcon, window } from 'vscode';
 import { RebaseError, SigningError } from '@gitlens/git/errors.js';
 import type { GitBranch } from '@gitlens/git/models/branch.js';
 import type { GitLog } from '@gitlens/git/models/log.js';
-import type { ConflictDetectionResult } from '@gitlens/git/models/mergeConflicts.js';
 import type { GitReference } from '@gitlens/git/models/reference.js';
 import { getReferenceLabel, isRevisionReference } from '@gitlens/git/utils/reference.utils.js';
 import { createRevisionRange } from '@gitlens/git/utils/revision.utils.js';
@@ -16,7 +15,6 @@ import {
 	reopenRebaseTodoEditor,
 } from '../../git/utils/-webview/rebase.utils.js';
 import { showGitErrorMessage } from '../../messages.js';
-import { isSubscriptionTrialOrPaidFromState } from '../../plus/gk/utils/subscription.utils.js';
 import { createQuickPickSeparator } from '../../quickpicks/items/common.js';
 import type { DirectiveQuickPickItem } from '../../quickpicks/items/directive.js';
 import { createDirectiveQuickPickItem, Directive } from '../../quickpicks/items/directive.js';
@@ -392,75 +390,69 @@ export class RebaseGitCommand extends QuickCommand<State> {
 			);
 		}
 
-		let potentialConflict: Promise<ConflictDetectionResult | undefined> | undefined;
-		const subscription = await this.container.subscription.getSubscription();
-		if (isSubscriptionTrialOrPaidFromState(subscription?.state)) {
-			potentialConflict = state.repo.git.commits
-				.getLogShas(`${state.destination.ref}..${context.branch.name}`, { merges: false, reverse: true })
-				.then(shas =>
-					state.repo.git.branches.getPotentialApplyConflicts?.(state.destination.ref, [...shas], {
-						stopOnFirstConflict: true,
-					}),
-				);
-		}
+		const potentialConflict = state.repo.git.commits
+			.getLogShas(`${state.destination.ref}..${context.branch.name}`, { merges: false, reverse: true })
+			.then(shas =>
+				state.repo.git.branches.getPotentialApplyConflicts?.(state.destination.ref, [...shas], {
+					stopOnFirstConflict: true,
+				}),
+			);
 
 		let step: QuickPickStep<DirectiveQuickPickItem | FlagsQuickPickItem<Flags>>;
 
 		const notices: DirectiveQuickPickItem[] = [];
-		if (potentialConflict) {
-			void potentialConflict?.then(result => {
-				if (result == null || result.status === 'clean') {
-					notices.splice(
-						0,
-						1,
-						createDirectiveQuickPickItem(Directive.Noop, false, {
-							label: '未检测到冲突',
-							iconPath: new ThemeIcon('check'),
-						}),
-					);
-				} else if (result.status === 'error') {
-					notices.splice(
-						0,
-						1,
-						createDirectiveQuickPickItem(Directive.Noop, false, {
-							label: '无法检测冲突',
-							detail: result.message,
-							iconPath: new ThemeIcon('error'),
-						}),
-					);
-				} else {
-					notices.splice(
-						0,
-						1,
-						createDirectiveQuickPickItem(Directive.Noop, false, {
-							label: '检测到冲突',
-							detail: `将产生${result.stoppedOnFirstConflict ? '至少 ' : ''}${result.conflict.files.length} 个需要解决的冲突文件`,
-							iconPath: new ThemeIcon('warning'),
-						}),
-					);
-				}
+		void potentialConflict.then(result => {
+			if (result == null || result.status === 'clean') {
+				notices.splice(
+					0,
+					1,
+					createDirectiveQuickPickItem(Directive.Noop, false, {
+						label: '未检测到冲突',
+						iconPath: new ThemeIcon('check'),
+					}),
+				);
+			} else if (result.status === 'error') {
+				notices.splice(
+					0,
+					1,
+					createDirectiveQuickPickItem(Directive.Noop, false, {
+						label: '无法检测冲突',
+						detail: result.message,
+						iconPath: new ThemeIcon('error'),
+					}),
+				);
+			} else {
+				notices.splice(
+					0,
+					1,
+					createDirectiveQuickPickItem(Directive.Noop, false, {
+						label: '检测到冲突',
+						detail: `将产生${result.stoppedOnFirstConflict ? '至少 ' : ''}${result.conflict.files.length} 个需要解决的冲突文件`,
+						iconPath: new ThemeIcon('warning'),
+					}),
+				);
+			}
 
-				if (step.quickpick != null) {
-					const active = step.quickpick.activeItems;
-					step.quickpick.items = [
-						...notices,
-						...items,
-						createQuickPickSeparator(),
-						createDirectiveQuickPickItem(Directive.Cancel),
-					];
-					step.quickpick.activeItems = active;
-				}
-			});
+			if (step.quickpick != null) {
+				const active = step.quickpick.activeItems;
+				step.quickpick.items = [
+					...notices,
+					...items,
+					createQuickPickSeparator(),
+					createDirectiveQuickPickItem(Directive.Cancel),
+				];
+				step.quickpick.activeItems = active;
+			}
+		});
 
-			notices.push(
-				createDirectiveQuickPickItem(Directive.Noop, false, {
-					label: `$(loading~spin) \u00a0正在检测冲突...`,
-					// Don't use this, because the spin here causes the icon to spin incorrectly
-					//iconPath: new ThemeIcon('loading~spin'),
-				}),
-				createQuickPickSeparator(),
-			);
-		}
+		notices.push(
+			createDirectiveQuickPickItem(Directive.Noop, false, {
+				label: `$(loading~spin) \u00a0正在检测冲突...`,
+				// Don't use this, because the spin here causes the icon to spin incorrectly
+				//iconPath: new ThemeIcon('loading~spin'),
+			}),
+			createQuickPickSeparator(),
+		);
 
 		step = this.createConfirmStep(appendReposToTitle(`确认${title}`, state, context), [...notices, ...items]);
 		const selection: StepSelection<typeof step> = yield step;

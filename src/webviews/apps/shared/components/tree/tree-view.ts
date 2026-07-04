@@ -6,7 +6,6 @@ import { ifDefined } from 'lit/directives/if-defined.js';
 import type { Ref } from 'lit/directives/ref.js';
 import { createRef, ref } from 'lit/directives/ref.js';
 import { when } from 'lit/directives/when.js';
-import type { AgentSessionPhase } from '@gitlens/agents/types.js';
 import type { CollectionIndexController } from '../../controllers/collection-index.js';
 import { FilterController } from '../../controllers/filter.js';
 import type { FocusController } from '../../controllers/focus.js';
@@ -204,29 +203,6 @@ export class GlTreeView extends GlElement {
 				font-size: 1.1rem;
 				font-weight: 500;
 				border: 1px solid;
-			}
-
-			/* Phase-tinted agent icon — pulls from the shared --gl-agent-* palette defined in
-			   theme.scss so leaf, tooltip, pill, and details panel all dereference the same set
-			   of variables. code-icon's :host inherits color from its parent, so styling the
-			   element here flows through to its rendered glyph. */
-			code-icon.tree-icon-agent {
-				color: var(--gl-agent-idle-color);
-			}
-			code-icon.tree-icon-agent--working {
-				color: var(--gl-agent-working-color);
-			}
-			code-icon.tree-icon-agent--waiting {
-				color: var(--gl-agent-waiting-color);
-			}
-
-			/* Pair wrapper for the robot + spinner glyphs so they sit flush as one identity
-			   marker. The decoration slot's gap applies between the wrapper and any sibling
-			   decoration but not between the icons inside. */
-			.tree-icon-agent-pair {
-				display: inline-flex;
-				align-items: center;
-				gap: 0;
 			}
 		`,
 	];
@@ -627,8 +603,7 @@ export class GlTreeView extends GlElement {
 			| string
 			| { type: 'status'; name: GlGitStatus['status'] }
 			| { type: 'branch'; status?: string; worktree?: boolean; hasChanges?: boolean }
-			| { type: 'file-icon'; filename: string }
-			| { type: 'agent'; phase: AgentSessionPhase },
+			| { type: 'file-icon'; filename: string },
 	) {
 		if (icon == null) return nothing;
 
@@ -651,22 +626,6 @@ export class GlTreeView extends GlElement {
 
 		if (icon.type === 'file-icon') {
 			return html`<gl-file-icon slot="icon" .filename=${icon.filename}></gl-file-icon>`;
-		}
-
-		if (icon.type === 'agent') {
-			// Phase-driven glyph AND color so the leaf telegraphs state at a glance — color alone
-			// is a single-axis signal and fails for color-blind scanning. Idle keeps the Claude
-			// brand asterisk (default state retains provider identity); working spins a `sync`
-			// glyph as an activity cue; waiting flips to `warning` as a call-to-action. Colors
-			// come from the shared --gl-agent-* palette via this component's static styles.
-			const phaseIcon = icon.phase === 'working' ? 'sync' : icon.phase === 'waiting' ? 'warning' : 'claude';
-			const modifier = icon.phase === 'working' ? 'spin' : undefined;
-			return html`<code-icon
-				slot="icon"
-				icon="${phaseIcon}"
-				modifier=${ifDefined(modifier)}
-				class="tree-icon-agent tree-icon-agent--${icon.phase}"
-			></code-icon>`;
 		}
 
 		return nothing;
@@ -755,35 +714,6 @@ export class GlTreeView extends GlElement {
 					aria-label=${ifDefined(decoration.tooltip ?? decoration.label)}
 					><code-icon icon="warning" size="12"></code-icon>${decoration.count}</span
 				>`;
-			}
-
-			if (decoration.type === 'agent') {
-				// Robot glyph is the agent's identity (never animates); the spinner is a separate
-				// adjacent glyph that only renders during `working`. Color comes from the shared
-				// --gl-agent-* palette via the `tree-icon-agent--${phase}` class on each
-				// `code-icon` so the CSS rules at the top of this file match the rendered markup.
-				// Both icons live inside a flex wrapper so the decoration slot's `gap: 0.4rem`
-				// only applies between the wrapper and any other decoration — not between the
-				// robot and the spinner, which should sit flush as one identity glyph.
-				const tooltip = decoration.tooltip ?? decoration.label;
-				return html`<gl-tooltip slot=${slot} part=${slot} placement="top">
-					<span class="tree-icon-agent-pair">
-						<code-icon
-							icon="robot"
-							class="tree-icon-agent tree-icon-agent--${decoration.phase}"
-							aria-label=${ifDefined(tooltip)}
-						></code-icon>
-						${decoration.phase === 'working'
-							? html`<code-icon
-									icon="sync"
-									modifier="spin"
-									class="tree-icon-agent tree-icon-agent--${decoration.phase}"
-									aria-hidden="true"
-								></code-icon>`
-							: nothing}
-					</span>
-					<span slot="content">${tooltip}</span>
-				</gl-tooltip>`;
 			}
 
 			// TODO: implement badge and indicator decorations

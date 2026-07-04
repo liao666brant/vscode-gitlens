@@ -1,6 +1,6 @@
 import { createContext } from '@lit/context';
 import { signal as litSignal } from '@lit-labs/signals';
-import type { Subscription } from '../../../../plus/gk/models/subscription.js';
+import type { Subscription } from '../../../../community/stubs/pro.js';
 import type { OrgSettings } from '../../../rpc/services/types.js';
 import type { ReadableSignal } from '../state.js';
 

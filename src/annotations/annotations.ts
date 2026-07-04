@@ -12,7 +12,6 @@ import type { Colors } from '../constants.colors.js';
 import type { CommitFormatOptions } from '../git/formatters/commitFormatter.js';
 import { CommitFormatter } from '../git/formatters/commitFormatter.js';
 import { configuration } from '../system/-webview/configuration.js';
-import type { BlameFontOptions } from './gutterBlameAnnotationProvider.js';
 
 export interface ComputedHeatmap {
 	coldThresholdTimestamp: number;
@@ -278,48 +277,6 @@ export function getGutterDecoration(
 	}
 
 	return decoration;
-}
-
-export function getInlineDecoration(
-	commit: GitCommit,
-	// uri: GitUri,
-	// editorLine: number,
-	format: string,
-	formatOptions?: CommitFormatOptions,
-	fontOptions?: BlameFontOptions,
-	scrollable: boolean = true,
-): Partial<DecorationOptions> {
-	// TODO: Enable this once there is better caching
-	// let diffUris;
-	// if (commit.isUncommitted) {
-	//     diffUris = await commit.getPreviousLineDiffUris(uri, editorLine, uri.sha);
-	// }
-
-	const message = CommitFormatter.fromTemplate(format, commit, {
-		...formatOptions,
-		// previousLineDiffUris: diffUris,
-		messageTruncateAtNewLine: true,
-	});
-
-	return {
-		renderOptions: {
-			after: {
-				backgroundColor: new ThemeColor('gitlens.trailingLineBackgroundColor' satisfies Colors),
-				color: new ThemeColor('gitlens.trailingLineForegroundColor' satisfies Colors),
-				contentText: pad(message, 1, 1),
-				fontWeight: fontOptions?.weight ?? 'normal',
-				fontStyle: fontOptions?.style ?? 'normal',
-				// Pull the decoration out of the document flow if we want to be scrollable
-				textDecoration: toCssInjection({
-					position: scrollable ? undefined : 'absolute',
-					'font-family': fontOptions?.family,
-					'font-size': fontOptions?.size ? `${fontOptions?.size}px` : undefined,
-					'white-space': 'pre',
-					'font-variant-numeric': 'tabular-nums',
-				}),
-			},
-		},
-	};
 }
 
 function getHeatmapColor(date: Date, heatmap: ComputedHeatmap) {

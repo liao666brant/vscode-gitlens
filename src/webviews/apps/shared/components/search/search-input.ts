@@ -21,7 +21,7 @@ import {
 	SearchHistoryDeleteRequest,
 	SearchHistoryGetRequest,
 	SearchHistoryStoreRequest,
-} from '../../../../plus/graph/protocol.js';
+} from '../../../../../community/stubs/pro.js';
 import { ipcContext } from '../../contexts/ipc.js';
 import type { CompletionItem, CompletionSelectEvent, GlAutocomplete } from '../autocomplete/autocomplete.js';
 import { GlElement } from '../element.js';

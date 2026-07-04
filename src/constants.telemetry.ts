@@ -1,9 +1,17 @@
-import type { AIProviders } from '@gitlens/ai/constants.js';
-import type { AIActionType } from '@gitlens/ai/models/model.js';
+import type {
+	AgentDescriptor,
+	AgentRoute,
+	AIActionType,
+	AIProviders,
+	GraphColumnConfig,
+	OrganizationRole,
+	Subscription,
+	SubscriptionAccount,
+	SubscriptionStateString,
+} from './community/stubs/pro.js';
 import type { GitContributionTiers } from '@gitlens/git/models/contributor.js';
 import type { Flatten } from '@gitlens/utils/object.js';
 import type { Config, GraphBranchesVisibility, GraphConfig } from './config.js';
-import type { OrganizationRole } from './plus/gk/models/organization.js';
 import type { GlCommands, GlCommandsDeprecated } from './constants.commands.js';
 import type { IntegrationIds, SupportedCloudIntegrationIds } from './constants.integrations.js';
 import type { WalkthroughSteps } from './constants.js';
@@ -17,10 +25,6 @@ import type {
 } from './constants.views.js';
 import type { GraphWalkthroughContextKeys, WalkthroughContextKeys } from './constants.walkthroughs.js';
 import type { FeaturePreviews, FeaturePreviewStatus } from './features.js';
-import type { AgentDescriptor, AgentRoute } from './plus/agents/agentDescriptor.js';
-import type { Subscription, SubscriptionAccount, SubscriptionStateString } from './plus/gk/models/subscription.js';
-import type { GraphColumnConfig } from './webviews/plus/graph/protocol.js';
-import type { TimelinePeriod, TimelineScopeType, TimelineSliceBy } from './webviews/plus/timeline/protocol.js';
 
 export declare type AttributeValue =
 	| string
@@ -44,7 +48,6 @@ export interface TelemetryGlobalContext extends SubscriptionEventData {
 	upgradedFrom: string | undefined;
 	'folders.count': number;
 	'folders.schemes': string;
-	'gk.mcp.registrationCompleted': boolean;
 	'providers.count': number;
 	'providers.ids': string;
 	'repositories.count': number;
@@ -170,13 +173,6 @@ export interface TelemetryEvents extends WebviewShowAbortedEvents, WebviewShownE
 	/** Sent when a user chooses to manage the cloud integrations */
 	'cloudIntegrations/settingsOpened': CloudIntegrationsSettingsOpenedEvent;
 
-	/** Sent when a code suggestion is archived */
-	codeSuggestionArchived: CodeSuggestArchivedEvent;
-	/** Sent when a code suggestion is created */
-	codeSuggestionCreated: CodeSuggestCreatedEventData;
-	/** Sent when a code suggestion is opened */
-	codeSuggestionViewed: CodeSuggestViewedEventData;
-
 	/** Sent when a GitLens command is executed */
 	command: CommandEvent;
 	/** Sent when a VS Code command is executed by a GitLens provided action */
@@ -199,39 +195,6 @@ export interface TelemetryEvents extends WebviewShowAbortedEvents, WebviewShownE
 	'commitDetails/reachability/loaded': DetailsReachabilityLoadedEvent;
 	/** Sent when commit reachability fails to load */
 	'commitDetails/reachability/failed': DetailsReachabilityFailedEvent;
-
-	/** Sent when the Commit Composer is first loaded with repo data */
-	'composer/loaded': ComposerLoadedEvent;
-	/** Sent when the Commit Composer is reloaded */
-	'composer/reloaded': ComposerLoadedEvent;
-	/** Sent when the user adds unstaged changes to draft commits in the Commit Composer */
-	'composer/action/includedUnstagedChanges': ComposerEvent;
-	/** Sent when the user uses auto-compose in the Commit Composer */
-	'composer/action/compose': ComposerGenerateCommitsEvent;
-	/** Sent when the user fails an auto-compose operation in the Commit Composer */
-	'composer/action/compose/failed': ComposerGenerateCommitsFailedEvent;
-	/** Sent when the user uses recompose in the Commit Composer */
-	'composer/action/recompose': ComposerGenerateCommitsEvent;
-	/** Sent when the user fails a recompose operation in the Commit Composer */
-	'composer/action/recompose/failed': ComposerGenerateCommitsFailedEvent;
-	/** Sent when the user uses generate commit message in the Commit Composer */
-	'composer/action/generateCommitMessage': ComposerGenerateCommitMessageEvent;
-	/** Sent when the user fails a generate commit message operation in the Commit Composer */
-	'composer/action/generateCommitMessage/failed': ComposerGenerateCommitMessageFailedEvent;
-	/** Sent when the user changes the AI model in the Commit Composer */
-	'composer/action/changeAiModel': ComposerEvent;
-	/** Sent when the user finishes and commits in the Commit Composer */
-	'composer/action/finishAndCommit': ComposerEvent;
-	/** Sent when the user fails to finish and commit in the Commit Composer */
-	'composer/action/finishAndCommit/failed': ComposerFinishAndCommitFailedEvent;
-	/** Sent when the user uses the undo button in the Commit Composer */
-	'composer/action/undo': ComposerEvent;
-	/** Sent when the user uses the reset button in the Commit Composer */
-	'composer/action/reset': ComposerEvent;
-	/** Sent when the user is warned that the working directory has changed in the Commit Composer */
-	'composer/warning/workingDirectoryChanged': ComposerEvent;
-	/** Sent when the user is warned that the index has changed in the Commit Composer */
-	'composer/warning/indexChanged': ComposerEvent;
 
 	/** Sent when a conflict-prone git command (merge, rebase, cherry-pick, revert, stash apply/pop) is run */
 	'gitCommand/run': GitCommandRunEvent;
@@ -270,7 +233,7 @@ export interface TelemetryEvents extends WebviewShowAbortedEvents, WebviewShownE
 	/** Sent when the user changes the current repository on the Commit Graph */
 	'graph/repository/changed': GraphRepositoryChangedEvent;
 
-	/** Sent when the user hovers over a row on the Commit Graph (first time and every 100 times after) */
+	/** Sent when the user points at a row on the Commit Graph (first time and every 100 times after) */
 	'graph/row/hovered': GraphRowHoveredEvent;
 	/** Sent when the user selects (clicks on) a row or rows on the Commit Graph (first time and every 100 times after) */
 	'graph/row/selected': GraphRowSelectedEvent;
@@ -314,43 +277,6 @@ export interface TelemetryEvents extends WebviewShowAbortedEvents, WebviewShownE
 	/** Sent when Home fails to load some state */
 	'home/failed': HomeFailedEvent;
 
-	/** Sent when the user takes an action on the Launchpad title bar */
-	'launchpad/title/action': LaunchpadTitleActionEvent;
-
-	/** Sent when the user takes an action on a launchpad item */
-	'launchpad/action': LaunchpadActionEvent;
-	/** Sent when the user changes launchpad configuration settings */
-	'launchpad/configurationChanged': LaunchpadConfigurationChangedEvent;
-	/** Sent when the user expands/collapses a launchpad group */
-	'launchpad/groupToggled': LaunchpadGroupToggledEvent;
-	/** Sent when the user opens launchpad; use `instance` to correlate a launchpad "session" */
-	'launchpad/open': LaunchpadEventDataBase;
-	/** Sent when the launchpad is opened; use `instance` to correlate a launchpad "session" */
-	'launchpad/opened': LaunchpadConnectedEventData;
-	/** Sent when the launchpad has "reloaded" (while open, e.g. user refreshed or back button) and is disconnected; use `instance` to correlate a launchpad "session" */
-	'launchpad/steps/connect': LaunchpadConnectedEventData;
-	/** Sent when the launchpad has "reloaded" (while open, e.g. user refreshed or back button) and is connected; use `instance` to correlate a launchpad "session" */
-	'launchpad/steps/main': LaunchpadConnectedEventData;
-	/** Sent when the user opens the details of a launchpad item (e.g. click on an item); use `instance` to correlate a launchpad "session" */
-	'launchpad/steps/details': LaunchpadStepsDetailsEvent;
-	/** Sent when the user hides the launchpad indicator */
-	'launchpad/indicator/hidden': void;
-	/** Sent when the launchpad indicator loads (with data) for the first time ever for this device */
-	'launchpad/indicator/firstLoad': void;
-	/** Sent when a launchpad operation is taking longer than a set timeout to complete */
-	'launchpad/operation/slow': LaunchpadOperationSlowEvent;
-
-	/** Sent when GitKraken MCP setup is started */
-	'mcp/setup/started': MCPSetupStartedEvent;
-	/** Sent when GitKraken MCP setup is completed */
-	'mcp/setup/completed': MCPSetupCompletedEvent;
-	/** Sent when GitKraken MCP setup fails */
-	'mcp/setup/failed': MCPSetupFailedEvent;
-	/** Sent when GitKraken MCP registration fails */
-	'mcp/registration/failed': MCPSetupFailedEvent;
-	/** Sent when user selects agents for MCP installation */
-	'mcp/agents/selected': MCPAgentsSelectedEvent;
-
 	/** Sent when a PR review was started in the inspect overview */
 	openReviewMode: OpenReviewModeEvent;
 
@@ -385,8 +311,6 @@ export interface TelemetryEvents extends WebviewShowAbortedEvents, WebviewShownE
 	'rebaseEditor/action/switchToText': RebaseEditorCompletionEventData;
 	/** Sent when the user toggles the commit ordering (ascending/descending) */
 	'rebaseEditor/action/toggleOrdering': RebaseEditorToggleOrderingEvent;
-	/** Sent when the user opens the Commit Composer from the rebase editor */
-	'rebaseEditor/action/recompose': RebaseEditorCompletionEventData;
 	/** Sent when the user clicks to show conflicts */
 	'rebaseEditor/action/showConflicts': RebaseEditorContextEventData;
 	/** Sent when the user opens a conflict file from the inline conflict panel */
@@ -431,7 +355,7 @@ export interface TelemetryEvents extends WebviewShowAbortedEvents, WebviewShownE
 
 	/** Sent when the user opens Start Review; use `instance` to correlate a StartReview "session" */
 	'startReview/open': StartReviewEventDataBase;
-	/** Sent when the launchpad is opened; use `instance` to correlate a StartReview "session" */
+	/** Sent when Start Review is opened; use `instance` to correlate a StartReview "session" */
 	'startReview/opened': StartReviewConnectedEventData;
 	/** Sent when the user takes an action on a Start Review PR */
 	'startReview/pr/action': StartReviewPrActionEvent;
@@ -450,7 +374,7 @@ export interface TelemetryEvents extends WebviewShowAbortedEvents, WebviewShownE
 
 	/** Sent when the user opens Start Work; use `instance` to correlate a StartWork "session" */
 	'startWork/open': StartWorkEventDataBase;
-	/** Sent when the launchpad is opened; use `instance` to correlate a StartWork "session" */
+	/** Sent when Start Work is opened; use `instance` to correlate a StartWork "session" */
 	'startWork/opened': StartWorkConnectedEventData;
 	/** Sent when the user takes an action on a StartWork issue */
 	'startWork/issue/action': StartWorkIssueActionEvent;
@@ -469,7 +393,7 @@ export interface TelemetryEvents extends WebviewShowAbortedEvents, WebviewShownE
 
 	/** Sent when the user opens Start Work; use `instance` to correlate an Associate Issue with Branch "session" */
 	'associateIssueWithBranch/open': StartWorkEventDataBase;
-	/** Sent when the launchpad is opened; use `instance` to correlate an Associate Issue with Branch "session" */
+	/** Sent when Associate Issue with Branch is opened; use `instance` to correlate an Associate Issue with Branch "session" */
 	'associateIssueWithBranch/opened': StartWorkConnectedEventData;
 	/** Sent when the user takes an action on an issue */
 	'associateIssueWithBranch/issue/action': StartWorkIssueActionEvent;
@@ -492,19 +416,6 @@ export interface TelemetryEvents extends WebviewShowAbortedEvents, WebviewShownE
 	/** Sent when the subscription changes */
 	'subscription/changed': SubscriptionEventDataWithPrevious;
 
-	/** Sent when the Visual History is shown */
-	'timeline/shown': TimelineShownEvent;
-	/** Sent when the user clicks on the "Open in Editor" button on the Visual History */
-	'timeline/action/openInEditor': TimelineActionOpenInEditorEvent;
-	/** Sent when the editor changes on the Visual History */
-	'timeline/editor/changed': TimelineContextEventData;
-	/** Sent when the user selects (clicks on) a commit on the Visual History */
-	'timeline/commit/selected': TimelineContextEventData;
-	/** Sent when the user changes the configuration of the Visual History (e.g. period, show all branches, etc) */
-	'timeline/config/changed': TimelineConfigChangedEvent;
-	/** Sent when the scope (file/folder/repo) changes on the Visual History */
-	'timeline/scope/changed': TimelineContextEventData;
-
 	/** Sent when a "tracked feature" is interacted with, today that is only when webview/webviewView/custom editor is shown */
 	'usage/track': UsageTrackEvent;
 
@@ -522,10 +433,8 @@ type WebviewShowAbortedEvents = {
 	[K in `${WebviewTypes}/showAborted`]: WebviewShownEventData;
 };
 type WebviewShownEvents = {
-	[K in `${Exclude<
-		WebviewTypes,
-		'commitDetails' | 'graph' | 'rebaseEditor' | 'timeline'
-	>}/shown`]: WebviewShownEventData & Record<`context.${string}`, string | number | boolean | undefined>;
+	[K in `${Exclude<WebviewTypes, 'commitDetails' | 'graph' | 'rebaseEditor'>}/shown`]: WebviewShownEventData &
+		Record<`context.${string}`, string | number | boolean | undefined>;
 };
 
 type WebviewClosedEvents = {
@@ -756,33 +665,6 @@ export interface CLIUpdateCoreFailedEvent {
 	'error.message': string;
 }
 
-export interface MCPSetupStartedEvent {
-	source: Sources;
-}
-
-export interface MCPSetupCompletedEvent {
-	source: Sources;
-	'cli.version'?: string;
-	requiresUserCompletion: boolean;
-	'agents.succeeded'?: string;
-	'agents.failed'?: string;
-	'agents.userAction'?: string;
-}
-
-export interface MCPSetupFailedEvent {
-	source: Sources;
-	reason: string;
-	'cli.version'?: string;
-	'error.message'?: string;
-	'agents.failed'?: string;
-}
-
-export interface MCPAgentsSelectedEvent {
-	source: Sources;
-	'agents.count': number;
-	'agents.ids': string;
-}
-
 interface CloudIntegrationsConnectingEvent {
 	'integration.ids': string | undefined;
 }
@@ -839,45 +721,6 @@ interface CloudIntegrationsIssueDisconnectedEvent {
 
 interface CloudIntegrationsSettingsOpenedEvent {
 	'integration.id': SupportedCloudIntegrationIds | undefined;
-}
-
-interface CodeSuggestArchivedEvent {
-	provider: string | undefined;
-	'repository.visibility': 'private' | 'public' | 'local' | undefined;
-	/** Named for compatibility with other GK surfaces */
-	repoPrivacy: 'private' | 'public' | 'local' | undefined;
-	/** Named for compatibility with other GK surfaces */
-	draftId: string;
-	/** Named for compatibility with other GK surfaces */
-	reason: 'committed' | 'rejected' | 'accepted';
-}
-
-interface CodeSuggestCreatedEventData {
-	provider: string | undefined;
-	'repository.visibility': 'private' | 'public' | 'local' | undefined;
-	/** Named for compatibility with other GK surfaces */
-	repoPrivacy: 'private' | 'public' | 'local' | undefined;
-	/** Named for compatibility with other GK surfaces */
-	draftId: string;
-	/** Named for compatibility with other GK surfaces */
-	draftPrivacy: 'public' | 'private' | 'invite_only' | 'provider_access';
-	/** Named for compatibility with other GK surfaces */
-	filesChanged: number;
-	/** Named for compatibility with other GK surfaces */
-	source: 'reviewMode';
-}
-
-interface CodeSuggestViewedEventData {
-	provider: string | undefined;
-	'repository.visibility': 'private' | 'public' | 'local' | undefined;
-	/** Named for compatibility with other GK surfaces */
-	repoPrivacy: 'private' | 'public' | 'local' | undefined;
-	/** Named for compatibility with other GK surfaces */
-	draftId: string;
-	/** Named for compatibility with other GK surfaces */
-	draftPrivacy: 'public' | 'private' | 'invite_only' | 'provider_access';
-	/** Named for compatibility with other GK surfaces */
-	source?: string;
 }
 
 interface CommandEventData {
@@ -980,9 +823,6 @@ export type FeaturePreviewEventData = {
 	day?: number;
 	startedOn?: string;
 } & FeaturePreviewDayEventData;
-export type FeaturePreviewActionEventData = {
-	action: `start-preview-trial:${FeaturePreviews}`;
-} & FeaturePreviewEventData;
 
 type GitCommandType = 'merge' | 'rebase' | 'cherry-pick' | 'revert' | 'stash-apply' | 'stash-pop';
 
@@ -1154,7 +994,6 @@ type InspectWipContextEventData = {
 	'context.mode': 'wip';
 	'context.autolinks': number;
 	'context.inReview': boolean;
-	'context.codeSuggestions': number;
 } & Partial<RepositoryContext>;
 
 type InspectCommitContextEventData = {
@@ -1174,219 +1013,8 @@ export type InspectShownTelemetryContext = InspectShownEventData;
 
 /** Telemetry context fields pushed from the Inspect webview to the host via RPC. */
 export type InspectWebviewTelemetryContext =
-	| Pick<InspectWipContextEventData, 'context.autolinks' | 'context.codeSuggestions'>
+	| Pick<InspectWipContextEventData, 'context.autolinks'>
 	| Pick<InspectCommitContextEventData, 'context.autolinks' | 'context.type' | 'context.uncommitted'>;
-
-export type ComposerTelemetryContext = ComposerContextEventData;
-type ComposerContextEventData = WebviewTelemetryContext & ComposerSessionContextEventData;
-type ComposerContextSessionData = {
-	'context.session.start': string;
-	'context.session.duration': number | undefined;
-};
-type ComposerContextDiffData = {
-	'context.diff.files.count': number;
-	'context.diff.hunks.count': number;
-	'context.diff.lines.count': number;
-	'context.diff.hash': string;
-	'context.diff.staged.exists': boolean;
-	'context.diff.unstaged.exists': boolean;
-	'context.diff.unstaged.included': boolean;
-};
-type ComposerContextCommitsData = {
-	'context.commits.initialCount': number;
-	'context.commits.autoComposedCount': number | undefined;
-	'context.commits.composedCount': number | undefined;
-	'context.commits.finalCount': number | undefined;
-};
-type ComposerContextOnboardingData = {
-	'context.onboarding.dismissed': boolean;
-	'context.onboarding.stepReached': number | undefined;
-};
-type ComposerContextAIData = {
-	'context.ai.enabled.org': boolean;
-	'context.ai.enabled.config': boolean;
-	'context.ai.model.id': string | undefined;
-	'context.ai.model.name': string | undefined;
-	'context.ai.model.provider.id': AIProviders | undefined;
-	'context.ai.model.temperature': number | undefined;
-	'context.ai.model.maxTokens.input': number | undefined;
-	'context.ai.model.maxTokens.output': number | undefined;
-	'context.ai.model.default': boolean | undefined;
-	'context.ai.model.hidden': boolean | undefined;
-};
-type ComposerContextOperationData = {
-	'context.operations.generateCommits.count': number;
-	'context.operations.generateCommits.cancelled.count': number;
-	'context.operations.generateCommits.error.count': number;
-	'context.operations.generateCommits.feedback.upvote.count': number;
-	'context.operations.generateCommits.feedback.downvote.count': number;
-	'context.operations.generateCommitMessage.count': number;
-	'context.operations.generateCommitMessage.cancelled.count': number;
-	'context.operations.generateCommitMessage.error.count': number;
-	'context.operations.finishAndCommit.error.count': number;
-	'context.operations.undo.count': number;
-	'context.operations.redo.count': number;
-	'context.operations.reset.count': number;
-};
-type ComposerContextWarningsData = {
-	'context.warnings.workingDirectoryChanged': boolean;
-	'context.warnings.indexChanged': boolean;
-};
-type ComposerContextErrorsData = {
-	'context.errors.safety.count': number;
-	'context.errors.operation.count': number;
-};
-
-type ComposerSessionContextEventData = ComposerContextSessionData &
-	ComposerContextDiffData &
-	ComposerContextCommitsData &
-	ComposerContextOnboardingData &
-	ComposerContextAIData &
-	ComposerContextOperationData &
-	ComposerContextWarningsData &
-	ComposerContextErrorsData & {
-		'context.source': Sources | undefined;
-		'context.mode': 'experimental' | 'preview';
-	};
-
-type ComposerEvent = ComposerContextEventData;
-
-type ComposerLoadedEvent = ComposerContextEventData &
-	Partial<{
-		'failure.reason': 'error';
-		'failure.error.message': string;
-	}>;
-
-type ComposerGenerateCommitsEvent = ComposerContextEventData & {
-	'customInstructions.used': boolean;
-	'customInstructions.length': number;
-	'customInstructions.hash': string;
-	'customInstructions.setting.used': boolean;
-	'customInstructions.setting.length': number;
-	'customInstructions.commitMessage.setting.used': boolean;
-	'customInstructions.commitMessage.setting.length': number;
-};
-
-type ComposerActionFailureEventData =
-	| {
-			'failure.reason': 'cancelled';
-			'failure.error.message'?: never;
-	  }
-	| {
-			'failure.reason': 'error';
-			'failure.error.message': string;
-	  };
-
-type ComposerGenerateCommitsFailedEvent = ComposerGenerateCommitsEvent & ComposerActionFailureEventData;
-
-type ComposerGenerateCommitMessageEvent = ComposerContextEventData & {
-	'customInstructions.setting.used': boolean;
-	'customInstructions.setting.length': number;
-	overwriteExistingMessage: boolean;
-};
-
-type ComposerGenerateCommitMessageFailedEvent = ComposerGenerateCommitMessageEvent & ComposerActionFailureEventData;
-
-type ComposerFinishAndCommitFailedEvent = ComposerContextEventData & {
-	'failure.reason': 'error';
-	'failure.error.message': string;
-};
-
-interface LaunchpadEventDataBase {
-	/** @order 1 */
-	instance: number;
-	'initialState.group': string | undefined;
-	'initialState.selectTopItem': boolean;
-}
-
-type LaunchpadGroups =
-	| 'current-branch'
-	| 'pinned'
-	| 'mergeable'
-	| 'blocked'
-	| 'follow-up'
-	| 'needs-review'
-	| 'waiting-for-review'
-	| 'draft'
-	| 'other'
-	| 'snoozed';
-
-type LaunchpadGroupsEventData = { 'groups.count': number } & Record<`groups.${LaunchpadGroups}.count`, number> &
-	Record<`groups.${LaunchpadGroups}.collapsed`, boolean | undefined>;
-
-type LaunchpadEventData = LaunchpadEventDataBase & {
-	/** @order 2 */
-	'items.error'?: string;
-	'items.count'?: number;
-	'items.timings.prs'?: number;
-	'items.timings.codeSuggestionCounts'?: number;
-	'items.timings.enrichedItems'?: number;
-} & Partial<LaunchpadGroupsEventData>;
-
-export type LaunchpadTelemetryContext = LaunchpadEventData;
-
-type LaunchpadTitleActionEvent = LaunchpadEventData & {
-	action: 'feedback' | 'open-on-gkdev' | 'refresh' | 'settings' | 'connect';
-};
-
-type LaunchpadActionEvent = LaunchpadEventData & {
-	action:
-		| 'open'
-		| 'code-suggest'
-		| 'merge'
-		| 'soft-open'
-		| 'switch'
-		| 'open-worktree'
-		| 'switch-and-code-suggest'
-		| 'show-overview'
-		| 'open-changes'
-		| 'open-in-graph'
-		| 'pin'
-		| 'unpin'
-		| 'snooze'
-		| 'unsnooze'
-		| 'open-suggestion'
-		| 'open-suggestion-browser';
-} & Partial<Record<`item.${string}`, string | number | boolean>>;
-
-interface LaunchpadConfigurationChangedEvent {
-	'config.launchpad.staleThreshold': number | null;
-	'config.launchpad.includedOrganizations': number;
-	'config.launchpad.ignoredOrganizations': number;
-	'config.launchpad.ignoredRepositories': number;
-	'config.launchpad.indicator.enabled': boolean;
-	'config.launchpad.indicator.icon': 'default' | 'group';
-	'config.launchpad.indicator.label': false | 'item' | 'counts';
-	'config.launchpad.indicator.useColors': boolean;
-	'config.launchpad.indicator.groups': string;
-	'config.launchpad.indicator.polling.enabled': boolean;
-	'config.launchpad.indicator.polling.interval': number;
-}
-
-type LaunchpadGroupToggledEvent = LaunchpadEventData & {
-	group: LaunchpadGroups;
-	collapsed: boolean;
-};
-
-type LaunchpadConnectedEventData = LaunchpadEventData & {
-	connected: boolean;
-};
-
-type LaunchpadStepsDetailsEvent = LaunchpadEventData & {
-	action: 'select';
-} & Partial<Record<`item.${string}`, string | number | boolean>>;
-
-interface LaunchpadOperationSlowEvent {
-	timeout: number;
-	operation:
-		| 'getPullRequest'
-		| 'searchPullRequests'
-		| 'getMyPullRequests'
-		| 'getCodeSuggestions'
-		| 'getEnrichedItems'
-		| 'getCodeSuggestionCounts';
-	duration: number;
-}
 
 interface OpenReviewModeEvent {
 	provider: string;
@@ -1562,7 +1190,6 @@ export type RebaseEditorTelemetryEvent =
 	| 'rebaseEditor/action/skip'
 	| 'rebaseEditor/action/switchToText'
 	| 'rebaseEditor/action/toggleOrdering'
-	| 'rebaseEditor/action/recompose'
 	| 'rebaseEditor/action/showConflicts'
 	| 'rebaseEditor/action/openConflictFile'
 	| 'rebaseEditor/action/openConflictChanges'
@@ -1751,8 +1378,7 @@ type SubscriptionActionEventData =
 				| 'reactivate'
 				| 'refer-friend'
 				| 'resend-verification'
-				| 'pricing'
-				| 'start-preview-trial';
+				| 'pricing';
 	  }
 	| {
 			action: 'upgrade';
@@ -1766,44 +1392,10 @@ type SubscriptionActionEventData =
 	| {
 			action: 'visibility';
 			visible: boolean;
-	  }
-	| FeaturePreviewActionEventData;
+	  };
 
 export interface SubscriptionEventDataWithPrevious
 	extends SubscriptionEventData, Partial<SubscriptionPreviousEventData> {}
-
-type TimelineContextEventData = WebviewTelemetryContext & {
-	'context.period': TimelinePeriod | undefined;
-	'context.scope.hasHead': boolean | undefined;
-	'context.scope.hasBase': boolean | undefined;
-	'context.scope.type': TimelineScopeType | undefined;
-	'context.showAllBranches': boolean | undefined;
-	'context.sliceBy': TimelineSliceBy | undefined;
-};
-export type TimelineTelemetryContext = TimelineContextEventData;
-
-/** Telemetry context fields pushed from the Timeline webview to the host via RPC. */
-export type TimelineWebviewTelemetryContext = Pick<
-	TimelineContextEventData,
-	'context.period' | 'context.showAllBranches' | 'context.sliceBy'
->;
-
-type TimelineShownEventData = TimelineContextEventData & FlattenedContextConfig<Config['visualHistory']>;
-export type TimelineShownTelemetryContext = TimelineShownEventData;
-
-type TimelineShownEvent = WebviewShownEventData & TimelineShownEventData;
-
-interface TimelineConfigChangedEvent extends TimelineContextEventData {
-	period: TimelinePeriod;
-	showAllBranches: boolean;
-	sliceBy: TimelineSliceBy;
-}
-
-interface TimelineActionOpenInEditorEvent extends TimelineContextEventData {
-	'scope.type': TimelineScopeType;
-	'scope.hasHead': boolean;
-	'scope.hasBase': boolean;
-}
 
 interface UsageTrackEvent {
 	'usage.key': TrackedUsageKeys;
@@ -1816,28 +1408,12 @@ interface WalkthroughEvent {
 }
 
 type WalkthroughActionNames =
-	| 'open/ai-custom-instructions-settings'
-	| 'open/ai-enable-setting'
-	| 'open/ai-settings'
-	| 'open/help-center/ai-features'
-	| 'open/help-center/accelerate-pr-reviews'
 	| 'open/help-center/interactive-code-history'
-	| 'open/help-center/community-vs-pro'
-	| 'open/devex-platform'
-	| 'open/drafts'
 	| 'connect/integrations'
-	| 'open/composer'
-	| 'open/graph'
-	| 'open/launchpad'
 	| 'create/worktree'
 	| 'open/help-center'
-	| 'plus/login'
-	| 'plus/sign-up'
-	| 'plus/upgrade'
-	| 'plus/reactivate'
 	| 'open/walkthrough'
-	| 'open/inspect'
-	| 'switch/ai-model';
+	| 'open/inspect';
 
 type WalkthroughActionEvent =
 	| { type: 'command'; name: WalkthroughActionNames; command: string; detail?: string }
@@ -1847,19 +1423,7 @@ interface WalkthroughCompletionEvent {
 	'context.key': WalkthroughContextKeys | GraphWalkthroughContextKeys;
 }
 
-type WelcomeActionNames =
-	| 'dismiss'
-	| 'open/composer'
-	| 'open/graph'
-	| 'open/home-view'
-	| 'open/help-center'
-	| 'open/help-center/community-vs-pro'
-	| 'open/launchpad'
-	| 'plus/login'
-	| 'plus/reactivate'
-	| 'plus/sign-up'
-	| 'plus/upgrade'
-	| 'shown';
+type WelcomeActionNames = 'dismiss' | 'open/home-view' | 'open/help-center' | 'shown';
 
 type WelcomeActionEvent =
 	| { name: 'shown' | 'dismiss'; viewedCarouselPages?: number; proButtonClicked?: boolean }
@@ -1887,21 +1451,11 @@ export type WebviewTelemetryEvents = {
 			? InspectTelemetryContext
 			: K extends `graph/${string}` | `graphDetails/${string}`
 				? GraphTelemetryContext
-				: K extends `timeline/${string}`
-					? TimelineTelemetryContext
-					: K extends `composer/${string}`
-						? ComposerTelemetryContext
-						: K extends `rebaseEditor/${string}`
-							? RebaseEditorTelemetryContext
-							: WebviewTelemetryContext)
+				: K extends `rebaseEditor/${string}`
+					? RebaseEditorTelemetryContext
+					: WebviewTelemetryContext)
 	>;
 };
-
-export type LoginContext = 'start_trial';
-export type ConnectIntegrationContext = 'launchpad' | 'mcp';
-export type Context = LoginContext | ConnectIntegrationContext;
-/** Used to provide a "source context" to gk.dev for both tracking and customization purposes */
-export type TrackingContext = 'graph' | 'launchpad' | 'mcp' | 'visual_file_history' | 'worktrees';
 
 export type Sources =
 	| 'account'
@@ -1910,16 +1464,11 @@ export type Sources =
 	| 'ai:markdown-editor'
 	| 'ai:picker'
 	| 'associateIssueWithBranch'
-	| 'cloud-patches'
-	| 'code-suggest'
 	| 'commandPalette'
-	| 'composer'
 	| 'deeplink'
 	| 'editor:hover'
 	| 'feature-badge'
 	| 'feature-gate'
-	| 'gk-cli-integration'
-	| 'gk-mcp-provider'
 	| 'graph'
 	| 'graph-details'
 	| 'graph-header'
@@ -1930,14 +1479,8 @@ export type Sources =
 	| 'inspect'
 	| 'inspect-overview'
 	| 'integrations'
-	| 'launchpad'
-	| 'launchpad-indicator'
-	| 'launchpad-view'
-	| 'mcp'
-	| 'mcp-welcome-message'
 	| 'merge-target'
 	| 'notification'
-	| 'patchDetails'
 	| 'prompt'
 	| 'quick-wizard'
 	| 'rebaseEditor'
@@ -1949,27 +1492,16 @@ export type Sources =
 	| 'startWork'
 	| 'statusbar:hover'
 	| 'subscription'
-	| 'timeline'
-	| 'trial-indicator'
 	| 'view'
 	| 'view:hover'
 	| 'walkthrough'
 	| 'welcome'
-	| 'whatsnew'
-	| 'worktrees';
+	| 'whatsnew';
 
 export type Source = {
 	source: Sources;
 	correlationId?: string;
 	detail?: string | TelemetryEventData;
-};
-
-export const sourceToContext: { [source in Sources]?: Context } = {
-	launchpad: 'launchpad',
-};
-
-export const detailToContext: { [detail in string]?: Context } = {
-	mcp: 'mcp',
 };
 
 export type TrackedUsage = {

@@ -10,7 +10,7 @@
  * 2. Ephemeral UI — navigationStack, inReview, draftState
  * 3. Domain Data — currentCommit, wipState, preferences, enrichment signals
  * 4. Remote Bridges — orgSettings, hasAccount (connected to host signals post-RPC)
- * 5. Resource-owned (NOT in state) — loading, reachability, explain, generate
+ * 5. Resource-owned (NOT in state) — loading, reachability, explain
  * 6. Derived — computed from above (canNavigateBack, wipStatus, etc.)
  *
  * Signals removed from state (now resource-owned in commitDetails.ts):
@@ -19,7 +19,6 @@
  * - reachabilityState → reachabilityResource.status
  * - reachability → reachabilityResource.value
  * - explainState → explainResource.value
- * - generateState → generateResource.value
  */
 import { computed } from '@lit-labs/signals';
 import { signalObject } from 'signal-utils/object';
@@ -27,7 +26,6 @@ import type { IssueOrPullRequest } from '@gitlens/git/models/issueOrPullRequest.
 import type { PullRequestShape } from '@gitlens/git/models/pullRequest.js';
 import type { GitCommitSearchContext } from '@gitlens/git/models/search.js';
 import type { Autolink } from '../../../autolinks/models/autolinks.js';
-import type { Draft } from '../../../plus/drafts/models/drafts.js';
 import type {
 	CommitDetails,
 	CommitSignatureShape,
@@ -49,12 +47,6 @@ export interface ExplainState {
 	cancelled?: boolean;
 	error?: { message: string };
 	result?: { summary: string; body: string };
-}
-
-export interface GenerateState {
-	title?: string;
-	description?: string;
-	error?: { message: string };
 }
 
 /**
@@ -116,7 +108,6 @@ export function createCommitDetailsState(storage?: HostStorage) {
 	const autolinkedIssues = signal<IssueOrPullRequest[] | undefined>(undefined);
 	const pullRequest = signal<PullRequestShape | undefined>(undefined);
 	const signature = signal<CommitSignatureShape | undefined>(undefined);
-	const codeSuggestions = signal<Omit<Draft, 'changesets'>[] | undefined>(undefined);
 
 	// ── Derived State ──
 
@@ -201,7 +192,6 @@ export function createCommitDetailsState(storage?: HostStorage) {
 		autolinkedIssues: autolinkedIssues,
 		pullRequest: pullRequest,
 		signature: signature,
-		codeSuggestions: codeSuggestions,
 
 		// Derived State (read-only)
 		canNavigateBack: canNavigateBack,

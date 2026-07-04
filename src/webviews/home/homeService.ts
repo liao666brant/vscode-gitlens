@@ -3,19 +3,15 @@
  *
  * Only contains Home-specific concerns. Generic services (subscription,
  * integrations, repositories, config, ai, commands) come from SharedWebviewServices.
- * Launchpad is a standalone service composed in from the RPC layer.
  */
 
 import type { WalkthroughContextKeys } from '../../constants.walkthroughs.js';
-import type { LaunchpadService } from '../rpc/launchpadService.js';
 import type { SharedWebviewServices } from '../rpc/services/common.js';
 import type { OrgSettings, RepositoriesState, RpcEventSubscription } from '../rpc/services/types.js';
 import type {
-	AgentSessionState,
 	GetOverviewBranchesResponse,
 	GetOverviewEnrichmentResponse,
 	GetOverviewWipResponse,
-	OpenInGraphParams,
 	OverviewFilters,
 } from './protocol.js';
 
@@ -67,10 +63,7 @@ export interface HomeViewService {
 	/** Get branch skeletons (sync fields only) classified as active/recent/stale. Fast — no enrichment.
 	 * @param type - If specified, only returns the requested category. Omit for all categories.
 	 */
-	getOverviewBranches(
-		type?: 'active' | 'inactive' | 'agents',
-		signal?: AbortSignal,
-	): Promise<GetOverviewBranchesResponse>;
+	getOverviewBranches(type?: 'active' | 'inactive', signal?: AbortSignal): Promise<GetOverviewBranchesResponse>;
 
 	/** Get WIP status for specified branches. Lightweight — local git status only. */
 	getOverviewWip(branchIds: string[], signal?: AbortSignal): Promise<GetOverviewWipResponse>;
@@ -117,21 +110,8 @@ export interface HomeViewService {
 	/** Fired when walkthrough progress changes. */
 	onWalkthroughProgressChanged: RpcEventSubscription<WalkthroughProgressState>;
 
-	// --- UI Actions ---
-
-	/** Open a branch or repo in the Commit Graph. */
-	openInGraph(params: OpenInGraphParams): void;
-
 	/** Fired when the extension requests account focus. */
 	onFocusAccount: RpcEventSubscription<undefined>;
-
-	// --- Agent Sessions ---
-
-	/** Get current agent sessions. */
-	getAgentSessions(): Promise<AgentSessionState[]>;
-
-	/** Fired when agent sessions change. */
-	onAgentSessionsChanged: RpcEventSubscription<AgentSessionState[]>;
 
 	// --- Initial Context ---
 
@@ -146,9 +126,8 @@ export interface HomeViewService {
 /**
  * Complete Home webview services.
  *
- * Composes SharedWebviewServices with Home-specific and standalone services.
+ * Composes SharedWebviewServices with Home-specific services.
  */
 export interface HomeServices extends SharedWebviewServices {
 	readonly home: HomeViewService;
-	readonly launchpad: LaunchpadService;
 }

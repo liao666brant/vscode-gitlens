@@ -3,7 +3,7 @@ import type { Config } from '../config.js';
 import type { GlCommands } from '../constants.commands.js';
 import type { Source, WebviewTelemetryEvents } from '../constants.telemetry.js';
 import type { WebviewIds } from '../constants.views.js';
-import type { Promo, PromoLocation, PromoPlans } from '../plus/gk/models/promo.js';
+import type { Promo, PromoLocation, PromoPlans } from '../community/stubs/pro.js';
 import type { ConfigPath, ConfigPathValue, Path, PathValue } from '../system/-webview/configuration.js';
 import { IpcCommand, IpcNotification, IpcRequest } from './ipc/models/ipc.js';
 
@@ -106,18 +106,12 @@ interface CustomConfig {
 	rebaseEditor: {
 		enabled: boolean;
 	};
-	currentLine: {
-		useUncommittedChangesFormat: boolean;
-	};
 }
 
 export type CustomConfigPath = Path<CustomConfig>;
 export type CustomConfigPathValue<P extends CustomConfigPath> = PathValue<CustomConfig, P>;
 
-const customConfigKeys: readonly CustomConfigPath[] = [
-	'rebaseEditor.enabled',
-	'currentLine.useUncommittedChangesFormat',
-];
+const customConfigKeys: readonly CustomConfigPath[] = ['rebaseEditor.enabled'];
 
 export function isCustomConfigKey(key: string): key is CustomConfigPath {
 	return customConfigKeys.includes(key as CustomConfigPath);

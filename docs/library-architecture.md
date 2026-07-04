@@ -24,7 +24,6 @@ flowchart TD
 
     GL_CLI -->|"ensureProvider()"| CLI_P["<b>CliGitProvider</b><br/>@gitlens/git-cli<br/><i>file:, git:, gitlens: schemes</i>"]
     GL_VSLS -->|"ensureProvider()"| VSLS_P["<b>CliGitProvider</b><br/>@gitlens/git-cli<br/><i>with VslsGit executor</i><br/><i>vsls:, vsls-scc: schemes</i>"]
-    GL_GH -->|"ensureProvider()"| GH_P["<b>GitHubGitProvider</b><br/>@gitlens/git-github<br/><i>vscode-vfs:, github: schemes</i>"]
 
     CLI_P & VSLS_P & GH_P -->|"this.register(provider, canHandle)"| GS
 

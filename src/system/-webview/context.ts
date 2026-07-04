@@ -14,7 +14,8 @@ export function getContext<T extends keyof ContextKeys>(
 	key: T,
 	defaultValue?: ContextKeys[T],
 ): ContextKeys[T] | undefined {
-	return (contextStorage.get(key) as ContextKeys[T] | undefined) ?? defaultValue;
+	const value = contextStorage.get(key) as ContextKeys[T] | undefined;
+	return value ?? defaultValue;
 }
 
 export async function setContext<T extends keyof ContextKeys>(
@@ -66,8 +67,8 @@ export async function removeFromContextDelimitedString<T extends keyof ContextKe
 		return;
 	}
 
-	const currentArray = current.split(delimiter);
-	const filtered = currentArray.filter(v => !values.includes(v));
+	const currentArray: string[] = current.split(delimiter);
+	const filtered = currentArray.filter((v: string) => !values.includes(v));
 
 	if (filtered.length === 0) {
 		return setContext(key, undefined);
@@ -84,5 +85,6 @@ export function includesContextDelimitedString<T extends keyof ContextKeys>(
 	const current = getContext(key);
 	if (typeof current !== 'string' || current.length === 0) return false;
 
-	return current.split(delimiter).includes(value);
+	const values: string[] = current.split(delimiter);
+	return values.includes(value);
 }

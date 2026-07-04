@@ -24,7 +24,6 @@ import {
 	isCommandContextViewNodeHasComparison,
 	isCommandContextViewNodeHasRemote,
 	isCommandContextViewNodeHasTag,
-	isCommandContextViewNodeHasWorkspace,
 } from './commandContext.utils.js';
 
 export interface CopyDeepLinkCommandArgs {
@@ -33,7 +32,6 @@ export interface CopyDeepLinkCommandArgs {
 	compareWithRef?: StoredNamedRef;
 	remote?: string;
 	prePickRemote?: boolean;
-	workspaceId?: string;
 }
 
 @command()
@@ -45,7 +43,6 @@ export class CopyDeepLinkCommand extends ActiveEditorCommand {
 			'gitlens.copyDeepLinkToRepo',
 			'gitlens.copyDeepLinkToTag',
 			'gitlens.copyDeepLinkToComparison',
-			'gitlens.copyDeepLinkToWorkspace',
 		]);
 	}
 
@@ -72,8 +69,6 @@ export class CopyDeepLinkCommand extends ActiveEditorCommand {
 				args = { refOrRepoPath: context.node.tag };
 			} else if (isCommandContextViewNodeHasRemote(context)) {
 				args = { refOrRepoPath: context.node.remote.repoPath, remote: context.node.remote.name };
-			} else if (isCommandContextViewNodeHasWorkspace(context)) {
-				args = { workspaceId: context.node.workspace.id };
 			}
 		}
 
@@ -82,16 +77,6 @@ export class CopyDeepLinkCommand extends ActiveEditorCommand {
 
 	async execute(editor?: TextEditor, uri?: Uri, args?: CopyDeepLinkCommandArgs): Promise<void> {
 		args = { ...args };
-
-		if (args.workspaceId != null) {
-			try {
-				await this.container.deepLinks.copyDeepLinkUrl(args.workspaceId);
-			} catch (ex) {
-				Logger.error(ex, 'CopyDeepLinkCommand');
-				void showGenericErrorMessage('无法复制链接');
-			}
-			return;
-		}
 
 		let type;
 		let repoPath;

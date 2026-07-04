@@ -3,7 +3,6 @@ import type { OverviewFilters } from '../../../home/protocol.js';
 import type { RepositoryChange, RepositoryChangeEventData } from '../../../rpc/services/types.js';
 import { createAIState } from '../../shared/contexts/ai.js';
 import { createIntegrationsState } from '../../shared/contexts/integrations.js';
-import { createLaunchpadState } from '../../shared/contexts/launchpad.js';
 import { createOnboardingState } from '../../shared/contexts/onboarding.js';
 import { InMemoryStorage } from '../../shared/host/storage.js';
 import type { SubscriptionActions } from '../events.js';
@@ -17,7 +16,6 @@ suite('setupSubscriptions Test Suite', () => {
 			integrations: createIntegrationsState(),
 			ai: createAIState(),
 			onboarding: createOnboardingState(),
-			launchpad: createLaunchpadState(),
 			commands: { service: undefined },
 		};
 
@@ -34,10 +32,6 @@ suite('setupSubscriptions Test Suite', () => {
 					return () => {};
 				},
 				onFocusAccount: () => () => {},
-				onAgentSessionsChanged: () => () => {},
-			},
-			launchpad: {
-				onLaunchpadChanged: () => () => {},
 			},
 			config: {},
 			subscription: {
@@ -80,8 +74,6 @@ suite('setupSubscriptions Test Suite', () => {
 			},
 			onFocusAccount: () => {},
 			onSubscriptionChanged: () => {},
-			refreshLaunchpad: () => {},
-			refreshAgentOverview: () => {},
 			refreshActiveOverview: () => {},
 		} satisfies SubscriptionActions;
 
@@ -108,7 +100,6 @@ suite('setupSubscriptions Test Suite', () => {
 			integrations: createIntegrationsState(),
 			ai: createAIState(),
 			onboarding: createOnboardingState(),
-			launchpad: createLaunchpadState(),
 			commands: { service: undefined },
 		};
 
@@ -125,10 +116,6 @@ suite('setupSubscriptions Test Suite', () => {
 				},
 				onOverviewFilterChanged: () => () => {},
 				onFocusAccount: () => () => {},
-				onAgentSessionsChanged: () => () => {},
-			},
-			launchpad: {
-				onLaunchpadChanged: () => () => {},
 			},
 			config: {},
 			subscription: {
@@ -163,8 +150,6 @@ suite('setupSubscriptions Test Suite', () => {
 			updateOverviewFilter: () => {},
 			onFocusAccount: () => {},
 			onSubscriptionChanged: () => {},
-			refreshLaunchpad: () => {},
-			refreshAgentOverview: () => {},
 			refreshActiveOverview: () => {},
 		} satisfies SubscriptionActions;
 
@@ -196,7 +181,6 @@ suite('setupSubscriptions Test Suite', () => {
 				integrations: createIntegrationsState(),
 				ai: createAIState(),
 				onboarding: createOnboardingState(),
-				launchpad: createLaunchpadState(),
 				commands: { service: undefined },
 			};
 			state.home.overviewRepositoryPath.set(overviewRepoPath);
@@ -211,9 +195,7 @@ suite('setupSubscriptions Test Suite', () => {
 					onOverviewRepositoryChanged: () => () => {},
 					onOverviewFilterChanged: () => () => {},
 					onFocusAccount: () => () => {},
-					onAgentSessionsChanged: () => () => {},
 				},
-				launchpad: { onLaunchpadChanged: () => () => {} },
 				config: {},
 				subscription: { onSubscriptionChanged: () => () => {} },
 				integrations: { onIntegrationsChanged: () => () => {} },
@@ -249,8 +231,6 @@ suite('setupSubscriptions Test Suite', () => {
 				updateOverviewFilter: () => {},
 				onFocusAccount: () => {},
 				onSubscriptionChanged: () => {},
-				refreshLaunchpad: () => {},
-				refreshAgentOverview: () => {},
 			} satisfies SubscriptionActions;
 
 			const unsubscribe = await setupSubscriptions(state, services, actions);

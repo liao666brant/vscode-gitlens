@@ -26,19 +26,11 @@ export type Colors =
 	| `${typeof extensionPrefix}.gutterBackgroundColor`
 	| `${typeof extensionPrefix}.gutterForegroundColor`
 	| `${typeof extensionPrefix}.gutterUncommittedForegroundColor`
-	| `${typeof extensionPrefix}.launchpadIndicatorMergeableColor`
-	| `${typeof extensionPrefix}.launchpadIndicatorMergeableHoverColor`
-	| `${typeof extensionPrefix}.launchpadIndicatorBlockedColor`
-	| `${typeof extensionPrefix}.launchpadIndicatorBlockedHoverColor`
-	| `${typeof extensionPrefix}.launchpadIndicatorAttentionColor`
-	| `${typeof extensionPrefix}.launchpadIndicatorAttentionHoverColor`
 	| `${typeof extensionPrefix}.lineHighlightBackgroundColor`
 	| `${typeof extensionPrefix}.lineHighlightOverviewRulerColor`
 	| `${typeof extensionPrefix}.mergedPullRequestIconColor`
 	| `${typeof extensionPrefix}.openAutolinkedIssueIconColor`
 	| `${typeof extensionPrefix}.openPullRequestIconColor`
-	| `${typeof extensionPrefix}.trailingLineBackgroundColor`
-	| `${typeof extensionPrefix}.trailingLineForegroundColor`
 	| `${typeof extensionPrefix}.unpublishedChangesIconColor`
 	| `${typeof extensionPrefix}.unpublishedCommitIconColor`
 	| `${typeof extensionPrefix}.unpulledChangesIconColor`;

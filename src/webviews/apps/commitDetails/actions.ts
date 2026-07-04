@@ -19,7 +19,6 @@
  * - Clear lifecycle management (no module-level state)
  * - Single await per sub-service at startup, then direct calls
  */
-import type { Remote } from '@eamodio/supertalk';
 import type { GitFileChangeShape } from '@gitlens/git/models/fileChange.js';
 import type { IssueOrPullRequest } from '@gitlens/git/models/issueOrPullRequest.js';
 import type { PullRequestRefs, PullRequestShape } from '@gitlens/git/models/pullRequest.js';
@@ -33,15 +32,14 @@ import type { Autolink } from '../../../autolinks/models/autolinks.js';
 import type { ViewFilesLayout } from '../../../config.js';
 import type { GlExtensionCommands } from '../../../constants.commands.js';
 import type { InspectWebviewTelemetryContext, TelemetryEvents } from '../../../constants.telemetry.js';
-import type { Draft } from '../../../plus/drafts/models/drafts.js';
 import type { CommitDetailsServices, InitialContext } from '../../commitDetails/commitDetailsService.js';
 import type {
 	CommitDetails,
 	CommitSignatureShape,
 	FileShowOptions,
 	Mode,
+	Preferences,
 	Wip,
-	WipChange,
 } from '../../commitDetails/protocol.js';
 import { fetchCommitEnrichment } from '../shared/actions/commitEnrichment.js';
 import type { OpenMultipleChangesArgs } from '../shared/actions/file.js';
@@ -59,10 +57,8 @@ import {
 	optimisticFireAndForget,
 } from '../shared/actions/rpc.js';
 import { NavigationStack } from '../shared/controllers/navigationStack.js';
-import { getRemoteNameFromBranchName } from '../shared/git-utils.js';
 import type { Resource } from '../shared/state/resource.js';
-import type { CreatePatchEventDetail } from './components/gl-inspect-patch.js';
-import type { CommitDetailsState, ExplainState, GenerateState } from './state.js';
+import type { CommitDetailsState, ExplainState } from './state.js';
 
 // ============================================================
 // Resolved Services Type (resolve-once pattern)
@@ -72,7 +68,7 @@ import type { CommitDetailsState, ExplainState, GenerateState } from './state.js
  * Helper type: resolves a sub-service from Remote<CommitDetailsServices>.
  * After `const git = await services.git`, the type is `ResolvedSubService<'git'>`.
  */
-type ResolvedSubService<K extends keyof CommitDetailsServices> = Awaited<Remote<CommitDetailsServices>[K]>;
+type ResolvedSubService<K extends keyof CommitDetailsServices> = Awaited<CommitDetailsServices[K]>;
 
 /**
  * Resolved sub-services passed to CommitDetailsActions.
@@ -103,7 +99,6 @@ export interface CommitDetailsResources {
 	readonly wip: Resource<Wip | undefined, [string | undefined]>;
 	readonly reachability: Resource<GitCommitReachability | undefined>;
 	readonly explain: Resource<ExplainState | undefined, [string | undefined]>;
-	readonly generate: Resource<GenerateState | undefined>;
 }
 
 interface FetchCommitOptions {
@@ -191,7 +186,6 @@ export class CommitDetailsActions {
 		this.resources.wip.cancel();
 		this.resources.reachability.cancel();
 		this.resources.explain.cancel();
-		this.resources.generate.cancel();
 	}
 
 	/**
@@ -441,27 +435,19 @@ export class CommitDetailsActions {
 		this.state.preferences.set(newPrefs);
 
 		// Persist each changed property individually
+		const updateConfig = this.services.config.update as (key: string, value: unknown) => Promise<void>;
 		if (files.compact != null) {
-			fireAndForget(
-				this.services.config.update('views.commitDetails.files.compact', files.compact),
-				'update files.compact',
-			);
+			fireAndForget(updateConfig('views.commitDetails.files.compact', files.compact), 'update files.compact');
 		}
 		if (files.icon != null) {
-			fireAndForget(
-				this.services.config.update('views.commitDetails.files.icon', files.icon),
-				'update files.icon',
-			);
+			fireAndForget(updateConfig('views.commitDetails.files.icon', files.icon), 'update files.icon');
 		}
 		if (files.layout != null) {
-			fireAndForget(
-				this.services.config.update('views.commitDetails.files.layout', files.layout),
-				'update files.layout',
-			);
+			fireAndForget(updateConfig('views.commitDetails.files.layout', files.layout), 'update files.layout');
 		}
 		if (files.threshold != null) {
 			fireAndForget(
-				this.services.config.update('views.commitDetails.files.threshold', files.threshold),
+				updateConfig('views.commitDetails.files.threshold', files.threshold),
 				'update files.threshold',
 			);
 		}
@@ -507,23 +493,11 @@ export class CommitDetailsActions {
 	}
 
 	startWork(): void {
-		void this.services.commands.execute('gitlens.startWork', { source: 'inspect' });
+		noop();
 	}
 
 	createPullRequest(): void {
-		const repoPath = this.getRepoPath();
-		if (!repoPath) return;
-
-		const wip = this.state.wipState.get();
-		const branch = wip?.branch;
-		const upstreamName = branch?.upstream?.name;
-		if (branch?.name == null || upstreamName == null) return;
-
-		void this.services.commands.execute('gitlens.createPullRequestOnRemote', {
-			repoPath: repoPath,
-			compare: branch.name,
-			remote: getRemoteNameFromBranchName(upstreamName),
-		});
+		noop();
 	}
 
 	createBranch(): void {
@@ -677,13 +651,8 @@ export class CommitDetailsActions {
 	 *  (the WIP row for the uncommitted commit, else the commit), and enter the mode there — these
 	 *  modes aren't orchestrated standalone in Inspect. */
 	openCommitInGraphMode(mode: 'review' | 'compose' | 'compare', commit: CommitDetails | undefined): void {
-		if (commit?.repoPath == null || commit.sha == null) return;
-		if (mode !== 'review' && mode !== 'compose') return;
-
-		void this.services.commands.execute('gitlens.showGraph', {
-			action: mode === 'review' ? 'enter-review' : 'enter-compose',
-			target: { sha: commit.sha, worktreePath: commit.repoPath },
-		});
+		void mode;
+		void commit;
 	}
 
 	changeFilesLayout(layout: ViewFilesLayout): void {
@@ -692,7 +661,8 @@ export class CommitDetailsActions {
 
 		const files = { ...prefs.files, layout: layout };
 		this.state.preferences.set({ ...prefs, files: files });
-		void this.services.config.update('views.commitDetails.files.layout', layout);
+		const updateConfig = this.services.config.update as (key: string, value: unknown) => Promise<void>;
+		void updateConfig('views.commitDetails.files.layout', layout);
 	}
 
 	// ============================================================
@@ -744,15 +714,8 @@ export class CommitDetailsActions {
 	}
 
 	// ============================================================
-	// Draft/Patch Actions
+	// Patch Actions
 	// ============================================================
-
-	/**
-	 * Create a patch from WIP changes.
-	 */
-	createPatchFromWip(changes: WipChange, checked: boolean | 'staged'): void {
-		fireAndForget(this.services.drafts.createPatchFromWip(changes, checked), 'create patch from WIP');
-	}
 
 	/**
 	 * Copy a WIP patch to the system clipboard.
@@ -772,31 +735,6 @@ export class CommitDetailsActions {
 		fireAndForget(this.services.drafts.copyWipPatchToClipboard(repoPath, scope, uris), 'copy WIP patch');
 	}
 
-	/**
-	 * Suggest changes (create a draft).
-	 * Requires WIP state with PR context.
-	 */
-	suggestChanges(params: CreatePatchEventDetail): void {
-		const wip = this.state.wipState.get();
-		if (!wip?.repo?.path) return;
-
-		void this.services.drafts
-			.suggestChanges({
-				repoPath: wip.repo.path,
-				...params,
-			})
-			.then(() => {
-				this.changeReviewMode(false);
-			}, noop);
-	}
-
-	/**
-	 * Show a code suggestion.
-	 */
-	showCodeSuggestion(draft: Draft): void {
-		fireAndForget(this.services.drafts.showCodeSuggestion(draft), 'show code suggestion');
-	}
-
 	// ============================================================
 	// AI Actions (via resources)
 	// ============================================================
@@ -810,17 +748,6 @@ export class CommitDetailsActions {
 		if (!commit) return;
 
 		await this.resources.explain.fetch(prompt);
-	}
-
-	/**
-	 * Generate AI title and description for WIP changes.
-	 * Resource handles cancel-previous and staleness.
-	 */
-	async generateDescription(): Promise<void> {
-		const repoPath = this.getRepoPath();
-		if (!repoPath) return;
-
-		await this.resources.generate.fetch();
 	}
 
 	// ============================================================
@@ -897,10 +824,12 @@ export class CommitDetailsActions {
 
 			// Fire config calls as fire-and-forget — each sets its signal on resolve.
 			// These don't gate domain data; signals have safe defaults until they arrive.
+			const getConfig = this.services.config.get as (key: string) => Promise<unknown>;
 			void this.fetchPreferences();
-			void this.services.config
-				.get('views.commitDetails.autolinks.enabled')
-				.then(a => (this.state.capabilities.autolinksEnabled = a), noop);
+			void getConfig('views.commitDetails.autolinks.enabled').then(
+				a => (this.state.capabilities.autolinksEnabled = a === true),
+				noop,
+			);
 			// Note: hasAccount and orgSettings use RemoteSignalBridge (connected in commitDetails.ts)
 			void this.services.integrations
 				.getIntegrationStates()
@@ -945,7 +874,6 @@ export class CommitDetailsActions {
 		this.state.error.set(undefined);
 		this.resources.reachability.cancel();
 		this.resources.explain.cancel();
-		this.resources.generate.cancel();
 
 		// Abort any prior in-flight enrichment so a slow autolinks / PR / signature lookup from
 		// the previous selection can't overwrite the new selection's state. Host-side methods
@@ -1053,15 +981,13 @@ export class CommitDetailsActions {
 	/**
 	 * Fetch WIP state from the backend.
 	 * Resource handles cancel-previous and loading state. After fetch,
-	 * the result is written to state signals. PR and code suggestions
-	 * are fire-and-forget.
+	 * the result is written to state signals. PR enrichment is fire-and-forget.
 	 */
 	async fetchWipState(repoPath?: string): Promise<void> {
 		this.state.error.set(undefined);
 
 		// Clear WIP-dependent state
 		this.state.pullRequest.set(undefined);
-		this.state.codeSuggestions.set(undefined);
 
 		await this.resources.wip.fetch(repoPath);
 
@@ -1075,20 +1001,12 @@ export class CommitDetailsActions {
 			if (effectiveRepoPath != null) {
 				this.watchWipRepo(effectiveRepoPath);
 
-				// Fire PR and code suggestions in parallel — don't block WIP render
+				// Fire PR enrichment in parallel — don't block WIP render
 				// enrichmentGuard() prevents stale callbacks from writing data for a replaced WIP
 				const guard = <T>(onResult: (value: T) => void) => enrichmentGuard<T>(this.resources.wip, onResult);
 				void this.services.pullRequests.getPullRequestForBranch(effectiveRepoPath).then(
 					guard(pr => {
 						this.state.pullRequest.set(pr);
-						if (pr != null) {
-							void this.services.drafts.getCodeSuggestions(effectiveRepoPath).then(
-								enrichmentGuard(this.resources.wip, suggestions =>
-									this.state.codeSuggestions.set(suggestions),
-								),
-								noop,
-							);
-						}
 					}),
 					noop,
 				);
@@ -1103,6 +1021,25 @@ export class CommitDetailsActions {
 	 */
 	async fetchPreferences(): Promise<void> {
 		try {
+			type ConfigValues = [
+				Preferences['avatars'],
+				Preferences['currentUserNameStyle'],
+				Preferences['dateFormat'],
+				Preferences['dateStyle'],
+				Preferences['files'],
+				Preferences['showSignatureBadges'],
+				boolean,
+			];
+			type CoreConfigValues = [
+				Preferences['indentGuides'],
+				Preferences['indent'],
+				Preferences['enableSmartCommit'],
+				Preferences['workingFilesOrderBy'],
+			];
+			const getConfigValues = this.services.config.getMany as (...keys: string[]) => Promise<ConfigValues>;
+			const getCoreConfigValues = this.services.config.getManyCore as (
+				...keys: string[]
+			) => Promise<CoreConfigValues>;
 			const [
 				pullRequestExpandedResult,
 				showSearchBoxResult,
@@ -1114,7 +1051,7 @@ export class CommitDetailsActions {
 				this.services.storage.getWorkspace('views:commitDetails:pullRequestExpanded'),
 				this.services.storage.getWorkspace('views:commitDetails:showSearchBox'),
 				this.services.storage.getWorkspace('views:commitDetails:searchBoxFilter'),
-				this.services.config.getMany(
+				getConfigValues(
 					'views.commitDetails.avatars',
 					'defaultCurrentUserNameStyle',
 					'defaultDateFormat',
@@ -1123,7 +1060,7 @@ export class CommitDetailsActions {
 					'signing.showSignatureBadges',
 					'views.commitDetails.autolinks.enabled',
 				),
-				this.services.config.getManyCore(
+				getCoreConfigValues(
 					'workbench.tree.renderIndentGuides',
 					'workbench.tree.indent',
 					'git.enableSmartCommit',

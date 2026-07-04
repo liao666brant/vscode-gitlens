@@ -2,8 +2,8 @@
 import './home.scss';
 import type { Remote } from '@eamodio/supertalk';
 import { ContextProvider } from '@lit/context';
-import { html, nothing } from 'lit';
-import { customElement, property, query, state } from 'lit/decorators.js';
+import { html } from 'lit';
+import { customElement, property, state } from 'lit/decorators.js';
 import { signalObject } from 'signal-utils/object';
 import { isCancellationError } from '@gitlens/utils/cancellation.js';
 import { getScopedCounter } from '@gitlens/utils/counter.js';
@@ -20,19 +20,12 @@ import type {
 	OverviewBranch,
 	OverviewFilters,
 } from '../../home/protocol.js';
-import {
-	activeOverviewStateContext,
-	agentOverviewStateContext,
-	inactiveOverviewStateContext,
-} from '../plus/home/components/overviewState.js';
-import type { GlHomeHeader } from '../plus/shared/components/home-header.js';
 import { SignalWatcherWebviewApp } from '../shared/appBase.js';
 import { scrollableBase } from '../shared/components/styles/lit/base.css.js';
 import { aiContext, createAIState } from '../shared/contexts/ai.js';
 import type { CommandsState } from '../shared/contexts/commands.js';
 import { commandsContext } from '../shared/contexts/commands.js';
 import { createIntegrationsState, integrationsContext } from '../shared/contexts/integrations.js';
-import { createLaunchpadState, launchpadContext } from '../shared/contexts/launchpad.js';
 import type { OnboardingKey } from '../shared/contexts/onboarding.js';
 import { createOnboardingState, onboardingContext } from '../shared/contexts/onboarding.js';
 import { createDefaultSubscriptionContextState, subscriptionContext } from '../shared/contexts/subscription.js';
@@ -41,22 +34,18 @@ import { RpcController } from '../shared/rpc/rpcController.js';
 import type { Resource } from '../shared/state/resource.js';
 import { createResource } from '../shared/state/resource.js';
 import type { ThemeChangeEvent } from '../shared/theme.js';
-import { fetchLaunchpadSummary, populateInitialState, restoreOverviewRepositoryPath } from './actions.js';
+import { populateInitialState, restoreOverviewRepositoryPath } from './actions.js';
 import type { SubscriptionActions } from './events.js';
 import { setupSubscriptions } from './events.js';
 import { homeBaseStyles, homeStyles } from './home.css.js';
 import type { HomeRootState } from './state.js';
 import { createHomeState, homeStateContext } from './state.js';
-import '../plus/shared/components/home-header.js';
-import '../plus/home/components/active-work.js';
-import '../plus/home/components/launchpad.js';
-import '../plus/home/components/overview.js';
 import '../shared/components/skeleton-loader.js';
+import '../shared/components/button.js';
+import '../shared/components/code-icon.js';
 import './components/repo-alerts.js';
 import '../shared/components/banner/banner.js';
 import '../shared/components/gl-error-banner.js';
-import '../shared/components/hooks-banner.js';
-import '../shared/components/mcp-banner.js';
 
 /**
  * Home App - signal-based state management with RPC.
@@ -82,7 +71,6 @@ export class GlHomeApp extends SignalWatcherWebviewApp {
 	private _integrationsState = createIntegrationsState();
 	private _aiState = createAIState();
 	private _onboardingState = createOnboardingState();
-	private _launchpadState = createLaunchpadState();
 	private _commandsState: CommandsState = { service: undefined };
 
 	/** Internal aggregate for actions/events — never exposed via context. */
@@ -92,7 +80,6 @@ export class GlHomeApp extends SignalWatcherWebviewApp {
 			integrations: this._integrationsState,
 			ai: this._aiState,
 			onboarding: this._onboardingState,
-			launchpad: this._launchpadState,
 			commands: this._commandsState,
 		};
 	}
@@ -115,16 +102,12 @@ export class GlHomeApp extends SignalWatcherWebviewApp {
 	 */
 	private _subscriptionCtx?: ContextProvider<typeof subscriptionContext>;
 	private _homeStateCtx?: ContextProvider<typeof homeStateContext>;
-	private _activeOverviewCtxProvider?: ContextProvider<typeof activeOverviewStateContext>;
-	private _inactiveOverviewCtxProvider?: ContextProvider<typeof inactiveOverviewStateContext>;
-	private _agentOverviewCtxProvider?: ContextProvider<typeof agentOverviewStateContext>;
 
 	/**
 	 * Resource-backed overview states (created in _onRpcReady).
 	 */
 	private _activeResource?: Resource<GetActiveOverviewResponse>;
 	private _inactiveResource?: Resource<GetInactiveOverviewResponse>;
-	private _agentResource?: Resource<GetInactiveOverviewResponse>;
 	private _inactiveFilter?: Partial<OverviewFilters>;
 	private readonly _refreshOverviewDebounced = debounce(() => {
 		void this._fetchActiveCoalesced();
@@ -160,9 +143,6 @@ export class GlHomeApp extends SignalWatcherWebviewApp {
 	private _inactiveFetchInFlight?: Promise<void>;
 	private _inactiveFetchDirty = false;
 	private readonly _inactiveFetchGen = getScopedCounter();
-	private _agentFetchInFlight?: Promise<void>;
-	private _agentFetchDirty = false;
-	private readonly _agentFetchGen = getScopedCounter();
 
 	private _fetchActiveCoalesced(): Promise<void> {
 		const resource = this._activeResource;
@@ -210,29 +190,6 @@ export class GlHomeApp extends SignalWatcherWebviewApp {
 		return run;
 	}
 
-	private _fetchAgentCoalesced(): Promise<void> {
-		const resource = this._agentResource;
-		if (resource == null) return Promise.resolve();
-
-		if (this._agentFetchInFlight != null) {
-			this._agentFetchDirty = true;
-			return this._agentFetchInFlight;
-		}
-
-		const gen = this._agentFetchGen.next();
-		const run = resource.fetch().finally(() => {
-			if (this._agentFetchGen.current !== gen) return;
-
-			this._agentFetchInFlight = undefined;
-			if (this._agentFetchDirty) {
-				this._agentFetchDirty = false;
-				void this._fetchAgentCoalesced();
-			}
-		});
-		this._agentFetchInFlight = run;
-		return run;
-	}
-
 	private _resetFetchGates(): void {
 		// Bumping the generations invalidates any in-flight `.finally()` callbacks from
 		// the canceled promises so they don't clobber the next fetch's tracking reference.
@@ -242,9 +199,6 @@ export class GlHomeApp extends SignalWatcherWebviewApp {
 		this._inactiveFetchGen.next();
 		this._inactiveFetchInFlight = undefined;
 		this._inactiveFetchDirty = false;
-		this._agentFetchGen.next();
-		this._agentFetchInFlight = undefined;
-		this._agentFetchDirty = false;
 	}
 
 	/**
@@ -271,9 +225,6 @@ export class GlHomeApp extends SignalWatcherWebviewApp {
 	 */
 	private _readyAbort?: AbortController;
 
-	@query('gl-home-header')
-	private _header!: GlHomeHeader;
-
 	@state()
 	private isLightTheme = false;
 
@@ -297,16 +248,6 @@ export class GlHomeApp extends SignalWatcherWebviewApp {
 		new ContextProvider(this, { context: aiContext, initialValue: this._aiState });
 		new ContextProvider(this, { context: onboardingContext, initialValue: this._onboardingState });
 		new ContextProvider(this, { context: commandsContext, initialValue: this._commandsState });
-		new ContextProvider(this, { context: launchpadContext, initialValue: this._launchpadState });
-		this._activeOverviewCtxProvider = new ContextProvider(this, {
-			context: activeOverviewStateContext,
-		});
-		this._inactiveOverviewCtxProvider = new ContextProvider(this, {
-			context: inactiveOverviewStateContext,
-		});
-		this._agentOverviewCtxProvider = new ContextProvider(this, {
-			context: agentOverviewStateContext,
-		});
 	}
 
 	override disconnectedCallback(): void {
@@ -331,10 +272,8 @@ export class GlHomeApp extends SignalWatcherWebviewApp {
 		this._refreshInactiveDebounced.cancel();
 		this._activeResource?.dispose();
 		this._inactiveResource?.dispose();
-		this._agentResource?.dispose();
 		this._activeResource = undefined;
 		this._inactiveResource = undefined;
-		this._agentResource = undefined;
 		this._inactiveFilter = undefined;
 
 		// Reset all domain states
@@ -342,7 +281,6 @@ export class GlHomeApp extends SignalWatcherWebviewApp {
 		this._integrationsState.resetAll();
 		this._aiState.resetAll();
 		this._onboardingState.resetAll();
-		this._launchpadState.resetAll();
 		this._commandsState.service = undefined;
 
 		// GlWebviewApp: cleans up focus tracker, disposes ipc/promos/telemetry/DOM listeners
@@ -411,41 +349,29 @@ export class GlHomeApp extends SignalWatcherWebviewApp {
 		};
 
 		const root = this._rootState;
+		const homeServices = services as unknown as HomeServices;
 
 		// Resolve all sub-services in parallel.
 		// Supertalk proxy properties are thenables (have .then but not .catch/.finally);
 		// Promise.all handles thenables natively so no wrapping is needed.
-		const [
-			home,
-			launchpad,
-			config,
-			subscription,
-			integrations,
-			repositories,
-			repository,
-			ai,
-			commands,
-			onboarding,
-			branches,
-		] = await Promise.all([
-			services.home,
-			services.launchpad,
-			services.config,
-			services.subscription,
-			services.integrations,
-			services.repositories,
-			services.repository,
-			services.ai,
-			services.commands,
-			services.onboarding,
-			services.branches,
-		]);
+		/* eslint-disable @typescript-eslint/await-thenable -- Supertalk proxy properties are thenable at runtime */
+		const [home, config, subscription, integrations, repositories, repository, ai, commands, onboarding, branches] =
+			await Promise.all([
+				homeServices.home,
+				homeServices.config,
+				homeServices.subscription,
+				homeServices.integrations,
+				homeServices.repositories,
+				homeServices.repository,
+				homeServices.ai,
+				homeServices.commands,
+				homeServices.onboarding,
+				homeServices.branches,
+			]);
 
 		// Supertalk remote proxy properties are thenable at runtime (ProxyProperty with .then()),
 		// but Remote<T> types them as synchronous values. The lint rule correctly detects the
 		// thenable; the disable is required — this is how Supertalk property access works.
-
-		/* eslint-disable @typescript-eslint/await-thenable -- Supertalk proxy properties are thenable at runtime */
 		const [subscriptionSignal, orgSettingsSignal, avatarSignal, hasAccountSignal, orgCountSignal] =
 			await Promise.all([
 				subscription.subscriptionState,
@@ -533,66 +459,14 @@ export class GlHomeApp extends SignalWatcherWebviewApp {
 		});
 		const inactiveFilter = signalObject<Partial<OverviewFilters>>({});
 
-		const agentResource = createResource<GetInactiveOverviewResponse>(async signal => {
-			const branches = await home.getOverviewBranches('agents', signal);
-			if (branches == null) return undefined;
-
-			syncOverviewRepositoryPath(branches.repository.path);
-
-			const allIds = branches.recent.map(b => b.id);
-			const wipIds = branches.recent.filter(b => b.worktree != null).map(b => b.id);
-
-			// Same lazy-merge-target rationale as the inactive path.
-			const emptyWip = Promise.resolve<GetOverviewWipResponse>({});
-			const wipPromise = wipIds.length > 0 ? home.getOverviewWip(wipIds, signal) : emptyWip;
-			const enrichmentPromise = home.getOverviewEnrichment(allIds, { skipMergeTarget: true }, signal);
-
-			return {
-				repository: branches.repository,
-				recent: branches.recent.map(s => buildBranchProgressive(s, wipPromise, enrichmentPromise)),
-			};
-		});
-
 		this._activeResource = activeResource;
 		this._inactiveResource = inactiveResource;
-		this._agentResource = agentResource;
 		this._inactiveFilter = inactiveFilter;
-
-		this._activeOverviewCtxProvider?.setValue(
-			{
-				value: activeResource.value,
-				loading: activeResource.loading,
-				error: activeResource.error,
-				fetch: () => void activeResource.fetch(),
-				changeRepository: () => void home.changeOverviewRepository(),
-			},
-			true,
-		);
-		this._inactiveOverviewCtxProvider?.setValue(
-			{
-				value: inactiveResource.value,
-				loading: inactiveResource.loading,
-				error: inactiveResource.error,
-				filter: inactiveFilter,
-				fetch: () => void inactiveResource.fetch(),
-			},
-			true,
-		);
-		this._agentOverviewCtxProvider?.setValue(
-			{
-				value: agentResource.value,
-				loading: agentResource.loading,
-				error: agentResource.error,
-				fetch: () => void agentResource.fetch(),
-			},
-			true,
-		);
 
 		// Wire service handles to domain states
 		root.home.homeService = home;
 		root.home.branchesService = branches;
 		root.commands.service = commands;
-		root.launchpad.service = launchpad;
 
 		// Wire onboarding dismiss/state to RPC onboarding service
 		const onboardingKeyMap: Record<OnboardingKey, OnboardingKeys> = {
@@ -612,14 +486,8 @@ export class GlHomeApp extends SignalWatcherWebviewApp {
 		// a Promise is always `false`, which leaves banners stuck "dismissed" until an
 		// onDidChange event corrects them (and never corrects fresh, never-dismissed keys).
 		/* eslint-disable @typescript-eslint/await-thenable -- Supertalk proxy method calls are thenable at runtime */
-		const [integrationDismissed, mcpDismissed, hooksDismissed] = await Promise.all([
-			onboarding.isDismissed('home:integrationBanner'),
-			onboarding.isDismissed('mcp:banner'),
-			onboarding.isDismissed('hooks:banner'),
-		]);
+		const [integrationDismissed] = await Promise.all([onboarding.isDismissed('home:integrationBanner')]);
 		this._onboardingState.banners.integrationBanner = !integrationDismissed;
-		this._onboardingState.banners.mcpBanner = !mcpDismissed;
-		this._onboardingState.banners.hooksBanner = !hooksDismissed;
 
 		// Set up event subscriptions FIRST (so we don't miss events during fetch)
 		// Supertalk RPC marshals subscription methods as `Promise<Unsubscribe>`, so the
@@ -654,13 +522,11 @@ export class GlHomeApp extends SignalWatcherWebviewApp {
 			this._refreshInactiveDebounced.cancel();
 			this._activeResource?.cancel();
 			this._inactiveResource?.cancel();
-			this._agentResource?.cancel();
 			// Clear coalesce tracking before re-fetching — otherwise the next coalesced caller
 			// would receive the just-canceled in-flight promise.
 			this._resetFetchGates();
 			void this._fetchActiveCoalesced();
 			void this._fetchInactiveCoalesced();
-			void this._fetchAgentCoalesced();
 			// Re-subscribe FS watcher for the (possibly new) overview repo
 			watchWipForRepo(this._homeState.overviewRepositoryPath.get());
 		};
@@ -683,18 +549,8 @@ export class GlHomeApp extends SignalWatcherWebviewApp {
 				this._homeState.overviewFilter.set(filter);
 				syncInactiveOverviewFilter(filter);
 			},
-			onFocusAccount: () => this._header?.show(),
-			onSubscriptionChanged: () => {
-				this._header?.refreshPromo();
-			},
-			refreshLaunchpad: () => {
-				if (launchpad != null) {
-					void fetchLaunchpadSummary(root.launchpad, launchpad);
-				}
-			},
-			refreshAgentOverview: () => {
-				void this._fetchAgentCoalesced();
-			},
+			onFocusAccount: () => {},
+			onSubscriptionChanged: () => {},
 		};
 		this._unsubscribeEvents = await phaseTimeout(
 			'setupSubscriptions',
@@ -703,14 +559,13 @@ export class GlHomeApp extends SignalWatcherWebviewApp {
 				root,
 				{
 					home: home,
-					launchpad: launchpad,
 					config: config,
 					subscription: subscription,
 					integrations: integrations,
 					repositories: repositories,
 					onboarding: onboarding,
 					ai: ai,
-				},
+				} as unknown as Parameters<typeof setupSubscriptions>[1],
 				actions,
 			),
 		);
@@ -732,12 +587,8 @@ export class GlHomeApp extends SignalWatcherWebviewApp {
 				return;
 			}
 
-			// Visibility restored — refresh overview and launchpad
+			// Visibility restored — refresh overview
 			this._refreshOverviewDebounced();
-			void this._fetchAgentCoalesced();
-			if (launchpad != null) {
-				void fetchLaunchpadSummary(root.launchpad, launchpad);
-			}
 		};
 		document.addEventListener('visibilitychange', onVisibilityChange);
 		this.disposables.push({ dispose: () => document.removeEventListener('visibilitychange', onVisibilityChange) });
@@ -758,63 +609,35 @@ export class GlHomeApp extends SignalWatcherWebviewApp {
 	// ============================================================
 
 	override render(): unknown {
+		const repositories = this._homeState.repositories.get();
 		return html`
 			<div class="home scrollable">
 				<gl-error-banner .error=${this._homeState.error}></gl-error-banner>
-				<gl-home-header class="home__header"></gl-home-header>
-				${this.renderBanners()}
 				<gl-repo-alerts class="home__alerts"></gl-repo-alerts>
-				<main class="home__main scrollable" id="main">${this.renderMain()}</main>
+				<main class="home__main scrollable" id="main">${this.renderMain(repositories)}</main>
 			</div>
 		`;
 	}
 
-	private renderBanners(): unknown {
-		// Banners outside <main> only render once we know the layout
-		if (!this._homeState.ready.get()) return nothing;
-
-		const aiState = this._aiState.state.get();
-		// Suppress the MCP banner once MCP is actually installed — the "Connect More Agents" CTA
-		// still lives in the integrations popover row, so it isn't lost. Hooks takes the slot instead.
-		const showMcp = this._onboardingState.banners.mcpBanner && !aiState.mcp.installed;
-		if (showMcp) return this.renderMcpBanner();
-		return this.renderHooksBanner();
-	}
-
-	private renderMcpBanner(): unknown {
-		// Hide once the user has dismissed it via the onboarding service
-		if (!this._onboardingState.banners.mcpBanner) return nothing;
-
-		const aiState = this._aiState.state.get();
-		return html`
-			<gl-mcp-banner
-				source="home"
-				.canAutoRegister=${aiState.mcp.bundled}
-				.canInstallClaudeHook=${aiState.hooks.canInstallClaudeHook}
-			></gl-mcp-banner>
-		`;
-	}
-
-	private renderHooksBanner(): unknown {
-		if (!this._onboardingState.banners.hooksBanner) return nothing;
-
-		const aiState = this._aiState.state.get();
-		if (!aiState.enabled || !aiState.orgEnabled) return nothing;
-		if (!aiState.hooks.canInstallClaudeHook) return nothing;
-
-		return html`<gl-hooks-banner source="home"></gl-hooks-banner>`;
-	}
-
-	private renderMain(): unknown {
+	private renderMain(repositories: { openCount: number }): unknown {
 		// Until initial data arrives, show a single lightweight skeleton so the view feels responsive.
 		if (!this._homeState.ready.get()) {
 			return html`<skeleton-loader lines="1"></skeleton-loader>`;
 		}
 
 		return html`
-			<gl-active-work></gl-active-work>
-			<gl-launchpad></gl-launchpad>
-			<gl-overview></gl-overview>
+			<section class="home-community">
+				<h1>GitLens Community</h1>
+				<p>当前工作区已打开 ${repositories.openCount} 个 Git 仓库。</p>
+				<div class="home-community__actions">
+					<gl-button href="command:gitlens.showRepositoriesView" appearance="secondary"
+						><code-icon icon="repo"></code-icon> 打开仓库视图</gl-button
+					>
+					<gl-button href="command:workbench.view.scm" appearance="secondary"
+						><code-icon icon="source-control"></code-icon> 打开源代码管理</gl-button
+					>
+				</div>
+			</section>
 		`;
 	}
 }

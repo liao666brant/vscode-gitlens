@@ -4,7 +4,7 @@ import { weakEvent } from '@gitlens/utils/event.js';
 import { szudzikPairing } from '@gitlens/utils/function.js';
 import type { RepositoriesChangeEvent } from '../../../git/gitProviderService.js';
 import { unknownGitUri } from '../../../git/gitUri.js';
-import type { SubscriptionChangeEvent } from '../../../plus/gk/subscriptionService.js';
+import type { SubscriptionChangeEvent } from '../../../community/stubs/pro.js';
 import type { View } from '../../viewBase.js';
 import { SubscribeableViewNode } from './subscribeableViewNode.js';
 import type { ViewNode } from './viewNode.js';

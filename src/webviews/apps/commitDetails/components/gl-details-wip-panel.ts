@@ -1,30 +1,18 @@
-import type { PropertyValueMap, TemplateResult } from 'lit';
+import type { TemplateResult } from 'lit';
 import { css, html, nothing } from 'lit';
-import { customElement, property, state } from 'lit/decorators.js';
-import { repeat } from 'lit/directives/repeat.js';
-import { when } from 'lit/directives/when.js';
-import type { AgentSessionPhase } from '@gitlens/agents/types.js';
-import { isActiveAgentPhase } from '@gitlens/agents/types.js';
+import { customElement, property } from 'lit/decorators.js';
 import type { PullRequestShape } from '@gitlens/git/models/pullRequest.js';
 import { uncommitted } from '@gitlens/git/models/revision.js';
 import { canStageCurrent, canStageIncoming } from '@gitlens/git/utils/conflictResolution.utils.js';
 import { isConflictStatus } from '@gitlens/git/utils/fileStatus.utils.js';
-import { isDescendant, normalizePath, relative } from '@gitlens/utils/path.js';
-import { equalsIgnoreCase } from '@gitlens/utils/string.js';
-import type { AgentSessionState } from '../../../../agents/models/agentSessionState.js';
-import type { Draft } from '../../../../plus/drafts/models/drafts.js';
-import { createCommandLink } from '../../../../system/commands.js';
 import { serializeWebviewItemContext } from '../../../../system/webview.js';
-import type { DetailsItemTypedContext, DraftState, Wip } from '../../../commitDetails/protocol.js';
+import type { DetailsItemTypedContext, Wip } from '../../../commitDetails/protocol.js';
 import { buildFolderContext } from '../../../commitDetails/protocol.js';
-import type { ComposerCommandArgs } from '../../../plus/composer/registration.js';
-import type { Change } from '../../../plus/patchDetails/protocol.js';
 import type { TreeItemAction, TreeItemBase, TreeItemCheckedDetail } from '../../shared/components/tree/base.js';
 import { detailsBaseStyles } from './gl-details-base.css.js';
 import type { File } from './gl-details-base.js';
 import { GlDetailsBase } from './gl-details-base.js';
 import { detailsWipPanelStyles } from './gl-details-wip-panel.css.js';
-import type { CreatePatchState, GenerateState } from './gl-inspect-patch.js';
 import '../../shared/components/button.js';
 import '../../shared/components/button-container.js';
 import '../../shared/components/branch-name.js';
@@ -35,9 +23,6 @@ import '../../shared/components/chips/action-chip.js';
 import '../../shared/components/commit/commit-stats.js';
 import '../../shared/components/pills/tracking.js';
 import '../../shared/components/tree/gl-wip-tree-pane.js';
-import '../../plus/shared/components/merge-rebase-status.js';
-import '../../plus/graph/components/gl-details-wip-empty-pane.js';
-import './gl-inspect-patch.js';
 
 // Stable references for the inline tree-item actions so each render reuses the same objects
 // instead of allocating fresh ones per file. Lit's array diffing in gl-tree-item is identity-
@@ -130,13 +115,6 @@ const checkboxMixedActions: TreeItemAction[] = [
 const stagedActions: TreeItemAction[] = [openFileAction, unstageAction, stashAction, discardAction];
 const unstagedActions: TreeItemAction[] = [openFileAction, stageAction, stashAction, discardAction];
 
-/** Grace period after `editing` flips off during which a file stays marked. The host's
- *  `editing === true` window is the literal in-flight refcount window — milliseconds for
- *  Edit/Write tool calls — so without grace the mark flashes and is gone before the eye can
- *  register it. The grace is preempted the moment any *other* file becomes `editing === true`
- *  (see {@link GlDetailsWipPanel.computeAgentTouchedFiles}); the indicator follows the agent. */
-const agentTouchedGraceMs = 5000;
-
 @customElement('gl-details-wip-panel')
 export class GlDetailsWipPanel extends GlDetailsBase {
 	static override styles = [
@@ -155,15 +133,6 @@ export class GlDetailsWipPanel extends GlDetailsBase {
 	@property({ type: Object })
 	pullRequest?: PullRequestShape;
 
-	@property({ type: Array })
-	codeSuggestions?: Omit<Draft, 'changesets'>[];
-
-	@property({ type: Object })
-	draftState?: DraftState;
-
-	@property({ type: Object })
-	generate?: GenerateState;
-
 	@property({ type: String, attribute: 'worktree-path' })
 	worktreePath?: string;
 
@@ -176,188 +145,9 @@ export class GlDetailsWipPanel extends GlDetailsBase {
 	@property({ type: Boolean, attribute: 'bulk-conflict-actions' })
 	bulkConflictActions = false;
 
-	/** Active agent sessions matched to this worktree (already filtered by the graph host).
-	 *  Used to compute per-file editing decorations — see {@link _agentTouchedFiles}. */
-	@property({ attribute: false })
-	agentSessions?: AgentSessionState[];
-
-	/** Repo-relative normalized paths the connected agent(s) are actively editing right now (or
-	 *  within {@link agentTouchedGraceMs} of last edit, see {@link computeAgentTouchedFiles}),
-	 *  mapped to the most-active phase. Recomputed in {@link willUpdate} when {@link agentSessions}
-	 *  or {@link wip} changes, AND on a one-shot timer for the earliest grace expiry so the mark
-	 *  drops cleanly without waiting for the next host snapshot. */
-	@state()
-	private _agentTouchedFiles?: ReadonlyMap<string, AgentSessionPhase>;
-
-	/** `performance.now()` at which the current `agentSessions` snapshot was received. Used to
-	 *  age `editedAt` locally — the wire value only advances when the host fires a new snapshot,
-	 *  which stops when the agent goes idle. Without local aging a grace mark would persist until
-	 *  the next event (or until the host's full `activityDecayMs` eviction, minutes later). */
-	private _agentSnapshotReceivedAt = 0;
-
-	/** Per-session structural signatures (id + per-path read/edit flags, NOT timestamps) behind the
-	 *  last `_agentSnapshotReceivedAt` stamp. The aging baseline must only reset when the host actually
-	 *  re-stamps `editedAt` (solely on a file-tool sync, in lockstep with a structural change) — NOT on
-	 *  the far more frequent `agentSessions` fires for status/lastActivity/other sessions, which leave
-	 *  `editedAt` frozen. The `fileActivity` array reference can't be the key: postMessage recreates it
-	 *  on every push, so reference comparison always reports a change and would pin `effectiveAge` near
-	 *  zero, so the grace mark would never expire while the agent runs non-file tools. */
-	private _lastFileActivitySigs = new Set<string>();
-
-	/** Timer that fires when the earliest grace tail expires so we drop the mark on schedule
-	 *  even with no fresh host snapshot. Replaced on each recompute; cleared on disconnect. */
-	private _agentGraceTimer: ReturnType<typeof setTimeout> | undefined;
-
-	override disconnectedCallback(): void {
-		super.disconnectedCallback?.();
-		if (this._agentGraceTimer != null) {
-			clearTimeout(this._agentGraceTimer);
-			this._agentGraceTimer = undefined;
-		}
-	}
-
-	/** Strict realtime with a small grace tail: a file is marked when an agent is *editing* it
-	 *  right now, OR — only while nothing else is currently being edited — for a short
-	 *  {@link agentTouchedGraceMs} window after its last edit so the user actually sees it. The
-	 *  moment any other file becomes `editing === true`, the global "active" gate kicks in and
-	 *  every grace-only mark drops, so the indicator follows the agent rather than accumulating.
-	 *
-	 *  Aging is local: `editedAt` on the wire is host-ms at serialization time and doesn't advance
-	 *  between snapshots, so we add `(performance.now() - _agentSnapshotReceivedAt)` to compute
-	 *  the live age. A one-shot timer (re-armed here) triggers a re-render at the earliest grace
-	 *  expiry so the drop happens on schedule even when the agent goes idle. */
-	private computeAgentTouchedFiles(): ReadonlyMap<string, AgentSessionPhase> | undefined {
-		const sessions = this.agentSessions;
-		const repoPath = this.wip?.repo?.path;
-		if (!sessions?.length || repoPath == null) return undefined;
-
-		// First pass: any actively-editing file across all sessions? When true, the grace branch
-		// is skipped — current activity preempts any tail from a previous edit.
-		let hasAnyActive = false;
-		for (const s of sessions) {
-			if (!isActiveAgentPhase(s.phase)) continue;
-			if (s.fileActivity?.some(e => e.editing === true)) {
-				hasAnyActive = true;
-				break;
-			}
-		}
-
-		const elapsedSinceSnapshot = Math.max(0, performance.now() - this._agentSnapshotReceivedAt);
-		let touched: Map<string, AgentSessionPhase> | undefined;
-		let earliestGraceRemainingMs = Infinity;
-
-		for (const s of sessions) {
-			if (!isActiveAgentPhase(s.phase)) continue;
-
-			const entries = s.fileActivity;
-			if (!entries?.length) continue;
-
-			for (const entry of entries) {
-				const isLive = entry.editing === true;
-				let inGrace = false;
-				let graceRemainingMs = Infinity;
-				if (!isLive && !hasAnyActive && entry.editedAt != null) {
-					const effectiveAge = entry.editedAt + elapsedSinceSnapshot;
-					if (effectiveAge < agentTouchedGraceMs) {
-						inGrace = true;
-						graceRemainingMs = agentTouchedGraceMs - effectiveAge;
-					}
-				}
-				if (!isLive && !inGrace) continue;
-
-				const normalized = normalizePath(entry.path);
-				if (!isDescendant(normalized, repoPath)) continue;
-
-				const rel = relative(repoPath, normalized);
-				if (!rel || rel === normalized) continue;
-
-				touched ??= new Map();
-				// 'working' wins over 'waiting' if multiple sessions claim the same file.
-				const existing = touched.get(rel);
-				if (existing !== 'working') {
-					touched.set(rel, s.phase);
-				}
-				if (inGrace && graceRemainingMs < earliestGraceRemainingMs) {
-					earliestGraceRemainingMs = graceRemainingMs;
-				}
-			}
-		}
-
-		// Re-arm the one-shot timer for the earliest grace expiry. Adding a small slack (50ms) so
-		// the re-render lands just past the boundary and the file definitively drops on this pass.
-		if (this._agentGraceTimer != null) {
-			clearTimeout(this._agentGraceTimer);
-			this._agentGraceTimer = undefined;
-		}
-		if (Number.isFinite(earliestGraceRemainingMs)) {
-			this._agentGraceTimer = setTimeout(() => {
-				this._agentGraceTimer = undefined;
-				this._agentTouchedFiles = this.computeAgentTouchedFiles();
-			}, earliestGraceRemainingMs + 50);
-		}
-
-		return touched;
-	}
-
-	/** True when the per-session `fileActivity` STRUCTURE (paths + read/edit flags, ignoring the
-	 *  editedAt/readAt timestamps) differs from the last stamp — i.e. the host actually re-synced file
-	 *  activity (the only event that refreshes `editedAt`, in lockstep with a structural change).
-	 *  Order-independent; updates the stored set as a side effect. Keyed on structure rather than the
-	 *  `fileActivity` reference because postMessage recreates that reference on every push. */
-	private fileActivityStructureChanged(): boolean {
-		const current = new Set<string>();
-		for (const s of this.agentSessions ?? []) {
-			const fa = s.fileActivity;
-			if (fa == null) continue;
-
-			let sig = s.id;
-			for (const e of fa) {
-				sig += `\u0001${e.path}:${e.reading ? 'r' : ''}${e.editing ? 'e' : ''}`;
-			}
-			current.add(sig);
-		}
-		let changed = current.size !== this._lastFileActivitySigs.size;
-		if (!changed) {
-			for (const sig of current) {
-				if (!this._lastFileActivitySigs.has(sig)) {
-					changed = true;
-					break;
-				}
-			}
-		}
-		this._lastFileActivitySigs = current;
-		return changed;
-	}
-
-	protected override willUpdate(changedProperties: PropertyValueMap<any> | Map<PropertyKey, unknown>): void {
-		super.willUpdate?.(changedProperties);
-
-		if (changedProperties.has('agentSessions') || changedProperties.has('wip')) {
-			// Stamp the local receipt time so `editedAt` (host-ms-at-serialization) can be aged
-			// locally between snapshots. Only re-stamp when the `fileActivity` STRUCTURE actually
-			// changed — that is the only time the host re-stamps `editedAt`. Re-stamping on every
-			// `agentSessions` fire (status ticks, lastActivity, other sessions — all of which leave the
-			// structure and thus `editedAt` unchanged) would keep `effectiveAge` pinned near zero and the
-			// grace mark would never expire while the agent runs non-file tools.
-			if (changedProperties.has('agentSessions') && this.fileActivityStructureChanged()) {
-				this._agentSnapshotReceivedAt = performance.now();
-			}
-			this._agentTouchedFiles = this.computeAgentTouchedFiles();
-		}
-	}
-
-	@state()
-	get inReview(): boolean {
-		return this.draftState?.inReview ?? false;
-	}
-
 	get isUnpublished(): boolean {
 		const branch = this.wip?.branch;
 		return branch?.upstream == null || branch.upstream.missing === true;
-	}
-
-	get draftsEnabled(): boolean {
-		return this.orgSettings?.drafts === true;
 	}
 
 	get filesCount(): number {
@@ -374,152 +164,16 @@ export class GlDetailsWipPanel extends GlDetailsBase {
 		};
 	}
 
-	@state()
-	patchCreateMetadata: { title: string | undefined; description: string | undefined } = {
-		title: undefined,
-		description: undefined,
-	};
-
-	get patchCreateState(): CreatePatchState {
-		const wip = this.wip!;
-		const key = wip.repo.uri;
-		const change: Change = {
-			type: 'wip',
-			repository: {
-				name: wip.repo.name,
-				path: wip.repo.path,
-				uri: wip.repo.uri,
-			},
-			revision: { to: uncommitted, from: 'HEAD' },
-			files: wip.changes?.files ?? [],
-			checked: true,
-		};
-
-		return {
-			...this.patchCreateMetadata,
-			changes: {
-				[key]: change,
-			},
-			creationError: undefined,
-			visibility: 'public',
-			userSelections: undefined,
-		};
-	}
-
-	protected override updated(changedProperties: PropertyValueMap<any> | Map<PropertyKey, unknown>): void {
-		super.updated(changedProperties);
-
-		// Guard: wip may be null during mode transitions
-		if (this.wip == null) return;
-
-		if (changedProperties.has('generate')) {
-			this.patchCreateMetadata = {
-				title: this.generate?.title ?? this.patchCreateMetadata.title,
-				description: this.generate?.description ?? this.patchCreateMetadata.description,
-			};
-		}
-	}
-
 	protected override renderChangedFilesSlottedContent(): TemplateResult<1> | typeof nothing {
 		if (this.variant === 'embedded' || !this.files?.length) return nothing;
 
 		return html`<div slot="before-tree" class="section section--actions">
 			<button-container>
-				<gl-button
-					full
-					.href=${createCommandLink<ComposerCommandArgs>('gitlens.composeCommits', {
-						repoPath: this.wip?.repo.path,
-						source: 'inspect',
-					})}
-					><code-icon icon="wand" slot="prefix"></code-icon>Compose Commits...<span slot="tooltip"
-						><strong>Compose Commits</strong> (Preview)<br /><i
-							>Automatically or interactively organize changes into meaningful commits</i
-						></span
-					></gl-button
-				>
-				<gl-button appearance="secondary" href="command:workbench.view.scm" tooltip="Commit via SCM"
+				<gl-button full appearance="secondary" href="command:workbench.view.scm" tooltip="Commit via SCM"
 					><code-icon rotate="45" icon="arrow-up"></code-icon
 				></gl-button>
 			</button-container>
 		</div>`;
-	}
-
-	private renderSecondaryAction(hasPrimary = true) {
-		if (!this.draftsEnabled || this.inReview) return undefined;
-
-		let label = '分享为云端补丁';
-		let action = 'create-patch';
-		const pr = this.pullRequest;
-		if (pr?.state === 'opened' && equalsIgnoreCase(pr.provider.domain, 'github.com')) {
-			// const isMe = pr.author.name.endsWith('(you)');
-			// if (isMe) {
-			// 	label = 'Share with PR Participants';
-			// 	action = 'create-patch';
-			// } else {
-			// 	label = `Start Review for PR #${pr.id}`;
-			// 	action = 'create-patch';
-			// }
-
-			if (!this.inReview) {
-				label = '为 PR 建议更改';
-				action = 'start-patch-review';
-			} else {
-				label = '关闭 PR 建议';
-				action = 'end-patch-review';
-			}
-
-			if ((this.wip?.changes?.files.length ?? 0) === 0) {
-				return html`
-					<gl-button
-						?full=${!hasPrimary}
-						appearance="secondary"
-						data-action="${action}"
-						@click=${() => this.onToggleReviewMode(!this.inReview)}
-						.tooltip=${hasPrimary ? label : undefined}
-					>
-						<code-icon icon="gl-code-suggestion" .slot=${!hasPrimary ? 'prefix' : nothing}></code-icon
-						>${!hasPrimary ? label : nothing}
-					</gl-button>
-				`;
-			}
-
-			return html`
-				<gl-button
-					?full=${!hasPrimary}
-					appearance="secondary"
-					data-action="${action}"
-					.tooltip=${hasPrimary ? label : undefined}
-					@click=${() => this.onToggleReviewMode(!this.inReview)}
-				>
-					<code-icon icon="gl-code-suggestion" .slot=${!hasPrimary ? 'prefix' : nothing}></code-icon
-					>${!hasPrimary ? label : nothing}
-				</gl-button>
-				<gl-button
-					appearance="secondary"
-					density="compact"
-					data-action="create-patch"
-					tooltip="Share as Cloud Patch"
-					@click=${() => this.onDataActionClick('create-patch')}
-				>
-					<code-icon icon="gl-cloud-patch-share"></code-icon>
-				</gl-button>
-			`;
-		}
-
-		if ((this.wip?.changes?.files.length ?? 0) === 0) return undefined;
-
-		return html`
-			<gl-button
-				?full=${!hasPrimary}
-				appearance="secondary"
-				data-action="${action}"
-				.tooltip=${hasPrimary ? label : undefined}
-				@click=${() => this.onDataActionClick(action)}
-			>
-				<code-icon icon="gl-cloud-patch-share" .slot=${!hasPrimary ? 'prefix' : nothing}></code-icon
-				>${!hasPrimary ? label : nothing}
-			</gl-button>
-		`;
 	}
 
 	private renderPrimaryAction() {
@@ -558,47 +212,11 @@ export class GlDetailsWipPanel extends GlDetailsBase {
 
 	private renderActions() {
 		const primaryAction = this.renderPrimaryAction();
-		const secondaryAction = this.renderSecondaryAction(primaryAction != null);
-		if (primaryAction == null && secondaryAction == null) return nothing;
+		if (primaryAction == null) return nothing;
 
 		return html`<div class="section section--actions">
-			<button-container>${primaryAction}${secondaryAction}</button-container>
+			<button-container>${primaryAction}</button-container>
 		</div>`;
-	}
-
-	private renderSuggestedChanges() {
-		if (!this.codeSuggestions?.length) return nothing;
-		// src="${this.issue!.author.avatarUrl}"
-		// title="${this.issue!.author.name} (author)"
-		return html`
-			<gl-tree>
-				<gl-tree-item branch .expanded=${true} .level=${0}>
-					<code-icon slot="icon" icon="gl-code-suggestion"></code-icon>
-					Code Suggestions
-				</gl-tree-item>
-				${repeat(
-					this.codeSuggestions,
-					draft => draft.id,
-					draft => html`
-						<gl-tree-item
-							.expanded=${true}
-							.level=${1}
-							@gl-tree-item-selected=${() => this.onShowCodeSuggestion(draft.id)}
-						>
-							<gl-avatar
-								class="author-icon"
-								src="${draft.author.avatarUri}"
-								name="${draft.author.name} (author)"
-							></gl-avatar>
-							${draft.title}
-							<span slot="description"
-								><formatted-date .date=${new Date(draft.updatedAt)}></formatted-date
-							></span>
-						</gl-tree-item>
-					`,
-				)}
-			</gl-tree>
-		`;
 	}
 
 	private renderPullRequest() {
@@ -642,7 +260,6 @@ export class GlDetailsWipPanel extends GlDetailsBase {
 						details
 					></issue-pull-request>
 				</div>
-				${this.renderSuggestedChanges()}
 			</webview-pane>
 		`;
 	}
@@ -669,20 +286,6 @@ export class GlDetailsWipPanel extends GlDetailsBase {
 		`;
 	}
 
-	private renderPatchCreation() {
-		if (!this.inReview) return nothing;
-
-		return html`<gl-inspect-patch
-			.orgSettings=${this.orgSettings}
-			.preferences=${this.preferences}
-			.generate=${this.generate}
-			.createState=${this.patchCreateState}
-			@gl-patch-create-patch=${(e: CustomEvent) => {
-				void this.dispatchEvent(new CustomEvent('gl-inspect-create-suggestions', { detail: e.detail }));
-			}}
-		></gl-inspect-patch>`;
-	}
-
 	override render(): unknown {
 		if (this.wip == null) return nothing;
 
@@ -691,7 +294,7 @@ export class GlDetailsWipPanel extends GlDetailsBase {
 		}
 
 		const hasFiles = (this.files?.length ?? 0) > 0;
-		if (!hasFiles && !this.inReview) {
+		if (!hasFiles) {
 			return html`
 				${this.renderActions()} ${this.renderPausedOpStatus()}
 				<gl-details-wip-empty-pane
@@ -713,8 +316,7 @@ export class GlDetailsWipPanel extends GlDetailsBase {
 		return html`
 			${this.renderActions()} ${this.renderPausedOpStatus()}
 			<webview-pane-group flexible>
-				${this.renderPullRequest()}
-				${when(this.inReview === false, () => this.renderChangedFiles('wip'))}${this.renderPatchCreation()}
+				${this.renderPullRequest()} ${this.renderChangedFiles('wip')}
 			</webview-pane-group>
 		`;
 	}
@@ -762,7 +364,6 @@ export class GlDetailsWipPanel extends GlDetailsBase {
 				.folderContext=${this._getFolderContext}
 				.searchContext=${this.searchContext}
 				.multiDiff=${this.getMultiDiffRefs()}
-				.agentTouchedFiles=${this._agentTouchedFiles}
 				empty-text=${this.emptyText}
 				@file-checked=${this._onFileChecked}
 			>
@@ -942,14 +543,6 @@ export class GlDetailsWipPanel extends GlDetailsBase {
 
 	private onDataActionClick(name: string) {
 		void this.dispatchEvent(new CustomEvent('data-action', { detail: { name: name } }));
-	}
-
-	private onToggleReviewMode(inReview: boolean) {
-		this.dispatchEvent(new CustomEvent('draft-state-changed', { detail: { inReview: inReview } }));
-	}
-
-	private onShowCodeSuggestion(id: string) {
-		this.dispatchEvent(new CustomEvent('gl-show-code-suggestion', { detail: { id: id } }));
 	}
 }
 

@@ -4,10 +4,7 @@ import { filterMap, map } from '@gitlens/utils/iterable.js';
 import { getSettledValue } from '@gitlens/utils/promise.js';
 import type { Autolink } from '../../../autolinks/models/autolinks.js';
 import type { Container } from '../../../container.js';
-import type {
-	AIGenerateChangelogChange,
-	AIGenerateChangelogChanges,
-} from '../../../plus/ai/actions/generateChangelog.js';
+import type { AIGenerateChangelogChange, AIGenerateChangelogChanges } from '../../../community/stubs/pro.js';
 import { getBestRemoteWithIntegration } from './remote.utils.js';
 
 export async function getChangesForChangelog(

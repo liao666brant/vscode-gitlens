@@ -1,7 +1,6 @@
 import type { PropertyValues } from 'lit';
 import { css, html, LitElement, nothing } from 'lit';
 import { customElement, property } from 'lit/decorators.js';
-import type { AgentSessionPhase } from '@gitlens/agents/types.js';
 import type { GitCommitStats } from '@gitlens/git/models/commit.js';
 import type { GitCommitSearchContext } from '@gitlens/git/models/search.js';
 import { isConflictStatus } from '@gitlens/git/utils/fileStatus.utils.js';
@@ -117,11 +116,6 @@ export class GlWipTreePane extends LitElement {
 	@property({ type: Boolean, attribute: 'bulk-conflict-actions' })
 	bulkConflictActions = false;
 
-	/** Repo-relative normalized paths the connected agent(s) are actively editing, mapped to the
-	 *  agent's phase. Pass-through to `gl-file-tree-pane`. */
-	@property({ attribute: false })
-	agentTouchedFiles?: ReadonlyMap<string, AgentSessionPhase>;
-
 	/**
 	 * Controlled-when-bound: parent-supplied visibility of the file-tree search box. Forwarded
 	 * to `gl-file-tree-pane`. Hosts that leave it undefined get the uncontrolled default.
@@ -206,8 +200,8 @@ export class GlWipTreePane extends LitElement {
 					isConflictStatus(file.status) ? 'conflicts' : file.staged ? 'staged' : 'unstaged',
 				groups: [
 					{ key: 'conflicts', label: '冲突', actions: [] },
-					{ key: 'staged', label: '已暂存更改', actions: this.getStagedActions() },
-					{ key: 'unstaged', label: '未暂存更改', actions: this.getUnstagedActions() },
+					{ key: 'staged', label: '已暂存更改', actions: [] },
+					{ key: 'unstaged', label: '未暂存更改', actions: [] },
 				],
 			};
 		}
@@ -257,7 +251,6 @@ export class GlWipTreePane extends LitElement {
 			?multi-selectable=${this.multiSelectable}
 			.checkableStates=${this._effectiveStates}
 			.checkableStateDefault=${this.checkableStateDefault}
-			.agentTouchedFiles=${this.agentTouchedFiles}
 			.buttons=${buttons}
 			.multiDiffLabel=${multiDiffLabel}
 			.multiDiffAltLabel=${multiDiffAltLabel}
@@ -528,26 +521,6 @@ export class GlWipTreePane extends LitElement {
 		}
 
 		return { deduped: deduped, mixedPaths: mixedPaths };
-	}
-
-	private getStagedActions(): TreeItemAction[] {
-		return [
-			{
-				icon: 'gl-cloud-patch-share',
-				label: '共享已暂存更改',
-				action: 'staged-create-patch',
-			},
-		];
-	}
-
-	private getUnstagedActions(): TreeItemAction[] {
-		return [
-			{
-				icon: 'gl-cloud-patch-share',
-				label: '共享未暂存更改',
-				action: 'unstaged-create-patch',
-			},
-		];
 	}
 
 	private onCheckAll(e: CustomEvent<{ checked: boolean }>): void {

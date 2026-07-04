@@ -15,14 +15,12 @@ import { showCommitInDetailsView } from '../../../git/actions/commit.js';
 import { revealTag } from '../../../git/actions/tag.js';
 import type { GlRepository } from '../../../git/models/repository.js';
 import { getWorktreesByBranch } from '../../../git/utils/-webview/worktree.utils.js';
-import type { LaunchpadCommandArgs } from '../../../plus/launchpad/launchpad.js';
 import { createQuickPickSeparator } from '../../../quickpicks/items/common.js';
 import { createDirectiveQuickPickItem, Directive } from '../../../quickpicks/items/directive.js';
 import type { BranchQuickPickItem, TagQuickPickItem } from '../../../quickpicks/items/gitWizard.js';
 import { createBranchQuickPickItem, createTagQuickPickItem } from '../../../quickpicks/items/gitWizard.js';
 import type { ReferencesQuickPickItem } from '../../../quickpicks/referencePicker.js';
 import { configuration } from '../../../system/-webview/configuration.js';
-import type { CrossCommandReference } from '../models/quickWizard.js';
 import type {
 	PartialStepState,
 	StepPickResult,
@@ -37,7 +35,6 @@ import {
 	PickCommitQuickInputButton,
 	RevealInSideBarQuickInputButton,
 } from '../quickButtons.js';
-import { createCrossCommandReference } from '../utils/quickWizard.utils.js';
 import {
 	appendReposToTitle,
 	canPickStepContinue,
@@ -385,9 +382,7 @@ export function* pickBranchOrTagStep<
 	return canPickStepContinue(step, state, selection) ? selection[0].item : StepResultBreak;
 }
 
-type PickBranchOrTagStepActionResult =
-	| ({ action: 'cross-command' } & CrossCommandReference)
-	| { action: 'create-branch'; name: string };
+type PickBranchOrTagStepActionResult = { action: 'create-branch'; name: string };
 
 export function* pickBranchOrTagStepMultiRepo<
 	State extends PartialStepState & { repos: GlRepository[]; reference?: GitReference },
@@ -419,20 +414,6 @@ export function* pickBranchOrTagStepMultiRepo<
 		item: { type: 'action', action: 'create-branch', name: '' },
 	};
 
-	type CrossCommandItem = QuickPickItem & { item: ResultItem };
-	const choosePullRequestItem: CrossCommandItem = {
-		label: '选择一个 Pull Request...',
-		iconPath: new ThemeIcon('git-pull-request'),
-		alwaysShow: true,
-		item: {
-			type: 'action',
-			action: 'cross-command',
-			...createCrossCommandReference<Partial<LaunchpadCommandArgs>>('gitlens.showLaunchpad', {
-				source: 'quick-wizard',
-			}),
-		},
-	};
-
 	const getBranchesAndOrTagsFn = () => {
 		return getBranchesAndOrTags(state.repos, context.showTags ? ['branches', 'tags'] : ['branches'], {
 			buttons: [RevealInSideBarQuickInputButton],
@@ -447,15 +428,11 @@ export function* pickBranchOrTagStepMultiRepo<
 		!branchesAndOrTags.length
 			? [createDirectiveQuickPickItem(Directive.Back, true), createDirectiveQuickPickItem(Directive.Cancel)]
 			: options.allowCreate
-				? [createNewBranchItem, choosePullRequestItem, ...branchesAndOrTags]
-				: [choosePullRequestItem, ...branchesAndOrTags],
+				? [createNewBranchItem, ...branchesAndOrTags]
+				: branchesAndOrTags,
 	);
 
-	type PickItem =
-		| BranchQuickPickItem<ResultItem>
-		| TagQuickPickItem<ResultItem>
-		| typeof createNewBranchItem
-		| typeof choosePullRequestItem;
+	type PickItem = BranchQuickPickItem<ResultItem> | TagQuickPickItem<ResultItem> | typeof createNewBranchItem;
 
 	const step = createPickStep<PickItem>({
 		title: appendReposToTitle(options.title ?? context.title, state, context),

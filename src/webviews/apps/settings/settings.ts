@@ -1,18 +1,13 @@
 /* eslint-disable @typescript-eslint/no-deprecated -- disabling until we can migrate to the new Lit-based base */
 /*global document IntersectionObserver*/
 import './settings.scss';
-import type { ConnectCloudIntegrationsCommandArgs } from '../../../commands/cloudIntegrations.js';
 import type { AutolinkConfig } from '../../../config.js';
-import type { SupportedCloudIntegrationIds } from '../../../constants.integrations.js';
-import { IssuesCloudHostIntegrationId } from '../../../constants.integrations.js';
-import { createCommandLink } from '../../../system/commands.js';
 import type { IpcMessage } from '../../ipc/models/ipc.js';
 import type { UpdateConfigurationParams } from '../../protocol.js';
 import { DidChangeConfigurationNotification, UpdateConfigurationCommand } from '../../protocol.js';
 import type { State } from '../../settings/protocol.js';
 import {
 	DidChangeAccountNotification,
-	DidChangeIssueIntegrationConnectedNotification,
 	DidOpenAnchorNotification,
 	GenerateConfigurationPreviewRequest,
 } from '../../settings/protocol.js';
@@ -158,16 +153,6 @@ export class SettingsApp extends App<State> {
 
 			case DidChangeAccountNotification.is(msg):
 				this.state.hasAccount = msg.params.hasAccount;
-				this.setState(this.state);
-				this.renderAutolinkIntegration();
-				break;
-
-			case DidChangeIssueIntegrationConnectedNotification.is(msg):
-				if (msg.params.integrationId === IssuesCloudHostIntegrationId.Jira) {
-					this.state.hasConnectedJira = msg.params.connected;
-				} else if (msg.params.integrationId === IssuesCloudHostIntegrationId.Linear) {
-					this.state.hasConnectedLinear = msg.params.connected;
-				}
 				this.setState(this.state);
 				this.renderAutolinkIntegration();
 				break;
@@ -809,47 +794,7 @@ export class SettingsApp extends App<State> {
 		const $root = document.querySelector('[data-component="autolink-integration"]');
 		if ($root == null) return;
 
-		const { hasAccount, hasConnectedJira, hasConnectedLinear } = this.state;
-		let messageJira = `<a href="${createCommandLink<ConnectCloudIntegrationsCommandArgs>(
-			'gitlens.plus.cloudIntegrations.connect',
-			{
-				integrationIds: ['jira' as IssuesCloudHostIntegrationId.Jira] as SupportedCloudIntegrationIds[],
-				source: {
-					source: 'settings',
-					detail: {
-						action: 'connect',
-						integration: 'jira',
-					},
-				},
-			},
-		)}">Connect to Jira Cloud</a> &mdash; ${
-			hasAccount ? '' : 'sign up and '
-		}get access to automatic rich Jira autolinks.`;
-		if (hasAccount && hasConnectedJira) {
-			messageJira =
-				'<i class="codicon codicon-check codicon--inline"></i> Jira connected &mdash; automatic rich Jira autolinks are enabled.';
-		}
-		let messageLinear = `<a href="${createCommandLink<ConnectCloudIntegrationsCommandArgs>(
-			'gitlens.plus.cloudIntegrations.connect',
-			{
-				integrationIds: ['linear' as IssuesCloudHostIntegrationId.Linear] as SupportedCloudIntegrationIds[],
-				source: {
-					source: 'settings',
-					detail: {
-						action: 'connect',
-						integration: 'linear',
-					},
-				},
-			},
-		)}">Connect to Linear</a> &mdash; ${
-			hasAccount ? '' : 'sign up and '
-		}get access to automatic rich Linear autolinks.`;
-		if (hasAccount && hasConnectedLinear) {
-			messageLinear =
-				'<i class="codicon codicon-check codicon--inline"></i> Linear connected &mdash; automatic rich Linear autolinks are enabled.';
-		}
-
-		$root.innerHTML = `${messageJira}<br/>${messageLinear}`;
+		$root.innerHTML = 'Configure local autolink rules below to linkify references in commit messages.';
 	}
 
 	private renderAutolinks() {

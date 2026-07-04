@@ -67,7 +67,6 @@ export class ToggleFileBlameCommand extends ActiveEditorCommand {
 	constructor(private readonly container: Container) {
 		super([
 			'gitlens.toggleFileBlame',
-			'gitlens.toggleFileBlame:codelens',
 			'gitlens.toggleFileBlame:editor',
 			'gitlens.toggleFileBlame:editor/title',
 			'gitlens.toggleFileBlame:key',
@@ -89,7 +88,6 @@ export class ToggleFileChangesCommand extends ActiveEditorCommand {
 	constructor(private readonly container: Container) {
 		super([
 			'gitlens.toggleFileChanges',
-			'gitlens.toggleFileChanges:codelens',
 			'gitlens.toggleFileChanges:editor',
 			'gitlens.toggleFileChanges:editor/title',
 			'gitlens.toggleFileChanges:mode',
@@ -110,7 +108,6 @@ export class ToggleFileHeatmapCommand extends ActiveEditorCommand {
 	constructor(private readonly container: Container) {
 		super([
 			'gitlens.toggleFileHeatmap',
-			'gitlens.toggleFileHeatmap:codelens',
 			'gitlens.toggleFileHeatmap:editor',
 			'gitlens.toggleFileHeatmap:editor/title',
 			'gitlens.toggleFileHeatmap:mode',

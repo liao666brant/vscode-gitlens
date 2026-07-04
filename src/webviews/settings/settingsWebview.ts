@@ -12,9 +12,8 @@ import { extensionPrefix } from '../../constants.js';
 import type { WebviewTelemetryContext } from '../../constants.telemetry.js';
 import type { Container } from '../../container.js';
 import { CommitFormatter } from '../../git/formatters/commitFormatter.js';
-import type { SubscriptionChangeEvent } from '../../plus/gk/subscriptionService.js';
-import { isIssueCloudIntegrationId } from '../../plus/integrations/authentication/models.js';
-import type { ConnectionStateChangeEvent } from '../../plus/integrations/integrationService.js';
+import { isIssueCloudIntegrationId } from '../../community/stubs/pro.js';
+import type { ConnectionStateChangeEvent, SubscriptionChangeEvent } from '../../community/stubs/pro.js';
 import type { ConfigPath, CoreConfigPath } from '../../system/-webview/configuration.js';
 import { configuration } from '../../system/-webview/configuration.js';
 import type { IpcParams, IpcResponse } from '../ipc/handlerRegistry.js';
@@ -251,9 +250,6 @@ export class SettingsWebviewProvider implements WebviewProvider<State, State, Se
 
 				let includePullRequest = false;
 				switch (params.key) {
-					case configuration.name('currentLine.format'):
-						includePullRequest = configuration.get('currentLine.pullRequests.enabled');
-						break;
 					case configuration.name('statusBar.format'):
 						includePullRequest = configuration.get('statusBar.pullRequests.enabled');
 						break;
@@ -300,9 +296,7 @@ export class SettingsWebviewProvider implements WebviewProvider<State, State, Se
 
 	private onAnyConfigurationChanged(e: ConfigurationChangeEvent) {
 		if (!configuration.changedAny(e, extensionPrefix)) {
-			const notify = configuration.changedAny<CustomSetting['name']>(e, [
-				...map(this.customSettings.values(), s => s.name),
-			]);
+			const notify = configuration.changedAny(e, [...map(this.customSettings.values(), s => s.name)]);
 			if (!notify) return;
 		}
 
@@ -318,19 +312,6 @@ export class SettingsWebviewProvider implements WebviewProvider<State, State, Se
 					name: 'workbench.editorAssociations',
 					enabled: () => this.container.rebaseEditor.enabled,
 					update: enabled => this.container.rebaseEditor.setEnabled(enabled),
-				},
-			],
-			[
-				'currentLine.useUncommittedChangesFormat',
-				{
-					name: 'currentLine.uncommittedChangesFormat',
-					enabled: () => configuration.get('currentLine.uncommittedChangesFormat') != null,
-					update: async enabled =>
-						configuration.updateEffective(
-							'currentLine.uncommittedChangesFormat',
-							// eslint-disable-next-line no-template-curly-in-string
-							enabled ? '\u270F\ufe0f ${ago}' : null,
-						),
 				},
 			],
 		]);

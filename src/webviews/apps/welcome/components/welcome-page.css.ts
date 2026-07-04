@@ -11,9 +11,6 @@ const colorScheme = css`
 		--card-background: color-mix(in srgb, var(--vscode-descriptionForeground) 13%, var(--color-view-background));
 
 		--hero-gradient: radial-gradient(76.32% 76.32% at 50% 7.24%, #7b00ff 29.72%, rgba(255, 0, 242, 0) 100%);
-		--trial-button-gradient: linear-gradient(90deg, #7900c9 0%, #196fff 100%);
-		--trial-button-border: none;
-		--trial-button-text-color: #fff;
 	}
 
 	:host-context(.vscode-light) {
@@ -26,9 +23,6 @@ const colorScheme = css`
 
 	:host-context(.vscode-high-contrast) {
 		--hero-gradient: transparent;
-		--trial-button-gradient: var(--color-button-background);
-		--trial-button-border: 1px solid var(--vscode-button-border);
-		--trial-button-text-color: var(--color-button-foreground);
 	}
 
 	:host-context(.vscode-high-contrast-light) {
@@ -155,11 +149,6 @@ const section = css`
 		font-size: var(--p-font-size);
 	}
 
-	.section gl-button.start-trial-button {
-		background: var(--trial-button-gradient);
-		border: var(--trial-button-border);
-		color: var(--trial-button-text-color);
-	}
 	.section gl-button {
 		--button-width: 100%;
 	}

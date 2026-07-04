@@ -23,18 +23,9 @@ export enum DeepLinkType {
 }
 
 export enum DeepLinkCommandType {
-	CloudPatches = 'cloud-patches',
-	Graph = 'graph',
 	Home = 'home',
 	Inspect = 'inspect',
-	InstallMCP = 'install-mcp',
-	Launchpad = 'launchpad',
-	Login = 'login',
-	SignUp = 'signup',
-	StartReview = 'start-review',
-	StartWork = 'start-work',
 	Walkthrough = 'walkthrough',
-	Worktrees = 'worktrees',
 }
 
 export function isDeepLinkCommandType(type: string): type is DeepLinkCommandType {
@@ -42,17 +33,9 @@ export function isDeepLinkCommandType(type: string): type is DeepLinkCommandType
 }
 
 export const DeepLinkCommandTypeToCommand = new Map<DeepLinkCommandType, GlCommands>([
-	[DeepLinkCommandType.CloudPatches, 'gitlens.showDraftsView'],
-	[DeepLinkCommandType.Graph, 'gitlens.showGraph'],
 	[DeepLinkCommandType.Home, 'gitlens.showHomeView'],
 	[DeepLinkCommandType.Inspect, 'gitlens.showCommitDetailsView'],
-	[DeepLinkCommandType.Launchpad, 'gitlens.showLaunchpad'],
-	[DeepLinkCommandType.Login, 'gitlens.plus.login'],
-	[DeepLinkCommandType.SignUp, 'gitlens.plus.signUp'],
-	// StartReview and StartWork are handled specially in DeepLinkService
 	[DeepLinkCommandType.Walkthrough, 'gitlens.getStarted'],
-	[DeepLinkCommandType.Worktrees, 'gitlens.showWorktreesView'],
-	[DeepLinkCommandType.InstallMCP, 'gitlens.ai.mcp.install'],
 ]);
 
 export enum DeepLinkActionType {
@@ -77,7 +60,7 @@ export function deepLinkTypeToString(type: DeepLinkType): string {
 		case DeepLinkType.Comparison:
 			return '比较';
 		case DeepLinkType.Draft:
-			return '云补丁';
+			return '补丁链接';
 		case DeepLinkType.File:
 			return '文件';
 		case DeepLinkType.Integrations:
@@ -338,7 +321,7 @@ export interface DeepLinkServiceContext {
 	issueData?: IssueShape | undefined;
 	instructions?: string | undefined;
 	/** Optional agent descriptor for Start Work / Start Review with `showOpenInAgent`. */
-	agent?: import('../../plus/agents/agentDescriptor.js').AgentDescriptor | undefined;
+	agent?: import('../../community/stubs/pro.js').AgentDescriptor | undefined;
 	/** Worktree path for CLI dispatch `cwd`. */
 	worktreePath?: string | undefined;
 }
@@ -535,7 +518,7 @@ export const deepLinkStateToProgress: Record<string, DeepLinkProgress> = {
 	[DeepLinkServiceState.GoToTarget]: { message: '正在打开目标...', increment: 80 },
 	[DeepLinkServiceState.OpenGraph]: { message: '正在打开提交图...', increment: 90 },
 	[DeepLinkServiceState.OpenComparison]: { message: '正在打开比较...', increment: 90 },
-	[DeepLinkServiceState.OpenDraft]: { message: '正在打开云补丁...', increment: 90 },
+	[DeepLinkServiceState.OpenDraft]: { message: '正在打开补丁链接...', increment: 90 },
 	[DeepLinkServiceState.OpenWorkspace]: { message: '正在打开工作区...', increment: 90 },
 	[DeepLinkServiceState.OpenFile]: { message: '正在打开文件...', increment: 90 },
 	[DeepLinkServiceState.OpenInspect]: { message: '正在打开检查...', increment: 90 },

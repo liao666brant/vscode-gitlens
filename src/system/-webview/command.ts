@@ -2,7 +2,6 @@ import type { Command, Disposable, Uri } from 'vscode';
 import { commands } from 'vscode';
 import type { Action, ActionContext } from '../../api/gitlens.d.js';
 import type { GlCommandBase } from '../../commands/commandBase.js';
-import type { CodeLensCommands } from '../../config.js';
 import type {
 	CoreCommands,
 	CoreGitCommands,
@@ -55,17 +54,7 @@ export function registerCommand(
 				args[0]?.source,
 			);
 
-			if (command.startsWith('gitlens.graph.')) {
-				Container.instance.telemetry.sendEvent(
-					'graph/command',
-					{
-						command: command,
-						'context.mode': context?.mode,
-						'context.submode': context?.submode,
-					},
-					args[0]?.source,
-				);
-			} else if (command.startsWith('gitlens.home.')) {
+			if (command.startsWith('gitlens.home.')) {
 				Container.instance.telemetry.sendEvent(
 					'home/command',
 					{
@@ -105,21 +94,7 @@ export function registerWebviewCommand(
 				webview: webview ?? '<missing>',
 			});
 
-			if (
-				webview === 'gitlens.graph' ||
-				webview === 'gitlens.views.graph' ||
-				command.startsWith('gitlens.graph.') ||
-				command.endsWith(':graph')
-			) {
-				Container.instance.telemetry.sendEvent('graph/command', {
-					command: command,
-					webview: webview ?? '<missing>',
-				});
-			} else if (
-				webview === 'gitlens.views.home' ||
-				command.startsWith('gitlens.home.') ||
-				command.endsWith(':home')
-			) {
+			if (webview === 'gitlens.views.home' || command.startsWith('gitlens.home.') || command.endsWith(':home')) {
 				Container.instance.telemetry.sendEvent('home/command', {
 					command: command,
 					webview: webview ?? '<missing>',
@@ -150,11 +125,7 @@ export function executeActionCommand<T extends ActionContext>(
 	return commands.executeCommand(`${actionCommandPrefix}${action}`, { ...args, type: action }, runnerId);
 }
 
-export function createCommand<T extends unknown[]>(
-	command: GlCommands | CodeLensCommands,
-	title: string,
-	...args: T
-): Command {
+export function createCommand<T extends unknown[]>(command: GlCommands, title: string, ...args: T): Command {
 	return { command: command, title: title, arguments: args };
 }
 

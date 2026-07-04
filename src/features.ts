@@ -3,7 +3,7 @@ import type { RepositoryVisibility } from '@gitlens/git/providers/types.js';
 import { capitalize } from '@gitlens/utils/string.js';
 import type { StoredFeaturePreviewUsagePeriod } from './constants.storage.js';
 import { proFeaturePreviewUsageDurationInDays, proFeaturePreviewUsages } from './constants.subscription.js';
-import type { RequiredSubscriptionPlanIds, Subscription } from './plus/gk/models/subscription.js';
+import type { RequiredSubscriptionPlanIds, Subscription } from './community/stubs/pro.js';
 
 // Re-export Git feature types and constants from @gitlens/git
 export type { FilteredGitFeatures, GitFeatureOrPrefix, GitFeatures } from '@gitlens/git/features.js';
@@ -41,7 +41,6 @@ export type ProFeatures =
 	| 'timeline'
 	| 'worktrees'
 	| 'graph'
-	| 'launchpad'
 	| 'startReview'
 	| 'startWork'
 	| 'associateIssueWithBranch'
@@ -49,8 +48,6 @@ export type ProFeatures =
 export type ProAIFeatures =
 	| 'explain-changes'
 	| 'review-changes'
-	| 'generate-create-cloudPatch'
-	| 'generate-create-codeSuggestion'
 	| 'generate-stashMessage'
 	| 'generate-changelog'
 	| 'generate-create-pullRequest'
@@ -80,14 +77,11 @@ export function isAdvancedFeature(_feature: PlusFeatures): _feature is AdvancedF
 
 export function isProFeatureOnAllRepos(feature: PlusFeatures): feature is ProFeatures {
 	switch (feature) {
-		case 'launchpad':
 		case 'startReview':
 		case 'startWork':
 		case 'associateIssueWithBranch':
 		case 'explain-changes':
 		case 'review-changes':
-		case 'generate-create-cloudPatch':
-		case 'generate-create-codeSuggestion':
 		case 'generate-stashMessage':
 		case 'generate-changelog':
 		case 'generate-create-pullRequest':

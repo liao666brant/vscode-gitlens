@@ -7,7 +7,7 @@ import {
 import type { GlCommands } from '../constants.commands.js';
 import { Schemes } from '../constants.js';
 import type { Container } from '../container.js';
-import type { AIResultContext } from '../plus/ai/aiProviderService.js';
+import type { AIResultContext } from '../community/stubs/pro.js';
 
 // gitlens-ai-markdown:{explain}/{entity}/{entityID}/{model}[{/friendlyName}].md
 

@@ -12,7 +12,7 @@ import { areUrisEqual } from '@gitlens/utils/uri.js';
 import { getQueryDataFromScmGitUri } from '../@types/vscode.git.uri.js';
 import { Schemes } from '../constants.js';
 import { Container } from '../container.js';
-import type { GitHubAuthorityMetadata } from '../plus/remotehub.js';
+import type { GitHubAuthorityMetadata } from '../community/stubs/pro.js';
 import { configuration } from '../system/-webview/configuration.js';
 import { formatPath } from '../system/-webview/formatPath.js';
 import { getBestPath, relativeDir, splitPath } from '../system/-webview/path.js';
@@ -289,7 +289,7 @@ export class GitUri extends (Uri as any as UriEx) {
 		if (isGitUri(uri)) return uri;
 
 		// Check for symbolic links
-		if (uri.scheme === Schemes.File && configuration.get('advanced.resolveSymlinks')) {
+		if (uri.scheme === Schemes.File && configuration.getAny<boolean>('gitlens.advanced.resolveSymlinks')) {
 			try {
 				const realPath = await realpath(uri.fsPath);
 				if (!arePathsEqual(uri.fsPath, realPath)) {

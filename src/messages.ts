@@ -7,10 +7,7 @@ import { filterMap } from '@gitlens/utils/array.js';
 import { Logger } from '@gitlens/utils/logger.js';
 import type { SuppressedMessages } from './config.js';
 import { urls } from './constants.js';
-import type { Source } from './constants.telemetry.js';
-import type { Container } from './container.js';
 import { formatIdentityDisplayName, getCommitFormattedDate } from './git/utils/-webview/commit.utils.js';
-import { mcpRegistrationAllowed } from './plus/gk/utils/-webview/mcp.utils.js';
 import { executeCommand, executeCoreCommand } from './system/-webview/command.js';
 import { configuration } from './system/-webview/configuration.js';
 import { openUrl } from './system/-webview/vscode/uris.js';
@@ -306,12 +303,10 @@ export async function showWhatsNewMessage(majorVersion: string): Promise<void> {
 	let message: string;
 	switch (majorVersion) {
 		case '18':
-			message =
-				'GitLens 已升级到 18 — 提交图谱全新改版，支持 Agent 集成、多工作树 WIP 行、AI 驱动的评审和撰写模式等。';
+			message = 'GitLens 已升级到 18 — 查看社区版 Git 工作流改进。';
 			break;
 		case '17':
-			message =
-				'GitLens 已升级到 17，包含 GitLens Pro 中全新的 [GitKraken AI](https://gitkraken.com/solutions/gitkraken-ai?source=gitlens&product=gitlens&utm_source=gitlens-extension&utm_medium=in-app-links) 访问权限、AI 变更日志和拉取请求创建以及 Bitbucket 集成。';
+			message = 'GitLens 已升级到 17 — 查看新功能。';
 			break;
 		default:
 			message = `GitLens 已升级到 ${majorVersion} — 查看新功能。`;
@@ -329,68 +324,7 @@ export async function showWhatsNewMessage(majorVersion: string): Promise<void> {
 	if (result === releaseNotes) {
 		void openUrl(urls.releaseNotes);
 	} else if (result === openWalkthrough) {
-		void executeCommand('gitlens.showWelcomeView', { mode: 'graph' });
-	}
-}
-
-export async function showMcpMessage(container: Container, _current: string): Promise<void> {
-	const isAutoInstallable = mcpRegistrationAllowed(container);
-	const confirm = { title: '确定', isCloseAffordance: true };
-	const learnMore = { title: '了解更多' };
-	const connectMore = { title: '连接更多 Agent' };
-	const install = { title: '安装 GitKraken MCP' };
-
-	let result: MessageItem | undefined;
-	if (isAutoInstallable) {
-		result = await showMessage(
-			'info',
-			`GitLens 会将 GitKraken MCP 添加到您的 AI 聊天中，结合 Git 与您的集成能力提供上下文并执行操作。您还可以将 MCP 连接到机器上的其他 Agent。`,
-			undefined,
-			null,
-			connectMore,
-			learnMore,
-			confirm,
-		);
-	} else {
-		result = await showMessage(
-			'info',
-			`允许 GitLens 将 GitKraken MCP 添加到您的 AI 聊天中，结合 Git 与您的集成（问题、PR 等）提供上下文并执行操作，帮您节省时间并减少上下文切换。`,
-			undefined,
-			null,
-			install,
-			learnMore,
-			confirm,
-		);
-	}
-
-	if (result === install) {
-		void executeCommand<Source>('gitlens.ai.mcp.install', { source: 'mcp-welcome-message' });
-	}
-
-	if (result === connectMore) {
-		void executeCommand<Source>('gitlens.ai.mcp.selectAgents', { source: 'mcp-welcome-message' });
-	}
-
-	if (result === learnMore) {
-		void openUrl(urls.helpCenterMCP);
-	}
-}
-
-export async function showCursorMcpCleanupMessage(): Promise<void> {
-	const learnMore = { title: '了解更多' };
-	const confirm = { title: '确定', isCloseAffordance: true };
-
-	const result = await showMessage(
-		'info',
-		`GitLens 现在会在 Cursor 中自动注册 GitKraken MCP。您的 Cursor \`mcp.json\` 里可能有重复条目，请移除 \`mcpServers.GitKraken\` 以完成清理。`,
-		undefined,
-		null,
-		learnMore,
-		confirm,
-	);
-
-	if (result === learnMore) {
-		void openUrl(urls.helpCenterMCP);
+		void executeCommand('gitlens.showWelcomeView');
 	}
 }
 

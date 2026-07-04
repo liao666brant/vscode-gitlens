@@ -14,7 +14,6 @@ import type { GlRepository } from '../../git/models/repository.js';
 import { showGitErrorMessage } from '../../messages.js';
 import type { QuickPickItemOfT } from '../../quickpicks/items/common.js';
 import { createQuickPickSeparator } from '../../quickpicks/items/common.js';
-import { executeCommand } from '../../system/-webview/command.js';
 import type { ViewsWithRepositoryFolders } from '../../views/viewBase.js';
 import type {
 	PartialStepState,
@@ -227,10 +226,6 @@ export class SwitchGitCommand extends QuickCommand<State> {
 							steps.markStepsComplete();
 							return;
 						}
-						case 'cross-command':
-							void executeCommand(result.command, result.args);
-							steps.markStepsComplete();
-							return;
 					}
 					continue;
 				}

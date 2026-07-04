@@ -4,7 +4,7 @@ import { millisecondsPerDay } from '@gitlens/git/utils/fetch.utils.js';
 import { formatDate, fromNow } from '@gitlens/utils/date.js';
 import { map } from '@gitlens/utils/iterable.js';
 import { areUrisEqual } from '@gitlens/utils/uri.js';
-import { getIntegrationIdForRemote } from '../../../plus/integrations/utils/-webview/integration.utils.js';
+import { getIntegrationIdForRemote } from '../../../community/stubs/pro.js';
 import { configuration } from '../../../system/-webview/configuration.js';
 import { UriMap } from '../../../system/-webview/uriMap.js';
 import type { GlRepository } from '../../models/repository.js';
@@ -18,12 +18,12 @@ export function formatLastFetched(lastFetched: number, short: boolean = true): s
 	}
 
 	if (short) {
-		return formatDate(date, configuration.get('defaultDateShortFormat') ?? 'short');
+		return formatDate(date, configuration.getAny<string>('gitlens.defaultDateShortFormat') ?? 'short');
 	}
 
-	let format = configuration.get('defaultDateFormat') ?? `YYYY年M月D日 dddd HH:mm`;
+	let format = configuration.getAny<string>('gitlens.defaultDateFormat') ?? `YYYY年M月D日 dddd HH:mm`;
 	if (!/[hHm]/.test(format)) {
-		format += ` [at] ${configuration.get('defaultTimeFormat') ?? 'h:mma'}`;
+		format += ` [at] ${configuration.getAny<string>('gitlens.defaultTimeFormat') ?? 'h:mma'}`;
 	}
 	return formatDate(date, format);
 }

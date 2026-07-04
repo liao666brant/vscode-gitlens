@@ -1,4 +1,4 @@
-import type { Disposable, QuickPickItem } from 'vscode';
+import type { Disposable } from 'vscode';
 import { window } from 'vscode';
 import type { GitBranch } from '@gitlens/git/models/branch.js';
 import { getBranches } from '../commands/quick-wizard/steps/branches.js';
@@ -91,62 +91,4 @@ export async function showNewBranchPicker(
 	}
 
 	return newBranchName;
-}
-
-export async function showNewOrSelectBranchPicker(
-	title: string | undefined,
-	repository?: GlRepository,
-): Promise<GitBranch | string | undefined> {
-	if (repository == null) {
-		return undefined;
-	}
-
-	// TODO: needs updating
-	const createNewBranch = {
-		label: '创建新分支',
-		description: '创建一个分支以应用 Cloud Patch。（输入已有分支名将直接使用该分支。）',
-	};
-	const selectExistingBranch = {
-		label: '选择现有分支',
-		description: '选择一个现有分支以应用 Cloud Patch。',
-	};
-
-	const items: QuickPickItem[] = [createNewBranch, selectExistingBranch];
-
-	const quickpick = window.createQuickPick<QuickPickItem>();
-	quickpick.ignoreFocusOut = getQuickPickIgnoreFocusOut();
-
-	const disposables: Disposable[] = [];
-
-	try {
-		const pick = await new Promise<QuickPickItem | undefined>(resolve => {
-			disposables.push(
-				quickpick.onDidHide(() => resolve(undefined)),
-				quickpick.onDidAccept(() => {
-					if (quickpick.activeItems.length !== 0) {
-						resolve(quickpick.activeItems[0]);
-					}
-				}),
-			);
-
-			quickpick.title = title;
-			quickpick.placeholder = '选择分支操作';
-			quickpick.matchOnDescription = true;
-			quickpick.matchOnDetail = true;
-			quickpick.items = items;
-
-			quickpick.show();
-		});
-
-		if (pick === createNewBranch) {
-			return await showNewBranchPicker(title, '输入新分支名称', repository);
-		} else if (pick === selectExistingBranch) {
-			return await showBranchPicker(title, '选择一个现有分支', repository);
-		}
-
-		return undefined;
-	} finally {
-		quickpick.dispose();
-		disposables.forEach(d => void d.dispose());
-	}
 }

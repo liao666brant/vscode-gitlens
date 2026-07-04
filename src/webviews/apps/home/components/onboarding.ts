@@ -4,7 +4,7 @@ import { css, html, LitElement, nothing } from 'lit';
 import { customElement } from 'lit/decorators.js';
 import { walkthroughProgressSteps } from '../../../../constants.walkthroughs.js';
 import { createCommandLink } from '../../../../system/commands.js';
-import { ruleStyles } from '../../plus/shared/components/vscode.css.js';
+import { ruleStyles } from '../../../../community/stubs/pro.js';
 import type { OnboardingState } from '../../shared/contexts/onboarding.js';
 import { onboardingContext } from '../../shared/contexts/onboarding.js';
 import { homeBaseStyles, walkthroughProgressStyles } from '../home.css.js';

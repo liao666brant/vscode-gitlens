@@ -16,21 +16,13 @@ import type { TreeViewNodeTypes, TreeViewTypes } from '../../../constants.views.
 import type { GitUri } from '../../../git/gitUri.js';
 import { unknownGitUri } from '../../../git/gitUri.js';
 import type { GlRepository } from '../../../git/models/repository.js';
-import type { Draft } from '../../../plus/drafts/models/drafts.js';
-import type { LaunchpadItem } from '../../../plus/launchpad/launchpadProvider.js';
-import type { LaunchpadGroup } from '../../../plus/launchpad/models/launchpad.js';
-import {
-	launchpadCategoryToGroupMap,
-	sharedCategoryToLaunchpadActionCategoryMap,
-} from '../../../plus/launchpad/models/launchpad.js';
 import type {
 	CloudWorkspace,
 	CloudWorkspaceRepositoryDescriptor,
-} from '../../../plus/workspaces/models/cloudWorkspace.js';
-import type {
+	Draft,
 	LocalWorkspace,
 	LocalWorkspaceRepositoryDescriptor,
-} from '../../../plus/workspaces/models/localWorkspace.js';
+} from '../../../community/stubs/pro.js';
 import type { View } from '../../viewBase.js';
 import type { BranchTrackingStatus } from '../branchTrackingStatusNode.js';
 import type { TreeViewNodesByType } from '../utils/-webview/node.utils.js';
@@ -49,7 +41,6 @@ export const enum ContextValues {
 	BranchStatusNoUpstream = 'gitlens:status-branch:upstream:none',
 	BranchStatusSameAsUpstream = 'gitlens:status-branch:upstream:same',
 	BranchStatusFiles = 'gitlens:status-branch:files',
-	CodeSuggestions = 'gitlens:drafts:code-suggestions',
 	Commit = 'gitlens:commit',
 	Commits = 'gitlens:commits',
 	CommitsCurrentBranch = 'gitlens:commits:current-branch',
@@ -65,9 +56,6 @@ export const enum ContextValues {
 	FileHistory = 'gitlens:history:file',
 	Folder = 'gitlens:folder',
 	Grouping = 'gitlens:grouping',
-	LaunchpadItem = 'gitlens:launchpad:item',
-	LaunchpadError = 'gitlens:launchpad:error',
-	LaunchpadErrorAuth = 'gitlens:launchpad:error+auth',
 	LineHistory = 'gitlens:history:line',
 	MergeConflictCurrentChanges = 'gitlens:merge-conflict:current',
 	MergeConflictIncomingChanges = 'gitlens:merge-conflict:incoming',
@@ -120,8 +108,6 @@ export interface AmbientContext {
 	readonly contributor?: GitContributor;
 	readonly draft?: Draft;
 	readonly file?: GitFile;
-	readonly launchpadGroup?: LaunchpadGroup;
-	readonly launchpadItem?: LaunchpadItem;
 	readonly pausedOperation?: GitPausedOperation;
 	readonly pullRequest?: PullRequest;
 	readonly reflog?: GitReflogRecord;
@@ -171,16 +157,6 @@ export function getViewNodeId(type: string, context: AmbientContext): string {
 	}
 	if (context.branchStatusUpstreamType != null) {
 		uniqueness += `/branch-status-direction/${context.branchStatusUpstreamType}`;
-	}
-	if (context.launchpadGroup != null) {
-		uniqueness += `/lp/${context.launchpadGroup}`;
-		if (context.launchpadItem != null) {
-			uniqueness += `/${context.launchpadItem.type}/${context.launchpadItem.uuid}`;
-		}
-	} else if (context.launchpadItem != null) {
-		uniqueness += `/lp/${launchpadCategoryToGroupMap.get(
-			sharedCategoryToLaunchpadActionCategoryMap.get(context.launchpadItem.suggestedActionCategory)!,
-		)}/${context.launchpadItem.type}/${context.launchpadItem.uuid}`;
 	}
 	if (context.pullRequest != null) {
 		uniqueness += `/pr/${context.pullRequest.id}`;

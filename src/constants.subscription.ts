@@ -1,6 +1,5 @@
 export const proFeaturePreviewUsages = 3;
 export const proFeaturePreviewUsageDurationInDays = 1;
-export const proTrialLengthInDays = 14;
 
 // NOTE: Pay attention to gitlens:plus:state in the `package.json` when modifying this enum
 // NOTE: This is reported in telemetry so we should NOT change the values
@@ -13,11 +12,11 @@ export const enum SubscriptionState {
 	DeprecatedPreview = 1,
 	/** @deprecated DO NOT USE */
 	DeprecatedPreviewExpired = 2,
-	/** Indicates a user who is in a trial */
+	/** @deprecated DO NOT USE */
 	Trial = 3,
-	/** Indicates a user who's trial has expired, has an account, and is not yet eligible for reactivation */
+	/** @deprecated DO NOT USE */
 	TrialExpired = 4,
-	/** Indicated a user who's trial has expired, has an account, and is eligible for reactivation */
+	/** @deprecated DO NOT USE */
 	TrialReactivationEligible = 5,
 	/** Indicates a paid user */
 	Paid = 6,

@@ -239,11 +239,12 @@ async function getAvatarUriFromRemoteProvider(
 		if (typeof repoPathOrCommit !== 'string') {
 			const remote = await getBestRemoteWithIntegration(repoPathOrCommit.repoPath);
 			if (remote != null && remoteSupportsIntegration(remote)) {
-				account = await (
-					await getRemoteIntegration(remote)
-				)?.getAccountForCommit(remote.provider.repoDesc, repoPathOrCommit.ref, {
-					avatarSize: size,
-				});
+				const integration = await getRemoteIntegration(remote);
+				if (integration != null) {
+					account = await integration.getAccountForCommit(remote.provider.repoDesc, repoPathOrCommit.ref, {
+						avatarSize: size,
+					});
+				}
 			}
 		}
 

@@ -53,7 +53,7 @@ export class TelemetryService implements Disposable {
 	constructor(private readonly container: Container) {
 		container.context.subscriptions.push(
 			configuration.onDidChange(e => {
-				if (!configuration.changed(e, 'telemetry.enabled')) return;
+				if (!configuration.changedAny(e, 'gitlens.telemetry.enabled')) return;
 
 				this.ensureTelemetry(container);
 			}),
@@ -69,7 +69,8 @@ export class TelemetryService implements Disposable {
 
 	private _initializationTimer: ReturnType<typeof setTimeout> | undefined;
 	private ensureTelemetry(container: Container): void {
-		this._enabled = env.isTelemetryEnabled && configuration.get('telemetry.enabled', undefined, true);
+		this._enabled =
+			env.isTelemetryEnabled && configuration.getAny<boolean>('gitlens.telemetry.enabled', undefined, true);
 		if (!this._enabled) {
 			if (this._initializationTimer != null) {
 				clearTimeout(this._initializationTimer);

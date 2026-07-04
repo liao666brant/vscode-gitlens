@@ -1,11 +1,11 @@
 import type { Event } from 'vscode';
 import { Disposable, env, EventEmitter } from 'vscode';
 import { wait } from '@gitlens/utils/promise.js';
-import { SubscriptionState } from '../constants.subscription.js';
+import type { SubscriptionState } from '../constants.subscription.js';
 import type { TrackedUsageKeys } from '../constants.telemetry.js';
 import type { GraphWalkthroughContextKeys, WalkthroughContextKeys } from '../constants.walkthroughs.js';
 import type { Container } from '../container.js';
-import type { SubscriptionChangeEvent } from '../plus/gk/subscriptionService.js';
+import type { SubscriptionChangeEvent } from '../community/stubs/pro.js';
 import { setContext } from '../system/-webview/context.js';
 import type { UsageChangeEvent } from './usageTracker.js';
 
@@ -15,15 +15,6 @@ type WalkthroughUsage = {
 	usage: TrackedUsageKeys[];
 };
 
-const triedProStates: Readonly<SubscriptionState[]> = [
-	SubscriptionState.Trial,
-	SubscriptionState.TrialExpired,
-	SubscriptionState.TrialReactivationEligible,
-	SubscriptionState.Paid,
-];
-
-const tryProCommands: Readonly<TrackedUsageKeys[]> = ['command:gitlens.plus.reactivateProTrial:executed'];
-
 const walkthroughRequiredMapping: Readonly<Map<WalkthroughContextKeys, WalkthroughUsage>> = new Map<
 	WalkthroughContextKeys,
 	WalkthroughUsage
@@ -31,85 +22,10 @@ const walkthroughRequiredMapping: Readonly<Map<WalkthroughContextKeys, Walkthrou
 	[
 		'gettingStarted',
 		{
-			subscriptionStates: triedProStates,
-			subscriptionCommands: tryProCommands,
 			usage: [],
 		},
 	],
-	[
-		'visualizeCodeHistory',
-		{
-			subscriptionStates: triedProStates,
-			subscriptionCommands: tryProCommands,
-			usage: [
-				'graphView:shown',
-				'graphWebview:shown',
-				'commitDetailsView:shown',
-				'command:gitlens.showGraph:executed',
-				'command:gitlens.showGraphPage:executed',
-				'command:gitlens.showGraphView:executed',
-				'command:gitlens.showInCommitGraph:executed',
-				'command:gitlens.showInCommitGraphView:executed',
-			],
-		},
-	],
-	['gitBlame', { usage: ['command:gitlens.toggleFileBlame:executed', 'command:gitlens.toggleLineBlame:executed'] }],
-	[
-		'prReviews',
-		{
-			subscriptionStates: triedProStates,
-			subscriptionCommands: tryProCommands,
-			usage: [
-				'launchpadView:shown',
-				'worktreesView:shown',
-				'command:gitlens.showLaunchpad:executed',
-				'command:gitlens.showLaunchpadView:executed',
-				'command:gitlens.git.worktree:executed',
-				'command:gitlens.git.worktree.create:executed',
-				'command:gitlens.git.worktree.delete:executed',
-				'command:gitlens.git.worktree.open:executed',
-			],
-		},
-	],
-	[
-		'aiFeatures',
-		{
-			usage: [
-				'command:gitlens.walkthrough.openAiSettings:executed',
-				'command:gitlens.ai.explainBranch:executed',
-				'command:gitlens.ai.explainCommit:executed',
-				'command:gitlens.ai.explainStash:executed',
-				'command:gitlens.ai.explainWip:executed',
-				'command:gitlens.ai.generateChangelog:executed',
-				'command:gitlens.ai.generateCommitMessage:executed',
-				'command:gitlens.ai.explainBranch:graph:executed',
-				'command:gitlens.ai.explainBranch:views:executed',
-				'command:gitlens.ai.explainCommit:graph:executed',
-				'command:gitlens.ai.explainCommit:views:executed',
-				'command:gitlens.ai.explainStash:graph:executed',
-				'command:gitlens.ai.explainStash:views:executed',
-				'command:gitlens.ai.explainWip:graph:executed',
-				'command:gitlens.ai.explainWip:views:executed',
-				'command:gitlens.ai.generateChangelogFrom:graph:executed',
-				'command:gitlens.ai.generateChangelogFrom:views:executed',
-				'command:gitlens.ai.generateCommitMessage:scm:executed',
-				'command:gitlens.ai.generateChangelog:views:executed',
-				'action:gitlens.ai.generateCommits:happened',
-			],
-		},
-	],
-	[
-		'mcpFeatures',
-		{
-			usage: [
-				'command:gitlens.ai.mcp.install:executed',
-				'command:gitlens.ai.mcp.reinstall:executed',
-				'action:gitlens.mcp.ipcRequest:happened',
-				'action:gitlens.ai.openInAgent:happened',
-				'action:gitlens.mcp.bundledMcpDefinitionProvided:happened',
-			],
-		},
-	],
+	['gitBlame', { usage: ['command:gitlens.toggleFileBlame:executed'] }],
 	[
 		'homeView',
 		{
@@ -118,47 +34,7 @@ const walkthroughRequiredMapping: Readonly<Map<WalkthroughContextKeys, Walkthrou
 	],
 ]);
 
-const graphWalkthroughRequiredMapping: Readonly<Map<GraphWalkthroughContextKeys, WalkthroughUsage>> = new Map<
-	GraphWalkthroughContextKeys,
-	WalkthroughUsage
->([
-	[
-		'graphAgentMonitoring',
-		{
-			usage: ['action:gitlens.graph.overview.shown:happened'],
-		},
-	],
-	[
-		'graphParallelWork',
-		{
-			usage: ['action:gitlens.graph.scope.changed:happened'],
-		},
-	],
-	[
-		'graphAiReview',
-		{
-			usage: ['action:gitlens.graph.details.reviewMode:happened'],
-		},
-	],
-	[
-		'graphCompose',
-		{
-			usage: ['action:gitlens.graph.details.composeMode:happened'],
-		},
-	],
-	[
-		'graphCompare',
-		{
-			usage: ['action:gitlens.graph.details.compareMode:happened'],
-		},
-	],
-	[
-		'graphNextSteps',
-		{
-			usage: ['action:gitlens.graph.details.wipShown:happened'],
-		},
-	],
-]);
+const graphWalkthroughRequiredMapping: Readonly<Map<GraphWalkthroughContextKeys, WalkthroughUsage>> = new Map();
 
 export class WalkthroughStateProvider implements Disposable {
 	private readonly _onDidChangeProgress = new EventEmitter<void>();

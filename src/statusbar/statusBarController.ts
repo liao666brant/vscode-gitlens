@@ -11,9 +11,8 @@ import type { GlCommands } from '../constants.commands.js';
 import { GlyphChars } from '../constants.js';
 import type { Container } from '../container.js';
 import { CommitFormatter } from '../git/formatters/commitFormatter.js';
-import { getCommitAssociatedPullRequest, getCommitGitUri } from '../git/utils/-webview/commit.utils.js';
+import { getCommitAssociatedPullRequest } from '../git/utils/-webview/commit.utils.js';
 import { remoteSupportsIntegration } from '../git/utils/-webview/remote.utils.js';
-import { detailsMessage } from '../hovers/hovers.js';
 import { toAbortSignal } from '../system/-webview/cancellation.js';
 import { createCommand } from '../system/-webview/command.js';
 import { configuration } from '../system/-webview/configuration.js';
@@ -295,9 +294,6 @@ export class StatusBarController implements Disposable {
 			case 'gitlens.showQuickFileHistory':
 				actionTooltip = '点击显示文件历史';
 				break;
-			case 'gitlens.toggleCodeLens':
-				actionTooltip = '点击切换 Git CodeLens';
-				break;
 			case 'gitlens.toggleFileBlame':
 				this._statusBarBlame.command = 'gitlens.toggleFileBlame:statusbar' satisfies GlCommands;
 				actionTooltip = '点击切换文件注释';
@@ -352,32 +348,23 @@ export class StatusBarController implements Disposable {
 		const [remote] = remotes;
 
 		const defaultDateFormat = configuration.get('defaultDateFormat');
-		const getBranchAndTagTipsPromise =
-			CommitFormatter.has(cfg.format, 'tips') || CommitFormatter.has(cfg.tooltipFormat, 'tips')
-				? svc.getBranchesAndTagsTipsLookup()
-				: undefined;
+		const getBranchAndTagTipsPromise = CommitFormatter.has(cfg.format, 'tips')
+			? svc.getBranchesAndTagsTipsLookup()
+			: undefined;
 
 		const showPullRequests =
 			!commit.isUncommitted &&
 			remote != null &&
 			remoteSupportsIntegration(remote) &&
 			cfg.pullRequests.enabled &&
-			(CommitFormatter.has(
+			CommitFormatter.has(
 				cfg.format,
 				'pullRequest',
 				'pullRequestAgo',
 				'pullRequestAgoOrDate',
 				'pullRequestDate',
 				'pullRequestState',
-			) ||
-				CommitFormatter.has(
-					cfg.tooltipFormat,
-					'pullRequest',
-					'pullRequestAgo',
-					'pullRequestAgoOrDate',
-					'pullRequestDate',
-					'pullRequestState',
-				));
+			);
 
 		function setBlameText(
 			statusBarItem: StatusBarItem,
@@ -395,26 +382,7 @@ export class StatusBarController implements Disposable {
 			statusBarItem.accessibilityInformation = {
 				label: `${statusBarItem.text}\n${actionTooltip}`,
 			};
-		}
-
-		async function getBlameTooltip(
-			container: Container,
-			getBranchAndTagTips: Awaited<typeof getBranchAndTagTipsPromise> | undefined,
-			pr: Promise<PullRequest | undefined> | PullRequest | undefined,
-			timeout?: number,
-		) {
-			return detailsMessage(container, commit, getCommitGitUri(commit), commit.lines[0].line - 1, {
-				autolinks: true,
-				cancellation: cancellation,
-				dateFormat: defaultDateFormat,
-				format: cfg.tooltipFormat,
-				getBranchAndTagTips: getBranchAndTagTips,
-				pullRequest: pr,
-				pullRequests: showPullRequests && pr != null,
-				remotes: remotes,
-				timeout: timeout,
-				sourceName: 'statusbar:hover',
-			});
+			statusBarItem.tooltip = new MarkdownString(`${statusBarItem.text}\n\n---\n\n${actionTooltip}`);
 		}
 
 		let prResult: MaybePausedResult<PullRequest | undefined> | undefined;
@@ -446,11 +414,6 @@ export class StatusBarController implements Disposable {
 					scope?.trace('\u2022  pull request query completed; updating...');
 
 					setBlameText(this._statusBarBlame, getBranchAndTagTips, pr);
-
-					const tooltip = await getBlameTooltip(this.container, getBranchAndTagTips, pr);
-					if (tooltip != null) {
-						this._statusBarBlame.tooltip = tooltip.appendMarkdown(`\n\n---\n\n${actionTooltip}`);
-					}
 				},
 			);
 		}
@@ -461,23 +424,5 @@ export class StatusBarController implements Disposable {
 
 		setBlameText(this._statusBarBlame, getBranchAndTagTips, prResult?.value);
 		this._statusBarBlame.show();
-
-		const tooltipResult = await pauseOnCancelOrTimeout(
-			getBlameTooltip(this.container, getBranchAndTagTips, prResult?.value, 20),
-			toAbortSignal(cancellation),
-			100,
-			async result => {
-				if (result.reason !== 'timedout' || this._statusBarBlame == null) return;
-
-				const tooltip = await result.value;
-				if (tooltip != null) {
-					this._statusBarBlame.tooltip = tooltip.appendMarkdown(`\n\n---\n\n${actionTooltip}`);
-				}
-			},
-		);
-
-		if (!cancellation.isCancellationRequested && !tooltipResult.paused && tooltipResult.value != null) {
-			this._statusBarBlame.tooltip = tooltipResult.value.appendMarkdown(`\n\n---\n\n${actionTooltip}`);
-		}
 	}
 }

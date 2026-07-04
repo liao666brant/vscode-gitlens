@@ -1,3 +1,1 @@
-<a href="command:gitlens.walkthrough.openInteractiveCodeHistory" title="Watch the Visual Code History video">
-  <img src="./thumbnails/commit-graph.webp" alt="Watch the Visual Code History video"/>
-</a>
+<img src="./thumbnails/git-blame.webp" alt="Explore file annotations and history" />

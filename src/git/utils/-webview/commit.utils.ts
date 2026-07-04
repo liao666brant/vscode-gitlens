@@ -29,14 +29,20 @@ import { getBestRemoteWithIntegration, getRemoteIntegration, remoteSupportsInteg
 // #region Current user display name
 
 export function formatCurrentUserDisplayName(name: string, style?: CurrentUserNameStyle): string {
-	return _formatCurrentUserDisplayName(name, style ?? configuration.get('defaultCurrentUserNameStyle'));
+	return _formatCurrentUserDisplayName(
+		name,
+		style ?? configuration.getAny<CurrentUserNameStyle>('gitlens.defaultCurrentUserNameStyle') ?? 'you',
+	);
 }
 
 export function formatIdentityDisplayName(
 	identity: { name: string; current?: boolean | undefined },
 	style?: CurrentUserNameStyle,
 ): string {
-	return _formatIdentityDisplayName(identity, style ?? configuration.get('defaultCurrentUserNameStyle'));
+	return _formatIdentityDisplayName(
+		identity,
+		style ?? configuration.getAny<CurrentUserNameStyle>('gitlens.defaultCurrentUserNameStyle') ?? 'you',
+	);
 }
 
 // #endregion

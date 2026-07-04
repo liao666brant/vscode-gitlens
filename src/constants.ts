@@ -122,10 +122,7 @@ export const trackableSchemes = Object.freeze(
 
 const utm = 'source=gitlens&product=gitlens&utm_source=gitlens-extension&utm_medium=in-app-links';
 export const urls = Object.freeze({
-	codeSuggest: `https://gitkraken.com/solutions/code-suggest?${utm}`,
-	cloudPatches: `https://gitkraken.com/solutions/cloud-patches?${utm}`,
 	graph: `https://gitkraken.com/solutions/commit-graph?${utm}`,
-	launchpad: `https://gitkraken.com/solutions/launchpad?${utm}`,
 	platform: `https://gitkraken.com/devex?${utm}`,
 	pricing: `https://gitkraken.com/gitlens/pricing?${utm}`,
 	proFeatures: `https://gitkraken.com/gitlens/pro-features?${utm}`,
@@ -144,26 +141,14 @@ export const urls = Object.freeze({
 	releaseNotes: `https://help.gitkraken.com/gitlens/gitlens-release-notes-current/?${utm}`,
 	helpCenterAiHooks: `https://help.gitkraken.com/cli/cli-home/?${utm}#how-to-uninstall-gitkraken-cli-ai-hooks`,
 
-	acceleratePrReviews: `https://help.gitkraken.com/gitlens/gitlens-start-here/?${utm}#accelerate-pr-reviews`,
-	communityVsPro: `https://help.gitkraken.com/gitlens/gitlens-community-vs-gitlens-pro/?${utm}`,
 	homeView: `https://help.gitkraken.com/gitlens/home-view/?${utm}&utm_campaign=walkthrough`,
 	interactiveCodeHistory: `https://help.gitkraken.com/gitlens/gitlens-start-here/?${utm}#interactive-code-history`,
 	startIntegrations: `https://help.gitkraken.com/gitlens/gitlens-start-here/?${utm}#improve-workflows-with-integrations`,
-	aiFeatures: `https://help.gitkraken.com/gitlens/gl-gk-ai/?${utm}`,
 
 	getStarted: `https://help.gitkraken.com/gitlens/gitlens-home/?${utm}`,
-	welcomeInTrial: `https://help.gitkraken.com/gitlens/gitlens-home/?${utm}`,
-	welcomePaid: `https://help.gitkraken.com/gitlens/gitlens-home/?${utm}`,
-	welcomeTrialExpired: `https://help.gitkraken.com/gitlens/gitlens-community-vs-gitlens-pro/?${utm}`,
-	welcomeTrialReactivationEligible: `https://help.gitkraken.com/gitlens/gitlens-community-vs-gitlens-pro/?${utm}`,
 });
 
 export type WalkthroughSteps =
-	| 'welcome-in-trial'
-	| 'welcome-paid'
-	| 'welcome-in-trial-expired-eligible'
-	| 'welcome-in-trial-expired'
 	| 'get-started-community'
 	| 'visualize-code-history'
-	| 'accelerate-pr-reviews'
 	| 'improve-workflows-with-integrations';

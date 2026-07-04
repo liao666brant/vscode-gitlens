@@ -2,11 +2,8 @@ import { css, html, nothing } from 'lit';
 import { customElement, property, query, state } from 'lit/decorators.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
 import { when } from 'lit/directives/when.js';
-import type { ConnectRemoteProviderCommandArgs } from '../../../../commands/remoteProviders.js';
 import type { Source } from '../../../../constants.telemetry.js';
 import type { RepositoryShape } from '../../../../git/models/repositoryShape.js';
-import { createCommandLink } from '../../../../system/commands.js';
-import { linkStyles, ruleStyles } from '../../plus/shared/components/vscode.css.js';
 import { GlElement } from './element.js';
 import { pickerIconStyles, refButtonBaseStyles, truncatedButtonStyles } from './ref.css.js';
 import './button.js';
@@ -33,8 +30,6 @@ declare global {
 @customElement('gl-repo-button-group')
 export class GlRepoButtonGroup extends GlElement {
 	static override styles = [
-		linkStyles,
-		ruleStyles,
 		refButtonBaseStyles,
 		truncatedButtonStyles,
 		css`
@@ -468,14 +463,6 @@ export class GlRepoButtonGroup extends GlElement {
 							return html`
 								<div class="provider-popover__line">
 									<code-icon class="popover-status-icon" icon="plug" aria-hidden="true"></code-icon>
-									<a
-										href=${createCommandLink<ConnectRemoteProviderCommandArgs>(
-											'gitlens.connectRemoteProvider',
-											{ repoPath: repo.path, remote: provider.bestRemoteName },
-										)}
-									>
-										连接到 ${repo.provider!.name}
-									</a>
 									<span>&mdash; 未连接</span>
 								</div>
 							`;
@@ -483,34 +470,6 @@ export class GlRepoButtonGroup extends GlElement {
 					)}
 				</div>
 			</gl-popover>
-			${this.renderConnectIcon()}`;
-	}
-
-	private renderConnectIcon() {
-		if (!this.connectIcon) return nothing;
-
-		const { repository: repo } = this;
-		if (!repo?.provider) return nothing;
-
-		const { provider } = repo;
-		if (provider.integration?.connected !== false) return nothing;
-
-		return html`
-			<gl-button
-				part="connect-icon"
-				appearance="toolbar"
-				href=${createCommandLink<ConnectRemoteProviderCommandArgs>('gitlens.connectRemoteProvider', {
-					repoPath: repo.path,
-					remote: provider.bestRemoteName,
-				})}
-			>
-				<code-icon class="connect-icon" icon="plug"></code-icon>
-				<span slot="tooltip">
-					连接到 ${provider.name}
-					<hr />
-					在 Home、Commit Graph、Launchpad、自动链接等位置查看拉取请求和 Issue
-				</span>
-			</gl-button>
-		`;
+			${nothing}`;
 	}
 }

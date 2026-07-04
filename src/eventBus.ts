@@ -7,7 +7,7 @@ import type { GitBranchReference, GitRevisionReference } from '@gitlens/git/mode
 import type { GitCommitSearchContext } from '@gitlens/git/models/search.js';
 import type { CustomEditorIds, ViewIds, WebviewIds } from './constants.views.js';
 import type { RepositoryChange } from './git/models/repository.js';
-import type { Draft, LocalDraft } from './plus/drafts/models/drafts.js';
+import type { Draft, LocalDraft } from './community/stubs/pro.js';
 
 export type CommitSelectedEvent = EventBusEvent<'commit:selected'>;
 interface CommitSelectedEventArgs {

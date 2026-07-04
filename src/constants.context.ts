@@ -10,9 +10,7 @@ import type {
 } from './constants.views.js';
 import type { GraphWalkthroughContextKeys, WalkthroughContextKeys } from './constants.walkthroughs.js';
 import type { Features } from './features.js';
-import type { OrgAIProviders } from './plus/gk/models/organization.js';
-import type { PromoKeys } from './plus/gk/models/promo.js';
-import type { SubscriptionPlanIds } from './plus/gk/models/subscription.js';
+import type { OrgAIProviders, PromoKeys, SubscriptionPlanIds } from './community/stubs/pro.js';
 
 interface CompareSelectedInfo {
 	label: string;
@@ -30,7 +28,6 @@ export type ContextKeys = {
 	'gitlens:agents:enabled': boolean;
 	'gitlens:debugging': boolean;
 	'gitlens:disabled': boolean;
-	'gitlens:disabledToggleCodeLens': boolean;
 	'gitlens:enabled': boolean;
 	'gitlens:gk:cli:installed': boolean;
 	'gitlens:gk:hasOrganizations': boolean;
@@ -40,7 +37,6 @@ export type ContextKeys = {
 	'gitlens:gk:organization:drafts:byob': boolean;
 	'gitlens:gk:organization:drafts:enabled': boolean;
 	'gitlens:hasVirtualFolders': boolean;
-	'gitlens:launchpad:connected': boolean;
 	/** Indicates that this is the first run of a new install of GitLens */
 	'gitlens:install:new': boolean;
 	/** Indicates that this is the first run after an upgrade of GitLens */
@@ -79,7 +75,6 @@ export type ContextKeys = {
 	'gitlens:views:fileHistory:editorFollowing': boolean;
 	'gitlens:views:fileHistory:mode': 'commits' | 'contributors';
 	'gitlens:views:lineHistory:editorFollowing': boolean;
-	'gitlens:views:patchDetails:mode': 'create' | 'view';
 	'gitlens:views:pullRequest:visible': boolean;
 	'gitlens:views:repositories:autoRefresh': boolean;
 	'gitlens:views:scm:grouped:loading': boolean;

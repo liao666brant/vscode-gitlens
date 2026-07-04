@@ -11,9 +11,6 @@ import { isUncommitted } from '@gitlens/git/utils/revision.utils.js';
 import { getSettledValue } from '@gitlens/utils/promise.js';
 import type { CopyMessageToClipboardCommandArgs } from '../../commands/copyMessageToClipboard.js';
 import type { CopyShaToClipboardCommandArgs } from '../../commands/copyShaToClipboard.js';
-import type { ExplainCommitCommandArgs } from '../../commands/explainCommit.js';
-import type { ExplainStashCommandArgs } from '../../commands/explainStash.js';
-import type { ExplainWipCommandArgs } from '../../commands/explainWip.js';
 import type { InspectTelemetryContext, InspectWebviewTelemetryContext, Sources } from '../../constants.telemetry.js';
 import type { Container } from '../../container.js';
 import type { CommitSelectedEvent } from '../../eventBus.js';
@@ -32,19 +29,13 @@ import { getReachableWorktrees } from '../../git/utils/-webview/worktree.utils.j
 import { executeCommand, executeCoreCommand, registerWebviewCommand } from '../../system/-webview/command.js';
 import { getWebviewCommand } from '../../system/decorators/command.js';
 import type { LinesChangeEvent } from '../../trackers/lineTracker.js';
-import type { ShowInCommitGraphCommandArgs } from '../plus/graph/registration.js';
 import type { EventVisibilityBuffer, SubscriptionTracker } from '../rpc/eventVisibilityBuffer.js';
 import { bufferEventHandler, createRpcEventSubscription } from '../rpc/eventVisibilityBuffer.js';
 import { createSharedServices, proxyServices } from '../rpc/services/common.js';
 import type { WebviewHost, WebviewProvider, WebviewShowingArgs } from '../webviewProvider.js';
 import type { WebviewShowOptions } from '../webviewsController.js';
 import { isSerializedState } from '../webviewsController.js';
-import type {
-	CommitDetailsServices,
-	CommitSelectionEvent,
-	ExplainResult,
-	GenerateResult,
-} from './commitDetailsService.js';
+import type { CommitDetailsServices, CommitSelectionEvent, ExplainResult } from './commitDetailsService.js';
 import type { ComparisonContext } from './commitDetailsWebview.utils.js';
 import {
 	getFileCommitFromContext,
@@ -161,7 +152,6 @@ export class CommitDetailsWebviewProvider implements WebviewProvider<State, Stat
 				'context.mode': 'wip',
 				'context.autolinks': 0,
 				'context.inReview': this._showingInReview,
-				'context.codeSuggestions': 0,
 				...this._telemetryContext,
 			};
 			return context;
@@ -545,72 +535,14 @@ export class CommitDetailsWebviewProvider implements WebviewProvider<State, Stat
 		}
 	}
 
-	private async onExplainRequest(
-		repoPath: string,
-		sha: string,
-		prompt?: string,
+	private onExplainRequest(
+		_repoPath: string,
+		_sha: string,
+		_prompt?: string,
 		signal?: AbortSignal,
 	): Promise<ExplainResult> {
-		try {
-			signal?.throwIfAborted();
-			// Check if this is uncommitted changes
-			if (sha === 'wip' || isUncommitted(sha)) {
-				await executeCommand<ExplainWipCommandArgs>('gitlens.ai.explainWip', {
-					repoPath: repoPath,
-					prompt: prompt || undefined,
-					source: { source: this.getTelemetrySource(), context: { type: 'wip' } },
-				});
-			} else if (this._showingCommitRef?.refType === 'stash') {
-				await executeCommand<ExplainStashCommandArgs>('gitlens.ai.explainStash', {
-					repoPath: repoPath,
-					rev: sha,
-					prompt: prompt || undefined,
-					source: { source: this.getTelemetrySource(), context: { type: 'stash' } },
-				});
-			} else {
-				await executeCommand<ExplainCommitCommandArgs>('gitlens.ai.explainCommit', {
-					repoPath: repoPath,
-					rev: sha,
-					prompt: prompt || undefined,
-					source: { source: this.getTelemetrySource(), context: { type: 'commit' } },
-				});
-			}
-			signal?.throwIfAborted();
-
-			return { result: { summary: '', body: '' } };
-		} catch (ex) {
-			debugger;
-			return { error: { message: ex.message } };
-		}
-	}
-
-	private async onGenerateRequest(repoPath: string, signal?: AbortSignal): Promise<GenerateResult> {
-		const repo = this.container.git.getRepository(repoPath);
-
-		if (!repo) {
-			return { error: { message: '无法找到仓库' } };
-		}
-
-		try {
-			signal?.throwIfAborted();
-			const result = await this.container.ai.actions.generateCreateDraft(
-				repo,
-				{ source: this.getTelemetrySource(), context: { type: 'suggested_pr_change' } },
-				{ progress: { location: { viewId: this.host.id } } },
-			);
-			signal?.throwIfAborted();
-			if (result === 'cancelled') throw new Error('操作已取消');
-
-			if (result == null) throw new Error('获取内容时出错');
-
-			return {
-				title: result.result.summary,
-				description: result.result.body,
-			};
-		} catch (ex) {
-			debugger;
-			return { error: { message: ex.message } };
-		}
+		signal?.throwIfAborted();
+		return Promise.resolve({ error: { message: 'AI explain is not available in this build.' } });
 	}
 
 	private _wipConflictMarkerCache = new Map<string, { mtime: number; count: number }>();
@@ -814,11 +746,7 @@ export class CommitDetailsWebviewProvider implements WebviewProvider<State, Stat
 	}) {
 		switch (params.action) {
 			case 'graph': {
-				const ref = createReference(params.sha, params.repoPath, { refType: 'revision' });
-				void executeCommand<ShowInCommitGraphCommandArgs>('gitlens.showInCommitGraph', {
-					ref: ref,
-					source: { source: this.getTelemetrySource() },
-				});
+				void this.showCommitActions(params.repoPath, params.sha);
 				break;
 			}
 			case 'more':
@@ -1046,9 +974,6 @@ export class CommitDetailsWebviewProvider implements WebviewProvider<State, Stat
 
 				explainCommit: (repoPath: string, sha: string, prompt?: string, signal?: AbortSignal) =>
 					this.onExplainRequest(repoPath, sha, prompt, signal),
-
-				generateDescription: (repoPath: string, signal?: AbortSignal) =>
-					this.onGenerateRequest(repoPath, signal),
 			},
 		} satisfies CommitDetailsServices);
 	}

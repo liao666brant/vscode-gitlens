@@ -95,6 +95,25 @@ export const homeStyles = css`
 	gl-repo-alerts:not([has-alerts]) {
 		display: none;
 	}
+
+	.home-community {
+		max-width: 42rem;
+		padding: 1.2rem;
+	}
+	.home-community h1 {
+		font-size: 1.4rem;
+		line-height: 1.25;
+		margin: 0 0 0.6rem;
+	}
+	.home-community p {
+		color: var(--vscode-descriptionForeground);
+		margin: 0 0 1rem;
+	}
+	.home-community__actions {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 0.6rem;
+	}
 `;
 
 export const buttonStyles = css`

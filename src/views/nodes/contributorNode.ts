@@ -127,7 +127,7 @@ export class ContributorNode extends ViewNode<'contributor', ViewsWithContributo
 		let avatarUri;
 		let avatarMarkdown;
 		if (this.view.config.avatars) {
-			const size = configuration.get('hovers.avatarSize');
+			const size = 16;
 			avatarUri = await getContributorAvatarUri(this.contributor, {
 				defaultStyle: configuration.get('defaultGravatarsStyle'),
 				size: size,

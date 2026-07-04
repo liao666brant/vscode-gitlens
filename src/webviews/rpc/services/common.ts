@@ -87,7 +87,7 @@ export function createSharedServices(
 		subscription: new SubscriptionService(container, buffer, tracker),
 		integrations: new IntegrationsService(container, buffer, tracker),
 		onboarding: new OnboardingRpcService(container, buffer, tracker),
-		ai: new AIService(container, buffer, tracker),
+		ai: new AIService(),
 		autolinks: new AutolinksService(container),
 		branches: new BranchesService(container),
 		commands: new CommandsService(container, host),

@@ -2,7 +2,6 @@ import * as assert from 'assert';
 import type { OverviewFilters } from '../../../home/protocol.js';
 import { createAIState } from '../../shared/contexts/ai.js';
 import { createIntegrationsState } from '../../shared/contexts/integrations.js';
-import { createLaunchpadState } from '../../shared/contexts/launchpad.js';
 import { createOnboardingState } from '../../shared/contexts/onboarding.js';
 import { InMemoryStorage } from '../../shared/host/storage.js';
 import { populateInitialState, restoreOverviewFilter } from '../actions.js';
@@ -14,7 +13,6 @@ function createRootState() {
 		integrations: createIntegrationsState(),
 		ai: createAIState(),
 		onboarding: createOnboardingState(),
-		launchpad: createLaunchpadState(),
 		commands: { service: undefined },
 	};
 }
@@ -84,7 +82,6 @@ suite('home actions', () => {
 				getWalkthroughProgress: async () => undefined,
 				getOverviewFilterState: async () => persisted,
 				setOverviewFilter: async () => filterRestore,
-				getAgentSessions: async () => [],
 			} as any,
 			{} as any,
 			{ getIntegrationStates: async () => [] } as any,

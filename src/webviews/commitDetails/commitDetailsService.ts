@@ -42,7 +42,7 @@ export interface CommitSelectionEvent {
 
 /**
  * Event fired when the host requests switching to WIP mode on an already-live webview.
- * (e.g., Launchpad or deep links opening review/WIP in the existing Inspect view)
+ * (e.g., deep links opening WIP in the existing Inspect view)
  */
 export interface ShowWipEvent {
 	repoPath?: string;
@@ -79,13 +79,6 @@ export interface InitialContext {
  */
 export type ExplainResult =
 	| { result: { summary: string; body: string }; error?: never }
-	| { error: { message: string } };
-
-/**
- * Result type for AI generate title/description operation.
- */
-export type GenerateResult =
-	| { title: string | undefined; description: string | undefined; error?: undefined }
 	| { error: { message: string } };
 
 // ============================================================
@@ -196,12 +189,6 @@ export interface CommitInspectService {
 	 * @param signal - Optional AbortSignal for cooperative cancellation
 	 */
 	explainCommit(repoPath: string, sha: string, prompt?: string, signal?: AbortSignal): Promise<ExplainResult>;
-
-	/**
-	 * Generate AI title and description for WIP changes.
-	 * @param signal - Optional AbortSignal for cooperative cancellation
-	 */
-	generateDescription(repoPath: string, signal?: AbortSignal): Promise<GenerateResult>;
 }
 
 // ============================================================

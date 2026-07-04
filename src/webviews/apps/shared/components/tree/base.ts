@@ -1,7 +1,6 @@
 import type { TemplateResult } from 'lit';
-import type { AgentSessionPhase } from '@gitlens/agents/types.js';
 import type { GitFileStatus } from '@gitlens/git/models/fileStatus.js';
-import type { DraftPatchFileChange } from '../../../../../plus/drafts/models/drafts.js';
+import type { DraftPatchFileChange } from '../../../../../community/stubs/pro.js';
 
 export interface TreeItemBase {
 	// node properties
@@ -69,17 +68,7 @@ export interface TreeItemDecorationIcon extends TreeItemDecorationBase {
 	icon: string;
 }
 
-export type TreeItemDecorationKind =
-	| 'added'
-	| 'deleted'
-	| 'modified'
-	| 'untracked'
-	| 'renamed'
-	| 'conflict'
-	| 'muted'
-	| 'agent-working'
-	| 'agent-waiting'
-	| 'agent-idle';
+export type TreeItemDecorationKind = 'added' | 'deleted' | 'modified' | 'untracked' | 'renamed' | 'conflict' | 'muted';
 
 export interface TreeItemDecorationText extends TreeItemDecorationBase {
 	type: 'text';
@@ -106,12 +95,6 @@ export interface TreeItemDecorationConflict extends TreeItemDecorationBase {
 	kind?: TreeItemDecorationKind;
 }
 
-export interface TreeItemDecorationAgent extends TreeItemDecorationBase {
-	type: 'agent';
-	phase: AgentSessionPhase;
-	tooltip?: string;
-}
-
 export interface TreeItemDecorationWip extends TreeItemDecorationBase {
 	type: 'wip';
 	hasChanges: boolean;
@@ -126,7 +109,6 @@ export type TreeItemDecoration =
 	| TreeItemDecorationStatus
 	| TreeItemDecorationTracking
 	| TreeItemDecorationConflict
-	| TreeItemDecorationAgent
 	| TreeItemDecorationWip;
 
 interface TreeModelBase<Context = any[]> extends TreeItemBase {
@@ -135,8 +117,7 @@ interface TreeModelBase<Context = any[]> extends TreeItemBase {
 		| string
 		| { type: 'status'; name: GitFileStatus }
 		| { type: 'branch'; status?: string; worktree?: boolean; hasChanges?: boolean }
-		| { type: 'file-icon'; filename: string }
-		| { type: 'agent'; phase: AgentSessionPhase };
+		| { type: 'file-icon'; filename: string };
 	description?: string;
 	context?: Context;
 	actions?: TreeItemAction[];

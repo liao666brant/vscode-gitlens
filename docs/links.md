@@ -13,11 +13,6 @@ This document covers the various VSCode link formats that work with GitLens, alo
 - [Comparison](#comparison 'Jump to Comparison')
 - [File/Lines](#filelines 'Jump to File/Lines')
 
-### GitKraken Cloud Items
-
-- [Cloud Patch/Code Suggestion](#cloud-patchcode-suggestion 'Jump to Cloud Patch/Code Suggestion')
-- [Cloud Workspace](#cloud-workspace 'Jump to Cloud Workspace')
-
 ### GitKraken Account Links
 
 - [Login](#login 'Jump to Login')
@@ -197,29 +192,6 @@ To guide a teammate to a specific line of code, right click the line in the edit
 
 - Accessing these deep links requires a GitKraken account.
 
-### Cloud Patch/Code Suggestion
-
-#### Description
-
-Used to open a cloud patch or code suggestion in GitLens.
-
-#### Format
-
-_{prefix}/drafts/{draftId}(?patch={patchId})(&type=suggested_pr_change&prEntityId={prEntityId})_
-
-#### References
-
-- _{draftId}_ is the ID of the cloud patch.
-
-- _{patchId}_ is an optional query parameter used to access a specific revision/patch within the cloud patch. If not set, the most recent is used.
-
-- _type=suggested_pr_change&prEntityId={prEntityId}_ should be included in the query for deep links to code suggestions. These parameters should not be included for standard cloud patch links.
-  - _{prEntityId}_ refers to the GK entity identifier for the Pull Request related to the code suggestion.
-
-#### Example Usage
-
-When you create a cloud patch from the _Cloud Patches_ view, you will receive a notification that the cloud patch has been successfully created. On that notification is a "Copy Link" button. Click it to copy a link to the cloud patch to your clipboard. Share the link with a teammate (ensure that the teammate has access based on the permissions/visibility you set for the cloud patch). When they access the link, GitLens will help them open the cloud patch in GitLens and view the patch changes, and even apply the changes to their local repository.
-
 ### Cloud Workspace
 
 #### Description
@@ -256,8 +228,7 @@ _vscode://eamodio.gitlens/login?code={code}(&state={state})(&context={context})_
 
 - _{state}_ is an optional parameter representing the state used to retrieve the code, if applicable. If a state was used to retrieve the code, it must be included in the link or the login will fail.
 
-- _{context}_ is an optional parameter representing the context of the login. Currently supported values include:
-  - _start_trial_ - Log in to start a Pro trial.
+- _{context}_ is an optional parameter representing the context of the login.
 
 #### Example Usage
 
@@ -278,8 +249,6 @@ _{prefix}/command/{command}(?source={source})_
 #### References
 
 - _{command}_ is the name of the command to run. Currently supported values include:
-  - _cloud-patches_ - Runs the `GitLens: Show Cloud Patches View` command.
-
   - _graph_ - Runs the `GitLens: Show Graph` command.
 
   - _home_ - Runs the `GitLens: Show Home View` command.
@@ -292,8 +261,6 @@ _{prefix}/command/{command}(?source={source})_
 
   - _signup_ - Runs the `GitLens: Sign Up for GitKraken...` command.
 
-  - _launchpad_ - Runs the `GitLens: Show Launchpad` command.
-
   - _walkthrough_ - Runs the `GitLens: Get Started` command.
 
   - _worktrees_ - Runs the `GitLens: Show Worktrees View` command.
@@ -302,7 +269,7 @@ _{prefix}/command/{command}(?source={source})_
 
 #### Example Usage
 
-External sources, such as GitKraken web pages, can use these links to directly run a GitLens command - for example, to show the Launchpad.
+External sources, such as GitKraken web pages, can use these links to directly run a GitLens command.
 
 ### Integrations
 

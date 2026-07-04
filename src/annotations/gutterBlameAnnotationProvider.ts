@@ -65,13 +65,6 @@ function getSpinnerPlaceholderRenderOptions(): DecorationOptions['renderOptions'
 	};
 }
 
-export interface BlameFontOptions {
-	family: string;
-	size: number;
-	style: string;
-	weight: string;
-}
-
 export class GutterBlameAnnotationProvider extends BlameAnnotationProviderBase {
 	private _cancelledComputing: Deferred<never> | undefined;
 	private _flushViewport: (() => void) | undefined;
@@ -193,7 +186,6 @@ export class GutterBlameAnnotationProvider extends BlameAnnotationProviderBase {
 				sw?.stop({
 					suffix: ` to compute and apply gutter blame annotations (immediate); ${lineCount} lines, ${blameResult.value.commits.size} commits`,
 				});
-				this.registerHoverProviders(configuration.get('hovers.annotations'));
 				return true;
 			}
 
@@ -583,7 +575,6 @@ export class GutterBlameAnnotationProvider extends BlameAnnotationProviderBase {
 				});
 			}
 
-			this.registerHoverProviders(configuration.get('hovers.annotations'));
 			return true;
 		}
 
@@ -596,7 +587,6 @@ export class GutterBlameAnnotationProvider extends BlameAnnotationProviderBase {
 			suffix: ` to compute and apply gutter blame annotations (non-progressive); ${blame.lines.length} lines, ${blame.commits.size} commits`,
 		});
 
-		this.registerHoverProviders(configuration.get('hovers.annotations'));
 		return true;
 	}
 

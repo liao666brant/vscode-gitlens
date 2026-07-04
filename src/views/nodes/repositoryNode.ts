@@ -15,17 +15,8 @@ import type { RepositoryChangeEvent, RepositoryWorkingTreeChangeEvent } from '..
 import { GlRepository } from '../../git/models/repository.js';
 import { getRepositoryStatusIconPath } from '../../git/utils/-webview/icons.js';
 import { formatLastFetched } from '../../git/utils/-webview/repository.utils.js';
-import type {
-	CloudWorkspace,
-	CloudWorkspaceRepositoryDescriptor,
-} from '../../plus/workspaces/models/cloudWorkspace.js';
-import type {
-	LocalWorkspace,
-	LocalWorkspaceRepositoryDescriptor,
-} from '../../plus/workspaces/models/localWorkspace.js';
 import { gate } from '../../system/decorators/gate.js';
 import type { TreeViewNodeCollapsibleStateChangeEvent, ViewsWithRepositories } from '../viewBase.js';
-import { createViewDecorationUri } from '../viewDecorationProvider.js';
 import { SubscribeableViewNode } from './abstract/subscribeableViewNode.js';
 import type { AmbientContext, ViewNode } from './abstract/viewNode.js';
 import { ContextValues, getViewNodeId } from './abstract/viewNode.js';
@@ -64,7 +55,7 @@ export class RepositoryNode extends SubscribeableViewNode<'repository', ViewsWit
 		this._status = this.repo.git.status.getStatus();
 
 		// Watch the working tree only while this node is expanded (its `StatusFilesNode` is shown), releasing on
-		// collapse/hide so collapsed repo nodes (e.g. the many in the Workspaces view) don't each hold an FS watcher.
+		// collapse/hide so collapsed repo nodes don't each hold an FS watcher.
 		this._collapsibleStateDisposable = this.view.onDidChangeNodeCollapsibleState(
 			this.onNodeCollapsibleStateChanged,
 			this,
@@ -86,14 +77,6 @@ export class RepositoryNode extends SubscribeableViewNode<'repository', ViewsWit
 
 	get repoPath(): string {
 		return this.repo.path;
-	}
-
-	get workspace(): CloudWorkspace | LocalWorkspace | undefined {
-		return this.context.workspace;
-	}
-
-	get wsRepositoryDescriptor(): CloudWorkspaceRepositoryDescriptor | LocalWorkspaceRepositoryDescriptor | undefined {
-		return this.context.wsRepositoryDescriptor;
 	}
 
 	async getChildren(): Promise<ViewNode[]> {
@@ -232,19 +215,9 @@ export class RepositoryNode extends SubscribeableViewNode<'repository', ViewsWit
 		}${this.repo.name ? `\\\n${this.uri.repoPath}` : ''}`;
 		let workingStatus = '';
 
-		const { workspace } = this.context;
-
 		let contextValue: string = ContextValues.GlRepository;
 		if (this.repo.starred) {
 			contextValue += '+starred';
-		}
-		if (workspace != null) {
-			contextValue += '+workspace';
-			if (workspace.type === 'cloud') {
-				contextValue += '+cloud';
-			} else if (workspace.type === 'local') {
-				contextValue += '+local';
-			}
 		}
 
 		if (this.repo.virtual) {
@@ -305,26 +278,13 @@ export class RepositoryNode extends SubscribeableViewNode<'repository', ViewsWit
 			}
 		}
 
-		if (workspace != null) {
-			tooltip += `\n\n仓库${!this.repo.opened ? '未' : '已'}在当前窗口中打开`;
-		}
-
-		const item = new TreeItem(
-			label,
-			workspace != null || this.view.type === 'workspaces'
-				? TreeItemCollapsibleState.Collapsed
-				: TreeItemCollapsibleState.Expanded,
-		);
+		const item = new TreeItem(label, TreeItemCollapsibleState.Expanded);
 		item.id = this.id;
 		item.contextValue = contextValue;
 		item.description = `${description ?? ''}${
 			lastFetched ? `${pad(GlyphChars.Dot, 1, 1)}上次获取于 ${formatLastFetched(lastFetched)}` : ''
 		}`;
 		item.iconPath = getRepositoryStatusIconPath(this.view.container, this.repo, status);
-
-		if (workspace != null && this.repo.opened) {
-			item.resourceUri = createViewDecorationUri('repository', { state: 'open', workspace: true });
-		}
 
 		const markdown = new MarkdownString(tooltip, true);
 		markdown.supportHtml = true;

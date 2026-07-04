@@ -14,14 +14,6 @@ import type {
 export const actionCommandPrefix = 'gitlens.action.';
 
 export type GlCommandsDeprecated =
-	/** @deprecated use `gitlens.ai.generateCommitMessage` */
-	| 'gitlens.generateCommitMessage'
-	/** @deprecated use `gitlens.ai.generateCommitMessage:scm` */
-	| 'gitlens.scm.generateCommitMessage'
-	/** @deprecated use `gitlens.ai.generateCommitMessage:scm` */
-	| 'gitlens.scm.ai.generateCommitMessage'
-	/** @deprecated use `gitlens.ai.switchProvider` */
-	| 'gitlens.switchAIModel'
 	| 'gitlens.diffHeadWith'
 	| 'gitlens.diffWorkingWith'
 	| 'gitlens.openBranchesInRemote'
@@ -32,28 +24,10 @@ export type GlCommandsDeprecated =
 	| 'gitlens.openRepoInRemote'
 	| 'gitlens.showFileHistoryInView';
 
-type InternalGraphWebviewCommands =
-	| 'gitlens.deleteBranchOrWorktree:graph'
-	| 'gitlens.git.branch.setMergeTarget:graph'
-	| 'gitlens.mergeIntoCurrent:graph'
-	| 'gitlens.openMergeTargetComparison:graph'
-	| 'gitlens.pausedOperation.abort:graph'
-	| 'gitlens.pausedOperation.continue:graph'
-	| 'gitlens.pausedOperation.open:graph'
-	| 'gitlens.pausedOperation.showConflicts:graph'
-	| 'gitlens.pausedOperation.skip:graph'
-	| 'gitlens.pushBranch:graph'
-	| 'gitlens.rebaseCurrentOnto:graph'
-	| 'gitlens.shareWipAsCloudPatch:graph';
-
 type InternalHomeWebviewCommands =
 	| 'gitlens.git.branch.setMergeTarget:home'
 	| 'gitlens.deleteBranchOrWorktree:home'
-	| 'gitlens.ai.explainBranch:home'
-	| 'gitlens.ai.explainWip:home'
-	| 'gitlens.composeCommits:home'
 	| 'gitlens.createBranch:home'
-	| 'gitlens.createCloudPatch:home'
 	| 'gitlens.createPullRequest:home'
 	| 'gitlens.fetch:home'
 	| 'gitlens.mergeIntoCurrent:home'
@@ -62,8 +36,6 @@ type InternalHomeWebviewCommands =
 	| 'gitlens.openPullRequestChanges:home'
 	| 'gitlens.openPullRequestComparison:home'
 	| 'gitlens.openPullRequestDetails:home'
-	// | 'gitlens.openPullRequestOnRemote:home'
-	| 'gitlens.openWorktree:home'
 	| 'gitlens.pausedOperation.abort:home'
 	| 'gitlens.pausedOperation.continue:home'
 	| 'gitlens.pausedOperation.open:home'
@@ -74,28 +46,7 @@ type InternalHomeWebviewCommands =
 	| 'gitlens.push:home'
 	| 'gitlens.pushBranch:home'
 	| 'gitlens.rebaseCurrentOnto:home'
-	| 'gitlens.showInCommitGraph:home'
-	| 'gitlens.startWork:home'
-	| 'gitlens.switchToBranch:home'
-	| 'gitlens.visualizeHistory.repo:home'
-	| 'gitlens.visualizeHistory.branch:home';
-
-type InternalAgentCommands =
-	| 'gitlens.agents.installClaudeHook'
-	| 'gitlens.agents.uninstallClaudeHook'
-	| 'gitlens.agents.resolvePermission'
-	| 'gitlens.agents.openPlanFile';
-
-type InternalLaunchPadCommands = 'gitlens.launchpad.indicator.action';
-
-type InternalPlusCommands =
-	| 'gitlens.plus.aiAllAccess.optIn'
-	| 'gitlens.plus.continueFeaturePreview'
-	| 'gitlens.plus.resendVerification'
-	| 'gitlens.plus.showPlans'
-	| 'gitlens.plus.validate';
-
-type InternalPullRequestViewCommands = 'gitlens.views.addPullRequestRemote';
+	| 'gitlens.switchToBranch:home';
 
 type InternalRebaseEditorCommands = 'gitlens.pausedOperation.showConflicts:rebase';
 
@@ -103,93 +54,60 @@ type InternalScmGroupedViewCommands =
 	| 'gitlens.views.scm.grouped.welcome.dismiss'
 	| 'gitlens.views.scm.grouped.welcome.restore';
 
-type InternalGraphWebviewViewCommands = 'gitlens.views.graph.openTimelineInTab';
-
-type InternalTimelineWebviewViewCommands = 'gitlens.views.timeline.openInTab';
-
-type InternalViewCommands = 'gitlens.views.loadMoreChildren';
+type InternalViewCommands =
+	| 'gitlens.views.collapseNode'
+	| 'gitlens.views.copy'
+	| 'gitlens.views.expandNode'
+	| 'gitlens.views.loadMoreChildren'
+	| 'gitlens.views.setShowRelativeDateMarkersOff'
+	| 'gitlens.views.setShowRelativeDateMarkersOn';
 
 type InternalWalkthroughCommands =
-	| 'gitlens.walkthrough.enableAiSetting'
 	| 'gitlens.walkthrough.gitlensInspect'
-	| 'gitlens.walkthrough.openAcceleratePrReviews'
-	| 'gitlens.walkthrough.openAiCustomInstructionsSettings'
-	| 'gitlens.walkthrough.openAiSettings'
-	| 'gitlens.walkthrough.openCommunityVsPro'
 	| 'gitlens.walkthrough.openHelpCenter'
-	| 'gitlens.walkthrough.openInteractiveCodeHistory'
-	| 'gitlens.walkthrough.openLearnAboutAiFeatures'
-	| 'gitlens.walkthrough.openWalkthrough'
-	| 'gitlens.walkthrough.plus.login'
-	| 'gitlens.walkthrough.plus.signUp'
-	| 'gitlens.walkthrough.plus.upgrade'
-	| 'gitlens.walkthrough.plus.reactivate'
-	| 'gitlens.walkthrough.showDraftsView'
-	| 'gitlens.walkthrough.showGraph'
-	| 'gitlens.walkthrough.showComposer'
-	| 'gitlens.walkthrough.showLaunchpad'
-	| 'gitlens.walkthrough.switchAIProvider'
-	| 'gitlens.walkthrough.worktree.create'
-	| 'gitlens.walkthrough.openDevExPlatform';
+	| 'gitlens.walkthrough.openWalkthrough';
 
-type InternalWelcomeCommands =
-	| 'gitlens.welcome.openCommunityVsPro'
-	| 'gitlens.welcome.openHelpCenter'
-	| 'gitlens.welcome.plus.login'
-	| 'gitlens.welcome.plus.reactivate'
-	| 'gitlens.welcome.plus.signUp'
-	| 'gitlens.welcome.plus.upgrade'
-	| 'gitlens.welcome.showComposer'
-	| 'gitlens.welcome.showGraph'
-	| 'gitlens.welcome.showHomeView'
-	| 'gitlens.welcome.showLaunchpad';
+type InternalWelcomeCommands = 'gitlens.welcome.openHelpCenter' | 'gitlens.welcome.showHomeView';
 
 type InternalGlCommands =
 	| `gitlens.action.${string}`
-	| 'gitlens.ai.explainCommit:editor'
-	| 'gitlens.ai.explainWip:editor'
-	| 'gitlens.ai.feedback.helpful'
-	| 'gitlens.ai.feedback.unhelpful'
-	| 'gitlens.ai.mcp.authCLI'
 	| 'gitlens.diffWith'
-	| 'gitlens.diffWithPrevious:codelens'
 	| 'gitlens.diffWithPrevious:command'
 	| 'gitlens.diffWithPrevious:views'
 	| 'gitlens.diffWithWorking:command'
 	| 'gitlens.diffWithWorking:views'
-	| 'gitlens.openChatAction'
-	| 'gitlens.openCloudPatch'
 	| 'gitlens.openOnRemote'
 	| 'gitlens.openWalkthrough'
 	| 'gitlens.openWorkingFile:command'
-	| 'gitlens.refreshHover'
 	| 'gitlens.regenerateMarkdownDocument'
-	| 'gitlens.runPromptInAgent'
-	| 'gitlens.sendToChat'
-	| 'gitlens.showComposerPage'
-	| 'gitlens.showInCommitGraphView'
 	| 'gitlens.onboarding.dismiss'
 	| 'gitlens.showQuickCommitDetails'
-	| 'gitlens.toggleFileBlame:codelens'
+	| 'gitlens.copyWorkingChangesToWorktree'
+	| 'gitlens.git.worktree'
+	| 'gitlens.git.worktree.copyWorkingChangesTo'
+	| 'gitlens.git.worktree.create'
+	| 'gitlens.git.worktree.delete'
+	| 'gitlens.git.worktree.open'
+	| 'gitlens.copyWorkingChangesToWorktree:views'
+	| 'gitlens.openWorktree:views'
+	| 'gitlens.openWorktreeInNewWindow:views'
+	| 'gitlens.openWorktreeInNewWindow.multi:views'
+	| 'gitlens.views.createWorktree'
+	| 'gitlens.views.commitDetails.refresh'
+	| 'gitlens.views.openInWorktree'
+	| 'gitlens.views.repositories.setShowSectionOff'
+	| 'gitlens.views.repositories.setShowSectionWorktreesOff'
+	| 'gitlens.views.repositories.setShowSectionWorktreesOn'
+	| 'gitlens.views.title.createWorktree'
 	| 'gitlens.toggleFileBlame:mode'
 	| 'gitlens.toggleFileBlame:statusbar'
-	| 'gitlens.toggleFileChanges:codelens'
 	| 'gitlens.toggleFileChanges:mode'
 	| 'gitlens.toggleFileChanges:statusbar'
-	| 'gitlens.toggleFileHeatmap:codelens'
 	| 'gitlens.toggleFileHeatmap:mode'
 	| 'gitlens.toggleFileHeatmap:statusbar'
-	| 'gitlens.visualizeHistory'
-	| InternalAgentCommands
-	| InternalGraphWebviewCommands
-	| InternalGraphWebviewViewCommands
 	| InternalHomeWebviewCommands
-	| InternalLaunchPadCommands
-	| InternalPlusCommands
-	| InternalPullRequestViewCommands
 	| InternalRebaseEditorCommands
 	| InternalScmGroupedViewCommands
-	| InternalTimelineWebviewViewCommands
 	| InternalViewCommands
 	| InternalWalkthroughCommands
 	| InternalWelcomeCommands;
@@ -228,7 +146,6 @@ export type CoreCommands =
 	| 'vscode.openWith'
 	| 'vscode.changes'
 	| 'vscode.diff'
-	| 'vscode.executeCodeLensProvider'
 	| 'vscode.executeDocumentSymbolProvider'
 	| 'vscode.moveViews'
 	| 'vscode.previewHtml'

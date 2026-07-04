@@ -39,12 +39,9 @@
   "workspaces-view": 61733,
   "confirm-checked": 61734,
   "confirm-unchecked": 61735,
-  "cloud-patch": 61736,
-  "cloud-patch-share": 61737,
   "inspect": 61738,
   "repository-filled": 61739,
   "gitlens-filled": 61740,
-  "code-suggestion": 61741,
   "provider-jira": 61747,
   "play-button": 61748,
   "rocket-filled": 61749,
@@ -57,8 +54,6 @@
   "stashes-view-filled": 61756,
   "tags-view-filled": 61757,
   "worktrees-view-filled": 61758,
-  "launchpad-view": 61759,
-  "launchpad-view-filled": 61760,
   "merge-target": 61761,
   "history-view-filled": 61762,
   "repository": 61763,
@@ -77,5 +72,10 @@
   "abort": 61770,
   "pause": 61771,
   "kanban-view": 61772,
-  "filter-mixed": 61773
+  "filter-mixed": 61773,
+  "launchpad-view": 61736,
+  "launchpad-view-filled": 61737,
+  "code-suggestion": 61741,
+  "cloud-patch": 61759,
+  "cloud-patch-share": 61760
 }

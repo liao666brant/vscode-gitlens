@@ -1,7 +1,7 @@
 import type { Uri } from 'vscode';
 import { AuthenticationError } from '@gitlens/git/errors.js';
-import type { RequiredSubscriptionPlanIds, Subscription } from './plus/gk/models/subscription.js';
-import { isSubscriptionPaidPlan } from './plus/gk/utils/subscription.utils.js';
+import type { RequiredSubscriptionPlanIds, Subscription } from './community/stubs/pro.js';
+import { isSubscriptionPaidPlan } from './community/stubs/pro.js';
 
 export type { AuthTokenInfo } from '@gitlens/git/errors.js';
 export { AuthenticationError, AuthenticationErrorReason } from '@gitlens/git/errors.js';
@@ -12,7 +12,7 @@ export {
 	AINoRequestDataError,
 	AuthenticationRequiredError,
 	classifyNetworkError,
-} from '@gitlens/ai/errors.js';
+} from './community/stubs/pro.js';
 
 export class AccessDeniedError extends Error {
 	public readonly subscription: Subscription;
@@ -23,7 +23,7 @@ export class AccessDeniedError extends Error {
 		if (subscription.account?.verified === false) {
 			message = '需要验证邮箱';
 		} else if (required != null && isSubscriptionPaidPlan(required)) {
-			message = '需要 GitLens Pro';
+			message = '此功能在当前社区构建中不可用';
 		} else {
 			message = '需要订阅计划';
 		}

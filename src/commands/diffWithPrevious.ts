@@ -30,7 +30,6 @@ export class DiffWithPreviousCommand extends ActiveEditorCommand {
 	constructor(private readonly container: Container) {
 		super([
 			'gitlens.diffWithPrevious',
-			'gitlens.diffWithPrevious:codelens',
 			'gitlens.diffWithPrevious:command',
 			'gitlens.diffWithPrevious:editor',
 			'gitlens.diffWithPrevious:editor/title',

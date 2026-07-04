@@ -235,7 +235,7 @@ export const PickCommitToggleQuickInputButton = class extends ToggleQuickInputBu
 
 export const LearnAboutProQuickInputButton: QuickInputButton = {
 	iconPath: new ThemeIcon('info'),
-	tooltip: '了解 GitLens Pro',
+	tooltip: '了解此功能',
 };
 
 export const MergeQuickInputButton: QuickInputButton = {
@@ -273,35 +273,10 @@ export const OpenOnWebQuickInputButton: QuickInputButton = {
 	tooltip: '在 gitkraken.dev 上打开',
 };
 
-export const LaunchpadSettingsQuickInputButton: QuickInputButton = {
-	iconPath: new ThemeIcon('gear'),
-	tooltip: '启动板设置',
-};
-
-export const PinQuickInputButton: QuickInputButton = {
-	iconPath: new ThemeIcon('pinned'),
-	tooltip: '置顶',
-};
-
-export const UnpinQuickInputButton: QuickInputButton = {
-	iconPath: new ThemeIcon('pin'),
-	tooltip: '取消置顶',
-};
-
-export const SnoozeQuickInputButton: QuickInputButton = {
-	iconPath: new ThemeIcon('bell-slash'),
-	tooltip: '暂停通知',
-};
-
 export const RefreshQuickInputButton: QuickInputButton = {
 	iconPath: new ThemeIcon('refresh'),
 	tooltip: '刷新',
 	location: getQuickInputButtonLocation(QuickInputButtonLocation.Inline),
-};
-
-export const UnsnoozeQuickInputButton: QuickInputButton = {
-	iconPath: new ThemeIcon('bell'),
-	tooltip: '恢复通知',
 };
 export const OpenInNewWindowQuickInputButton: QuickInputButton = {
 	iconPath: new ThemeIcon('empty-window'),

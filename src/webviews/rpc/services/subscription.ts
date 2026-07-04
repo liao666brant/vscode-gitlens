@@ -10,7 +10,7 @@
 import { Signal } from 'signal-polyfill';
 import { getAvatarUriFromGravatarEmail } from '../../../avatars.js';
 import type { Container } from '../../../container.js';
-import type { Subscription } from '../../../plus/gk/models/subscription.js';
+import type { Subscription } from '../../../community/stubs/pro.js';
 import { getContext, onDidChangeContext } from '../../../system/-webview/context.js';
 import { serialize } from '../../../system/serialize.js';
 import type { EventVisibilityBuffer, SubscriptionTracker } from '../eventVisibilityBuffer.js';

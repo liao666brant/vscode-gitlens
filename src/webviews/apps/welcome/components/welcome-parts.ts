@@ -3,7 +3,6 @@ import { css, html, LitElement } from 'lit';
 import { customElement, property, query, queryAssignedElements } from 'lit/decorators.js';
 import '../../shared/components/button.js';
 import '../../shared/components/code-icon.js';
-import type { SubscriptionState } from '../../../../constants.subscription.js';
 import type { WalkthroughContextKeys } from '../../../../constants.walkthroughs.js';
 
 declare global {
@@ -18,19 +17,13 @@ declare global {
 	}
 }
 
-export type WalkthroughStepConditionState = {
-	plusState: SubscriptionState | undefined;
-	mcpNeedsInstall: boolean;
-	mcpShowCleanupNotice: boolean;
-};
-
 export type WalkthroughStep = {
 	id: string;
 	/** The key used to track completion in the walkthrough progress state */
 	walkthroughKey?: WalkthroughContextKeys;
 	title: string;
 	body: TemplateResult;
-	condition?: (state: WalkthroughStepConditionState) => boolean;
+	condition?: (state: unknown) => boolean;
 };
 
 @customElement('gl-walkthrough-step')

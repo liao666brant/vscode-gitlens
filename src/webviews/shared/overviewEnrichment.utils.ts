@@ -1,5 +1,4 @@
 import type { GitBranch } from '@gitlens/git/models/branch.js';
-import type { Issue } from '@gitlens/git/models/issue.js';
 import type { PullRequest, PullRequestShape } from '@gitlens/git/models/pullRequest.js';
 import type { GitRemote } from '@gitlens/git/models/remote.js';
 import { RemoteResourceType } from '@gitlens/git/models/remoteResource.js';
@@ -12,23 +11,18 @@ import { filterMap } from '@gitlens/utils/iterable.js';
 import { getSettledValue } from '@gitlens/utils/promise.js';
 import type { EnrichedAutolink } from '../../autolinks/models/autolinks.js';
 import type { Container } from '../../container.js';
-import { getAssociatedIssuesForBranch } from '../../git/utils/-webview/branch.issue.utils.js';
 import {
 	getBranchAssociatedPullRequest,
-	getBranchEnrichedAutolinks,
 	getBranchMergeTargetInfo,
 	getBranchRemote,
 } from '../../git/utils/-webview/branch.utils.js';
 import { getContributorAvatarUri } from '../../git/utils/-webview/contributor.utils.js';
-import type { LaunchpadCategorizedResult } from '../../plus/launchpad/launchpadProvider.js';
-import { getLaunchpadItemGroups } from '../../plus/launchpad/launchpadProvider.js';
 import type {
 	GetOverviewEnrichmentResponse,
 	GetOverviewWipResponse,
 	OverviewBranchContributor,
 	OverviewBranchEnrichment,
 	OverviewBranchIssue,
-	OverviewBranchLaunchpadItem,
 	OverviewBranchMergeTarget,
 	OverviewBranchPullRequest,
 } from './overviewBranches.js';
@@ -159,57 +153,9 @@ export async function getBranchMergeTargetStatusInfo(
 	};
 }
 
-export async function getLaunchpadItemInfo(
-	container: Container,
-	pr: PullRequest,
-	launchpadPromise: Promise<LaunchpadCategorizedResult> | undefined,
-): Promise<OverviewBranchLaunchpadItem | undefined> {
-	launchpadPromise ??= container.launchpad.getCategorizedItems();
-	let result = await launchpadPromise;
-	if (!result.items) return undefined;
-
-	let lpi = result.items.find(i => i.url === pr.url);
-	if (lpi == null) {
-		// result = await container.launchpad.getCategorizedItems({ search: pr.url });
-		result = await container.launchpad.getCategorizedItems({ search: [pr] });
-		if (!result.items) return undefined;
-
-		lpi = result.items.find(i => i.url === pr.url);
-	}
-
-	if (lpi == null) return undefined;
-
-	return {
-		uuid: lpi.uuid,
-		category: lpi.actionableCategory,
-		groups: getLaunchpadItemGroups(lpi),
-		suggestedActions: lpi.suggestedActions,
-
-		failingCI: lpi.failingCI,
-		hasConflicts: lpi.hasConflicts,
-
-		review: {
-			decision: lpi.reviewDecision,
-			reviews: lpi.reviews ?? [],
-			counts: {
-				approval: lpi.approvalReviewCount,
-				changeRequest: lpi.changeRequestReviewCount,
-				comment: lpi.commentReviewCount,
-				codeSuggest: lpi.codeSuggestionsCount,
-			},
-		},
-
-		author: lpi.author,
-		createdDate: lpi.createdDate,
-
-		viewer: { ...lpi.viewer, enrichedItems: undefined },
-	};
-}
-
 export async function getPullRequestInfo(
 	container: Container,
 	branch: GitBranch,
-	launchpadPromise: Promise<LaunchpadCategorizedResult> | undefined,
 	associatedPullRequest?: Promise<PullRequest | undefined>,
 ): Promise<OverviewBranchPullRequest | undefined> {
 	const pr = await (associatedPullRequest ?? getBranchAssociatedPullRequest(container, branch, { avatarSize: 64 }));
@@ -225,7 +171,6 @@ export async function getPullRequestInfo(
 		updatedDate: pr.updatedDate?.getTime(),
 		reviewDecision: pr.reviewDecision,
 		providerId: pr.provider.id,
-		launchpad: getLaunchpadItemInfo(container, pr, launchpadPromise),
 	};
 }
 
@@ -239,7 +184,7 @@ export async function getOverviewWip(
 		signal?: AbortSignal;
 		/**
 		 * Optional cache-aware status fetcher. Callers (the Graph webview) supply a callback that
-		 * routes through their `_wipStatusCache` so repeat hovers / overview refreshes within the
+		 * routes through their `_wipStatusCache` so repeat overview reads within the
 		 * cache TTL don't re-fetch. When omitted, falls back to direct fetches (Home uses this).
 		 */
 		fetchStatus?: (repoPath: string, signal?: AbortSignal) => Promise<GitStatus | undefined>;
@@ -360,11 +305,6 @@ export async function getOverviewWip(
 
 interface BranchEnrichmentPromises {
 	remote?: Promise<GitRemote | undefined>;
-	pr?: Promise<OverviewBranchPullRequest | undefined>;
-	autolinks?: ReturnType<typeof getBranchEnrichedAutolinks>;
-	issues?: Promise<Issue[] | undefined>;
-	contributors?: Promise<BranchContributionsOverview | undefined>;
-	mergeTarget?: Promise<OverviewBranchMergeTarget | undefined>;
 }
 
 export async function getOverviewEnrichment(
@@ -372,40 +312,12 @@ export async function getOverviewEnrichment(
 	branches: Iterable<GitBranch>,
 	branchIds: string[],
 	options: {
-		isPro: boolean;
-		/** When true, `await` each `pr.launchpad` and populate `enrichment.resolvedLaunchpad`. Use for transports that can't serialize Promises (traditional IPC). */
-		resolveLaunchpad?: boolean;
 		signal?: AbortSignal;
-		/**
-		 * Optional caller-provided fetcher for `BranchContributionsOverview`. When supplied, callers
-		 * can route the fetch through their own cache so scope resolution and enrichment share one
-		 * computation per branch. Must accept the same `associatedPullRequest` promise the
-		 * enrichment uses for `pr` so PR-based merge target detection is consistent.
-		 */
-		getBranchOverview?: (
-			branch: GitBranch,
-			associatedPullRequest: Promise<PullRequest | undefined>,
-		) => Promise<BranchContributionsOverview | undefined>;
-		/**
-		 * Skip the (expensive) per-branch merge-target fetch. Callers that defer merge-target
-		 * loading to the moment a consumer actually needs it (e.g. the graph overview card's rich
-		 * hover) opt in here so initial enrichment doesn't pay for ~4 git/integration ops per branch.
-		 */
-		skipMergeTarget?: boolean;
-		/**
-		 * Priority for the underlying git operations on the *fallback* branch-overview path (when
-		 * `getBranchOverview` is not provided). Callers wiring their own `getBranchOverview` must
-		 * apply this themselves — there's no automatic plumbing past the callback boundary.
-		 */
-		priority?: GitCommandPriority;
 	},
 ): Promise<GetOverviewEnrichmentResponse> {
 	if (branchIds.length === 0) return {};
 
-	const { isPro, resolveLaunchpad, signal, getBranchOverview, skipMergeTarget, priority } = options;
-	const launchpadPromise: Promise<LaunchpadCategorizedResult> | undefined = isPro
-		? container.launchpad.getCategorizedItems()
-		: undefined;
+	const { signal } = options;
 
 	const branchesById = new Map<string, GitBranch>();
 	for (const branch of branches) {
@@ -426,29 +338,6 @@ export async function getOverviewEnrichment(
 			promises.remote = getBranchRemote(container, branch);
 		}
 
-		if (isPro) {
-			const associatedPR = getBranchAssociatedPullRequest(container, branch, { avatarSize: 64 });
-			promises.pr = getPullRequestInfo(container, branch, launchpadPromise, associatedPR);
-			promises.autolinks = getBranchEnrichedAutolinks(container, branch);
-			promises.issues = getAssociatedIssuesForBranch(container, branch).then(issues => issues.value);
-			promises.contributors =
-				getBranchOverview?.(branch, associatedPR) ??
-				container.git
-					.getRepositoryService(branch.repoPath)
-					.branches.getBranchContributionsOverview(
-						branch.ref,
-						{ associatedPullRequest: associatedPR, priority: priority },
-						signal,
-					);
-			// Compute merge target for every enriched branch (not just the current one) so the graph's
-			// scope popover can render a merge-target anchor when the user focuses any branch, and so
-			// recent-branch cards can show merged status. Callers that defer this work to hover-time
-			// (graph overview cards) opt out via `skipMergeTarget`.
-			if (!skipMergeTarget) {
-				promises.mergeTarget = getBranchMergeTargetStatusInfo(container, branch, signal, associatedPR);
-			}
-		}
-
 		enrichmentPromises.set(branchId, promises);
 	}
 
@@ -458,27 +347,7 @@ export async function getOverviewEnrichment(
 		Array.from(enrichmentPromises.entries(), async ([branchId, promises]) => {
 			const enrichment: OverviewBranchEnrichment = {};
 
-			const [remoteResult, prResult, autolinksResult, issuesResult, contributorsResult, mergeTargetResult] =
-				await Promise.allSettled([
-					promises.remote,
-					promises.pr,
-					promises.autolinks?.then(a => getAutolinkIssuesInfo(a)),
-					promises.issues?.then(
-						issues =>
-							issues?.map(
-								i =>
-									({
-										type: 'issue',
-										id: i.number || i.id,
-										title: i.title,
-										state: i.state,
-										url: i.url,
-									}) satisfies OverviewBranchIssue,
-							) ?? [],
-					),
-					getContributorsInfo(container, promises.contributors),
-					promises.mergeTarget,
-				]);
+			const [remoteResult] = await Promise.allSettled([promises.remote]);
 
 			const remote = getSettledValue(remoteResult);
 			if (remote != null) {
@@ -495,49 +364,9 @@ export async function getOverviewEnrichment(
 				};
 			}
 
-			const prValue = getSettledValue(prResult);
-			if (prValue != null) {
-				enrichment.pr = prValue;
-				if (resolveLaunchpad && prValue.launchpad != null) {
-					enrichment.resolvedLaunchpad = await prValue.launchpad;
-				}
+			if (Object.keys(enrichment).length) {
+				result[branchId] = enrichment;
 			}
-			// Partition resolved autolinks by their resolved `type`:
-			// - URL matches the branch's primary PR or any associated issue → drop (already represented).
-			// - Resolved as an issue → move into `issues` (rendered with the issue icon).
-			// - Resolved as a PR (and not the primary) → keep in `autolinks` (rendered with the PR icon).
-			// - Unresolved (`type` undefined) → keep in `autolinks` (rendered with the link icon).
-			// `getAutolinkIssuesInfo` filters out items whose underlying issueOrPullRequest is null,
-			// so today every item has a resolved `type`; the `undefined` branch is here for forward-compat.
-			const associatedIssues = getSettledValue(issuesResult) ?? [];
-			const rawAutolinks = getSettledValue(autolinksResult) ?? [];
-			const seenUrls = new Set<string>();
-			if (enrichment.pr != null) {
-				seenUrls.add(enrichment.pr.url);
-			}
-			for (const issue of associatedIssues) {
-				seenUrls.add(issue.url);
-			}
-
-			const finalIssues: OverviewBranchIssue[] = [...associatedIssues];
-			const finalAutolinks: OverviewBranchIssue[] = [];
-			for (const item of rawAutolinks) {
-				if (seenUrls.has(item.url)) continue;
-
-				seenUrls.add(item.url);
-				if (item.type === 'issue') {
-					finalIssues.push(item);
-				} else {
-					finalAutolinks.push(item);
-				}
-			}
-
-			enrichment.issues = finalIssues;
-			enrichment.autolinks = finalAutolinks;
-			enrichment.contributors = getSettledValue(contributorsResult);
-			enrichment.mergeTarget = getSettledValue(mergeTargetResult);
-
-			result[branchId] = enrichment;
 		}),
 	);
 

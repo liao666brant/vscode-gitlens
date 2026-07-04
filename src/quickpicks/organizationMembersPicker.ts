@@ -5,7 +5,7 @@ import { defer } from '@gitlens/utils/promise.js';
 import { sortCompare } from '@gitlens/utils/string.js';
 import { getAvatarUri } from '../avatars.js';
 import { ClearQuickInputButton } from '../commands/quick-wizard/quickButtons.js';
-import type { OrganizationMember } from '../plus/gk/models/organization.js';
+import type { OrganizationMember } from '../community/stubs/pro.js';
 import type { QuickPickItemOfT } from './items/common.js';
 
 export async function showOrganizationMembersPicker(
@@ -33,9 +33,15 @@ export async function showOrganizationMembersPicker(
 		disposables.push(
 			quickpick,
 			quickpick.onDidHide(() => deferred.fulfill(undefined)),
-			quickpick.onDidAccept(() =>
-				!quickpick.busy ? deferred.fulfill(quickpick.selectedItems.map(c => c.item)) : undefined,
-			),
+			quickpick.onDidAccept(() => {
+				if (!quickpick.busy) {
+					const selected: OrganizationMember[] = [];
+					for (const item of quickpick.selectedItems) {
+						selected.push(item.item);
+					}
+					deferred.fulfill(selected);
+				}
+			}),
 			quickpick.onDidTriggerButton(e => {
 				if (e === ClearQuickInputButton) {
 					if (quickpick.canSelectMany) {

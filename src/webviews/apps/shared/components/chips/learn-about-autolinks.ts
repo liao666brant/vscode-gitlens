@@ -1,5 +1,4 @@
 import { html, nothing } from 'lit';
-import type { ConnectCloudIntegrationsCommandArgs } from '../../../../../commands/cloudIntegrations.js';
 import { createCommandLink } from '../../../../../system/commands.js';
 import './action-chip.js';
 
@@ -16,23 +15,7 @@ export function renderLearnAboutAutolinks(opts: {
 	let label = 'Configure autolinks to linkify external references, like Jira or Zendesk tickets, in commit messages.';
 	if (!opts.hasIntegrationsConnected) {
 		label = `<a href="${autolinkSettingsLink}">Configure autolinks</a> to linkify external references, like Jira or Zendesk tickets, in commit messages.`;
-		label += `\n\n<a href="${createCommandLink<ConnectCloudIntegrationsCommandArgs>(
-			'gitlens.plus.cloudIntegrations.connect',
-			{
-				source: {
-					source: 'inspect',
-					detail: {
-						action: 'connect',
-					},
-				},
-			},
-		)}">Connect an Integration</a> &mdash;`;
-
-		if (!opts.hasAccount) {
-			label += ' sign up and';
-		}
-
-		label += ' to get access to automatic rich autolinks for services like Jira, GitHub, and more.';
+		label += '\n\nAdd matching rules here to enable project-specific autolinks.';
 	}
 
 	return html`<gl-action-chip

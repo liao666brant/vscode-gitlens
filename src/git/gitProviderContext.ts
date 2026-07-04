@@ -8,6 +8,7 @@ import type { Uri } from '@gitlens/utils/uri.js';
 import { getRepositoryKey } from '@gitlens/utils/uri.js';
 import type { Source } from '../constants.telemetry.js';
 import type { Container } from '../container.js';
+import type { RemotesConfig } from '../config.js';
 import { configuration } from '../system/-webview/configuration.js';
 import { loadChunk } from '../system/-webview/loadChunk.js';
 import { buildRemoteProviderConfigs } from './remotes/remoteProviderConfigs.js';
@@ -24,30 +25,32 @@ export function createGitProviderContext(container: Container): GitServiceContex
 	const config: GitServiceConfig = {
 		get commits() {
 			return {
-				includeFileDetails: !configuration.get('advanced.commits.delayLoadingFileDetails'),
-				ordering: configuration.get('advanced.commitOrdering'),
-				similarityThreshold: configuration.get('advanced.similarityThreshold'),
-				maxItems: configuration.get('advanced.maxListItems'),
+				includeFileDetails: !configuration.getAny<boolean>('gitlens.advanced.commits.delayLoadingFileDetails'),
+				ordering: configuration.getAny<'date' | 'author-date' | 'topo' | null>(
+					'gitlens.advanced.commitOrdering',
+				),
+				similarityThreshold: configuration.getAny<number | null>('gitlens.advanced.similarityThreshold'),
+				maxItems: configuration.getAny<number>('gitlens.advanced.maxListItems'),
 			};
 		},
 		get fileHistory() {
 			return {
-				showAllBranches: configuration.get('advanced.fileHistoryShowAllBranches'),
-				showMergeCommits: configuration.get('advanced.fileHistoryShowMergeCommits'),
-				followRenames: configuration.get('advanced.fileHistoryFollowsRenames'),
+				showAllBranches: configuration.getAny<boolean>('gitlens.advanced.fileHistoryShowAllBranches'),
+				showMergeCommits: configuration.getAny<boolean>('gitlens.advanced.fileHistoryShowMergeCommits'),
+				followRenames: configuration.getAny<boolean>('gitlens.advanced.fileHistoryFollowsRenames'),
 			};
 		},
 		get search() {
 			return {
-				maxItems: configuration.get('advanced.maxSearchItems'),
+				maxItems: configuration.getAny<number>('gitlens.advanced.maxSearchItems'),
 			};
 		},
 		get graph() {
 			return {
-				commitOrdering: configuration.get('graph.commitOrdering'),
-				onlyFollowFirstParent: configuration.get('graph.onlyFollowFirstParent'),
-				avatars: configuration.get('graph.avatars'),
-				maxSearchItems: configuration.get('graph.searchItemLimit'),
+				commitOrdering: configuration.getAny<'date' | 'author-date' | 'topo'>('gitlens.graph.commitOrdering'),
+				onlyFollowFirstParent: configuration.getAny<boolean>('gitlens.graph.onlyFollowFirstParent'),
+				avatars: configuration.getAny<boolean>('gitlens.graph.avatars'),
+				maxSearchItems: configuration.getAny<number>('gitlens.graph.searchItemLimit'),
 			};
 		},
 		get push() {
@@ -117,7 +120,10 @@ export function createGitProviderContext(container: Container): GitServiceContex
 		remotes: {
 			getCustomProviders: async (repoPath: string) => {
 				const repo = container.git.getRepository(repoPath);
-				const configuredRemotes = configuration.get('remotes', repo?.folder?.uri ?? null);
+				const configuredRemotes = configuration.getAny<RemotesConfig[] | null>(
+					'gitlens.remotes',
+					repo?.folder?.uri ?? null,
+				);
 				const configuredIntegrations = await container.integrations.getConfigured();
 				return buildRemoteProviderConfigs(configuredRemotes, configuredIntegrations);
 			},

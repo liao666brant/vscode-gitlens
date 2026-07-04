@@ -1,6 +1,6 @@
 {
 	"name": "@gitkraken/core-gitlens",
-	"description": "GitLens core — shared Git / AI / GitHub primitives for internal GitKraken consumption",
+	"description": "GitLens core - shared Git primitives",
 	"version": "0.3.0",
 	"license": "SEE LICENSE IN LICENSE",
 	"author": {
@@ -28,7 +28,6 @@
 		"dist",
 		"src",
 		"LICENSE",
-		"LICENSE.plus",
 		"README.md",
 		"CHANGELOG.md"
 	],
@@ -98,38 +97,6 @@
 			"types": "./dist/ipc/*.d.ts",
 			"default": "./dist/ipc/*.js"
 		},
-		"./plus/ai/*.js": {
-			"types": "./dist/plus/ai/*.d.ts",
-			"default": "./dist/plus/ai/*.js"
-		},
-		"./plus/ai/models/*.js": {
-			"types": "./dist/plus/ai/models/*.d.ts",
-			"default": "./dist/plus/ai/models/*.js"
-		},
-		"./plus/ai/providers/*.js": {
-			"types": "./dist/plus/ai/providers/*.d.ts",
-			"default": "./dist/plus/ai/providers/*.js"
-		},
-		"./plus/ai/utils/*.js": {
-			"types": "./dist/plus/ai/utils/*.d.ts",
-			"default": "./dist/plus/ai/utils/*.js"
-		},
-		"./plus/git-github/*.js": {
-			"types": "./dist/plus/git-github/*.d.ts",
-			"default": "./dist/plus/git-github/*.js"
-		},
-		"./plus/git-github/api/*.js": {
-			"types": "./dist/plus/git-github/api/*.d.ts",
-			"default": "./dist/plus/git-github/api/*.js"
-		},
-		"./plus/git-github/providers/*.js": {
-			"types": "./dist/plus/git-github/providers/*.d.ts",
-			"default": "./dist/plus/git-github/providers/*.js"
-		},
-		"./plus/git-github/providers/github/*.js": {
-			"types": "./dist/plus/git-github/providers/github/*.d.ts",
-			"default": "./dist/plus/git-github/providers/github/*.js"
-		},
 		"./utils/*.js": {
 			"types": "./dist/utils/*.d.ts",
 			"default": "./dist/utils/*.js"
@@ -159,7 +126,7 @@
 	"scripts": {
 		"build": "node scripts/bundle.mjs",
 		"bundle": "node scripts/bundle.mjs",
-		"clean": "pnpx rimraf --glob dist src LICENSE LICENSE.plus *.tgz",
+		"clean": "pnpx rimraf --glob dist src LICENSE *.tgz",
 		"prepack": "node scripts/bundle.mjs"
 	}
 }

@@ -747,29 +747,6 @@ export abstract class QuickWizardCommandBase extends GlCommandBase {
 										resolve(result ? await rootStep.command?.retry() : undefined);
 										return;
 									}
-
-									case Directive.StartProTrial: {
-										const result = await Container.instance.subscription.loginOrSignUp(true, {
-											source: 'quick-wizard',
-											detail: {
-												action: rootStep.command?.key,
-												'step.title': step.title,
-											},
-										});
-										resolve(result ? await rootStep.command?.retry() : undefined);
-										return;
-									}
-
-									case Directive.RequiresPaidSubscription:
-										void Container.instance.subscription.upgrade('pro', {
-											source: 'quick-wizard',
-											detail: {
-												action: rootStep.command?.key,
-												'step.title': step.title,
-											},
-										});
-										resolve(undefined);
-										return;
 								}
 							}
 						}

@@ -1,6 +1,6 @@
 import type { Uri } from 'vscode';
 import { InputBoxValidationSeverity, QuickInputButtons, window } from 'vscode';
-import type { AIModel } from '@gitlens/ai/models/model.js';
+import type { AIModel } from '../../../community/stubs/pro.js';
 import { StashPushError } from '@gitlens/git/errors.js';
 import { uncommitted, uncommittedStaged } from '@gitlens/git/models/revision.js';
 import { getLoggableName, Logger } from '@gitlens/utils/logger.js';

@@ -9,7 +9,7 @@ import {
 	supportedOrderedCloudIntegrationIds,
 } from '../../../constants.integrations.js';
 import type { Container } from '../../../container.js';
-import { providersMetadata } from '../../../plus/integrations/providers/models.js';
+import { providersMetadata } from '../../../community/stubs/pro.js';
 import type { EventVisibilityBuffer, SubscriptionTracker } from '../eventVisibilityBuffer.js';
 import { bufferEventHandler } from '../eventVisibilityBuffer.js';
 import type { IntegrationChangeEventData, IntegrationStateInfo, RpcEventSubscription, Unsubscribe } from './types.js';
@@ -93,7 +93,7 @@ export class IntegrationsService {
 				// Fires when configured integrations are added/removed
 				container.integrations.onDidChange(async e => {
 					// Only re-query if the change involves cloud integrations
-					if (![...e.added, ...e.removed].some(id => isSupportedCloudIntegrationId(id))) return;
+					if (![...e.added, ...e.removed].some(i => isSupportedCloudIntegrationId(i.integrationId))) return;
 
 					await fireIntegrationsChanged();
 				}),

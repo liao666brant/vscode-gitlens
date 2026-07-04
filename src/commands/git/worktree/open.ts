@@ -89,7 +89,7 @@ export class WorktreeOpenGitCommand extends QuickCommand<State> {
 			...context,
 			container: this.container,
 			repos: this.container.git.openRepositories,
-			associatedView: this.container.views.worktrees,
+			associatedView: this.container.views.repositories,
 			showTags: false,
 			title: this.title,
 		};

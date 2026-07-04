@@ -29,13 +29,9 @@ import type {
 	WebviewViewTypes,
 } from '../constants.views.js';
 import type { Container } from '../container.js';
-import { getSubscriptionNextPaidPlanId } from '../plus/gk/utils/subscription.utils.js';
+import { getSubscriptionNextPaidPlanId } from '../community/stubs/pro.js';
 import { executeCommand, executeCoreCommand } from '../system/-webview/command.js';
-import {
-	includesContextDelimitedString,
-	removeFromContextDelimitedString,
-	setContext,
-} from '../system/-webview/context.js';
+import { removeFromContextDelimitedString, setContext } from '../system/-webview/context.js';
 import { getViewFocusCommand } from '../system/-webview/vscode/views.js';
 import { serializeIpcData } from '../system/ipcSerialize.js';
 import type { WebviewContext } from '../system/webview.js';
@@ -311,20 +307,6 @@ export class WebviewController<
 	private async removePlusFeatureOverride() {
 		if (!this.descriptor.plusFeature) {
 			return;
-		}
-
-		if (includesContextDelimitedString('gitlens:plus:disabled:view:overrides', this.descriptor.id)) {
-			const action = 'Enable Pro Features';
-			void window
-				.showInformationMessage(
-					`${this.descriptor.title} was closed as Pro features have been disabled.`,
-					action,
-				)
-				.then(selection => {
-					if (selection === action) {
-						void executeCommand('gitlens.plus.restore');
-					}
-				});
 		}
 
 		return removeFromContextDelimitedString('gitlens:plus:disabled:view:overrides', [this.descriptor.id]);

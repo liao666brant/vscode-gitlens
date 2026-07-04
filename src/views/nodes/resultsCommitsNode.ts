@@ -11,7 +11,7 @@ import type { TreeViewNodeTypes } from '../../constants.views.js';
 import { GitUri } from '../../git/gitUri.js';
 import type { CommitsQueryResults, FilesQueryResults } from '../../git/queryResults.js';
 import { getChangesForChangelog } from '../../git/utils/-webview/log.utils.js';
-import type { AIGenerateChangelogChanges } from '../../plus/ai/actions/generateChangelog.js';
+import type { AIGenerateChangelogChanges } from '../../community/stubs/pro.js';
 import { configuration } from '../../system/-webview/configuration.js';
 import type { ViewsWithCommits } from '../viewBase.js';
 import type { PageableViewNode } from './abstract/viewNode.js';

@@ -70,21 +70,12 @@ importers:
       '@gitkraken/shared-tools':
         specifier: 0.2.0
         version: 0.2.0
-      '@gitlens/agents':
-        specifier: workspace:*
-        version: link:packages/plus/agents
-      '@gitlens/ai':
-        specifier: workspace:*
-        version: link:packages/plus/ai
       '@gitlens/git':
         specifier: workspace:*
         version: link:packages/git
       '@gitlens/git-cli':
         specifier: workspace:*
         version: link:packages/git-cli
-      '@gitlens/git-github':
-        specifier: workspace:*
-        version: link:packages/plus/git-github
       '@gitlens/ipc':
         specifier: workspace:*
         version: link:packages/ipc
@@ -502,84 +493,6 @@ importers:
       '@gitlens/utils':
         specifier: workspace:*
         version: link:../utils
-    devDependencies:
-      '@types/mocha':
-        specifier: 'catalog:'
-        version: 10.0.10
-      mocha:
-        specifier: 'catalog:'
-        version: 11.7.6
-      tsx:
-        specifier: 'catalog:'
-        version: 4.22.3
-      typescript:
-        specifier: 'catalog:'
-        version: 6.0.3
-
-  packages/plus/agents:
-    dependencies:
-      '@gitlens/ipc':
-        specifier: workspace:*
-        version: link:../../ipc
-      '@gitlens/utils':
-        specifier: workspace:*
-        version: link:../../utils
-    devDependencies:
-      '@types/mocha':
-        specifier: 'catalog:'
-        version: 10.0.10
-      mocha:
-        specifier: 'catalog:'
-        version: 11.7.6
-      tsx:
-        specifier: 'catalog:'
-        version: 4.22.3
-      typescript:
-        specifier: 'catalog:'
-        version: 6.0.3
-
-  packages/plus/ai:
-    dependencies:
-      '@gitlens/git':
-        specifier: workspace:*
-        version: link:../../git
-      '@gitlens/utils':
-        specifier: workspace:*
-        version: link:../../utils
-    devDependencies:
-      '@types/mocha':
-        specifier: 'catalog:'
-        version: 10.0.10
-      mocha:
-        specifier: 'catalog:'
-        version: 11.7.6
-      tsx:
-        specifier: 'catalog:'
-        version: 4.22.3
-      typescript:
-        specifier: 'catalog:'
-        version: 6.0.3
-
-  packages/plus/git-github:
-    dependencies:
-      '@gitlens/git':
-        specifier: workspace:*
-        version: link:../../git
-      '@gitlens/utils':
-        specifier: workspace:*
-        version: link:../../utils
-      '@octokit/graphql':
-        specifier: 9.0.3
-        version: 9.0.3
-      '@octokit/request':
-        specifier: 10.0.8
-        version: 10.0.8
-      '@octokit/request-error':
-        specifier: 7.1.0
-        version: 7.1.0
-      '@octokit/types':
-        specifier: 16.0.0
-        version: 16.0.0
     devDependencies:
       '@types/mocha':
         specifier: 'catalog:'

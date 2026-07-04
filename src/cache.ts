@@ -10,8 +10,7 @@ import { isPromise } from '@gitlens/utils/promise.js';
 import { CacheController } from '@gitlens/utils/promiseCache.js';
 import type { Disposable } from './api/gitlens.d.js';
 import type { Container } from './container.js';
-import type { GitHostIntegration } from './plus/integrations/models/gitHostIntegration.js';
-import type { IntegrationBase } from './plus/integrations/models/integration.js';
+import type { GitHostIntegration, IntegrationBase } from './community/stubs/pro.js';
 
 type Caches = {
 	defaultBranch: { key: `repo:${string}`; value: DefaultBranch };

@@ -144,7 +144,7 @@ export class BranchesService {
 		associatedPullRequest: Promise<PullRequest | undefined>,
 		signal?: AbortSignal,
 	): Promise<OverviewBranchPullRequest | undefined> {
-		const pr = await getPullRequestInfo(this.container, branch, undefined, associatedPullRequest);
+		const pr = await getPullRequestInfo(this.container, branch, associatedPullRequest);
 		signal?.throwIfAborted();
 		return pr;
 	}

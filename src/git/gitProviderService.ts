@@ -60,12 +60,10 @@ import { isUriScopedGitCacheReset } from '../eventBus.js';
 import type { FeatureAccess, PlusFeatures, RepoFeatureAccess } from '../features.js';
 import { isAdvancedFeature, isProFeatureOnAllRepos } from '../features.js';
 import { showBlameInvalidIgnoreRevsFileWarningMessage } from '../messages.js';
-import type { Subscription } from '../plus/gk/models/subscription.js';
-import type { SubscriptionChangeEvent } from '../plus/gk/subscriptionService.js';
-import { isSubscriptionPaidPlan } from '../plus/gk/utils/subscription.utils.js';
+import { isSubscriptionPaidPlan } from '../community/stubs/pro.js';
+import type { Subscription, SubscriptionChangeEvent } from '../community/stubs/pro.js';
 import type { RepoComparisonKey } from '../repositories.js';
 import { asRepoComparisonKey, Repositories } from '../repositories.js';
-import { registerCommand } from '../system/-webview/command.js';
 import { configuration } from '../system/-webview/configuration.js';
 import { setContext } from '../system/-webview/context.js';
 import { getBestPath, splitPath } from '../system/-webview/path.js';
@@ -416,41 +414,41 @@ export class GitProviderService implements UnifiedDisposable {
 
 	private onConfigurationChanged(e?: ConfigurationChangeEvent) {
 		if (
-			configuration.changed(e, 'defaultDateFormat') ||
-			configuration.changed(e, 'defaultDateSource') ||
-			configuration.changed(e, 'defaultDateStyle')
+			configuration.changedAny(e, 'gitlens.defaultDateFormat') ||
+			configuration.changedAny(e, 'gitlens.defaultDateSource') ||
+			configuration.changedAny(e, 'gitlens.defaultDateStyle')
 		) {
 			this.container.BranchDateFormatting.reset();
 			this.container.CommitDateFormatting.reset();
 			this.container.PullRequestDateFormatting.reset();
 		}
 
-		if (configuration.changed(e, 'advanced.abbreviatedShaLength')) {
+		if (configuration.changedAny(e, 'gitlens.advanced.abbreviatedShaLength')) {
 			this.container.CommitShaFormatting.reset();
 		}
 
-		if (configuration.changed(e, 'views.contributors.showAllBranches')) {
+		if (configuration.changedAny(e, 'gitlens.views.contributors.showAllBranches')) {
 			this.resetCaches('contributors');
 		}
 
 		if (
-			configuration.changed(e, 'blame.ignoreWhitespace') ||
-			configuration.changed(e, 'advanced.blame.customArguments')
+			configuration.changedAny(e, 'gitlens.blame.ignoreWhitespace') ||
+			configuration.changedAny(e, 'gitlens.advanced.blame.customArguments')
 		) {
 			this.resetCaches('blame');
 		}
 
-		if (configuration.changed(e, 'remotes')) {
+		if (configuration.changedAny(e, 'gitlens.remotes')) {
 			this.resetCaches('remotes');
 		}
 
-		if (e != null && configuration.changed(e, 'integrations.enabled')) {
+		if (e != null && configuration.changedAny(e, 'gitlens.integrations.enabled')) {
 			this.updateContext();
 		}
 	}
 
 	private registerCommands(): Disposable[] {
-		return [registerCommand('gitlens.plus.refreshRepositoryAccess', () => this.clearAllOpenRepoVisibilityCaches())];
+		return [];
 	}
 
 	@trace()
@@ -505,7 +503,7 @@ export class GitProviderService implements UnifiedDisposable {
 			this._etag = Date.now();
 			void this.discoverRepositories(e.added);
 
-			if (configuration.get('advanced.repositorySearch.enabled')) {
+			if (configuration.getAny<boolean>('gitlens.advanced.repositorySearch.enabled')) {
 				for (const folder of e.added) {
 					const key = folder.uri.toString();
 					if (!this._initWatchHandles.has(key)) {
@@ -785,7 +783,7 @@ export class GitProviderService implements UnifiedDisposable {
 		let { workspaceFolders } = workspace;
 		if (workspaceFolders?.length) {
 			// Set up init watchers for initial workspace folders (only if repository search is enabled)
-			if (configuration.get('advanced.repositorySearch.enabled')) {
+			if (configuration.getAny<boolean>('gitlens.advanced.repositorySearch.enabled')) {
 				for (const folder of workspaceFolders) {
 					const key = folder.uri.toString();
 					if (!this._initWatchHandles.has(key)) {

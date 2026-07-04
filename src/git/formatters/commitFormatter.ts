@@ -24,12 +24,9 @@ import type { MaybeEnrichedAutolink } from '../../autolinks/models/autolinks.js'
 import { getPresenceDataUri } from '../../avatars.js';
 import { CopyShaToClipboardCommand } from '../../commands/copyShaToClipboard.js';
 import { DiffWithCommand } from '../../commands/diffWith.js';
-import { ExplainCommitCommand } from '../../commands/explainCommit.js';
-import { ExplainWipCommand } from '../../commands/explainWip.js';
 import { InspectCommand } from '../../commands/inspect.js';
 import { OpenCommitOnRemoteCommand } from '../../commands/openCommitOnRemote.js';
 import { OpenFileAtRevisionCommand } from '../../commands/openFileAtRevision.js';
-import { ConnectRemoteProviderCommand } from '../../commands/remoteProviders.js';
 import type { ShowQuickCommitCommandArgs } from '../../commands/showQuickCommit.js';
 import { ShowQuickCommitFileCommand } from '../../commands/showQuickCommitFile.js';
 import type { DateSource, DateStyle } from '../../config.js';
@@ -38,12 +35,10 @@ import { GlyphChars } from '../../constants.js';
 import type { Source } from '../../constants.telemetry.js';
 import { Container } from '../../container.js';
 import { emojify } from '../../emojis.js';
-import { arePlusFeaturesEnabled } from '../../plus/gk/utils/-webview/plus.utils.js';
 import { configuration } from '../../system/-webview/configuration.js';
 import { editorLineToDiffRange } from '../../system/-webview/vscode/range.js';
 import { createMarkdownCommandLink } from '../../system/commands.js';
 import type { ContactPresence } from '../../vsls/vsls.js';
-import type { ShowInCommitGraphCommandArgs } from '../../webviews/plus/graph/registration.js';
 import {
 	formatCommitDate,
 	formatCommitDateFromNow,
@@ -54,7 +49,6 @@ import {
 } from '../utils/-webview/commit.utils.js';
 import { getIssueOrPullRequestMarkdownIcon } from '../utils/-webview/icons.js';
 import { getReferenceFromRevision } from '../utils/-webview/reference.utils.js';
-import { isRemoteMaybeIntegrationConnected, remoteSupportsIntegration } from '../utils/-webview/remote.utils.js';
 
 const quoteRegex = /"/g;
 const newlineRegex = /\r?\n/g;
@@ -368,7 +362,7 @@ export class CommitFormatter extends Formatter<GitCommit, CommitFormatOptions> {
 
 	get avatar(): string | Promise<string> {
 		const { outputFormat } = this._options;
-		if (outputFormat === 'plaintext' || !configuration.get('hovers.avatars')) {
+		if (outputFormat === 'plaintext') {
 			return this._padOrTruncate('', this._options.tokenOptions.avatar);
 		}
 
@@ -409,7 +403,7 @@ export class CommitFormatter extends Formatter<GitCommit, CommitFormatOptions> {
 	}
 
 	private async _getAvatar(outputFormat: 'html' | 'markdown', title: string, size?: number) {
-		size = size ?? configuration.get('hovers.avatarSize');
+		size = size ?? 16;
 		const avatarPromise = getCommitAuthorAvatarUri(this._item, {
 			defaultStyle: configuration.get('defaultGravatarsStyle'),
 			size: size,
@@ -534,14 +528,6 @@ export class CommitFormatter extends Formatter<GitCommit, CommitFormatOptions> {
 				commands = shaOrInspectLink(shaText);
 			}
 
-			if (this._options.ai?.enabled && this._options.ai?.allowed) {
-				commands += `${separator}[$(sparkle) Explain](${ExplainWipCommand.createMarkdownCommandLink({
-					repoPath: this._item.repoPath,
-					staged: undefined,
-					source: { source: this._options.source.source, context: { type: 'wip' } },
-				})} "解释更改")`;
-			}
-
 			return commands;
 		}
 
@@ -579,14 +565,6 @@ export class CommitFormatter extends Formatter<GitCommit, CommitFormatOptions> {
 			{ repoPath: this._item.repoPath, sha: this._item.sha, revealInView: true, source: editorHoverSource },
 		)} "在侧边栏中显示")`;
 
-		if (arePlusFeaturesEnabled()) {
-			commands += ` &nbsp;[$(gitlens-graph)](${createMarkdownCommandLink<ShowInCommitGraphCommandArgs>(
-				'gitlens.showInCommitGraph',
-				// Avoid including the message here, it just bloats the command url
-				{ ref: getReferenceFromRevision(this._item, { excludeMessage: true }), source: editorHoverSource },
-			)} "在提交图中打开")`;
-		}
-
 		const { pullRequest: pr, remotes } = this._options;
 
 		if (remotes?.length) {
@@ -596,17 +574,6 @@ export class CommitFormatter extends Formatter<GitCommit, CommitFormatOptions> {
 				this._item.sha,
 				editorHoverSource,
 			)} "在${providers?.length ? providers[0].name : '远程'}上打开提交")`;
-		}
-
-		if (this._options.ai?.enabled && this._options.ai?.allowed) {
-			commands += `${separator}[$(sparkle) Explain](${ExplainCommitCommand.createMarkdownCommandLink({
-				repoPath: this._item.repoPath,
-				rev: this._item.sha,
-				source: {
-					source: 'editor:hover',
-					context: { type: GitCommit.isStash(this._item) ? 'stash' : 'commit' },
-				},
-			})} "解释更改")`;
 		}
 
 		if (pr != null) {
@@ -624,24 +591,7 @@ export class CommitFormatter extends Formatter<GitCommit, CommitFormatOptions> {
 					pr.state
 				}, ${PullRequest.formatDateFromNow(pr)}")`;
 			} else if (isPromise(pr)) {
-				commands += `${separator}[$(git-pull-request) PR $(loading~spin)](${createMarkdownCommandLink(
-					'gitlens.refreshHover',
-					editorHoverSource,
-				)} "正在搜索引入此提交的拉取请求（如果有）...")`;
-			}
-		} else if (remotes != null) {
-			const [remote] = remotes;
-			if (
-				remote != null &&
-				remoteSupportsIntegration(remote) &&
-				!isRemoteMaybeIntegrationConnected(remote) &&
-				configuration.get('integrations.enabled')
-			) {
-				commands += `${separator}[$(plug) 连接到 ${remote?.provider.name}${
-					GlyphChars.Ellipsis
-				}](${ConnectRemoteProviderCommand.createMarkdownCommandLink(remote, editorHoverSource)} "连接到 ${
-					remote.provider.name
-				} 以显示引入此提交的拉取请求（如果有）")`;
+				commands += `${separator}$(git-pull-request) PR $(loading~spin)`;
 			}
 		}
 
@@ -937,10 +887,7 @@ export class CommitFormatter extends Formatter<GitCommit, CommitFormatOptions> {
 				text = `PR #${pr.id}`;
 			}
 		} else if (isPromise(pr)) {
-			text =
-				this._options.outputFormat === 'markdown'
-					? `[PR $(loading~spin)](${createMarkdownCommandLink('gitlens.refreshHover', this._options.source)} "正在搜索引入此提交的拉取请求（如果有）...")`
-					: (this._options?.pullRequestPendingMessage ?? '');
+			text = this._options?.pullRequestPendingMessage ?? 'PR $(loading~spin)';
 		} else {
 			return this._padOrTruncate('', this._options.tokenOptions.pullRequest);
 		}

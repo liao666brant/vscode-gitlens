@@ -16,12 +16,10 @@
  * Events are split between:
  * - Generic events (subscription, integrations, repositories, discovery) from domain services
  * - Home-specific events (overview, walkthrough, banners, focus) from HomeViewService
- * - Launchpad events from standalone LaunchpadService
  */
-import type { Remote } from '@eamodio/supertalk';
 import { Logger } from '@gitlens/utils/logger.js';
 import type { HomeServices, WalkthroughProgressState } from '../../home/homeService.js';
-import type { AgentSessionState, OverviewFilters } from '../../home/protocol.js';
+import type { OverviewFilters } from '../../home/protocol.js';
 import type {
 	AiModelInfo,
 	AIState,
@@ -31,7 +29,6 @@ import type {
 	RepositoryChangeEventData,
 	Unsubscribe,
 } from '../../rpc/services/types.js';
-import { sortAgentSessions } from '../shared/agentUtils.js';
 import { subscribeAll } from '../shared/events/subscriptions.js';
 import type { HomeRootState } from './state.js';
 
@@ -81,14 +78,13 @@ const overviewChangeScope: Record<RepositoryChange, OverviewChangeScope> = {
  * Resolved sub-services (after awaiting the sub-service properties from the Remote proxy).
  */
 interface ResolvedServices {
-	home: Awaited<Remote<HomeServices>['home']>;
-	launchpad: Awaited<Remote<HomeServices>['launchpad']>;
-	config: Awaited<Remote<HomeServices>['config']>;
-	subscription: Awaited<Remote<HomeServices>['subscription']>;
-	integrations: Awaited<Remote<HomeServices>['integrations']>;
-	repositories: Awaited<Remote<HomeServices>['repositories']>;
-	onboarding: Awaited<Remote<HomeServices>['onboarding']>;
-	ai: Awaited<Remote<HomeServices>['ai']>;
+	home: Awaited<HomeServices['home']>;
+	config: Awaited<HomeServices['config']>;
+	subscription: Awaited<HomeServices['subscription']>;
+	integrations: Awaited<HomeServices['integrations']>;
+	repositories: Awaited<HomeServices['repositories']>;
+	onboarding: Awaited<HomeServices['onboarding']>;
+	ai: Awaited<HomeServices['ai']>;
 }
 
 /**
@@ -110,10 +106,6 @@ export interface SubscriptionActions {
 	onFocusAccount(): void;
 	/** Called when subscription changes (refresh promos). */
 	onSubscriptionChanged(): void;
-	/** Called when launchpad data should be refreshed. */
-	refreshLaunchpad(): void;
-	/** Called when agent overview branches should be refreshed. */
-	refreshAgentOverview(): void;
 }
 
 /**
@@ -215,10 +207,6 @@ export function setupSubscriptions(
 			services.onboarding.onDidChange((e: { key: string; dismissed: boolean }) => {
 				if (e.key === 'home:integrationBanner') {
 					state.onboarding.banners.integrationBanner = !e.dismissed;
-				} else if (e.key === 'mcp:banner') {
-					state.onboarding.banners.mcpBanner = !e.dismissed;
-				} else if (e.key === 'hooks:banner') {
-					state.onboarding.banners.hooksBanner = !e.dismissed;
 				}
 			}),
 
@@ -257,37 +245,5 @@ export function setupSubscriptions(
 			services.home.onFocusAccount(() => {
 				actions.onFocusAccount();
 			}),
-
-		// ============================================================
-		// Launchpad events — from standalone LaunchpadService
-		// ============================================================
-
-		() =>
-			services.launchpad.onLaunchpadChanged(() => {
-				actions.refreshLaunchpad();
-			}),
-
-		// ============================================================
-		// Agent sessions — from HomeViewService
-		// ============================================================
-
-		// The agent status service emits bursts of `onAgentSessionsChanged` as it scans state
-		// from disk (phase/status/timestamp churn on the same set of sessions). Refetching the
-		// agent overview on every event cascades through `createResource`'s cancelPrevious=true
-		// and starves the in-flight RPC. The branch list rendered by the agent overview is
-		// keyed on `worktreePath` (see `findOverviewBranchForSession`), so the overview only
-		// needs to refetch when that set changes — session churn is covered by the
-		// `agentSessions` signal write above.
-		() => {
-			let lastAgentBranchKey: string | undefined;
-			return services.home.onAgentSessionsChanged((sessions: AgentSessionState[]) => {
-				state.home.agentSessions.set(sortAgentSessions(sessions));
-				const key = [...new Set(sessions.map(s => s.worktreePath ?? ''))].sort().join('\n');
-				if (key !== lastAgentBranchKey) {
-					lastAgentBranchKey = key;
-					actions.refreshAgentOverview();
-				}
-			});
-		},
 	]);
 }

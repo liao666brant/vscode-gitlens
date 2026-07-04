@@ -71,10 +71,7 @@
 
 			<div class="content__area content__area--full-scroll">
 				<!-- prettier-ignore -->
-				<%= require('html-loader?{"esModule":false}!./partials/current-line.html') %>
-				<%= require('html-loader?{"esModule":false}!./partials/code-lens.html') %>
 				<%= require('html-loader?{"esModule":false}!./partials/status-bar.html') %>
-				<%= require('html-loader?{"esModule":false}!./partials/hovers.html') %>
 				<%= require('html-loader?{"esModule":false}!./partials/file-annotations.html') %>
 				<%= require('html-loader?{"esModule":false}!./partials/blame.html') %>
 				<%= require('html-loader?{"esModule":false}!./partials/changes.html') %>
@@ -89,7 +86,6 @@
 				<%= require('html-loader?{"esModule":false}!./partials/views.remotes.html') %>
 				<%= require('html-loader?{"esModule":false}!./partials/views.stashes.html') %>
 				<%= require('html-loader?{"esModule":false}!./partials/views.tags.html') %>
-				<%= require('html-loader?{"esModule":false}!./partials/views.worktrees.html') %>
 				<%= require('html-loader?{"esModule":false}!./partials/views.contributors.html') %>
 				<%= require('html-loader?{"esModule":false}!./partials/views.searchAndCompare.html') %>
 				<%= require('html-loader?{"esModule":false}!./partials/rebase-editor.html') %>
@@ -110,39 +106,11 @@
 							<a
 								class="sidebar__jump-link"
 								data-action="jump"
-								href="#current-line"
-								title="Jump to Inline Blame settings"
-								>Inline Blame</a
-							>
-						</li>
-						<li>
-							<a
-								class="sidebar__jump-link"
-								data-action="jump"
-								href="#code-lens"
-								title="Jump to Git CodeLens settings"
-								>Git CodeLens</a
-							>
-						</li>
-						<li>
-							<a
-								class="sidebar__jump-link"
-								data-action="jump"
 								href="#status-bar"
 								title="Jump to Status Bar Blame settings"
 								>Status Bar Blame</a
 							>
 						</li>
-						<li>
-							<a
-								class="sidebar__jump-link"
-								data-action="jump"
-								href="#hovers"
-								title="Jump to Hovers settings"
-								>Hovers</a
-							>
-						</li>
-
 						<li class="mt-1">
 							<a
 								class="sidebar__jump-link"
@@ -513,12 +481,6 @@
 					<!-- <tr>
 						<td>Author Avatar</td>
 						<td><span class="token" data-token="avatar">avatar</span></td>
-					</tr> -->
-					<!-- <tr>
-						<td>
-							Commands<br /><i>Set of commit command buttons<br />only valid in hovers</i>
-						</td>
-						<td><span class="token" data-token="commands">commands</span></td>
 					</tr> -->
 				</tbody>
 			</table>

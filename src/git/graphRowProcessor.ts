@@ -7,12 +7,7 @@ import { getCachedAvatarUri } from '../avatars.js';
 import type { Container } from '../container.js';
 import { emojify } from '../emojis.js';
 import { serializeWebviewItemContext } from '../system/webview.js';
-import type {
-	GraphBranchContextValue,
-	GraphItemRefContext,
-	GraphItemRefGroupContext,
-	GraphTagContextValue,
-} from '../webviews/plus/graph/protocol.js';
+import type { GraphItemRefContext, GraphItemRefGroupContext } from '../community/stubs/pro.js';
 import { formatCurrentUserDisplayName } from './utils/-webview/commit.utils.js';
 import { getRemoteIconUri } from './utils/-webview/icons.js';
 
@@ -33,7 +28,7 @@ export class GlGraphRowProcessor implements GraphRowProcessor {
 		// Enrich tags with serialized webview contexts
 		if (row.tags) {
 			for (const tag of row.tags) {
-				tag.context = serializeWebviewItemContext<GraphItemRefContext<GraphTagContextValue>>({
+				tag.context = serializeWebviewItemContext<GraphItemRefContext>({
 					webviewItem: 'gitlens:tag',
 					webviewItemValue: {
 						type: 'tag',
@@ -51,7 +46,7 @@ export class GlGraphRowProcessor implements GraphRowProcessor {
 		if (row.heads) {
 			for (const head of row.heads) {
 				const branch = context.branches.get(head.name);
-				const ctx: GraphItemRefContext<GraphBranchContextValue> = {
+				const ctx: GraphItemRefContext = {
 					webviewItem: `gitlens:branch${head.isCurrentHead ? '+current' : ''}${
 						branch?.upstream != null ? '+tracking' : ''
 					}${
@@ -75,7 +70,7 @@ export class GlGraphRowProcessor implements GraphRowProcessor {
 					},
 				};
 
-				head.context = serializeWebviewItemContext<GraphItemRefContext<GraphBranchContextValue>>(ctx);
+				head.context = serializeWebviewItemContext<GraphItemRefContext>(ctx);
 
 				let group = groupedRefs.get(head.name);
 				if (group == null) {
@@ -101,7 +96,7 @@ export class GlGraphRowProcessor implements GraphRowProcessor {
 					(remote != null ? getRemoteIconUri(this.container, remote, this.asWebviewUri) : undefined)
 				)?.toString(true);
 
-				const ctx: GraphItemRefContext<GraphBranchContextValue> = {
+				const ctx: GraphItemRefContext = {
 					webviewItem: `gitlens:branch+remote${context.branches.get(fullName)?.starred ? '+starred' : ''}${
 						pinnedRefId != null && remoteHead.id === pinnedRefId ? '+pinned' : ''
 					}`,
@@ -117,7 +112,7 @@ export class GlGraphRowProcessor implements GraphRowProcessor {
 					},
 				};
 
-				remoteHead.context = serializeWebviewItemContext<GraphItemRefContext<GraphBranchContextValue>>(ctx);
+				remoteHead.context = serializeWebviewItemContext<GraphItemRefContext>(ctx);
 
 				let group = groupedRefs.get(remoteHead.name);
 				if (group == null) {

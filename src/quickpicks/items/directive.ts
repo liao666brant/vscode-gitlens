@@ -1,5 +1,4 @@
 import type { QuickPick, QuickPickItem, ThemeIcon, Uri } from 'vscode';
-import { proTrialLengthInDays } from '../../constants.subscription.js';
 
 export enum Directive {
 	Back,
@@ -9,10 +8,8 @@ export enum Directive {
 	Noop,
 
 	SignIn,
-	StartProTrial,
 
 	RequiresVerification,
-	RequiresPaidSubscription,
 
 	RefsAllBranches,
 	ReposAll,
@@ -64,22 +61,10 @@ export function createDirectiveQuickPickItem(
 			case Directive.SignIn:
 				label = '登录';
 				break;
-			case Directive.StartProTrial:
-				label = '试用 GitLens Pro';
-				detail = `免费试用 GitLens Pro ${proTrialLengthInDays} 天，无需信用卡。`;
-				break;
 
 			case Directive.RequiresVerification:
 				label = '重新发送邮件';
 				detail = '继续之前，您必须先验证邮箱';
-				break;
-			case Directive.RequiresPaidSubscription:
-				label = '升级到 Pro';
-				if (detail != null) {
-					description ??= ' \u2014\u00a0\u00a0 使用此功能需要 GitLens Pro';
-				} else {
-					detail = '使用此功能需要升级到 GitLens Pro';
-				}
 				break;
 
 			case Directive.RefsAllBranches:

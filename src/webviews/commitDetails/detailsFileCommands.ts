@@ -482,20 +482,6 @@ export class DetailsFileCommands {
 		void executeCommand('gitlens.quickOpenFileHistory', file.uri);
 	}
 
-	@command('gitlens.visualizeHistory.file:')
-	@debug()
-	visualizeFileHistory(_commit: GitCommit, file: GitFileChange): void {
-		void executeCommand('gitlens.visualizeHistory.file', file.uri);
-	}
-
-	@command('gitlens.openFileHistoryInGraph:')
-	@debug()
-	openFileHistoryInGraph(commit: GitCommit, file: GitFileChange): void {
-		// Skip the selection for uncommitted and stashes; the graph doesn't surface either by default,
-		// so the sha would never resolve to a visible row.
-		const selectSha = isUncommitted(commit.sha) || GitCommit.isStash(commit) ? undefined : commit.sha;
-		void executeCommand('gitlens.openFileHistoryInGraph', file.uri, selectSha);
-	}
 	@command('gitlens.views.selectFileForCompare:')
 	@debug()
 	selectFileForCompare(commit: GitCommit, file: GitFileChange): void {
@@ -586,35 +572,6 @@ export class DetailsFileCommands {
 			clipboard: true,
 			range: false,
 		});
-	}
-	@command('gitlens.shareAsCloudPatch:')
-	@debug()
-	async shareAsCloudPatch(
-		commit: GitCommit,
-		_file: GitFileChange,
-		_showOptions?: TextDocumentShowOptions,
-		comparison?: ComparisonContext,
-	): Promise<void> {
-		if (comparison != null) {
-			void executeCommand<CreatePatchCommandArgs>('gitlens.createCloudPatch', {
-				to: commit.ref,
-				from: comparison.sha,
-				repoPath: commit.repoPath,
-			});
-		} else {
-			if (commit.message == null) {
-				await GitCommit.ensureFullDetails(commit);
-			}
-
-			const { summary: title, body: description } = splitCommitMessage(commit.message);
-
-			void executeCommand<CreatePatchCommandArgs>('gitlens.createCloudPatch', {
-				to: commit.ref,
-				repoPath: commit.repoPath,
-				title: title,
-				description: description,
-			});
-		}
 	}
 	// --- Multi-file actions (right-clicking a multi-selection). Each receives the selected files
 	// resolved from `webviewItemsValues`; the host registration loop does the resolution. ---

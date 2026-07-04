@@ -32,7 +32,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/) and this p
 
 ### Added
 
-- Initial release. Bundles `@gitlens/utils`, `@gitlens/git`, `@gitlens/git-cli`, `@gitlens/ai`, and `@gitlens/git-github` into a single core npm package with subpath exports.
+- Initial release. Bundles `@gitlens/utils`, `@gitlens/git`, and `@gitlens/git-cli` into a single core npm package with subpath exports.
 
 [unreleased]: https://github.com/gitkraken/vscode-gitlens/compare/releases/core/v0.3.0...HEAD
 [0.3.0]: https://github.com/gitkraken/vscode-gitlens/compare/releases/core/v0.2.0...gitkraken:releases/core/v0.3.0

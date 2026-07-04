@@ -1,4 +1,4 @@
-import { MarkdownString, ThemeColor, ThemeIcon, TreeItem, TreeItemCollapsibleState } from 'vscode';
+import { MarkdownString, TreeItem, TreeItemCollapsibleState } from 'vscode';
 import { GitBranch } from '@gitlens/git/models/branch.js';
 import type { GitCommit } from '@gitlens/git/models/commit.js';
 import { PullRequest } from '@gitlens/git/models/pullRequest.js';
@@ -8,7 +8,6 @@ import {
 	getRepositoryIdentityForPullRequest,
 } from '@gitlens/git/utils/pullRequest.utils.js';
 import { createRevisionRange } from '@gitlens/git/utils/revision.utils.js';
-import type { Colors } from '../../constants.colors.js';
 import { GitUri } from '../../git/gitUri.js';
 import type { GlRepository } from '../../git/models/repository.js';
 import { getAheadBehindFilesQuery, getCommitsQuery } from '../../git/queryResults.js';
@@ -18,14 +17,11 @@ import {
 	ensurePullRequestRemote,
 	getOrOpenPullRequestRepository,
 } from '../../git/utils/-webview/pullRequest.utils.js';
-import { createCommand } from '../../system/-webview/command.js';
 import type { ViewsWithCommits } from '../viewBase.js';
-import { createViewDecorationUri } from '../viewDecorationProvider.js';
 import { CacheableChildrenViewNode } from './abstract/cacheableChildrenViewNode.js';
 import type { ClipboardType, ViewNode } from './abstract/viewNode.js';
 import { ContextValues, getViewNodeId } from './abstract/viewNode.js';
-import { CodeSuggestionsNode } from './codeSuggestionsNode.js';
-import { CommandMessageNode, MessageNode } from './common.js';
+import { MessageNode } from './common.js';
 import { ResultsCommitsNode } from './resultsCommitsNode.js';
 import { ResultsFilesNode } from './resultsFilesNode.js';
 
@@ -170,28 +166,7 @@ export async function getPullRequestChildren(
 	const refs = getComparisonRefsForPullRequest(repoPath, pullRequest.refs!);
 	const identity = getRepositoryIdentityForPullRequest(pullRequest);
 	if (!(await ensurePullRequestRemote(pullRequest, repo, { silent: true }))) {
-		return [
-			new CommandMessageNode(
-				view,
-				parent,
-				createCommand<[ViewNode, PullRequest, GlRepository]>(
-					'gitlens.views.addPullRequestRemote',
-					'添加拉取请求远程...',
-					parent,
-					pullRequest,
-					repo,
-				),
-				`找不到“${identity.provider.repoDomain}”的远程`,
-				undefined,
-				`点击为“${identity.provider.repoDomain}”添加远程`,
-				new ThemeIcon(
-					'question',
-					new ThemeColor('gitlens.decorations.workspaceRepoMissingForegroundColor' satisfies Colors),
-				),
-				undefined,
-				createViewDecorationUri('remote', { state: 'missing' }),
-			),
-		];
+		return [new MessageNode(view, parent, `找不到“${identity.provider.repoDomain}”的远程。`)];
 	}
 
 	const counts = await ensurePullRequestRefs(
@@ -226,7 +201,6 @@ export async function getPullRequestChildren(
 				description: `${counts?.right ?? 0} 个提交`,
 			},
 		),
-		new CodeSuggestionsNode(view, parent, repoPath, pullRequest),
 		new ResultsFilesNode(
 			view,
 			parent,
@@ -249,7 +223,7 @@ export async function getPullRequestChildren(
 
 export function getPullRequestTooltip(
 	pullRequest: PullRequest,
-	context?: { commit?: GitCommit; idPrefix?: string; codeSuggestionsCount?: number },
+	context?: { commit?: GitCommit; idPrefix?: string },
 ): MarkdownString {
 	const tooltip = new MarkdownString('', true);
 	tooltip.supportHtml = true;
@@ -273,9 +247,6 @@ export function getPullRequestTooltip(
 			pullRequest.state,
 		)}`,
 	);
-	if (context?.codeSuggestionsCount != null && context.codeSuggestionsCount > 0) {
-		tooltip.appendMarkdown(`\n\n$(gitlens-code-suggestion) ${context.codeSuggestionsCount} 条代码建议`);
-	}
 	return tooltip;
 }
 

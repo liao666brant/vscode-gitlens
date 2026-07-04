@@ -46,7 +46,6 @@ export function registerSettingsWebviewCommands<T>(
 				'gitlens.showSettingsPage!branches-view',
 				'gitlens.showSettingsPage!commits-view',
 				'gitlens.showSettingsPage!contributors-view',
-				'gitlens.showSettingsPage!current-line',
 				'gitlens.showSettingsPage!file-history-view',
 				'gitlens.showSettingsPage!line-history-view',
 				'gitlens.showSettingsPage!remotes-view',
@@ -54,8 +53,6 @@ export function registerSettingsWebviewCommands<T>(
 				'gitlens.showSettingsPage!search-compare-view',
 				'gitlens.showSettingsPage!stashes-view',
 				'gitlens.showSettingsPage!tags-view',
-				'gitlens.showSettingsPage!worktrees-view',
-				'gitlens.showSettingsPage!commit-graph',
 				'gitlens.showSettingsPage!autolinks',
 			] satisfies GlCommands[]
 		).map(c => {

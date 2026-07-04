@@ -9,7 +9,7 @@ import { createReference } from '@gitlens/git/utils/reference.utils.js';
 import type { Deferrable } from '@gitlens/utils/debounce.js';
 import { debounce } from '@gitlens/utils/debounce.js';
 import { debug } from '@gitlens/utils/decorators/log.js';
-import { concat, filterMap, find, first, join, last, map } from '@gitlens/utils/iterable.js';
+import { concat, filterMap, find, first, join, map } from '@gitlens/utils/iterable.js';
 import { Logger } from '@gitlens/utils/logger.js';
 import { areEqual } from '@gitlens/utils/object.js';
 import { extname, normalizePath } from '@gitlens/utils/path.js';
@@ -27,6 +27,7 @@ import {
 	skipPausedOperation,
 } from '../../git/actions/pausedOperation.js';
 import { GitUri } from '../../git/gitUri.js';
+import type { RepositoryChangeEvent } from '../../git/models/repository.js';
 import {
 	formatCommitDate,
 	formatIdentityDisplayName,
@@ -40,8 +41,6 @@ import {
 } from '../../git/utils/-webview/rebase.parsing.utils.js';
 import { reopenRebaseTodoEditor } from '../../git/utils/-webview/rebase.utils.js';
 import { showGitErrorMessage } from '../../messages.js';
-import type { Subscription } from '../../plus/gk/models/subscription.js';
-import { isSubscriptionTrialOrPaidFromState } from '../../plus/gk/utils/subscription.utils.js';
 import { executeCommand, executeCoreCommand } from '../../system/-webview/command.js';
 import { configuration } from '../../system/-webview/configuration.js';
 import { closeTab } from '../../system/-webview/vscode/tabs.js';
@@ -49,10 +48,7 @@ import { exists } from '../../system/-webview/vscode/uris.js';
 import { createCommandDecorator, getWebviewCommand } from '../../system/decorators/command.js';
 import type { IpcParams, IpcResponse } from '../ipc/handlerRegistry.js';
 import { ipcCommand, ipcRequest } from '../ipc/handlerRegistry.js';
-import type { ComposerWebviewShowingArgs } from '../plus/composer/registration.js';
-import type { ShowInCommitGraphCommandArgs } from '../plus/graph/registration.js';
 import type { WebviewHost } from '../webviewProvider.js';
-import type { WebviewPanelShowCommandArgs } from '../webviewsController.js';
 import type {
 	Author,
 	Commit,
@@ -72,7 +68,6 @@ import {
 	DidChangeAvatarsNotification,
 	DidChangeCommitsNotification,
 	DidChangeNotification,
-	DidChangeSubscriptionNotification,
 	DismissCloseWarningCommand,
 	GetConflictsRequest,
 	GetMissingAvatarsCommand,
@@ -81,7 +76,6 @@ import {
 	MoveEntryCommand,
 	OpenConflictChangesCommand,
 	OpenConflictFileCommand,
-	RecomposeCommand,
 	ReorderCommand,
 	ResolveAllConflictsCommand,
 	ResolveConflictCommand,
@@ -128,7 +122,7 @@ export class RebaseWebviewProvider implements Disposable {
 	private _stateNotifyDirty = false;
 	private readonly _todoDocument: RebaseTodoDocument;
 
-	// Telemetry context - tracks composer-specific data for getTelemetryContext
+	// Telemetry context for getTelemetryContext
 	private _context: RebaseEditorContext = { sessionStart: new Date().toISOString() };
 
 	private get ascending() {
@@ -179,9 +173,6 @@ export class RebaseWebviewProvider implements Disposable {
 					void closeTab(document.uri);
 				}
 			}),
-			this.container.subscription.onDidChange(e => {
-				this.onSubscriptionChanged(e.current);
-			}),
 			this.container.onboarding.onDidChange(e => {
 				if (e.key === 'rebaseEditor:closeWarning') {
 					this.updateState();
@@ -194,7 +185,7 @@ export class RebaseWebviewProvider implements Disposable {
 		if (repo != null) {
 			this._etagRepository = repo.etag;
 			this._disposables.push(
-				repo.onDidChange(async e => {
+				repo.onDidChange(async (e: RepositoryChangeEvent) => {
 					// Invalidate cached branch name when refs move so a rename mid-session is picked up
 					if (e.changed('heads')) {
 						this._branchName = undefined;
@@ -280,12 +271,6 @@ export class RebaseWebviewProvider implements Disposable {
 		}
 
 		this.host.sendPendingIpcNotifications();
-	}
-
-	private onSubscriptionChanged(subscription: Subscription): void {
-		if (!this.host.visible) return;
-
-		void this.host.notify(DidChangeSubscriptionNotification, { subscription: subscription });
 	}
 
 	@ipcCommand(OpenConflictFileCommand)
@@ -632,49 +617,6 @@ export class RebaseWebviewProvider implements Disposable {
 		await continuePausedOperation(svc);
 	}
 
-	@ipcCommand(RecomposeCommand)
-	@debug()
-	private async onRecompose(): Promise<void> {
-		this.host.sendTelemetryEvent('rebaseEditor/action/recompose', {
-			'context.session.duration': this.getSessionDuration(),
-		});
-
-		// Get commit SHAs from the rebase entries
-		const { processed } = this._todoDocument.parsed;
-
-		const firstShortSha = first(processed.commits.keys())!;
-		const ontoShortSha = this._enrichment.onto!.sha;
-
-		// Get the base commit SHA from the onto commit (the commit we're rebasing onto)
-		const headShortSha = last(processed.commits.keys())!;
-		const { commits } = await this.getAndUpdateCommits([headShortSha, ontoShortSha, firstShortSha]);
-
-		const ontoCommit = commits.get(ontoShortSha)!;
-		const firstCommit = commits.get(firstShortSha)!;
-
-		let baseCommitSha = ontoCommit.sha;
-		if (!firstCommit.parents.includes(baseCommitSha)) {
-			baseCommitSha = firstCommit.parents[0];
-		}
-
-		const headCommitSha = commits.get(headShortSha)!.sha;
-
-		// Open the Commit Composer with the commits
-		void executeCommand<WebviewPanelShowCommandArgs<ComposerWebviewShowingArgs>>(
-			'gitlens.showComposerPage',
-			undefined,
-			{
-				repoPath: this.repoPath,
-				source: 'rebaseEditor',
-				mode: 'preview',
-				branchName: this._branchName ?? undefined,
-				range: { base: baseCommitSha, head: headCommitSha },
-			},
-		);
-
-		await this.onAbort();
-	}
-
 	@command('gitlens.pausedOperation.showConflicts:')
 	@debug()
 	private async onShowConflicts(): Promise<void> {
@@ -850,7 +792,7 @@ export class RebaseWebviewProvider implements Disposable {
 		return { commits: requestedCommits, authors: requestedAuthors };
 	}
 
-	/** Handles rebase conflict detection requests (Pro feature) — unified for initial and todo triggers */
+	/** Handles rebase conflict detection requests — unified for initial and todo triggers */
 	@ipcRequest(GetConflictsRequest)
 	private async onGetConflicts(
 		params: IpcParams<typeof GetConflictsRequest>,
@@ -858,11 +800,6 @@ export class RebaseWebviewProvider implements Disposable {
 		const { trigger, onto, commits, base, stopOnFirstConflict } = params;
 		const startTime = performance.now();
 		const detection = trigger === 'initial' ? 'potential' : 'todo';
-
-		const subscription = await this.container.subscription.getSubscription();
-		if (!isSubscriptionTrialOrPaidFromState(subscription?.state)) {
-			return { conflicts: undefined };
-		}
 
 		if (!commits?.length) {
 			this.host.sendTelemetryEvent('rebaseEditor/conflicts/detected', {
@@ -913,49 +850,24 @@ export class RebaseWebviewProvider implements Disposable {
 
 	@ipcCommand(RevealRefCommand)
 	private async onRevealRef(params: IpcParams<typeof RevealRefCommand>): Promise<void> {
-		const revealIn = configuration.get('rebaseEditor.revealLocation');
-
-		// For branches, always use the graph since commit details doesn't support branches
 		if (params.type === 'branch') {
 			this.host.sendTelemetryEvent('rebaseEditor/action/revealRef', {
 				'ref.type': 'branch',
-				location: 'graph',
-			});
-
-			const ref = createReference(params.ref, this.repoPath, {
-				refType: 'branch',
-				name: params.ref,
-				remote: false,
-			});
-			await executeCommand<ShowInCommitGraphCommandArgs>('gitlens.showInCommitGraph', {
-				ref: ref,
-				preserveFocus: true,
-				viewColumn: ViewColumn.Beside,
-				source: { source: 'rebaseEditor' },
+				location: 'commitDetails',
 			});
 			return;
 		}
 
-		const location = revealIn === 'graph' ? 'graph' : 'commitDetails';
 		this.host.sendTelemetryEvent('rebaseEditor/action/revealRef', {
 			'ref.type': 'commit',
-			location: location,
+			location: 'commitDetails',
 		});
 
 		const ref = createReference(params.ref, this.repoPath, { refType: 'revision' });
-		if (revealIn === 'graph') {
-			await executeCommand<ShowInCommitGraphCommandArgs>('gitlens.showInCommitGraph', {
-				ref: ref,
-				preserveFocus: true,
-				viewColumn: ViewColumn.Beside,
-				source: { source: 'rebaseEditor' },
-			});
-		} else {
-			await this.container.views.commitDetails.show(
-				{ preserveFocus: true, source: { source: 'rebaseEditor' } },
-				{ commit: ref },
-			);
-		}
+		await this.container.views.commitDetails.show(
+			{ preserveFocus: true, source: { source: 'rebaseEditor' } },
+			{ commit: ref },
+		);
 	}
 
 	private fireSelectionChangedDebounced?: Deferrable<RebaseWebviewProvider['fireSelectionChanged']>;
@@ -993,24 +905,11 @@ export class RebaseWebviewProvider implements Disposable {
 			this._enrichment.commits.set(entry.sha, commit);
 		}
 
-		// Reveal in the preferred location
-		const revealLocation = configuration.get('rebaseEditor.revealLocation');
-		if (revealLocation === 'graph') {
-			const ref = createReference(commit.sha, this.repoPath, { refType: 'revision' });
-			await executeCommand<ShowInCommitGraphCommandArgs>('gitlens.showInCommitGraph', {
-				ref: ref,
-				preserveFocus: true,
-				viewColumn: ViewColumn.Beside,
-				source: { source: 'rebaseEditor' },
-			});
-		} else {
-			// Fire event for commit details view to pick up
-			this.container.events.fire(
-				'commit:selected',
-				{ commit: commit, interaction: 'passive', preserveFocus: true, preserveVisibility: false },
-				{ source: 'gitlens.rebase' },
-			);
-		}
+		this.container.events.fire(
+			'commit:selected',
+			{ commit: commit, interaction: 'passive', preserveFocus: true, preserveVisibility: false },
+			{ source: 'gitlens.rebase' },
+		);
 	}
 
 	private async parseState(): Promise<State> {
@@ -1018,11 +917,10 @@ export class RebaseWebviewProvider implements Disposable {
 
 		const { parsed, processed } = this._todoDocument.parsed;
 
-		// Fetch branch, rebase status, and subscription
-		const [branchResult, rebaseStatusResult, subscriptionResult] = await Promise.allSettled([
+		// Fetch branch and rebase status
+		const [branchResult, rebaseStatusResult] = await Promise.allSettled([
 			this._branchName === undefined ? svc.branches.getBranch() : undefined,
 			this.getRebaseStatus(svc),
-			this.container.subscription.getSubscription(),
 		]);
 
 		if (this._branchName === undefined) {
@@ -1038,8 +936,6 @@ export class RebaseWebviewProvider implements Disposable {
 			doneEntries: undefined,
 			conflictFiles: undefined,
 		});
-
-		const subscription = getSettledValue(subscriptionResult);
 
 		// Get onto from parsed header or active rebase status
 		const onto = parsed.info?.onto ?? rebaseStatus?.onto ?? '';
@@ -1109,7 +1005,6 @@ export class RebaseWebviewProvider implements Disposable {
 			revealBehavior: this.getRevealBehavior(),
 			rebaseStatus: rebaseStatus,
 			repoPath: this.repoPath,
-			subscription: subscription,
 			conflictFiles: conflictFiles,
 			closeWarningDismissed: this.container.onboarding.isDismissed('rebaseEditor:closeWarning'),
 		};

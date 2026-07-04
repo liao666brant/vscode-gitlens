@@ -1,26 +1,16 @@
 import type { ConfigurationChangeEvent, Disposable, Event, ExtensionContext } from 'vscode';
 import { EventEmitter, ExtensionMode } from 'vscode';
 import { IpcService } from '@env/ipc/ipcService.js';
-import {
-	getAgentSessionProviders,
-	getGkCliIntegrationProvider,
-	getMcpProviders,
-	getSharedGKStorageLocationProvider,
-	getSupportedRepositoryLocationProvider,
-	getSupportedWorkspacesStorageProvider,
-	setTelemetryService,
-} from '@env/providers.js';
+import { setTelemetryService } from '@env/providers.js';
 import { debug } from '@gitlens/utils/decorators/log.js';
 import { memoize } from '@gitlens/utils/decorators/memoize.js';
 import { Logger } from '@gitlens/utils/logger.js';
-import { AgentStatusService } from './agents/agentStatusService.js';
 import { FileAnnotationController } from './annotations/fileAnnotationController.js';
-import { LineAnnotationController } from './annotations/lineAnnotationController.js';
 import { ActionRunners } from './api/actionRunners.js';
 import { AutolinksProvider } from './autolinks/autolinksProvider.js';
 import { setDefaultGravatarsStyle } from './avatars.js';
 import { CacheProvider } from './cache.js';
-import { GitCodeLensController } from './codelens/codeLensController.js';
+import type { AgentSessionState } from './agents/models/agentSessionState.js';
 import type { ToggleFileAnnotationCommandArgs } from './commands/toggleFileAnnotations.js';
 import type { DateSource, DateStyle, Mode } from './config.js';
 import type { GlCommands } from './constants.commands.js';
@@ -31,38 +21,36 @@ import { GitFileSystemProvider } from './git/fsProvider.js';
 import { GitProviderService } from './git/gitProviderService.js';
 import type { RepositoryLocationProvider } from './git/location/repositorylocationProvider.js';
 import { registerPublishListener } from './git/publishListener.js';
-import { LineHoverController } from './hovers/lineHoverController.js';
 import { OnboardingService } from './onboarding/onboardingService.js';
 import { UsageTracker } from './onboarding/usageTracker.js';
 import { WalkthroughStateProvider } from './onboarding/walkthroughStateProvider.js';
-import { AIProviderService } from './plus/ai/aiProviderService.js';
-import { DraftService } from './plus/drafts/draftsService.js';
-import { AccountAuthenticationProvider } from './plus/gk/authenticationProvider.js';
-import { OrganizationService } from './plus/gk/organizationService.js';
-import { ProductConfigProvider } from './plus/gk/productConfigProvider.js';
-import { ServerConnection } from './plus/gk/serverConnection.js';
-import { SubscriptionService } from './plus/gk/subscriptionService.js';
-import { UrlsProvider } from './plus/gk/urlsProvider.js';
-import { GraphStatusBarController } from './plus/graph/statusbar.js';
-import type { CloudIntegrationService } from './plus/integrations/authentication/cloudIntegrationService.js';
-import { ConfiguredIntegrationService } from './plus/integrations/authentication/configuredIntegrationService.js';
-import { IntegrationAuthenticationService } from './plus/integrations/authentication/integrationAuthenticationService.js';
-import { IntegrationService } from './plus/integrations/integrationService.js';
-import type { AzureDevOpsApi } from './plus/integrations/providers/azure/azure.js';
-import type { BitbucketApi } from './plus/integrations/providers/bitbucket/bitbucket.js';
-import type { GitHubApi } from './plus/integrations/providers/github/github.js';
-import type { GitLabApi } from './plus/integrations/providers/gitlab/gitlab.js';
-import { EnrichmentService } from './plus/launchpad/enrichmentService.js';
-import { LaunchpadIndicator } from './plus/launchpad/launchpadIndicator.js';
-import { LaunchpadProvider } from './plus/launchpad/launchpadProvider.js';
-import { RepositoryIdentityService } from './plus/repos/repositoryIdentityService.js';
-import type { SharedGkStorageLocationProvider } from './plus/repos/sharedGkStorageLocationProvider.js';
-import { WorkspacesApi } from './plus/workspaces/workspacesApi.js';
-import { scheduleAddMissingCurrentWorkspaceRepos, WorkspacesService } from './plus/workspaces/workspacesService.js';
+import {
+	AccountAuthenticationProvider,
+	AIProviderService,
+	ConfiguredIntegrationService,
+	DraftService,
+	EnrichmentService,
+	IntegrationAuthenticationService,
+	IntegrationService,
+	OrganizationService,
+	ProductConfigProvider,
+	RepositoryIdentityService,
+	ServerConnection,
+	SubscriptionService,
+	UrlsProvider,
+	WorkspacesApi,
+	WorkspacesService,
+} from './community/stubs/pro.js';
+import type {
+	AzureDevOpsApi,
+	BitbucketApi,
+	CloudIntegrationService,
+	GitHubApi,
+	GitLabApi,
+} from './community/stubs/pro.js';
 import { StatusBarController } from './statusbar/statusBarController.js';
 import { executeCommand } from './system/-webview/command.js';
 import { configuration } from './system/-webview/configuration.js';
-import { onDidChangeContext, setContext } from './system/-webview/context.js';
 import { Keyboard } from './system/-webview/keyboard.js';
 import { loadChunk } from './system/-webview/loadChunk.js';
 import type { Storage } from './system/-webview/storage.js';
@@ -71,29 +59,26 @@ import { TelemetryService } from './telemetry/telemetry.js';
 import { GitTerminalLinkProvider } from './terminal/linkProvider.js';
 import { GitDocumentTracker } from './trackers/documentTracker.js';
 import { LineTracker } from './trackers/lineTracker.js';
-import { TreemapAggregatorService } from './treemap/treemapAggregatorService.js';
 import { DeepLinkService } from './uris/deepLinks/deepLinkService.js';
 import { UriService } from './uris/uriService.js';
 import { ViewFileDecorationProvider } from './views/viewDecorationProvider.js';
 import { Views } from './views/views.js';
 import { VirtualFileSystemService } from './virtual/virtualFileSystemService.js';
 import { VslsController } from './vsls/vsls.js';
-import {
-	registerComposerWebviewCommands,
-	registerComposerWebviewPanel,
-} from './webviews/plus/composer/registration.js';
-import { registerGraphWebviewCommands, registerGraphWebviewPanel } from './webviews/plus/graph/registration.js';
-import { registerPatchDetailsWebviewPanel } from './webviews/plus/patchDetails/registration.js';
-import {
-	registerTimelineWebviewCommands,
-	registerTimelineWebviewPanel,
-} from './webviews/plus/timeline/registration.js';
 import { RebaseEditorProvider } from './webviews/rebase/rebaseEditor.js';
 import { registerSettingsWebviewCommands, registerSettingsWebviewPanel } from './webviews/settings/registration.js';
 import { WebviewCommandRegistrar } from './webviews/webviewCommandRegistrar.js';
 import { WebviewsController } from './webviews/webviewsController.js';
 
 export type Environment = 'dev' | 'staging' | 'production';
+
+type AgentStatusServiceLike = {
+	readonly sessions: readonly AgentSessionState[];
+	getSerializedSessions(): AgentSessionState[];
+	onDidChange(listener: () => void): Disposable;
+	onDidChangeSessions(listener: (sessions: AgentSessionState[]) => void): Disposable;
+	onDidChangeHooksInstallState(listener: () => void): Disposable;
+};
 
 export class Container {
 	static #instance: Container | undefined;
@@ -194,10 +179,8 @@ export class Container {
 		},
 	};
 
-	private _agentStatusService: AgentStatusService | undefined;
-
-	get agentStatus(): AgentStatusService | undefined {
-		return this._agentStatusService;
+	get agentStatus(): AgentStatusServiceLike | undefined {
+		return undefined;
 	}
 
 	private readonly _onDidChangeAgentStatus = new EventEmitter<void>();
@@ -207,7 +190,6 @@ export class Container {
 	private readonly _connection: ServerConnection;
 	private _disposables: Disposable[];
 	private _terminalLinks: GitTerminalLinkProvider | undefined;
-	private _launchpadIndicator: LaunchpadIndicator | undefined;
 
 	private constructor(
 		context: ExtensionContext,
@@ -257,14 +239,10 @@ export class Container {
 		this._disposables.push((this._lineTracker = new LineTracker(this, this._documentTracker)));
 		this._disposables.push((this._keyboard = new Keyboard()));
 		this._disposables.push((this._vsls = new VslsController(this)));
-		this._disposables.push((this._launchpadProvider = new LaunchpadProvider(this)));
 		this._disposables.push((this._markdownProvider = new MarkdownContentProvider(this)));
 
 		this._disposables.push((this._fileAnnotationController = new FileAnnotationController(this)));
-		this._disposables.push((this._lineAnnotationController = new LineAnnotationController(this)));
-		this._disposables.push((this._lineHoverController = new LineHoverController(this)));
 		this._disposables.push((this._statusBarController = new StatusBarController(this)));
-		this._disposables.push((this._codeLensController = new GitCodeLensController(this)));
 
 		const webviewCommandRegistrar = new WebviewCommandRegistrar();
 		this._disposables.push(webviewCommandRegistrar);
@@ -272,19 +250,6 @@ export class Container {
 		const webviews = new WebviewsController(this, webviewCommandRegistrar);
 		this._disposables.push(webviews);
 		this._disposables.push((this._views = new Views(this, webviews)));
-
-		const graphPanels = registerGraphWebviewPanel(webviews);
-		this._disposables.push(graphPanels);
-		this._disposables.push(registerGraphWebviewCommands(this, graphPanels));
-		this._disposables.push(new GraphStatusBarController(this));
-
-		const composerPanels = registerComposerWebviewPanel(webviews);
-		this._disposables.push(composerPanels);
-		this._disposables.push(registerComposerWebviewCommands(this, composerPanels));
-
-		const timelinePanels = registerTimelineWebviewPanel(webviews);
-		this._disposables.push(timelinePanels);
-		this._disposables.push(registerTimelineWebviewCommands(this, timelinePanels));
 
 		this._disposables.push((this._rebaseEditor = new RebaseEditorProvider(this, webviewCommandRegistrar)));
 
@@ -294,25 +259,10 @@ export class Container {
 
 		this._disposables.push(new ViewFileDecorationProvider());
 
-		const patchDetailsPanels = registerPatchDetailsWebviewPanel(webviews);
-		this._disposables.push(patchDetailsPanels);
-
-		if (configuration.get('launchpad.indicator.enabled')) {
-			this._disposables.push((this._launchpadIndicator = new LaunchpadIndicator(this, this._launchpadProvider)));
-		}
-
-		this._disposables.push(this._onDidChangeAgentStatus, {
-			dispose: () => this._agentStatusService?.dispose(),
-		});
-		this.updateAgentStatusService();
+		this._disposables.push(this._onDidChangeAgentStatus);
 
 		if (configuration.get('terminalLinks.enabled')) {
 			this._disposables.push((this._terminalLinks = new GitTerminalLinkProvider(this)));
-		}
-
-		const cliIntegration = getGkCliIntegrationProvider(this);
-		if (cliIntegration != null) {
-			this._disposables.push(cliIntegration);
 		}
 
 		this._disposables.push(
@@ -324,36 +274,12 @@ export class Container {
 						this._disposables.push((this._terminalLinks = new GitTerminalLinkProvider(this)));
 					}
 				}
-
-				if (configuration.changed(e, 'launchpad.indicator.enabled')) {
-					this._launchpadIndicator?.dispose();
-					this._launchpadIndicator = undefined;
-
-					this.telemetry.sendEvent('launchpad/indicator/hidden');
-
-					if (configuration.get('launchpad.indicator.enabled')) {
-						this._disposables.push(
-							(this._launchpadIndicator = new LaunchpadIndicator(this, this._launchpadProvider)),
-						);
-					}
-				}
-
-				if (configuration.changed(e, 'ai.enabled')) {
-					this.updateAgentStatusService();
-				}
-			}),
-			onDidChangeContext(key => {
-				if (key === 'gitlens:gk:organization:ai:enabled') {
-					this.updateAgentStatusService();
-				}
 			}),
 		);
 
 		context.subscriptions.push({
 			dispose: () => this._disposables.reverse().forEach(d => void d?.dispose()),
 		});
-
-		scheduleAddMissingCurrentWorkspaceRepos(this);
 	}
 
 	deactivate(): void {
@@ -377,38 +303,13 @@ export class Container {
 
 		this._ready = true;
 		this._readyAt = Date.now();
-		await Promise.allSettled([this.registerGitProviders(), this.registerMcpProviders()]);
+		await this.registerGitProviders();
 		queueMicrotask(() => this._onReady.fire());
 	}
 
 	@debug()
 	private async registerGitProviders(): Promise<void> {
 		await this._git.registerProviders();
-	}
-
-	@debug()
-	private async registerMcpProviders(): Promise<void> {
-		const mcpProviders = await getMcpProviders(this);
-		if (mcpProviders != null) {
-			this._disposables.push(...mcpProviders);
-		}
-	}
-
-	private updateAgentStatusService(): void {
-		const enabled = this.ai.enabled && this.ai.allowed;
-		const providers = enabled ? getAgentSessionProviders(this) : [];
-		const canEnable = enabled && providers.length > 0;
-
-		void setContext('gitlens:agents:enabled', canEnable);
-
-		if (canEnable && this._agentStatusService == null) {
-			this._agentStatusService = new AgentStatusService(this, providers);
-			this._onDidChangeAgentStatus.fire();
-		} else if (!canEnable && this._agentStatusService != null) {
-			this._agentStatusService.dispose();
-			this._agentStatusService = undefined;
-			this._onDidChangeAgentStatus.fire();
-		}
 	}
 
 	private onAnyConfigurationChanged(e: ConfigurationChangeEvent) {
@@ -475,12 +376,7 @@ export class Container {
 			async function load(this: Container) {
 				try {
 					const cloudIntegrations = new (
-						await loadChunk(
-							() =>
-								import(
-									/* webpackChunkName: "integrations" */ './plus/integrations/authentication/cloudIntegrationService.js'
-								),
-						)
+						await loadChunk(() => import(/* webpackChunkName: "integrations" */ './community/stubs/pro.js'))
 					).CloudIntegrationService(this, this._connection);
 					return cloudIntegrations;
 				} catch (ex) {
@@ -501,11 +397,6 @@ export class Container {
 			this._disposables.push((this._drafts = new DraftService(this, this._connection)));
 		}
 		return this._drafts;
-	}
-
-	private readonly _codeLensController: GitCodeLensController;
-	get codeLens(): GitCodeLensController {
-		return this._codeLensController;
 	}
 
 	private readonly _context: ExtensionContext;
@@ -567,11 +458,6 @@ export class Container {
 		return this._fileAnnotationController;
 	}
 
-	private readonly _launchpadProvider: LaunchpadProvider;
-	get launchpad(): LaunchpadProvider {
-		return this._launchpadProvider;
-	}
-
 	private readonly _markdownProvider: MarkdownContentProvider;
 	get markdown(): MarkdownContentProvider {
 		return this._markdownProvider;
@@ -593,12 +479,7 @@ export class Container {
 			async function load(this: Container) {
 				try {
 					const azure = new (
-						await loadChunk(
-							() =>
-								import(
-									/* webpackChunkName: "integrations" */ './plus/integrations/providers/azure/azure.js'
-								),
-						)
+						await loadChunk(() => import(/* webpackChunkName: "integrations" */ './community/stubs/pro.js'))
 					).AzureDevOpsApi(this);
 					this._disposables.push(azure);
 					return azure;
@@ -620,12 +501,7 @@ export class Container {
 			async function load(this: Container) {
 				try {
 					const bitbucket = new (
-						await loadChunk(
-							() =>
-								import(
-									/* webpackChunkName: "integrations" */ './plus/integrations/providers/bitbucket/bitbucket.js'
-								),
-						)
+						await loadChunk(() => import(/* webpackChunkName: "integrations" */ './community/stubs/pro.js'))
 					).BitbucketApi(this);
 					this._disposables.push(bitbucket);
 					return bitbucket;
@@ -647,10 +523,7 @@ export class Container {
 			async function load(this: Container) {
 				try {
 					const { createGitHubApi } = await loadChunk(
-						() =>
-							import(
-								/* webpackChunkName: "integrations" */ './plus/integrations/providers/github/github.js'
-							),
+						() => import(/* webpackChunkName: "integrations" */ './community/stubs/pro.js'),
 					);
 					const github = createGitHubApi();
 					this._disposables.push(github);
@@ -673,12 +546,7 @@ export class Container {
 			async function load(this: Container) {
 				try {
 					const gitlab = new (
-						await loadChunk(
-							() =>
-								import(
-									/* webpackChunkName: "integrations" */ './plus/integrations/providers/gitlab/gitlab.js'
-								),
-						)
+						await loadChunk(() => import(/* webpackChunkName: "integrations" */ './community/stubs/pro.js'))
 					).GitLabApi(this);
 					this._disposables.push(gitlab);
 					return gitlab;
@@ -716,16 +584,6 @@ export class Container {
 	private readonly _keyboard: Keyboard;
 	get keyboard(): Keyboard {
 		return this._keyboard;
-	}
-
-	private readonly _lineAnnotationController: LineAnnotationController;
-	get lineAnnotations(): LineAnnotationController {
-		return this._lineAnnotationController;
-	}
-
-	private readonly _lineHoverController: LineHoverController;
-	get lineHovers(): LineHoverController {
-		return this._lineHoverController;
 	}
 
 	private readonly _lineTracker: LineTracker;
@@ -777,21 +635,8 @@ export class Container {
 
 	private _repositoryLocator: RepositoryLocationProvider | null | undefined;
 	get repositoryLocator(): RepositoryLocationProvider | undefined {
-		if (this._repositoryLocator === undefined) {
-			this._repositoryLocator = getSupportedRepositoryLocationProvider(this, this.sharedGkStorage!) ?? null;
-			if (this._repositoryLocator != null) {
-				this._disposables.push(this._repositoryLocator);
-			}
-		}
-		return this._repositoryLocator ?? undefined;
-	}
-
-	private _sharedGkStorage: SharedGkStorageLocationProvider | null | undefined;
-	private get sharedGkStorage(): SharedGkStorageLocationProvider | undefined {
-		if (this._sharedGkStorage === undefined) {
-			this._sharedGkStorage = getSharedGKStorageLocationProvider(this) ?? null;
-		}
-		return this._sharedGkStorage ?? undefined;
+		this._repositoryLocator ??= null;
+		return undefined;
 	}
 
 	private readonly _statusBarController: StatusBarController;
@@ -817,14 +662,6 @@ export class Container {
 	private readonly _telemetry: TelemetryService;
 	get telemetry(): TelemetryService {
 		return this._telemetry;
-	}
-
-	private _treemapAggregator: TreemapAggregatorService | undefined;
-	get treemapAggregator(): TreemapAggregatorService {
-		if (this._treemapAggregator == null) {
-			this._disposables.push((this._treemapAggregator = new TreemapAggregatorService(this)));
-		}
-		return this._treemapAggregator;
 	}
 
 	private readonly _uri: UriService;
@@ -874,7 +711,7 @@ export class Container {
 				(this._workspaces = new WorkspacesService(
 					this,
 					new WorkspacesApi(this, this._connection),
-					getSupportedWorkspacesStorageProvider(this, this.sharedGkStorage!),
+					undefined,
 					this.repositoryLocator,
 				)),
 			);
@@ -913,27 +750,27 @@ export class Container {
 
 		// Apply any required configuration overrides
 		configuration.applyOverrides({
-			get: (section, value) => {
+			get: (section, value): unknown => {
 				if (mode.annotations != null) {
 					if (configuration.matches(`${mode.annotations}.toggleMode`, section, value)) {
-						value = 'window' as typeof value;
-						return value;
+						return 'window';
 					}
 
 					if (configuration.matches(mode.annotations, section, value)) {
-						value.toggleMode = 'window';
-						return value;
+						return typeof value === 'object' && value != null
+							? { ...(value as unknown as Record<string, unknown>), toggleMode: 'window' }
+							: value;
 					}
 				}
 
-				for (const key of ['codeLens', 'currentLine', 'hovers', 'statusBar'] as const) {
+				for (const key of ['statusBar'] as const) {
 					if (mode[key] != null) {
 						if (configuration.matches(`${key}.enabled`, section, value)) {
-							value = mode[key] as NonNullable<typeof value>;
-							return value;
+							return mode[key];
 						} else if (configuration.matches(key, section, value)) {
-							value.enabled = mode[key]!;
-							return value;
+							return typeof value === 'object' && value != null
+								? { ...(value as unknown as Record<string, unknown>), enabled: mode[key] }
+								: value;
 						}
 					}
 				}
@@ -943,18 +780,6 @@ export class Container {
 			getAll: cfg => {
 				if (mode.annotations != null) {
 					cfg[mode.annotations].toggleMode = 'window';
-				}
-
-				if (mode.codeLens != null) {
-					cfg.codeLens.enabled = mode.codeLens;
-				}
-
-				if (mode.currentLine != null) {
-					cfg.currentLine.enabled = mode.currentLine;
-				}
-
-				if (mode.hovers != null) {
-					cfg.hovers.enabled = mode.hovers;
 				}
 
 				if (mode.statusBar != null) {
@@ -971,9 +796,7 @@ export class Container {
 				return {
 					...e,
 					affectsConfiguration: (section, scope) =>
-						/^gitlens\.(?:modes?|blame|changes|heatmap|codeLens|currentLine|hovers|statusBar)\b/.test(
-							section,
-						)
+						/^gitlens\.(?:modes?|blame|changes|heatmap|statusBar)\b/.test(section)
 							? true
 							: originalAffectsConfiguration(section, scope),
 				};

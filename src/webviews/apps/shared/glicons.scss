@@ -6,7 +6,7 @@ Must be placed at the end of body in the HTML file of any webview that needs it 
 	@font-face {
 		font-family: 'glicons';
 		font-display: block;
-		src: url("#{root}/dist/glicons.woff2?6d6df3d609ab75f20b22aecdd3ed6c98") format("woff2");
+		src: url("#{root}/dist/glicons.woff2?35ca5e55bb49f7caa805a6bfad62aba6") format("woff2");
 	}
 </style>
 */
@@ -179,12 +179,6 @@ Must be placed at the end of body in the HTML file of any webview that needs it 
 .glicon-confirm-unchecked:before {
 	content: '\f127';
 }
-.glicon-cloud-patch:before {
-	content: '\f128';
-}
-.glicon-cloud-patch-share:before {
-	content: '\f129';
-}
 .glicon-inspect:before {
 	content: '\f12a';
 }
@@ -193,9 +187,6 @@ Must be placed at the end of body in the HTML file of any webview that needs it 
 }
 .glicon-gitlens-filled:before {
 	content: '\f12c';
-}
-.glicon-code-suggestion:before {
-	content: '\f12d';
 }
 .glicon-provider-jira:before {
 	content: '\f133';
@@ -232,12 +223,6 @@ Must be placed at the end of body in the HTML file of any webview that needs it 
 }
 .glicon-worktrees-view-filled:before {
 	content: '\f13e';
-}
-.glicon-launchpad-view:before {
-	content: '\f13f';
-}
-.glicon-launchpad-view-filled:before {
-	content: '\f140';
 }
 .glicon-merge-target:before {
 	content: '\f141';
@@ -295,4 +280,19 @@ Must be placed at the end of body in the HTML file of any webview that needs it 
 }
 .glicon-filter-mixed:before {
 	content: '\f14d';
+}
+.glicon-launchpad-view:before {
+	content: '\f128';
+}
+.glicon-launchpad-view-filled:before {
+	content: '\f129';
+}
+.glicon-code-suggestion:before {
+	content: '\f12d';
+}
+.glicon-cloud-patch:before {
+	content: '\f13f';
+}
+.glicon-cloud-patch-share:before {
+	content: '\f140';
 }

@@ -17,12 +17,7 @@ import type {
 	DetailsItemTypedContext,
 } from '../../../commitDetails/protocol.js';
 import { buildFolderContext, messageHeadlineSplitterToken } from '../../../commitDetails/protocol.js';
-import type {
-	GraphCommitContextValue,
-	GraphItemRefContext,
-	GraphStashContextValue,
-} from '../../../plus/graph/protocol.js';
-import type { RunningOperationExecState } from '../../plus/graph/components/detailsState.js';
+import type { RunningOperationExecState } from '../../../../community/stubs/pro.js';
 import { renderLearnAboutAutolinks } from '../../shared/components/chips/learn-about-autolinks.js';
 import type { TreeItemAction, TreeItemBase } from '../../shared/components/tree/base.js';
 import { ModifierKeysController } from '../../shared/controllers/modifier-keys.js';
@@ -565,7 +560,7 @@ export class GlDetailsCommitPanel extends GlDetailsBase {
 				message: commit.message,
 				stashOnRef: commit.stashOnRef,
 			});
-			return serializeWebviewItemContext<GraphItemRefContext<GraphStashContextValue>>({
+			return serializeWebviewItemContext({
 				webviewItem: 'gitlens:stash',
 				webviewItemValue: { type: 'stash', ref: ref },
 			});
@@ -575,7 +570,7 @@ export class GlDetailsCommitPanel extends GlDetailsBase {
 			refType: 'revision',
 			message: commit.message,
 		});
-		return serializeWebviewItemContext<GraphItemRefContext<GraphCommitContextValue>>({
+		return serializeWebviewItemContext({
 			webviewItem: 'gitlens:commit',
 			webviewItemValue: { type: 'commit', ref: ref },
 		});
@@ -743,7 +738,7 @@ export class GlDetailsCommitPanel extends GlDetailsBase {
 				<div class="alert alert--warning">
 					<code-icon icon="warning"></code-icon>
 					<p class="alert__content">
-						This ${this.isStash ? 'stash' : 'commit'} is not currently visible in the Commit Graph.
+						This ${this.isStash ? 'stash' : 'commit'} is hidden by the current view.
 					</p>
 				</div>
 			</div>
@@ -757,11 +752,7 @@ export class GlDetailsCommitPanel extends GlDetailsBase {
 
 				<ul class="bulleted">
 					<li>lines in the text editor</li>
-					<li>
-						commits in the <a href="command:gitlens.showGraph">Commit Graph</a>,
-						<a href="command:gitlens.showTimelineView">Visual File History</a>, or
-						<a href="command:gitlens.showCommitsView">Commits view</a>
-					</li>
+					<li>commits in the <a href="command:gitlens.showCommitsView">Commits view</a></li>
 					<li>stashes in the <a href="command:gitlens.showStashesView">Stashes view</a></li>
 				</ul>
 

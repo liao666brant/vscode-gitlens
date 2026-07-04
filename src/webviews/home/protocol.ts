@@ -1,4 +1,4 @@
-import type { AIModel } from '@gitlens/ai/models/model.js';
+import type { AIModel, Subscription } from '../../community/stubs/pro.js';
 import type { GitBranchStatus, GitTrackingState, GitTrackingUpstream } from '@gitlens/git/models/branch.js';
 import type { GitDiffFileStats } from '@gitlens/git/models/diff.js';
 import type { Issue } from '@gitlens/git/models/issue.js';
@@ -7,14 +7,9 @@ import type { GitPausedOperationStatus } from '@gitlens/git/models/pausedOperati
 import type { GitBranchReference } from '@gitlens/git/models/reference.js';
 import type { RemoteProviderSupportedFeatures } from '@gitlens/git/models/remoteProvider.js';
 import type { GitBranchMergedStatus } from '@gitlens/git/providers/branches.js';
-import type { AgentSessionState } from '../../agents/models/agentSessionState.js';
 import type { IntegrationDescriptor } from '../../constants.integrations.js';
 import type { WalkthroughContextKeys } from '../../constants.walkthroughs.js';
 import type { RepositoryShape } from '../../git/models/repositoryShape.js';
-import type { Subscription } from '../../plus/gk/models/subscription.js';
-import type { LaunchpadSummaryResult } from '../../plus/launchpad/launchpadIndicator.js';
-import type { LaunchpadItem } from '../../plus/launchpad/launchpadProvider.js';
-import type { LaunchpadGroup } from '../../plus/launchpad/models/launchpad.js';
 import type { IpcScope } from '../ipc/models/ipc.js';
 import { IpcNotification } from '../ipc/models/ipc.js';
 import type { WebviewState } from '../protocol.js';
@@ -55,10 +50,7 @@ export interface State extends WebviewState<'gitlens.views.home'> {
 	previewEnabled: boolean;
 	newInstall: boolean;
 	hostAppName: string;
-	agentSessions?: AgentSessionState[];
 }
-
-export type { AgentSessionState };
 
 export interface SubscriptionState {
 	subscription: Subscription;
@@ -87,8 +79,6 @@ export interface OverviewFilters {
 	};
 	stale: { threshold: OverviewStaleThreshold; show: boolean; limit: number };
 }
-
-export type GetLaunchpadSummaryResponse = LaunchpadSummaryResult | { error: Error } | undefined;
 
 export interface GetOverviewBranch {
 	reference: GitBranchReference;
@@ -169,36 +159,6 @@ export interface GetOverviewBranch {
 				state: string;
 				url: string;
 				draft?: boolean;
-
-				launchpad?: Promise<
-					| {
-							uuid: string;
-							category: LaunchpadItem['actionableCategory'];
-							groups: LaunchpadGroup[];
-							suggestedActions: LaunchpadItem['suggestedActions'];
-
-							failingCI: boolean;
-							hasConflicts: boolean;
-
-							author: LaunchpadItem['author'];
-							createdDate: LaunchpadItem['createdDate'];
-
-							review: {
-								decision: LaunchpadItem['reviewDecision'];
-								reviews: NonNullable<LaunchpadItem['reviews']>;
-
-								counts: {
-									approval: number;
-									changeRequest: number;
-									comment: number;
-									codeSuggest: number;
-								};
-							};
-
-							viewer: LaunchpadItem['viewer'];
-					  }
-					| undefined
-				>;
 		  }
 		| undefined
 	>;
@@ -245,7 +205,6 @@ export type {
 	OverviewBranchContributor,
 	OverviewBranchEnrichment,
 	OverviewBranchIssue,
-	OverviewBranchLaunchpadItem,
 	OverviewBranchMergeTarget,
 	OverviewBranchPullRequest,
 	OverviewBranchRemote,

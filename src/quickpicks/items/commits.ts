@@ -18,7 +18,6 @@ import {
 	applyChanges,
 	copyIdToClipboard,
 	copyMessageToClipboard,
-	explainCommit,
 	openChanges,
 	openChangesInDiffTool,
 	openChangesWithWorking,
@@ -33,7 +32,6 @@ import {
 	openFilesAtRevision,
 	restoreFile,
 	showCommitInDetailsView,
-	showCommitInGraph,
 } from '../../git/actions/commit.js';
 import { browseAtRevision } from '../../git/actions.js';
 import { CommitFormatter } from '../../git/formatters/commitFormatter.js';
@@ -304,29 +302,6 @@ export class CommitOpenDetailsCommandQuickPickItem extends CommandQuickPickItem 
 
 	override execute(options: { preserveFocus?: boolean; preview?: boolean }): Promise<void> {
 		return showCommitInDetailsView(this.commit, { preserveFocus: options?.preserveFocus });
-	}
-}
-
-export class CommitOpenInGraphCommandQuickPickItem extends CommandQuickPickItem {
-	constructor(private readonly commit: GitCommit) {
-		super('在提交图中打开', new ThemeIcon('gitlens-graph'));
-	}
-
-	override execute(options: { preserveFocus?: boolean; preview?: boolean }): Promise<void> {
-		return showCommitInGraph(this.commit, {
-			preserveFocus: options?.preserveFocus,
-			source: { source: 'quick-wizard' },
-		});
-	}
-}
-
-export class CommitExplainCommandQuickPickItem extends CommandQuickPickItem {
-	constructor(private readonly commit: GitCommit) {
-		super('解释更改', new ThemeIcon('sparkle'));
-	}
-
-	override execute(_options: { preserveFocus?: boolean; preview?: boolean }): Promise<void> {
-		return explainCommit(this.commit, { source: { source: 'quick-wizard' } });
 	}
 }
 

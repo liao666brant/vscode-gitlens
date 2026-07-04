@@ -9,7 +9,6 @@ import {
 	DidChangeAvatarsNotification,
 	DidChangeCommitsNotification,
 	DidChangeNotification,
-	DidChangeSubscriptionNotification,
 	GetMissingAvatarsCommand,
 	GetMissingCommitsCommand,
 	isCommitEntry,
@@ -141,18 +140,6 @@ export class RebaseStateProvider extends StateProviderBase<State['webviewId'], S
 				for (const sha of Object.keys(msg.params.commits)) {
 					this._requestedCommitShas.delete(sha);
 				}
-				break;
-
-			case DidChangeSubscriptionNotification.is(msg):
-				// Subscription change can unlock previously-failed avatar/commit lookups
-				// (e.g., Pro upgrade enables integration-backed avatars). Clear blocklists
-				// so the next render is allowed to re-ask.
-				this._requestedAvatarEmails.clear();
-				this._requestedCommitShas.clear();
-				this._state = { ...this._state, subscription: msg.params.subscription, timestamp: Date.now() };
-				this.provider.setValue(this._state, true);
-				// Request update to re-render with new subscription state
-				this.host.requestUpdate();
 				break;
 		}
 	}

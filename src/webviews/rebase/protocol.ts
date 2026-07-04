@@ -7,7 +7,6 @@ import type {
 	RebaseTodoCommitAction,
 } from '@gitlens/git/models/rebase.js';
 import type { Config } from '../../config.js';
-import type { Subscription } from '../../plus/gk/models/subscription.js';
 import type { WebviewItemContext } from '../../system/webview.js';
 import type { IpcScope } from '../ipc/models/ipc.js';
 import { IpcCommand, IpcNotification, IpcRequest } from '../ipc/models/ipc.js';
@@ -48,9 +47,6 @@ export interface State extends WebviewState<'gitlens.rebase'> {
 
 	/** Repository path for the rebase */
 	repoPath: string;
-
-	/** Subscription state for Pro feature gating */
-	subscription?: Subscription;
 
 	/** Conflicted files when rebase is paused due to conflicts */
 	conflictFiles?: ConflictFileInfo[];
@@ -200,7 +196,6 @@ export interface GetMissingCommitsParams {
 }
 export const GetMissingCommitsCommand = new IpcCommand<GetMissingCommitsParams>(scope, 'commits/get');
 
-export const RecomposeCommand = new IpcCommand(scope, 'recompose/open');
 export const DismissCloseWarningCommand = new IpcCommand(scope, 'closeWarning/dismiss');
 
 export interface OpenConflictFileParams {
@@ -271,11 +266,3 @@ export interface DidChangeCommitsParams {
 	isInPlace?: boolean;
 }
 export const DidChangeCommitsNotification = new IpcNotification<DidChangeCommitsParams>(scope, 'commits/didChange');
-
-export interface DidChangeSubscriptionParams {
-	subscription: Subscription;
-}
-export const DidChangeSubscriptionNotification = new IpcNotification<DidChangeSubscriptionParams>(
-	scope,
-	'subscription/didChange',
-);

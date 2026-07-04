@@ -2,13 +2,11 @@ import { css, html, LitElement, nothing } from 'lit';
 import { customElement, property } from 'lit/decorators.js';
 import type { ConflictDetectionResult } from '@gitlens/git/models/mergeConflicts.js';
 import { pluralize } from '@gitlens/utils/string.js';
-import type { SubscriptionState } from '../../../../constants.subscription.js';
 import { elementBase, scrollableBase } from '../../shared/components/styles/lit/base.css.js';
 import '../../shared/components/code-icon.js';
 import '../../shared/components/overlays/popover.js';
-import '../../plus/shared/components/feature-gate-plus-state.js';
 
-export type RebaseConflictIndicatorStatus = 'loading' | 'clean' | 'conflicts' | 'error' | 'upgrade';
+export type RebaseConflictIndicatorStatus = 'loading' | 'clean' | 'conflicts' | 'error';
 
 @customElement('gl-rebase-conflict-indicator')
 export class GlRebaseConflictIndicator extends LitElement {
@@ -88,11 +86,6 @@ export class GlRebaseConflictIndicator extends LitElement {
 				color: var(--vscode-editorWarning-foreground);
 			}
 
-			.indicator--upgrade .indicator__icon {
-				color: var(--vscode-foreground);
-				opacity: 0.6;
-			}
-
 			.indicator--stale {
 				opacity: 0.6;
 			}
@@ -150,12 +143,6 @@ export class GlRebaseConflictIndicator extends LitElement {
 				font-family: var(--vscode-editor-font-family);
 				font-size: 1.1rem;
 			}
-
-			gl-feature-gate-plus-state {
-				display: block;
-				margin-inline: 0.5rem;
-				margin-block: -0.5rem;
-			}
 		`,
 	];
 
@@ -164,9 +151,6 @@ export class GlRebaseConflictIndicator extends LitElement {
 
 	@property({ attribute: false })
 	result?: ConflictDetectionResult;
-
-	@property({ attribute: false })
-	subscriptionState?: SubscriptionState;
 
 	@property({ type: Boolean })
 	compact = false;
@@ -182,8 +166,6 @@ export class GlRebaseConflictIndicator extends LitElement {
 		switch (this.status) {
 			case 'loading':
 				return this.renderLoading();
-			case 'upgrade':
-				return this.renderUpgrade();
 			case 'error':
 				return this.renderError();
 			case 'conflicts':
@@ -350,30 +332,6 @@ export class GlRebaseConflictIndicator extends LitElement {
 							: nothing}
 					</div>
 				</div>
-			</gl-popover>
-		`;
-	}
-
-	private renderUpgrade() {
-		const placement = this.compact ? 'top' : 'bottom';
-
-		return html`
-			<gl-popover placement="${placement}" trigger="hover click focus" hoist>
-				<div slot="anchor" class="indicator indicator--upgrade" tabindex="0">
-					<code-icon class="indicator__icon" icon="lock" size="16"></code-icon>
-					${this.compact ? nothing : html`<span class="indicator__content">Conflict Detection (Pro)</span>`}
-				</div>
-				<gl-feature-gate-plus-state
-					slot="content"
-					appearance="default"
-					featureRestriction="all"
-					.source=${{ source: 'rebaseEditor', detail: 'conflict-detection' } as const}
-					.state=${this.subscriptionState}
-				>
-					<p slot="feature">
-						Detect potential conflicts before starting your rebase and take action to resolve them.
-					</p>
-				</gl-feature-gate-plus-state>
 			</gl-popover>
 		`;
 	}
