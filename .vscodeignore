@@ -7,14 +7,18 @@
 .devcontainer/**
 .github/**
 .husky/**
+.omo/**
 .vscode/**
 .vscode-clean/**
 .vscode-test/**
 .vscode-test-web/**
 .yarn/**
+.codegen-cache/**
+walkthroughs/**
 docs/**
 emoji/**
 images/docs
+images/gitlens-icon.png
 images/icons/**
 images/originals/**
 node_modules/**
@@ -25,9 +29,12 @@ resources/**
 scripts/**
 src/**
 tests/**
+test-results/**
 **/*.map
 **/*.pdn
 **/*.js.LICENSE.txt
+*.log
+.debug-journal.md
 .eslintcache
 .DS_Store
 .browserslistrc
@@ -40,6 +47,7 @@ tests/**
 .mcp.json
 .prettierignore
 .prettierrc
+.oxlintrc.json
 .vscode-agent.json
 .vscode-test.mjs
 .yarnrc
@@ -61,4 +69,5 @@ tsconfig*.json
 tsconfig*.tsbuildinfo
 webpack.config*.mjs
 yarn.lock
+*.vsix
 .wdio-vscode-service
