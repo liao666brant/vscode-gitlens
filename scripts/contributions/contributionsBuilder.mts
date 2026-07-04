@@ -113,7 +113,7 @@ export class ContributesBuilder {
 			.map<Command>(c => ({
 				command: c.id,
 				title: c.label,
-				category: c.commandPalette != null ? 'GitLens' : undefined,
+				category: c.commandPalette != null ? 'WeGit' : undefined,
 				icon: c.icon,
 				enablement: c.enablement,
 			}));

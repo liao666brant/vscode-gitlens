@@ -92,7 +92,7 @@ export function createCommitDetailsState(storage?: HostStorage) {
 	/** Organization settings — connected to remote signal once RPC connects. Single `.get()`. */
 	const orgSettings = createRemoteSignalBridge({ ai: false, drafts: false });
 
-	/** Whether the user has a GitKraken account — connected to remote signal once RPC connects. Single `.get()`. */
+	/** Whether the user has a WeGit account — connected to remote signal once RPC connects. Single `.get()`. */
 	const hasAccount = createRemoteSignalBridge(false);
 
 	const capabilities = signalObject({ hasIntegrationsConnected: false, autolinksEnabled: false });

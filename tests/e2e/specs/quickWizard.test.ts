@@ -1,5 +1,5 @@
 /**
- * GitLens Quick Wizard E2E Tests
+ * WeGit Quick Wizard E2E Tests
  *
  * Comprehensive tests for all Git Commands quick wizard flows.
  * Tests verify:
@@ -34,7 +34,7 @@ import * as process from 'node:process';
 import type { VSCodeInstance } from '../baseTest.js';
 import { test as base, createTmpDir, expect, GitFixture, ShortTimeout } from '../baseTest.js';
 import type { Step } from '../pageObjects/components/quickPick.js';
-import type { GitLensPage } from '../pageObjects/gitLensPage.js';
+import type { WeGitPage } from '../pageObjects/gitLensPage.js';
 
 /** Git fixture for test repository */
 let git: GitFixture;
@@ -235,7 +235,7 @@ async function reverseCommandSubcommandAndRepo(
  * Helper to test direct commands that open at a specific step.
  * Executes the command, waits for the quick pick, verifies the expected step title, then cancels.
  */
-async function testDirectGitCommand(gitlens: GitLensPage, suffix: string, step: Step): Promise<void> {
+async function testDirectGitCommand(gitlens: WeGitPage, suffix: string, step: Step): Promise<void> {
 	const { quickPick } = gitlens;
 
 	await gitlens.executeCommand(`gitlens.git.${suffix}`);
@@ -247,14 +247,6 @@ async function testDirectGitCommand(gitlens: GitLensPage, suffix: string, step: 
 }
 
 test.describe('Quick Wizard — Branch Commands', () => {
-	// Enable Pro features for all branch tests since branches can be linked to worktrees (Pro feature)
-	test.beforeEach(async ({ vscode }) => {
-		await vscode.gitlens.startSubscriptionSimulation();
-	});
-	test.afterEach(async ({ vscode }) => {
-		await vscode.gitlens.stopSubscriptionSimulation();
-	});
-
 	test.describe('Branch Create Flow', () => {
 		test('Complete flow: command → subcommand → reference → name → confirm & reverse', async ({
 			vscode,
@@ -322,43 +314,7 @@ test.describe('Quick Wizard — Branch Commands', () => {
 			expect(await quickPick.isVisible()).toBeFalsy();
 		});
 
-		test('COMMUNITY: Worktree delete flow: command → subcommand → branches → worktree confirm & reverse', async ({
-			vscode,
-			vscode: {
-				gitlens: { quickPick },
-				gitlens,
-			},
-		}) => {
-			// Stop subscription simulation to test as community user
-			await gitlens.stopSubscriptionSimulation();
-
-			await selectCommandSubcommandAndWaitForStepWithOptionalRepo(vscode, 'branch', 'delete', {
-				title: /Delete Branch/,
-				placeholder: /Choose branch/i,
-			});
-
-			// Select the branch that has a worktree
-			await quickPick.enterTextAndWaitForItems('feature-with-worktree');
-			await quickPick.selectItemMulti(/feature-with-worktree/i);
-
-			// Confirm worktree deletion
-			await quickPick.waitForStep({ title: /Delete Worktree for Branch/i });
-
-			// Note: The full flow would continue to delete the worktree then delete the branch,
-			// but we stop here to test navigation without actually performing destructive operations
-
-			// === REVERSE NAVIGATION ===
-
-			// Back from worktree confirm → branch
-			await quickPick.goBackAndWaitForStep({ title: /Delete Branch/, placeholder: /Choose branch/i });
-
-			await reverseCommandSubcommandAndRepo(vscode, 'branch');
-
-			await quickPick.cancel();
-			expect(await quickPick.isVisible()).toBeFalsy();
-		});
-
-		test('PRO: Worktree delete flow: command → subcommand → branches → worktree confirm & reverse', async ({
+		test('Worktree delete flow: command → subcommand → branches → worktree confirm & reverse', async ({
 			vscode,
 			vscode: {
 				gitlens: { quickPick },
@@ -500,14 +456,6 @@ test.describe('Quick Wizard — Branch Commands', () => {
 });
 
 test.describe('Quick Wizard — Switch Command', () => {
-	// Enable Pro features since switch can work with branches linked to worktrees (Pro feature)
-	test.beforeEach(async ({ vscode }) => {
-		await vscode.gitlens.startSubscriptionSimulation();
-	});
-	test.afterEach(async ({ vscode }) => {
-		await vscode.gitlens.stopSubscriptionSimulation();
-	});
-
 	test('Complete flow: command → branch picker → confirm & reverse', async ({
 		vscode,
 		vscode: {
@@ -682,7 +630,7 @@ test.describe('Quick Wizard — Stash Commands', () => {
 			await quickPick.waitForStep({ title: /Stash #/i, placeholder: /Stash #.*Test stash/i });
 
 			// Verify we're in commands mode by checking for the toggle to files hint
-			let items = await quickPick.getVisibleItems();
+			let items: string[] = await quickPick.getVisibleItems();
 			expect(items.some(item => /Click to see.*files/i.test(item))).toBeTruthy();
 
 			// Toggle to files mode (click the toggle item with hint about files)
@@ -721,7 +669,7 @@ test.describe('Quick Wizard — Stash Commands', () => {
 
 			// Start in commands mode
 			await quickPick.waitForStep({ title: /Stash #/i });
-			let items = await quickPick.getVisibleItems();
+			let items: string[] = await quickPick.getVisibleItems();
 			expect(items.some(item => /Click to see.*files/i.test(item))).toBeTruthy();
 
 			// Toggle to files mode
@@ -1030,14 +978,6 @@ test.describe('Quick Wizard — Fetch/Pull/Push Commands', () => {
 });
 
 test.describe('Quick Wizard — Merge/Rebase/Cherry-pick/Reset/Revert Commands', () => {
-	// Enable Pro features since these commands work with branches that could be linked to worktrees (Pro feature)
-	test.beforeEach(async ({ vscode }) => {
-		await vscode.gitlens.startSubscriptionSimulation();
-	});
-	test.afterEach(async ({ vscode }) => {
-		await vscode.gitlens.stopSubscriptionSimulation();
-	});
-
 	test.describe('Merge Flow', () => {
 		test('Complete flow: command → branch → confirm & reverse', async ({
 			vscode,
@@ -1453,7 +1393,7 @@ test.describe('Quick Wizard — Log/Show/Search Commands', () => {
 			await quickPick.waitForStep({ title: /Commit [a-f0-9]+/i });
 
 			// Verify we're in commands mode by checking for the toggle to files hint
-			const items = await quickPick.getVisibleItems();
+			const items: string[] = await quickPick.getVisibleItems();
 			expect(items.some(item => /Click to see.*files/i.test(item))).toBeTruthy();
 
 			// === REVERSE NAVIGATION ===
@@ -1490,7 +1430,7 @@ test.describe('Quick Wizard — Log/Show/Search Commands', () => {
 			await quickPick.waitForStep({ title: /Commit [a-f0-9]+/i });
 
 			// Verify we're in actions mode by checking for the toggle to files hint
-			const items = await quickPick.getVisibleItems();
+			const items: string[] = await quickPick.getVisibleItems();
 			expect(items.some(item => /Click to see.*files/i.test(item))).toBeTruthy();
 
 			// === REVERSE NAVIGATION ===
@@ -1514,7 +1454,7 @@ test.describe('Quick Wizard — Log/Show/Search Commands', () => {
 		}) => {
 			await selectCommandAndWaitForStepWithOptionalRepo(vscode, 'search', {
 				title: /Commit Search/i,
-				placeholder: /e.g. "Updates dependencies" author:eamodio/i,
+				placeholder: /e.g. "Updates dependencies" author:liao666brant/i,
 			});
 
 			// Enter a search query and submit (search for "Fourth" which should match our test commit)
@@ -1575,11 +1515,11 @@ test.describe('Quick Wizard — Log/Show/Search Commands', () => {
 		}) => {
 			await selectCommandAndWaitForStepWithOptionalRepo(vscode, 'search', {
 				title: /Commit Search/i,
-				placeholder: /e.g. "Updates dependencies" author:eamodio/i,
+				placeholder: /e.g. "Updates dependencies" author:liao666brant/i,
 			});
 
 			// Verify search operators are shown in the list
-			const items = await quickPick.getVisibleItems();
+			const items: string[] = await quickPick.getVisibleItems();
 
 			// Check for expected search operators
 			expect(items.some(item => item.includes('Search by Message'))).toBeTruthy();
@@ -1605,7 +1545,7 @@ test.describe('Quick Wizard — Log/Show/Search Commands', () => {
 		}) => {
 			await selectCommandAndWaitForStepWithOptionalRepo(vscode, 'search', {
 				title: /Commit Search/i,
-				placeholder: /e.g. "Updates dependencies" author:eamodio/i,
+				placeholder: /e.g. "Updates dependencies" author:liao666brant/i,
 			});
 
 			// Search for something that won't exist
@@ -1647,7 +1587,7 @@ test.describe('Quick Wizard — Log/Show/Search Commands', () => {
 		}) => {
 			await selectCommandAndWaitForStepWithOptionalRepo(vscode, 'search', {
 				title: /Commit Search/i,
-				placeholder: /e.g. "Updates dependencies" author:eamodio/i,
+				placeholder: /e.g. "Updates dependencies" author:liao666brant/i,
 			});
 
 			// Select the "Search by Author" operator
@@ -1671,7 +1611,7 @@ test.describe('Quick Wizard — Log/Show/Search Commands', () => {
 		}) => {
 			await selectCommandAndWaitForStepWithOptionalRepo(vscode, 'search', {
 				title: /Commit Search/i,
-				placeholder: /e.g. "Updates dependencies" author:eamodio/i,
+				placeholder: /e.g. "Updates dependencies" author:liao666brant/i,
 			});
 
 			// Select the "Search by Commit SHA" operator
@@ -1695,7 +1635,7 @@ test.describe('Quick Wizard — Log/Show/Search Commands', () => {
 		}) => {
 			await selectCommandAndWaitForStepWithOptionalRepo(vscode, 'search', {
 				title: /Commit Search/i,
-				placeholder: /e.g. "Updates dependencies" author:eamodio/i,
+				placeholder: /e.g. "Updates dependencies" author:liao666brant/i,
 			});
 
 			// Enter a search query (but don't submit)
@@ -1713,7 +1653,7 @@ test.describe('Quick Wizard — Log/Show/Search Commands', () => {
 			// Verify we're still on the search step with empty query
 			await quickPick.waitForStep({
 				title: /Commit Search/i,
-				placeholder: /e.g. "Updates dependencies" author:eamodio/i,
+				placeholder: /e.g. "Updates dependencies" author:liao666brant/i,
 			});
 			inputValue = await quickPick.input.inputValue();
 			expect(inputValue).toBe('');
@@ -1750,7 +1690,7 @@ test.describe('Quick Wizard — Status Command', () => {
 		expect(count).toBeGreaterThan(0);
 
 		// Verify status shows branch information (main branch)
-		const items = await quickPick.getVisibleItems();
+		const items: string[] = await quickPick.getVisibleItems();
 		expect(items.some(item => /main/i.test(item))).toBeTruthy();
 
 		// === REVERSE NAVIGATION ===
@@ -1763,14 +1703,6 @@ test.describe('Quick Wizard — Status Command', () => {
 });
 
 test.describe('Quick Wizard — Worktree Commands', () => {
-	// Enable Pro features for all worktree tests since worktrees are a Pro feature
-	test.beforeEach(async ({ vscode }) => {
-		await vscode.gitlens.startSubscriptionSimulation();
-	});
-	test.afterEach(async ({ vscode }) => {
-		await vscode.gitlens.stopSubscriptionSimulation();
-	});
-
 	test.describe('Worktree Create Flow', () => {
 		test('Create from non-checked-out branch: command → branch picker → confirm & reverse', async ({
 			vscode,
@@ -1791,7 +1723,7 @@ test.describe('Quick Wizard — Worktree Commands', () => {
 			await quickPick.waitForStep({ title: /Confirm Create Worktree.*feature-2/i });
 
 			// Verify the confirm options are shown
-			const items = await quickPick.getVisibleItems();
+			const items: string[] = await quickPick.getVisibleItems();
 			expect(items.some(item => item.includes('Create Worktree from Branch'))).toBeTruthy();
 
 			// === REVERSE NAVIGATION ===
@@ -2002,7 +1934,7 @@ test.describe('Quick Wizard — Worktree Commands', () => {
 			);
 
 			// Verify the open options are shown
-			const items = await quickPick.getVisibleItems();
+			const items: string[] = await quickPick.getVisibleItems();
 			expect(items.some(item => item.includes('Open Worktree'))).toBeTruthy();
 			expect(items.some(item => item.includes('New Window'))).toBeTruthy();
 
@@ -2036,7 +1968,7 @@ test.describe('Quick Wizard — Worktree Commands', () => {
 			await quickPick.waitForStep({ title: /Open Worktree.*feature-with-worktree|Confirm.*Open.*Worktree/i });
 
 			// Verify confirm options are shown
-			const items = await quickPick.getVisibleItems();
+			const items: string[] = await quickPick.getVisibleItems();
 			expect(items.some(item => item.includes('Open Worktree'))).toBeTruthy();
 			expect(items.some(item => item.includes('New Window'))).toBeTruthy();
 			expect(items.some(item => item.includes('Add Worktree to Workspace'))).toBeTruthy();
@@ -2073,7 +2005,7 @@ test.describe('Quick Wizard — Worktree Commands', () => {
 
 			// Verify all expected options are present
 			// Note: getVisibleItems() returns all text content including descriptions
-			const items = await quickPick.getVisibleItems();
+			const items: string[] = await quickPick.getVisibleItems();
 			const hasOpenWorktree = items.some(item => item.includes('open the worktree in the current window'));
 			const hasNewWindow = items.some(item => item.includes('New Window'));
 			const hasAddToWorkspace = items.some(item => item.includes('Add Worktree to Workspace'));
@@ -2144,7 +2076,7 @@ test.describe('Quick Wizard — Worktree Commands', () => {
 
 			// Verify all expected options are present
 			// Note: getVisibleItems() returns all text content including descriptions
-			const items = await quickPick.getVisibleItems();
+			const items: string[] = await quickPick.getVisibleItems();
 			// Basic delete has "Will delete worktree" without "forcibly"
 			const hasDelete = items.some(
 				item => item.includes('Delete Worktree') && item.includes('Will delete') && !item.includes('forcibly'),
@@ -2192,7 +2124,7 @@ test.describe('Quick Wizard — Worktree Commands', () => {
 				await quickPick.waitForStep({ title: /Confirm Copy.*Changes/i });
 
 				// Verify confirm options
-				const items = await quickPick.getVisibleItems();
+				const items: string[] = await quickPick.getVisibleItems();
 				expect(items.some(item => item.includes('Copy'))).toBeTruthy();
 
 				// === REVERSE NAVIGATION ===
@@ -2234,7 +2166,7 @@ test.describe('Quick Wizard — Worktree Commands', () => {
 			await quickPick.waitForStep({ title: /Confirm Copy.*Changes/i });
 
 			// Verify confirm options
-			const items = await quickPick.getVisibleItems();
+			const items: string[] = await quickPick.getVisibleItems();
 			expect(items.some(item => item.includes('OK'))).toBeTruthy();
 
 			// === REVERSE NAVIGATION ===

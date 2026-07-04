@@ -41,7 +41,7 @@ interface UriEx {
  * GitUri instances exist in two forms:
  * - **file:// with object properties** — created by `fromFile`, `fromRepoPath`, `fromUri`, or the constructor
  *   with a `GitCommitish`. The URI scheme stays as-is (usually `file:`), but `sha` and `repoPath` are
- *   carried as instance properties for internal use within GitLens.
+ *   carried as instance properties for internal use within WeGit.
  * - **gitlens:// with encoded authority** — created by `GlGitProvider.getRevisionUri()`. Git metadata is
  *   hex-encoded in the URI authority for use with VS Code's `FileSystemProvider` and document APIs.
  *

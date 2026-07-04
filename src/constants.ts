@@ -120,32 +120,30 @@ export const trackableSchemes = Object.freeze(
 	]),
 );
 
-const utm = 'source=gitlens&product=gitlens&utm_source=gitlens-extension&utm_medium=in-app-links';
+const repoUrl = 'https://github.com/liao666brant/vscode-gitlens';
 export const urls = Object.freeze({
-	graph: `https://gitkraken.com/solutions/commit-graph?${utm}`,
-	platform: `https://gitkraken.com/devex?${utm}`,
-	pricing: `https://gitkraken.com/gitlens/pricing?${utm}`,
-	proFeatures: `https://gitkraken.com/gitlens/pro-features?${utm}`,
-	security: `https://help.gitkraken.com/gitlens/security?${utm}`,
-	workspaces: `https://gitkraken.com/solutions/workspaces?${utm}`,
+	graph: repoUrl,
+	platform: repoUrl,
+	pricing: repoUrl,
+	proFeatures: repoUrl,
+	security: `${repoUrl}/security`,
+	workspaces: repoUrl,
 
-	cli: `https://gitkraken.com/cli?${utm}`,
-	browserExtension: `https://gitkraken.com/browser-extension?${utm}`,
-	desktop: `https://gitkraken.com/git-client?${utm}`,
+	cli: repoUrl,
+	browserExtension: repoUrl,
+	desktop: repoUrl,
 
-	githubIssues: `https://github.com/gitkraken/vscode-gitlens/issues/?${utm}`,
-	githubDiscussions: `https://github.com/gitkraken/vscode-gitlens/discussions/?${utm}`,
-	helpCenter: `https://help.gitkraken.com/gitlens/gitlens-start-here/?${utm}`,
-	helpCenterHome: `https://help.gitkraken.com/gitlens/home-view/?${utm}`,
-	helpCenterMCP: `https://help.gitkraken.com/mcp/mcp-getting-started/?${utm}`,
-	releaseNotes: `https://help.gitkraken.com/gitlens/gitlens-release-notes-current/?${utm}`,
-	helpCenterAiHooks: `https://help.gitkraken.com/cli/cli-home/?${utm}#how-to-uninstall-gitkraken-cli-ai-hooks`,
+	githubIssues: `${repoUrl}/issues`,
+	githubDiscussions: `${repoUrl}/discussions`,
+	helpCenter: repoUrl,
+	helpCenterMCP: repoUrl,
+	releaseNotes: `${repoUrl}/releases`,
+	helpCenterAiHooks: repoUrl,
 
-	homeView: `https://help.gitkraken.com/gitlens/home-view/?${utm}&utm_campaign=walkthrough`,
-	interactiveCodeHistory: `https://help.gitkraken.com/gitlens/gitlens-start-here/?${utm}#interactive-code-history`,
-	startIntegrations: `https://help.gitkraken.com/gitlens/gitlens-start-here/?${utm}#improve-workflows-with-integrations`,
+	interactiveCodeHistory: repoUrl,
+	startIntegrations: repoUrl,
 
-	getStarted: `https://help.gitkraken.com/gitlens/gitlens-home/?${utm}`,
+	getStarted: repoUrl,
 });
 
 export type WalkthroughSteps =

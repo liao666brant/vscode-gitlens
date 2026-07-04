@@ -354,7 +354,7 @@ function getExtensionConfig(target, mode, env) {
 								default: false,
 								defaultVendors: false,
 								// The webview RPC service layer + shared webview infra are copied into every
-								// webview controller (commitDetails, timeline, graph, home, …); emit them once.
+								// webview controller (commitDetails, graph, rebase, …); emit them once.
 								webviewShared: {
 									test: /[\\/]src[\\/]webviews[\\/](rpc|shared)[\\/]/,
 									name: 'webview-shared',
@@ -472,7 +472,6 @@ function getWebviewsConfigs(mode, env) {
 	/** @type GlWebviews */
 	let webviews = {
 		commitDetails: { entry: './commitDetails/commitDetails.ts' },
-		home: { entry: './home/home.ts' },
 		rebase: { entry: './rebase/rebase.ts' },
 		settings: { entry: './settings/settings.ts' },
 		welcome: { entry: './welcome/welcome.ts' },
@@ -1170,7 +1169,7 @@ class FantasticonPlugin {
 
 		const fontConfig = { ...loadedConfig, ...config };
 
-		// TODO@eamodio: Figure out how to add watching for the fontConfig.inputDir
+		// TODO: Figure out how to add watching for the fontConfig.inputDir
 		// Maybe something like: https://github.com/Fridus/webpack-watch-files-plugin
 
 		/**

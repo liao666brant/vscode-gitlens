@@ -66,7 +66,7 @@ if (!telemetryContext || !telemetryEvents || !telemetryGlobalContext) {
 }
 
 // Generate markdown
-let markdown = '# GitLens Telemetry\n\n';
+let markdown = '# WeGit Telemetry\n\n';
 markdown += '> This is a generated file. Do not edit.\n\n';
 
 markdown += '## Global Attributes\n\n';

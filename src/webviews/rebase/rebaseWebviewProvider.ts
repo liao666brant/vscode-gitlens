@@ -1001,7 +1001,7 @@ export class RebaseWebviewProvider implements Disposable {
 			ascending: this.ascending,
 			preservesMerges: processed.preservesMerges,
 			density: configuration.get('rebaseEditor.density'),
-			revealLocation: configuration.get('rebaseEditor.revealLocation'),
+			revealLocation: 'inspect',
 			revealBehavior: this.getRevealBehavior(),
 			rebaseStatus: rebaseStatus,
 			repoPath: this.repoPath,

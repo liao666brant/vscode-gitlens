@@ -1,5 +1,5 @@
 /**
- * Config service — access GitLens configuration, VS Code core settings,
+ * Config service — access WeGit configuration, VS Code core settings,
  * and change events.
  */
 
@@ -17,7 +17,7 @@ import type { RpcEventSubscription } from './types.js';
 
 export class ConfigService {
 	/**
-	 * Fired when GitLens configuration changes.
+	 * Fired when WeGit configuration changes.
 	 * Pure signal — handler should re-fetch relevant config as needed.
 	 */
 	readonly onConfigChanged: RpcEventSubscription<undefined>;
@@ -34,14 +34,14 @@ export class ConfigService {
 	}
 
 	/**
-	 * Get a GitLens configuration value by dot path (e.g., 'views.commitDetails.autolinks.enabled').
+	 * Get a WeGit configuration value by dot path (e.g., 'views.commitDetails.autolinks.enabled').
 	 */
 	get<T extends ConfigPath>(key: T): Promise<ConfigPathValue<T>> {
 		return Promise.resolve(configuration.get(key));
 	}
 
 	/**
-	 * Get multiple GitLens configuration values in a single RPC call.
+	 * Get multiple WeGit configuration values in a single RPC call.
 	 * Returns a tuple of values matching the order of the keys.
 	 */
 	getMany<const T extends readonly ConfigPath[]>(
@@ -78,7 +78,7 @@ export class ConfigService {
 	}
 
 	/**
-	 * Update a GitLens configuration value by dot path.
+	 * Update a WeGit configuration value by dot path.
 	 */
 	async update<T extends ConfigPath>(key: T, value: ConfigPathValue<T>): Promise<void> {
 		await configuration.update(key, value, ConfigurationTarget.Global);

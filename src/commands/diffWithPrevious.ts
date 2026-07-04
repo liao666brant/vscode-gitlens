@@ -82,7 +82,7 @@ export class DiffWithPreviousCommand extends ActiveEditorCommand {
 
 		// If we are in the right diff editor, we can't really trust the line number
 		// if (args.inDiffRightEditor && args.line !== 0) {
-		// 	// TODO@eamodio figure out how to tell where the line moved in the previous commit (if at all)
+		// 	// TODO figure out how to tell where the line moved in the previous commit (if at all)
 		// }
 
 		let isInRightSideOfDiffEditor = false;

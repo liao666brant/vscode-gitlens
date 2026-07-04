@@ -101,7 +101,7 @@ export class GitTerminalLinkProvider implements Disposable, TerminalLinkProvider
 			}
 
 			const svc = this.container.git.getRepositoryService(repoPath);
-			// TODO@eamodio handle paging
+			// TODO handle paging
 			branchResults ??= await svc.branches.getBranches(undefined, toAbortSignal(token)).catch(() => undefined);
 			if (token.isCancellationRequested) break;
 
@@ -122,7 +122,7 @@ export class GitTerminalLinkProvider implements Disposable, TerminalLinkProvider
 				continue;
 			}
 
-			// TODO@eamodio handle paging
+			// TODO handle paging
 			tagResults ??= await svc.tags.getTags(undefined, toAbortSignal(token)).catch(() => undefined);
 			if (token.isCancellationRequested) break;
 

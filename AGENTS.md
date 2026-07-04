@@ -1,6 +1,6 @@
-# GitLens Development Guide
+# WeGit Development Guide
 
-This workspace contains **GitLens** - a powerful VS Code extension that supercharges Git functionality. It provides blame annotations, commit history visualization, repository exploration, and many advanced Git workflows. The codebase supports both desktop VS Code (Node.js) and VS Code for Web (browser/webworker) environments.
+This workspace contains **WeGit** - a powerful VS Code extension that supercharges Git functionality. It provides blame annotations, commit history visualization, repository exploration, and many advanced Git workflows. The codebase supports both desktop VS Code (Node.js) and VS Code for Web (browser/webworker) environments.
 
 ## Working Style Expectations
 
@@ -36,7 +36,7 @@ A task is not complete until:
 ## Development Environment
 
 - **Node.js** ≥ 22.12.0, **pnpm** ≥ 10.x (install via corepack: `corepack enable`), **Corepack** ≥ 0.31.0, **Git** ≥ 2.7.2
-- GitLens supports **Node.js** (desktop) and **Web Worker** (browser/vscode.dev) environments — shared code with abstractions in `src/env/`
+- WeGit supports **Node.js** (desktop) and **Web Worker** (browser/vscode.dev) environments — shared code with abstractions in `src/env/`
 - Test both environments during development
 
 ### Performance Considerations
@@ -136,7 +136,7 @@ src/
 ├── hovers/                   # Editor hover providers
 ├── plus/                     # Pro features (non-OSS, see LICENSE.plus)
 │   ├── ai/                   # AI features (commit messages, explanations, changelogs)
-│   ├── gk/                   # GitKraken-specific features (account, subscription, etc.)
+│   ├── gk/                   # legacy account/integration features (account, subscription, etc.)
 │   └── integrations/         # Rich Git host & issue tracker integrations (GitHub, GitLab, Jira, etc.)
 │       └── providers/
 │           └── github/
@@ -163,7 +163,6 @@ src/
     │   ├── rebase/
     │   ├── settings/
     │   └── plus/             # Pro webview apps
-    │       ├── home/
     │       ├── graph/
     │       ├── timeline/
     │       ├── patchDetails/
@@ -234,7 +233,7 @@ Skills provide detailed, step-by-step workflows for common tasks. Invoke with `/
 | `/a11y-flow-audit` | Audit a page or flow for WCAG 2.1 AA composition-level compliance           |
 | `/a11y-remediate`  | Turn /a11y-audit findings into a leader-facing remediation proposal         |
 | `/modern-css`      | Guide CSS authoring/review — modern patterns, tokens, shadow DOM safety     |
-| `/commit`          | Git commit with GitLens conventions                                         |
+| `/commit`          | Git commit with WeGit conventions                                           |
 | `/create-issue`    | Create GitHub issues from code changes                                      |
 | `/audit-commits`   | Audit commit range for issues and CHANGELOG entries                         |
 | `/worktree`        | Create isolated git worktrees for feature work                              |
@@ -243,7 +242,7 @@ Skills provide detailed, step-by-step workflows for common tasks. Invoke with `/
 | `/add-test`        | Generate unit or E2E test files                                             |
 | `/add-icon`        | Add icon to GL Icons font                                                   |
 | `/add-ai-provider` | Add a new AI provider integration                                           |
-| `/live-inspect`    | Launch VS Code with GitLens via Playwright inspect UI/logs                  |
+| `/live-inspect`    | Launch VS Code with WeGit via Playwright inspect UI/logs                    |
 | `/live-exercise`   | Live operation + audit + fix loop for UI-bearing work                       |
 | `/live-perf`       | Live performance measurement + improvement with three-tier discipline       |
 | `/live-pair`       | Interactive pair-programming with a live instance (user-driven feedback)    |

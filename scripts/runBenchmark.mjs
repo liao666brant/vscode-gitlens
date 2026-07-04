@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 /**
- * Benchmark runner for GitLens
+ * Benchmark runner for WeGit
  *
  * Usage:
  *   pnpm run benchmark              # Run all benchmarks

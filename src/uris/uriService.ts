@@ -10,8 +10,8 @@ import {
 	SubscriptionUpdatedUriPathPrefix,
 } from '../community/stubs/pro.js';
 
-// This service is in charge of registering a URI handler and handling/emitting URI events received by GitLens.
-// URI events to GitLens take the form of: vscode://eamodio.gitlens/... and are handled by the UriEventHandler.
+// This service is in charge of registering a URI handler and handling/emitting URI events received by WeGit.
+// URI events to WeGit take the form of: vscode://liao666brant.wegit/... and are handled by the UriEventHandler.
 // The UriEventHandler is responsible for parsing the URI and emitting the event to the UriService.
 export class UriService implements Disposable, UriHandler {
 	private _onDidReceiveAuthenticationUri: EventEmitter<Uri> = new EventEmitter<Uri>();

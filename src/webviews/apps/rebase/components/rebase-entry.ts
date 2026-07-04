@@ -64,7 +64,6 @@ export class GlRebaseEntryElement extends LitElement {
 	})
 	entry!: RebaseEntry;
 	@property({ type: Object }) authors?: Record<string, Author>;
-	@property({ type: String }) revealLocation: 'graph' | 'inspect' = 'graph';
 	@property({ type: Boolean, reflect: true }) isBase = false;
 	@property({ type: Boolean, reflect: true }) isCurrent = false;
 	@property({ type: Boolean, reflect: true }) isDone = false;
@@ -250,11 +249,7 @@ export class GlRebaseEntryElement extends LitElement {
 						</gl-tooltip>`
 					: nothing}
 
-				<gl-tooltip
-					class="entry-sha"
-					hide-on-click
-					content=${this.revealLocation === 'graph' ? '在提交图中打开' : '在检查视图中打开'}
-				>
+				<gl-tooltip class="entry-sha" hide-on-click content="在检查视图中打开">
 					<a href="#" class="entry-sha-link" @click=${this.onShaClick}>
 						<code-icon icon="git-commit"></code-icon>
 						<span class="entry-sha-content">${sha.substring(0, 7)}</span>

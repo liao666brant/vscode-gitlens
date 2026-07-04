@@ -15,8 +15,8 @@ export function registerSettingsWebviewPanel(
 		{
 			id: 'gitlens.settings',
 			fileName: 'settings.html',
-			iconPath: 'images/gitlens-icon.png',
-			title: 'GitLens Settings',
+			iconPath: 'images/wegit-icon.png',
+			title: 'WeGit Settings',
 			contextKeyPrefix: `gitlens:webview:settings`,
 			trackingFeature: 'settingsWebview',
 			type: 'settings',

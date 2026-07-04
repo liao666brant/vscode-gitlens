@@ -347,7 +347,7 @@ export class Repository {
 	}
 
 	/**
-	 * Marks the repository as having just been fetched. Use after a GitLens-initiated fetch/pull
+	 * Marks the repository as having just been fetched. Use after a WeGit-initiated fetch/pull
 	 * completes so the "last fetched" UI tracks the attempt even when git skipped rewriting
 	 * `.git/FETCH_HEAD` (modern git omits the rewrite when all refs are up-to-date). The
 	 * in-memory timestamp is reconciled with the on-disk mtime by {@link getLastFetched} via

@@ -1,28 +1,13 @@
-import { consume } from '@lit/context';
 import { css, html, nothing } from 'lit';
 import { customElement, property, query, state } from 'lit/decorators.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
 import { live } from 'lit/directives/live.js';
 import type { SearchOperators, SearchQuery } from '@gitlens/git/models/search.js';
 import { searchOperatorsToLongFormMap } from '@gitlens/git/models/search.js';
-import {
-	areSearchQueriesEqual,
-	parseSearchQuery,
-	rebuildSearchQueryFromParsed,
-} from '@gitlens/git/utils/search.utils.js';
+import { areSearchQueriesEqual, parseSearchQuery } from '@gitlens/git/utils/search.utils.js';
 import { filterMap } from '@gitlens/utils/array.js';
 import { fuzzyFilter } from '@gitlens/utils/fuzzy.js';
 import { whitespaceRegex } from '../../../../../constants.js';
-import {
-	ChooseAuthorRequest,
-	ChooseComparisonRequest,
-	ChooseFileRequest,
-	ChooseRefRequest,
-	SearchHistoryDeleteRequest,
-	SearchHistoryGetRequest,
-	SearchHistoryStoreRequest,
-} from '../../../../../community/stubs/pro.js';
-import { ipcContext } from '../../contexts/ipc.js';
 import type { CompletionItem, CompletionSelectEvent, GlAutocomplete } from '../autocomplete/autocomplete.js';
 import { GlElement } from '../element.js';
 import type {
@@ -310,9 +295,6 @@ export class GlSearchInput extends GlElement {
 		}
 	`;
 
-	@consume({ context: ipcContext })
-	private readonly _ipc!: typeof ipcContext.__context__;
-
 	@query('input') input!: HTMLInputElement;
 
 	@property({ type: Boolean }) aiAllowed = true;
@@ -381,8 +363,6 @@ export class GlSearchInput extends GlElement {
 		return `${this.label}提交（按 Enter 搜索，↑↓ 查看历史），例如 @me after:1.week.ago file:*.ts`;
 	}
 
-	private repoPath: string | undefined;
-
 	private _searchHistory: SearchQuery[] = [];
 	private searchHistoryPos = -1;
 	private get searchHistory() {
@@ -392,15 +372,6 @@ export class GlSearchInput extends GlElement {
 		this._searchHistory = value;
 		this.searchHistoryPos = -1;
 		this.originalHistoryState = undefined;
-	}
-
-	override connectedCallback(): void {
-		super.connectedCallback?.();
-
-		void this._ipc
-			.sendRequest(SearchHistoryGetRequest, { repoPath: this.repoPath })
-			.then(response => (this.searchHistory = response.history))
-			.catch(() => {});
 	}
 
 	override disconnectedCallback(): void {
@@ -774,130 +745,6 @@ export class GlSearchInput extends GlElement {
 	}
 
 	/**
-	 * Handles picker commands (author, ref, file/folder)
-	 */
-	private async handlePickerCommand(command: SearchCompletionCommand) {
-		const value = this.value;
-		const operator = this.cursorOperator?.operator;
-		if (!operator) return;
-
-		// Get the current value at the cursor position (if any)
-		const currentValue = value.substring(this.cursorPosition[0], this.cursorPosition[1]).trim();
-
-		try {
-			switch (command.command) {
-				case 'pick-author': {
-					const result = await this._ipc.sendRequest(ChooseAuthorRequest, {
-						title: '按作者搜索',
-						placeholder: '选择要包含其提交的贡献者',
-						picked: currentValue ? [currentValue] : undefined,
-					});
-
-					if (result.authors?.length) {
-						this.insertPickerValues(result.authors, operator, command.multi ?? false);
-						return;
-					}
-					break;
-				}
-
-				case 'pick-ref': {
-					const result = await this._ipc.sendRequest(ChooseRefRequest, {
-						title: '按分支或标签搜索',
-						placeholder: '选择用于筛选的分支或标签',
-						allowedAdditionalInput: { range: false, rev: false },
-						include: ['branches', 'tags', 'HEAD'],
-						picked: currentValue || undefined,
-					});
-
-					if (result?.name) {
-						this.insertPickerValues([result.name], operator, command.multi ?? false);
-						return;
-					}
-					break;
-				}
-
-				case 'pick-comparison': {
-					const result = await this._ipc.sendRequest(ChooseComparisonRequest, {
-						title: '按比较范围搜索',
-						placeholder: '选择两个引用进行比较',
-					});
-
-					if (result?.range) {
-						this.insertPickerValues([result.range], operator, false);
-						return;
-					}
-					break;
-				}
-
-				case 'pick-file':
-				case 'pick-folder': {
-					const result = await this._ipc.sendRequest(ChooseFileRequest, {
-						title: command.command === 'pick-file' ? '按文件搜索' : '按文件夹搜索',
-						type: command.command === 'pick-file' ? 'file' : 'folder',
-						openLabel: '添加到搜索',
-						picked: currentValue ? [currentValue] : undefined,
-					});
-
-					if (result.files?.length) {
-						this.insertPickerValues(result.files, operator, command.multi ?? false);
-						return;
-					}
-					break;
-				}
-			}
-		} catch {}
-
-		// User cancelled or error occurred - just return focus to input
-		this.input.focus();
-	}
-
-	/**
-	 * Inserts values from a picker into the search query
-	 * @param values - The values to insert
-	 * @param operator - The operator these values belong to
-	 * @param multi - Whether to insert as multiple operator:value pairs (true) or space-separated values (false)
-	 */
-	private insertPickerValues(values: string[], operator: string, multi: boolean) {
-		const value = this.value;
-
-		// For multi mode, create separate operator:value pairs for each value
-		// First value doesn't need operator prefix (it's already in the input), rest do
-		// For single mode, join values with spaces
-		let insertText: string;
-		if (multi) {
-			insertText = values.map((v, i) => (i === 0 ? v : `${operator}${v}`)).join(' ');
-		} else {
-			insertText = values.join(' ');
-		}
-
-		// Replace the current token (from cursorPosition[0] to cursorPosition[1]) with the selected values
-		let newValue =
-			value.substring(0, this.cursorPosition[0]) + insertText + value.substring(this.cursorPosition[1]);
-
-		// Calculate cursor position after the inserted text (before deduplication)
-		const cursorPos = this.cursorPosition[0] + insertText.length;
-
-		// Deduplicate by parsing and rebuilding the query
-		// The parsed operations use Sets, so duplicates are automatically removed
-		const parsed = parseSearchQuery({ query: newValue });
-		newValue = rebuildSearchQueryFromParsed(parsed);
-
-		// Update the input value directly
-		this.input.value = newValue;
-		this._value = newValue;
-
-		// Position cursor after the inserted text
-		// Note: If deduplication removed text, cursor might be beyond the end, so clamp it
-		const finalCursorPos = Math.min(cursorPos, newValue.length);
-		this.input.focus();
-		this.input.selectionStart = finalCursorPos;
-		this.input.selectionEnd = finalCursorPos;
-
-		// Update autocomplete in the next frame to ensure input is updated
-		window.requestAnimationFrame(() => this.updateAutocomplete());
-	}
-
-	/**
 	 * Strip a trailing valueless operator (e.g. ` message:` at the end of the query) so
 	 * successive column-filter clicks don't pile up half-typed prefixes. Matches one short
 	 * alpha token followed by `:` and nothing else before end-of-string — long enough to
@@ -908,77 +755,19 @@ export class GlSearchInput extends GlElement {
 		return value.replace(/\s*\b[a-z]+:\s*$/i, '');
 	}
 
-	/**
-	 * Append `<operator><value>` terms to the query, normalize/dedupe via parse+rebuild,
-	 * place the caret at the end, and fire `onSearchChanged()`. Shared by the column-header
-	 * picker entry points; bypasses the `cursorOperator` gate used by autocomplete-driven picks.
-	 */
-	private appendOperatorValues(operator: string, values: string[]): void {
-		if (values.length === 0) {
-			this.input.focus();
-			return;
-		}
-
-		const base = this.withoutTrailingEmptyOperator(this.value);
-		const separator = base.length === 0 || base.endsWith(' ') ? '' : ' ';
-		const insertText = separator + values.map(v => `${operator}${v}`).join(' ');
-
-		let newValue = base + insertText;
-		const parsed = parseSearchQuery({ query: newValue });
-		newValue = rebuildSearchQueryFromParsed(parsed);
-
-		this.input.value = newValue;
-		this._value = newValue;
-
-		const cursorPos = newValue.length;
-		this.input.focus();
-		this.input.selectionStart = cursorPos;
-		this.input.selectionEnd = cursorPos;
-		this.cursorPosition = [cursorPos, cursorPos];
-
-		this.onSearchChanged();
+	/** Adds an `author:` operator and focuses the value position. */
+	pickAuthors(): void {
+		this.insertSearchOperator('author:');
 	}
 
-	/** Opens the author picker and appends `author:<email>` terms to the query. */
-	async pickAuthors(): Promise<void> {
-		try {
-			const result = await this._ipc.sendRequest(ChooseAuthorRequest, {
-				title: 'Search by Author',
-				placeholder: 'Choose contributors to include commits from',
-			});
-			this.appendOperatorValues('author:', result.authors ?? []);
-		} catch {
-			this.input.focus();
-		}
+	/** Adds a `ref:` operator and focuses the value position. */
+	pickRefs(): void {
+		this.insertSearchOperator('ref:');
 	}
 
-	/** Opens the ref picker and appends a `ref:<name>` term to the query. */
-	async pickRefs(): Promise<void> {
-		try {
-			const result = await this._ipc.sendRequest(ChooseRefRequest, {
-				title: 'Search by Branch or Tag',
-				placeholder: 'Choose a branch or tag to filter by',
-				allowedAdditionalInput: { range: false, rev: false },
-				include: ['branches', 'tags', 'HEAD'],
-			});
-			this.appendOperatorValues('ref:', result?.name ? [result.name] : []);
-		} catch {
-			this.input.focus();
-		}
-	}
-
-	/** Opens the file picker and appends `file:<path>` terms to the query. */
-	async pickFiles(): Promise<void> {
-		try {
-			const result = await this._ipc.sendRequest(ChooseFileRequest, {
-				title: 'Search by File',
-				type: 'file',
-				openLabel: 'Add to Search',
-			});
-			this.appendOperatorValues('file:', result.files ?? []);
-		} catch {
-			this.input.focus();
-		}
+	/** Adds a `file:` operator and focuses the value position. */
+	pickFiles(): void {
+		this.insertSearchOperator('file:');
 	}
 
 	/**
@@ -1004,20 +793,16 @@ export class GlSearchInput extends GlElement {
 	/**
 	 * Accepts the currently selected autocomplete suggestion
 	 */
-	private async acceptAutocomplete(index: number) {
+	private acceptAutocomplete(index: number) {
 		const selected = this.autocompleteItems[index];
 		if (!selected) return;
 
-		// Check if this is a command (toggle natural language or picker command)
+		// Check if this is a command
 		if ('command' in selected.item) {
 			if (selected.item.command === 'toggle-natural-language-mode') {
 				this.updateNaturalLanguage(!this.naturalLanguage);
 				return;
 			}
-
-			// It's a picker command
-			await this.handlePickerCommand(selected.item);
-			return;
 		}
 
 		// Type guard to ensure we have an operator
@@ -1153,7 +938,7 @@ export class GlSearchInput extends GlElement {
 					selectedIndex >= 0 &&
 					this.cursorOperator
 				) {
-					void this.acceptAutocomplete(selectedIndex);
+					this.acceptAutocomplete(selectedIndex);
 					return true;
 				}
 
@@ -1198,7 +983,7 @@ export class GlSearchInput extends GlElement {
 					e.preventDefault();
 					e.stopPropagation();
 
-					void this.acceptAutocomplete(tabSelectedIndex);
+					this.acceptAutocomplete(tabSelectedIndex);
 					return true;
 				}
 				// Otherwise, let Tab work normally for focus management
@@ -1304,7 +1089,7 @@ export class GlSearchInput extends GlElement {
 
 					const entry = this.searchHistory[this.searchHistoryPos];
 					if (entry != null) {
-						void this.deleteHistoryEntry(entry.query);
+						this.deleteHistoryEntry(entry.query);
 					}
 
 					return true;
@@ -1363,7 +1148,7 @@ export class GlSearchInput extends GlElement {
 		this.errorMessage = errorMessage;
 	}
 
-	async logSearch(search: SearchQuery): Promise<void> {
+	logSearch(search: SearchQuery): void {
 		// Store exactly what user entered/sees (NL form or structured form)
 		let queryToStore;
 		if (search.naturalLanguage) {
@@ -1390,36 +1175,25 @@ export class GlSearchInput extends GlElement {
 
 		const searchToStore: SearchQuery = { ...search, query: queryToStore };
 
-		try {
-			const response = await this._ipc.sendRequest(SearchHistoryStoreRequest, {
-				repoPath: this.repoPath,
-				search: searchToStore,
-			});
-			this.searchHistory = response.history;
-			this.searchHistoryPos = -1;
-		} catch {}
+		this.searchHistory = [
+			searchToStore,
+			...this.searchHistory.filter(entry => entry.query !== searchToStore.query),
+		].slice(0, 25);
+		this.searchHistoryPos = -1;
 	}
 
-	private async deleteHistoryEntry(query: string): Promise<void> {
-		try {
-			const response = await this._ipc.sendRequest(SearchHistoryDeleteRequest, {
-				repoPath: this.repoPath,
-				query: query,
-			});
-			this.searchHistory = response.history;
-			// Move to next entry if available, otherwise restore original value
-			if (this.searchHistoryPos >= 0 && this.searchHistoryPos < this.searchHistory.length) {
-				const entry = this.searchHistory[this.searchHistoryPos];
-				this.value = entry.query;
-				this.naturalLanguage = Boolean(entry.naturalLanguage);
-			} else {
-				this.searchHistoryPos = -1;
-				this.originalHistoryState = undefined;
-				this.value = '';
-				this.naturalLanguage = false;
-			}
-		} catch {
-			// Silent failure - keep existing history
+	private deleteHistoryEntry(query: string): void {
+		this.searchHistory = this.searchHistory.filter(entry => entry.query !== query);
+		// Move to next entry if available, otherwise restore original value
+		if (this.searchHistoryPos >= 0 && this.searchHistoryPos < this.searchHistory.length) {
+			const entry = this.searchHistory[this.searchHistoryPos];
+			this.value = entry.query;
+			this.naturalLanguage = Boolean(entry.naturalLanguage);
+		} else {
+			this.searchHistoryPos = -1;
+			this.originalHistoryState = undefined;
+			this.value = '';
+			this.naturalLanguage = false;
 		}
 	}
 
@@ -1520,7 +1294,7 @@ export class GlSearchInput extends GlElement {
 			return;
 		}
 
-		void this.acceptAutocomplete(index);
+		this.acceptAutocomplete(index);
 	}
 
 	private handleInputScroll(_e: Event) {
@@ -1636,7 +1410,7 @@ export class GlSearchInput extends GlElement {
 		}
 
 		return html`描述你想查找的内容，让 AI 帮你构建查询，例如 <code>上周我的提交</code> 或
-			<code>上个月 eamodio 对 package.json 的修改</code>`;
+			<code>上个月 liao666brant 对 package.json 的修改</code>`;
 	}
 
 	private renderSearchOptions() {

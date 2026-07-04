@@ -23,7 +23,7 @@ export class CommandsService {
 	}
 
 	/**
-	 * Execute a non-webview GitLens command.
+	 * Execute a non-webview WeGit command.
 	 * @param command - The command identifier (must NOT be a webview-scoped command)
 	 * @param args - Optional arguments to pass to the command
 	 */
@@ -34,7 +34,7 @@ export class CommandsService {
 	/**
 	 * Execute a webview-scoped command, automatically injecting `WebviewContext`.
 	 * The webview's ID and instance are merged into the first argument.
-	 * @param command - A webview-scoped command (e.g. `gitlens.switchToBranch:home`)
+	 * @param command - A webview-scoped command (e.g. `gitlens.pausedOperation.showConflicts:rebase`)
 	 * @param args - Optional arguments (merged with WebviewContext)
 	 */
 	async executeScoped(command: GlWebviewCommands, args?: Record<string, unknown>): Promise<unknown> {

@@ -42,7 +42,7 @@ export function preview() {
 			// eslint-disable-next-line @typescript-eslint/no-unsafe-return
 			if (Container.instance.prereleaseOrDebugging) return fn.apply(this, args);
 
-			console.error('GitLens preview APIs are only available in the pre-release edition');
+			console.error('WeGit preview APIs are only available in the pre-release edition');
 			return emptyDisposable;
 		};
 	};

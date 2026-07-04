@@ -1,0 +1,20 @@
+src/webviews\home\homeWebview.ts:796:			avatar = `${this.host.getWebRoot() ?? ''}/media/gitlens-logo.webp`;
+src\webviews\home\homeWebview.ts:796:			avatar = `${this.host.getWebRoot() ?? ''}/media/gitlens-logo.webp`;
+src/webviews\apps\welcome\components\welcome-page.ts:11:import '../../shared/components/gitlens-logo-circle.js';
+src/webviews\apps\welcome\components\welcome-page.ts:155:					<h1><gitlens-logo-circle></gitlens-logo-circle><span>开始使用 WeGit</span></h1>
+src/webviews\apps\welcome\components\welcome-page.css.ts:175:	.header gitlens-logo-circle {
+src/webviews\apps\welcome\components\welcome-page.css.ts:191:		.header gitlens-logo-circle {
+src/webviews\apps\welcome\components\welcome-page.css.ts:199:		.header gitlens-logo-circle {
+src\webviews\apps\welcome\components\welcome-page.ts:11:import '../../shared/components/gitlens-logo-circle.js';
+src\webviews\apps\welcome\components\welcome-page.ts:155:					<h1><gitlens-logo-circle></gitlens-logo-circle><span>开始使用 WeGit</span></h1>
+src\webviews\apps\welcome\components\welcome-page.css.ts:175:	.header gitlens-logo-circle {
+src\webviews\apps\welcome\components\welcome-page.css.ts:191:		.header gitlens-logo-circle {
+src\webviews\apps\welcome\components\welcome-page.css.ts:199:		.header gitlens-logo-circle {
+src\webviews\apps\settings\settings.ts:19:import '../shared/components/gitlens-logo.js';
+src\webviews\apps\settings\settings.html:21:				<h1 class="brand"><gitlens-logo></gitlens-logo> <small>Git Supercharged</small></h1>
+src\webviews\apps\shared\components\gitlens-logo.ts:4:@customElement('gitlens-logo')
+src\webviews\apps\shared\components\gitlens-logo-circle.ts:4:@customElement('gitlens-logo-circle')
+src/webviews\apps\settings\settings.ts:19:import '../shared/components/gitlens-logo.js';
+src/webviews\apps\settings\settings.html:21:				<h1 class="brand"><gitlens-logo></gitlens-logo> <small>Git Supercharged</small></h1>
+src/webviews\apps\shared\components\gitlens-logo-circle.ts:4:@customElement('gitlens-logo-circle')
+src/webviews\apps\shared\components\gitlens-logo.ts:4:@customElement('gitlens-logo')

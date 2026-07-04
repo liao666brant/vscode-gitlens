@@ -203,7 +203,7 @@ export class GlCliGitProvider implements GlGitProvider {
 		const baseContext = createGitProviderContext(container);
 		const getAbsoluteUri = this.getAbsoluteUri.bind(this);
 
-		const gitOutputChannel = window.createOutputChannel('GitLens (Git)', { log: true });
+		const gitOutputChannel = window.createOutputChannel('WeGit (Git)', { log: true });
 		this._disposables.push(gitOutputChannel);
 
 		return {
@@ -246,7 +246,7 @@ export class GlCliGitProvider implements GlGitProvider {
 				hooks: {
 					onAborted: info => container.telemetry.sendEvent('op/git/aborted', info),
 					onSlowQueue: info => {
-						// Surface slow-queue events in the GitLens output channel so the wait time
+						// Surface slow-queue events in the WeGit output channel so the wait time
 						// is observable during local debug — not just in telemetry. Helps catch
 						// priority misclassifications where a user-initiated read got queued behind
 						// background work (e.g., commit details click stuck behind graph load).
@@ -526,10 +526,10 @@ export class GlCliGitProvider implements GlGitProvider {
 		// so the library's GitService can route this repo's path to the local provider.
 		this.ensureProvider();
 
-		// `opened` is GitLens visibility only — we deliberately do NOT open the repo in VS Code's built-in SCM.
+		// `opened` is WeGit visibility only — we deliberately do NOT open the repo in VS Code's built-in SCM.
 		// vscode.git's `openRepository` API force-opens AND clears the repo from its persisted closed-repos set
-		// (which GitLens can't read), so syncing here would resurrect repos the user closed in SCM. vscode.git's
-		// own `git.autoRepositoryDetection` opens repos in SCM honoring that set; GitLens follows via `onDidOpenRepository`.
+		// (which WeGit can't read), so syncing here would resurrect repos the user closed in SCM. vscode.git's
+		// own `git.autoRepositoryDetection` opens repos in SCM honoring that set; WeGit follows via `onDidOpenRepository`.
 
 		// Register the repo path mapping for worktree-aware caching
 		if (gitDir != null) {
@@ -1618,7 +1618,7 @@ export class GlCliGitProvider implements GlGitProvider {
 		try {
 			const uri = repoPath instanceof Uri ? repoPath : Uri.file(repoPath);
 
-			// Defense-in-depth: if GitLens knows this repo as closed in SCM, don't ask vscode.git to re-open
+			// Defense-in-depth: if WeGit knows this repo as closed in SCM, don't ask vscode.git to re-open
 			// it on our behalf \u2014 `openRepository` force-opens and erases vscode.git's persisted closed-repos set.
 			const known = this.container.git.getRepository(uri);
 			if (known?.closedByScm) {

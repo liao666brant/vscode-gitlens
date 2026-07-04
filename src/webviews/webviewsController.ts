@@ -346,7 +346,7 @@ export class WebviewsController implements Disposable {
 		}
 
 		async function deserializeWebviewPanel(panel: WebviewPanel, state: SerializedState) {
-			// TODO@eamodio: We are currently storing nothing or way too much in serialized state. We should start storing maybe both "client" and "server" state
+			// TODO: We are currently storing nothing or way too much in serialized state. We should start storing maybe both "client" and "server" state
 			// Where as right now our webviews are only saving "client" state, e.g. the entire state sent to the webview, rather than key pieces of state
 			// We probably need to separate state into actual "state" and all the data that is sent to the webview, e.g. for the Graph state might be the selected repo, selected sha, etc vs the entire data set to render the Graph
 			serializedPanel = panel;

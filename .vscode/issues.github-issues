@@ -2,7 +2,7 @@
   {
     "kind": 2,
     "language": "github-issues",
-    "value": "$current=milestone:\"13.1\"\n$patch=milestone:\"13.0-patch\"\n$issues=repo:gitkraken/vscode-gitlens is:issue\n$prs=repo:gitkraken/vscode-gitlens is:pr"
+    "value": "$current=milestone:\"13.1\"\n$patch=milestone:\"13.0-patch\"\n$issues=repo:liao666brant/vscode-gitlens is:issue\n$prs=repo:liao666brant/vscode-gitlens is:pr"
   },
   {
     "kind": 1,

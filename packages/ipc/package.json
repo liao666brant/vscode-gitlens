@@ -1,6 +1,6 @@
 {
 	"name": "@gitlens/ipc",
-	"description": "GitLens IPC package",
+	"description": "WeGit IPC package",
 	"version": "0.0.1",
 	"license": "SEE LICENSE IN LICENSE",
 	"private": true,

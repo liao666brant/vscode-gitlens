@@ -61,7 +61,7 @@ export async function showDebugLoggingWarningMessage(): Promise<boolean> {
 	const disable = { title: '禁用调试日志' };
 	const result = await showMessage(
 		'warn',
-		'GitLens 调试日志当前已启用。除非您要报告问题，否则建议禁用它。您要禁用它吗？',
+		'WeGit 调试日志当前已启用。除非您要报告问题，否则建议禁用它。您要禁用它吗？',
 		'suppressDebugLoggingWarning',
 		{ title: '不再显示' },
 		disable,
@@ -109,11 +109,11 @@ function escapeShellArg(arg: string): string {
 function showGitCommandInTerminal(gitCommand: GitCommandContext, error: GitCommandError<any>): void {
 	const terminal = window.createTerminal({
 		cwd: gitCommand.repoPath,
-		name: 'GitLens',
+		name: 'WeGit',
 		hideFromUser: false,
 		iconPath: new ThemeIcon('gitlens-gitlens'),
 		isTransient: true,
-		message: `\x1b[1mGitLens 尝试运行此 Git 命令但失败了：\x1b[0m\r\n\x1b[31m${error.message}\x1b[0m\r\n\x1b[3m您可以重新运行或修改该命令以诊断问题。\x1b[0m\r\n`,
+		message: `\x1b[1mWeGit 尝试运行此 Git 命令但失败了：\x1b[0m\r\n\x1b[31m${error.message}\x1b[0m\r\n\x1b[3m您可以重新运行或修改该命令以诊断问题。\x1b[0m\r\n`,
 	});
 	const command = `git ${filterMap(gitCommand.args, a => (a != null ? escapeShellArg(a) : undefined)).join(' ')}`;
 	terminal.sendText(command, false);
@@ -164,9 +164,9 @@ export async function showBitbucketPRCommitLinksAppNotInstalledWarningMessage(re
 	const allowAccess = { title: '允许访问' };
 	const result = await showMessage(
 		'warn',
-		`GitLens 无法访问提交的 Bitbucket 拉取请求。
+		`WeGit 无法访问提交的 Bitbucket 拉取请求。
 		通过访问 Bitbucket 上的 [此提交](${revLink}) 并在右下角 "Apps" 部分下单击 "Pull requests" 来允许访问
-		或 [阅读我们的文档](https://help.gitkraken.com/gitlens/gitlens-troubleshooting/#enable-showing-bitbucket-pull-request-for-a-commit) 了解更多信息。`,
+		或查看 Bitbucket 的应用访问设置了解更多信息。`,
 		'suppressBitbucketPRCommitLinksAppNotInstalledWarning',
 		{ title: '不再显示' },
 		allowAccess,
@@ -183,19 +183,19 @@ export function showFileNotUnderSourceControlWarningMessage(message: string): Pr
 export function showGitDisabledErrorMessage(): Promise<MessageItem | undefined> {
 	return showMessage(
 		'error',
-		'GitLens 需要启用 Git。请重新启用 Git — 将 `git.enabled` 设置为 true 并重新加载。',
+		'WeGit 需要启用 Git。请重新启用 Git — 将 `git.enabled` 设置为 true 并重新加载。',
 		'suppressGitDisabledWarning',
 	);
 }
 
 export function showGitInvalidConfigErrorMessage(): Promise<MessageItem | undefined> {
-	return showMessage('error', 'GitLens 无法使用 Git。您的 Git 配置似乎无效。请解决 Git 配置的任何问题并重新加载。');
+	return showMessage('error', 'WeGit 无法使用 Git。您的 Git 配置似乎无效。请解决 Git 配置的任何问题并重新加载。');
 }
 
 export function showGitMissingErrorMessage(): Promise<MessageItem | undefined> {
 	return showMessage(
 		'error',
-		"GitLens 无法找到 Git。请确保已安装 Git。还要确保 Git 在 PATH 中，或者 'git.path' 指向其安装位置。",
+		"WeGit 无法找到 Git。请确保已安装 Git。还要确保 Git 在 PATH 中，或者 'git.path' 指向其安装位置。",
 		'suppressGitMissingWarning',
 	);
 }
@@ -206,7 +206,7 @@ export function showGitVersionUnsupportedErrorMessage(
 ): Promise<MessageItem | undefined> {
 	return showMessage(
 		'error',
-		`GitLens 需要比当前安装的版本 (${version}) 更新的 Git 版本 (>= ${required})。请安装更新版本的 Git。`,
+		`WeGit 需要比当前安装的版本 (${version}) 更新的 Git 版本 (>= ${required})。请安装更新版本的 Git。`,
 		'suppressGitVersionWarning',
 	);
 }
@@ -216,7 +216,7 @@ export async function showPreReleaseExpiredErrorMessage(version: string): Promis
 	const switchToRelease = { title: '切换到正式版本' };
 	const result = await showMessage(
 		'error',
-		`此预发布版本 (${version}) 的 GitLens 已过期。请升级到更新的预发布版本，或切换到正式版本。`,
+		`此预发布版本 (${version}) 的 WeGit 已过期。请升级到更新的预发布版本，或切换到正式版本。`,
 		undefined,
 		null,
 		upgrade,
@@ -224,13 +224,13 @@ export async function showPreReleaseExpiredErrorMessage(version: string): Promis
 	);
 
 	if (result === upgrade) {
-		void executeCoreCommand('workbench.extensions.installExtension', 'eamodio.gitlens', {
+		void executeCoreCommand('workbench.extensions.installExtension', 'liao666brant.wegit', {
 			installPreReleaseVersion: true,
 		});
 		void executeCoreCommand('workbench.extensions.action.extensionUpdates');
 	} else if (result === switchToRelease) {
 		void executeCoreCommand('workbench.extensions.action.installExtensions');
-		void executeCoreCommand('workbench.extensions.action.switchToRelease', 'eamodio.gitlens');
+		void executeCoreCommand('workbench.extensions.action.switchToRelease', 'liao666brant.wegit');
 	}
 }
 
@@ -248,7 +248,7 @@ export function showRebaseSwitchToTextWarningMessage(): Promise<MessageItem | un
 export function showGkDisconnectedTooManyFailedRequestsWarningMessage(): Promise<MessageItem | undefined> {
 	return showMessage(
 		'error',
-		`此会话已停止向 GitKraken 发送请求，因为失败的请求过多。`,
+		`此会话已停止向 WeGit 发送请求，因为失败的请求过多。`,
 		'suppressGkDisconnectedTooManyFailedRequestsWarningMessage',
 		undefined,
 		{
@@ -264,7 +264,7 @@ export function showGkRequestFailed500WarningMessage(message: string): Promise<M
 }
 
 export function showGkRequestTimedOutWarningMessage(): Promise<MessageItem | undefined> {
-	return showMessage('error', `GitKraken 请求超时。`, 'suppressGkRequestTimedOutWarning', undefined, {
+	return showMessage('error', `WeGit 请求超时。`, 'suppressGkRequestTimedOutWarning', undefined, {
 		title: '确定',
 	});
 }
@@ -303,13 +303,13 @@ export async function showWhatsNewMessage(majorVersion: string): Promise<void> {
 	let message: string;
 	switch (majorVersion) {
 		case '18':
-			message = 'GitLens 已升级到 18 — 查看社区版 Git 工作流改进。';
+			message = 'WeGit 已升级到 18 — 查看社区版 Git 工作流改进。';
 			break;
 		case '17':
-			message = 'GitLens 已升级到 17 — 查看新功能。';
+			message = 'WeGit 已升级到 17 — 查看新功能。';
 			break;
 		default:
-			message = `GitLens 已升级到 ${majorVersion} — 查看新功能。`;
+			message = `WeGit 已升级到 ${majorVersion} — 查看新功能。`;
 			break;
 	}
 

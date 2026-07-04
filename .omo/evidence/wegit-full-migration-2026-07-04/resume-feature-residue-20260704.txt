@@ -1,0 +1,108 @@
+package.json:2068:							"Reveals commits in the _Commit Graph_",
+package.json:3390:						"markdownDescription": "Specifies whether to show signature verification badges on commits in the Commit Graph and other views",
+package.json:7195:			"gitlens-launchpad-view": {
+package.json:7196:				"description": "launchpad-view icon",
+package.json:7202:			"gitlens-launchpad-view-filled": {
+package.json:7203:				"description": "launchpad-view-filled icon",
+docs\telemetry-events.md:1281:> Sent when the user clicks on the Jump to HEAD/Reference (alt) header button on the Commit Graph
+docs\telemetry-events.md:1300:> Sent when the user clicks on the "Jump to HEAD"/"Jump to Reference" (alt) header button on the Commit Graph
+docs\telemetry-events.md:1318:> Sent when the user clicks on the "Open Repository on Remote" header button on the Commit Graph
+docs\telemetry-events.md:1337:> Sent when WeGit auto-fetch fires a `git fetch` for the visible Commit Graph
+docs\telemetry-events.md:1357:> Sent when the user changes the "branches visibility" on the Commit Graph
+docs\telemetry-events.md:1377:> Sent when the user changes the columns on the Commit Graph
+docs\telemetry-events.md:1398:> Sent when a Commit Graph command is executed
+docs\telemetry-events.md:1409:> Sent when the user changes the filters on the Commit Graph
+docs\telemetry-events.md:1429:> Sent when the user clears all filters on the Commit Graph
+docs\telemetry-events.md:1451:> Sent when the user selects (clicks on) a day on the minimap on the Commit Graph
+docs\telemetry-events.md:1514:> Sent when the user changes the current repository on the Commit Graph
+docs\telemetry-events.md:1537:> Sent when the user points at a row on the Commit Graph (first time and every 100 times after)
+docs\telemetry-events.md:1556:> Sent when the user selects (clicks on) a row or rows on the Commit Graph (first time and every 100 times after)
+docs\telemetry-events.md:1576:> Sent when rows are loaded into the Commit Graph
+docs\telemetry-events.md:1596:> Sent when the user scopes the Commit Graph to a specific branch (Focus Branch feature)
+docs\telemetry-events.md:1620:> Sent when the user clears the active Commit Graph scope
+docs\telemetry-events.md:1638:> Sent when a search was performed on the Commit Graph
+docs\telemetry-events.md:1663:> Sent when the Commit Graph is shown
+docs\links.md:58:Used to open a (remote) repository in WeGit. Once the repository is opened, the Commit Graph will open to that repository.
+docs\links.md:66:Right click a remote in the Remotes view and choose "Share -> Copy Link to Repository", and share with a teammate. When they access the link, WeGit will help them clone the repository, open it in WeGit, add the remote you linked, and open the Commit Graph to the repository, step-by-step.
+docs\links.md:72:Used to open a (remote) branch in WeGit. Once the branch's repository is opened, WeGit will open the Commit Graph to that repository and select the branch, or perform another action if specified (see _{action}_ in _References_ below).
+docs\links.md:103:Right click a branch in the Commit Graph and choose "Share -> Copy Link to Branch", select a remote to copy the branch for, and share with a teammate. When they access the link, WeGit will help them clone the repository, open it in WeGit, add the remote you linked, and open the Commit Graph to the branch, step-by-step.
+docs\links.md:109:Used to open a (remote) commit in WeGit. Once the commit's repository is opened, WeGit will open the Commit Graph to that repository and select the commit.
+docs\links.md:121:Right click a commit in the Commit Graph and choose "Share -> Copy Link to Commit", select a remote to copy the commit for, and share with a teammate. When they access the link, WeGit will help them clone the repository, open it in WeGit, add the remote you linked, and open the Commit Graph to the commit, step-by-step.
+docs\links.md:127:Used to open a (remote) tag in WeGit. Once the tag's repository is opened, WeGit will open the Commit Graph to that repository and select the tag.
+docs\links.md:139:Right click a tag in the Tags View and choose "Share -> Copy Link to Tag", select a remote to copy the tag for, and share with a teammate. When they access the link, WeGit will help them clone the repository, open it in WeGit, add the remote you linked, and open the Commit Graph to the tag, step-by-step.
+docs\links.md:161:Share the changes of a pull request by right clicking the pull request's branch in the Commit Graph and choose "Compare with Common Base". The changes should be opened in the _Search & Compare_ view. Right click the Comparison item in the _Search & Compare_ view and choose "Share -> Copy Link to Comparison", and choose a remote to copy the comparison for. Share the link with a teammate. When they access the link, WeGit will help them clone the repository, open it in WeGit, add the remote, and open the _Search & Compare_ view to the pull request's changes, step-by-step.
+tests\e2e\pageObjects\gitLensPage.ts:139:	/** Commit Graph view section in the panel (matched via its panel toolbar) */
+tests\e2e\pageObjects\gitLensPage.ts:141:		// When the Commit Graph view is open, its panel toolbar is labelled
+tests\e2e\pageObjects\gitLensPage.ts:142:		// "WeGit: Commit Graph: <repo> actions" and stays visible in both the gated (Community)
+tests\e2e\pageObjects\gitLensPage.ts:146:		return this.panel.locator.getByRole('toolbar', { name: /Commit Graph/ }).first();
+tests\e2e\pageObjects\gitLensPage.ts:149:	/** Commit Graph webview in the panel */
+tests\e2e\pageObjects\gitLensPage.ts:158:	/** Commit Graph Details tab in the panel */
+tests\e2e\pageObjects\gitLensPage.ts:163:	/** Commit Graph Details webview in the panel */
+tests\e2e\pageObjects\gitLensPage.ts:326:						// "Commit Graph" and "Commit Graph Inspect")
+tests\e2e\specs\graphPin.test.ts:4: * Tests the pin/unpin workflow in the Commit Graph:
+src\community\stubs\pro.ts:358:export class LaunchpadProvider {
+src\community\stubs\pro.ts:363:	getCategorizedItems(..._args: unknown[]): Promise<LaunchpadCategorizedResult> {
+src\community\stubs\pro.ts:535:export function getLaunchpadItemGroups(_item: LaunchpadItem): LaunchpadGroup[] {
+src\community\stubs\pro.ts:539:export const launchpadCategoryToGroupMap = new Map<string, LaunchpadGroup>();
+src\community\stubs\pro.ts:540:export const sharedCategoryToLaunchpadActionCategoryMap = new Map<string, string>();
+src\community\stubs\pro.ts:795:export const getLaunchpadSummary: ProStubAny = proStub;
+src\community\stubs\pro.ts:796:export type getLaunchpadSummary<T = ProStubAny, T2 = ProStubAny, T3 = ProStubAny, T4 = ProStubAny> = ProStubAny;
+src\community\stubs\pro.ts:873:export const groupAndSortLaunchpadItems: ProStubAny = proStub;
+src\community\stubs\pro.ts:874:export type groupAndSortLaunchpadItems<T = ProStubAny, T2 = ProStubAny, T3 = ProStubAny, T4 = ProStubAny> = ProStubAny;
+src\community\stubs\pro.ts:888:export const LaunchpadCategorizedResult: ProStubAny = proStub;
+src\community\stubs\pro.ts:889:export type LaunchpadCategorizedResult = { items?: LaunchpadItem[] };
+src\community\stubs\pro.ts:890:export const LaunchpadCommand: ProStubAny = proStub;
+src\community\stubs\pro.ts:891:export type LaunchpadCommand<T = ProStubAny, T2 = ProStubAny, T3 = ProStubAny, T4 = ProStubAny> = ProStubAny;
+src\community\stubs\pro.ts:892:export const LaunchpadCommandArgs: ProStubAny = proStub;
+src\community\stubs\pro.ts:893:export type LaunchpadCommandArgs<T = ProStubAny, T2 = ProStubAny, T3 = ProStubAny, T4 = ProStubAny> = ProStubAny;
+src\community\stubs\pro.ts:894:export const LaunchpadGroup: ProStubAny = proStub;
+src\community\stubs\pro.ts:895:export type LaunchpadGroup = string;
+src\community\stubs\pro.ts:896:export const launchpadGroupIconMap: ProStubAny = proStub;
+src\community\stubs\pro.ts:897:export type launchpadGroupIconMap<T = ProStubAny, T2 = ProStubAny, T3 = ProStubAny, T4 = ProStubAny> = ProStubAny;
+src\community\stubs\pro.ts:898:export const launchpadGroupLabelMap: ProStubAny = proStub;
+src\community\stubs\pro.ts:899:export type launchpadGroupLabelMap<T = ProStubAny, T2 = ProStubAny, T3 = ProStubAny, T4 = ProStubAny> = ProStubAny;
+src\community\stubs\pro.ts:900:export const LaunchpadIndicator: ProStubAny = proStub;
+src\community\stubs\pro.ts:901:export type LaunchpadIndicator<T = ProStubAny, T2 = ProStubAny, T3 = ProStubAny, T4 = ProStubAny> = ProStubAny;
+src\community\stubs\pro.ts:902:export const LaunchpadItem: ProStubAny = proStub;
+src\community\stubs\pro.ts:903:export type LaunchpadItem = {
+src\community\stubs\pro.ts:923:export const LaunchpadSummaryResult: ProStubAny = proStub;
+src\community\stubs\pro.ts:924:export type LaunchpadSummaryResult<T = ProStubAny, T2 = ProStubAny, T3 = ProStubAny, T4 = ProStubAny> = ProStubAny;
+src\constants.telemetry.ts:204:	/** Sent when the Commit Graph is shown */
+src\constants.telemetry.ts:206:	/** Sent when a Commit Graph command is executed */
+src\constants.telemetry.ts:209:	/** Sent when WeGit auto-fetch fires a `git fetch` for the visible Commit Graph */
+src\constants.telemetry.ts:212:	/** Sent when the user clicks on the Jump to HEAD/Reference (alt) header button on the Commit Graph */
+src\constants.telemetry.ts:214:	/** Sent when the user clicks on the "Jump to HEAD"/"Jump to Reference" (alt) header button on the Commit Graph */
+src\constants.telemetry.ts:216:	/** Sent when the user clicks on the "Open Repository on Remote" header button on the Commit Graph */
+src\constants.telemetry.ts:219:	/** Sent when the user changes the "branches visibility" on the Commit Graph */
+src\constants.telemetry.ts:221:	/** Sent when the user scopes the Commit Graph to a specific branch (Focus Branch feature) */
+src\constants.telemetry.ts:223:	/** Sent when the user clears the active Commit Graph scope */
+src\constants.telemetry.ts:225:	/** Sent when the user changes the columns on the Commit Graph */
+src\constants.telemetry.ts:227:	/** Sent when the user changes the filters on the Commit Graph */
+src\constants.telemetry.ts:229:	/** Sent when the user clears all filters on the Commit Graph */
+src\constants.telemetry.ts:231:	/** Sent when the user selects (clicks on) a day on the minimap on the Commit Graph */
+src\constants.telemetry.ts:233:	/** Sent when the user changes the current repository on the Commit Graph */
+src\constants.telemetry.ts:236:	/** Sent when the user points at a row on the Commit Graph (first time and every 100 times after) */
+src\constants.telemetry.ts:238:	/** Sent when the user selects (clicks on) a row or rows on the Commit Graph (first time and every 100 times after) */
+src\constants.telemetry.ts:240:	/** Sent when rows are loaded into the Commit Graph */
+src\constants.telemetry.ts:242:	/** Sent when a search was performed on the Commit Graph */
+src\features.ts:110:			return 'Commit Graph';
+src\env\node\git\squashEditor.ts:5: * Returns git's `sequence.editor` command for the Commit Graph's headless squash/drop/reword, plus
+src\uris\deepLinks\deepLinkService.ts:1201:					message = 'Commit Graph is not available in this build.';
+src\git\utils\rebaseTodoEditor.ts:7: * Standalone Node script used as git's `sequence.editor` for the Commit Graph's headless
+src\webviews\rpc\__tests__\serialization-benchmark.test.ts:5: * GraphRow-like objects (the dominant payload shape for the Commit Graph
+src\webviews\apps\settings\settings.html:156:								title="Jump to Commit Graph settings"
+src\webviews\apps\settings\settings.html:157:								>Commit Graph</a
+src\webviews\apps\settings\partials\commit-graph.html:4:			Commit Graph&nbsp;<gl-feature-badge></gl-feature-badge>
+src\webviews\apps\settings\partials\commit-graph.html:12:			<a class="command command--show-view" title="Show Commit Graph" href="command:gitlens.showGraph"
+src\webviews\apps\settings\partials\commit-graph.html:13:				>Commit Graph</a
+src\webviews\apps\settings\partials\commit-graph.html:25:							<label for="graph.layout">Prefer showing the Commit Graph in the </label>
+src\webviews\apps\settings\partials\commit-graph.html:98:							<label for="graph.scrollMarkers.enabled">Show markers on the Commit Graph scrollbar</label>
+src\webviews\apps\settings\partials\menus.html:433:							<label for="menus.scm.graph">Add a <i>Show Commit Graph</i> command</label>
+src\webviews\apps\settings\partials\menus.html:497:							<label for="menus.scmRepositoryInline.graph">Add a <i>Show Commit Graph</i> command</label>
+src\webviews\apps\settings\partials\menus.html:575:							<label for="menus.scmRepository.graph">Add a <i>Show Commit Graph</i> command</label>
+src\webviews\apps\shared\glicons.scss:284:.glicon-launchpad-view:before {
+src\webviews\apps\shared\glicons.scss:287:.glicon-launchpad-view-filled:before {
+src\webviews\apps\shared\components\icons\glicons-map.ts:81:	'launchpad-view': '\\f128',
+src\webviews\apps\shared\components\icons\glicons-map.ts:82:	'launchpad-view-filled': '\\f129',
+src\webviews\apps\shared\styles\icons\glicons-map.scss:81:	'launchpad-view': '\f128',
+src\webviews\apps\shared\styles\icons\glicons-map.scss:82:	'launchpad-view-filled': '\f129',

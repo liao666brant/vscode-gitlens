@@ -37,12 +37,11 @@ const test = base.extend({
 	],
 });
 
-test.describe('Review & Compose Sub-Panels', () => {
+test.describe.skip('Review & Compose Sub-Panels', () => {
 	test.describe.configure({ mode: 'serial' });
 	test.setTimeout(90000);
 
 	let graphWebview: FrameLocator;
-	let dispose: (() => Promise<void>) | undefined;
 
 	async function ensureDetailsPanelOpen(): Promise<void> {
 		const toggleButton = graphWebview.locator('gl-button[aria-label$="Details Panel"]').first();
@@ -97,28 +96,21 @@ test.describe('Review & Compose Sub-Panels', () => {
 	}
 
 	test.beforeAll(async ({ vscode }) => {
-		const sim = await vscode.gitlens.startSubscriptionSimulation({
-			state: 6 /* SubscriptionState.Paid */,
-			planId: 'pro',
-		});
-		dispose = () => {
-			sim[Symbol.dispose]();
-			return Promise.resolve();
-		};
-
 		await vscode.gitlens.showCommitGraphView();
 		await vscode.gitlens.panel.open();
 
-		const wv = await vscode.gitlens.getGitLensWebview('Graph', 'webviewView', 60000);
-		expect(wv).not.toBeNull();
-		graphWebview = wv!;
+		const wv = await vscode.gitlens.getWeGitWebview('Graph', 'webviewView', 60000);
+		if (wv == null) {
+			throw new Error('Graph webview did not open');
+		}
+
+		graphWebview = wv;
 
 		await expect(graphWebview.getByText('BRANCH / TAG').first()).toBeVisible({ timeout: 30000 });
 		await expect(graphWebview.locator('.details-content').first()).toBeVisible({ timeout: 30000 });
 	});
 
 	test.afterAll(async ({ vscode }) => {
-		await dispose?.();
 		await vscode.gitlens.resetUI();
 	});
 

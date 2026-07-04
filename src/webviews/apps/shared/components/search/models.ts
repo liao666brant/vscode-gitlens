@@ -7,10 +7,7 @@ export type SearchCompletionItem = CompletionItem<
 	SearchCompletionOperator | SearchCompletionCommand | SearchCompletionValue
 >;
 
-export type SearchCompletionCommand =
-	| { command: 'toggle-natural-language-mode' }
-	| { command: 'pick-author' | 'pick-file'; multi?: boolean }
-	| { command: 'pick-folder' | 'pick-ref' | 'pick-comparison'; multi?: never };
+export type SearchCompletionCommand = { command: 'toggle-natural-language-mode' };
 
 export interface SearchCompletionValue {
 	/** The operator this value belongs to */
@@ -79,7 +76,7 @@ export const searchCompletionOperators: SearchCompletionOperator[] = [
 		description: '按作者筛选，查看特定团队成员的贡献',
 		icon: 'person',
 		aliases: ['@:'],
-		example: html`使用姓名或邮箱，例如 <code>author:eamodio</code>、<code>@:john</code>，或使用
+		example: html`使用姓名或邮箱，例如 <code>author:liao666brant</code>、<code>@:john</code>，或使用
 			<code>@me</code> 表示你自己的提交`,
 		values: [
 			{
@@ -87,12 +84,6 @@ export const searchCompletionOperators: SearchCompletionOperator[] = [
 				label: '@me',
 				description: '仅显示你自己的提交',
 				icon: 'person',
-			},
-			{
-				value: { command: 'pick-author', multi: true },
-				label: '选择作者\u2026',
-				description: '选择一个或多个贡献者进行筛选',
-				icon: 'organization',
 			},
 		],
 	},
@@ -110,20 +101,6 @@ export const searchCompletionOperators: SearchCompletionOperator[] = [
 		aliases: ['^:'],
 		example: html`使用引用进行筛选，例如 <code>ref:main</code> 或 <code>^:v1.0.0</code>；也可使用范围比较，例如
 			<code>ref:main..feature</code>（feature 中有而 main 中没有的提交）`,
-		values: [
-			{
-				value: { command: 'pick-ref' },
-				label: '选择分支或标签\u2026',
-				description: '选择一个分支或标签进行筛选',
-				icon: 'git-branch',
-			},
-			{
-				value: { command: 'pick-comparison' },
-				label: '选择比较范围\u2026',
-				description: '选择两个引用进行比较（例如 main..feature）',
-				icon: 'git-compare',
-			},
-		],
 	},
 	{
 		operator: 'type:',
@@ -159,20 +136,6 @@ export const searchCompletionOperators: SearchCompletionOperator[] = [
 		aliases: ['?:'],
 		example: html`使用路径或文件名，例如 <code>file:package.json</code>；也可使用 glob，例如
 			<code>?:src/**/*.ts</code>`,
-		values: [
-			{
-				value: { command: 'pick-file', multi: true },
-				label: '选择文件\u2026',
-				description: '选择一个或多个文件进行筛选',
-				icon: 'file',
-			},
-			{
-				value: { command: 'pick-folder' },
-				label: '选择文件夹\u2026',
-				description: '选择一个文件夹进行筛选',
-				icon: 'folder',
-			},
-		],
 	},
 	{
 		operator: 'change:',

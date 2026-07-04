@@ -37,7 +37,7 @@ export function findGkCliFromArgs(electronArgs: string[]): string {
 
 /**
  * Finds the IPC discovery file for a specific VS Code process.
- * GitLens writes one file per session to %TEMP%/gitkraken/gitlens/
+ * WeGit writes one file per session to the legacy %TEMP%/gitkraken/gitlens/ compatibility path.
  * with format: gitlens-ipc-server-{pid}-{port}.json.
  *
  * When `vscodePid` is provided, only files belonging to that process are considered,
@@ -89,7 +89,7 @@ export function findLatestIpcFile(vscodePid?: number): string | undefined {
 
 /**
  * Waits for the gk CLI proxy binary to appear on disk.
- * GitLens auto-installs it on first activation (~5–6 s).
+ * WeGit auto-installs it on first activation (~5–6 s).
  */
 export async function waitForCliInstall(gkPath: string, timeoutMs = 30_000): Promise<void> {
 	const deadline = Date.now() + timeoutMs;

@@ -403,7 +403,9 @@ export class SearchGitCommand extends QuickCommand<State> {
 		const step = createPickStep<(typeof items)[number]>({
 			title: appendReposToTitle(context.title, state, context),
 			placeholder:
-				aiAllowed && state.naturalLanguage ? '例如：“显示我上个月的提交”' : '例如：“更新依赖” author:eamodio',
+				aiAllowed && state.naturalLanguage
+					? '例如：“显示我上个月的提交”'
+					: '例如：“更新依赖” author:liao666brant',
 			ignoreFocusOut: true,
 			matchOnDescription: true,
 			matchOnDetail: true,

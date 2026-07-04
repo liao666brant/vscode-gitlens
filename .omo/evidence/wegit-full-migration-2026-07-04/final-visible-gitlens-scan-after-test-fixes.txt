@@ -1,0 +1,8 @@
+src/constants.ts:99:	GitLens = 'gitlens',
+src/constants.ts:100:	GitLensAIMarkdown = 'gitlens-ai-markdown',
+src/constants.ts:101:	GitLensVirtual = 'gitlens-virtual',
+src/constants.ts:113:		Schemes.GitLens,
+src/commands\walkthroughs.ts:100:export class WalkthroughGitLensInspectCommand extends GlCommandBase {
+src/commands\regenerateMarkdownDocument.ts:3:import { decodeGitLensRevisionUriAuthority } from '@gitlens/git/utils/uriAuthority.js';
+src/commands\regenerateMarkdownDocument.ts:22:		if (uri.scheme !== Schemes.GitLensAIMarkdown) {
+src/commands\regenerateMarkdownDocument.ts:35:			const metadata = decodeGitLensRevisionUriAuthority<MarkdownContentMetadata>(authority);

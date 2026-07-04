@@ -430,12 +430,6 @@ export class Container {
 
 	@memoize()
 	get env(): Environment {
-		if (this.prereleaseOrDebugging) {
-			const env = configuration.getAny('gitkraken.env');
-			if (env === 'dev') return 'dev';
-			if (env === 'staging') return 'staging';
-		}
-
 		return 'production';
 	}
 

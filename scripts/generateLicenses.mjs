@@ -59,7 +59,7 @@ async function generateThirdpartyNotices(packages) {
 		);
 	}
 
-	const content = `GitLens\n\nTHIRD-PARTY SOFTWARE NOTICES AND INFORMATION\nThis project incorporates components from the projects listed below.\n\n${packageOutputs.join(
+	const content = `WeGit\n\nTHIRD-PARTY SOFTWARE NOTICES AND INFORMATION\nThis project incorporates components from the projects listed below.\n\n${packageOutputs.join(
 		'\n',
 	)}\n${licenseOutputs.join('\n')}`;
 	fs.writeFileSync(path.join(process.cwd(), 'ThirdPartyNotices.txt'), content, 'utf8');

@@ -34,7 +34,7 @@ export async function showModePicker(): Promise<ModesQuickPickItem | undefined> 
 	}
 
 	const pick = await window.showQuickPick(items, {
-		placeHolder: '\u9009\u62e9\u8981\u8fdb\u5165\u7684 GitLens \u6a21\u5f0f',
+		placeHolder: '\u9009\u62e9\u8981\u8fdb\u5165\u7684 WeGit \u6a21\u5f0f',
 	});
 
 	return pick;

@@ -26,7 +26,7 @@ export class OpenTelemetryProvider implements TelemetryProvider {
 
 	constructor(context: TelemetryContext, debugging?: boolean) {
 		const exporter = new OTLPTraceExporter({
-			url: debugging ? 'https://otel-dev.gitkraken.com/v1/traces' : 'https://otel.gitkraken.com/v1/traces',
+			url: 'http://127.0.0.1:4318/v1/traces',
 			compression: CompressionAlgorithm.GZIP,
 		});
 
@@ -42,7 +42,7 @@ export class OpenTelemetryProvider implements TelemetryProvider {
 
 		this.provider = new BasicTracerProvider({
 			resource: resourceFromAttributes({
-				[ATTR_SERVICE_NAME]: 'gitlens',
+				[ATTR_SERVICE_NAME]: 'wegit',
 				[ATTR_SERVICE_VERSION]: context.extensionVersion,
 				// oxlint-disable-next-line typescript/no-deprecated -- intentional dual-write with the current attr below for backend compatibility
 				[ATTR_DEPLOYMENT_ENVIRONMENT]: context.env,

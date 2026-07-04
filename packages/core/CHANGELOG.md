@@ -1,6 +1,6 @@
 # Change Log
 
-All notable changes to `@gitkraken/core-gitlens` will be documented in this file.
+All notable changes to `@liao666brant/core-wegit` will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/) and this project adheres to [Semantic Versioning](http://semver.org/).
 
@@ -34,7 +34,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/) and this p
 
 - Initial release. Bundles `@gitlens/utils`, `@gitlens/git`, and `@gitlens/git-cli` into a single core npm package with subpath exports.
 
-[unreleased]: https://github.com/gitkraken/vscode-gitlens/compare/releases/core/v0.3.0...HEAD
-[0.3.0]: https://github.com/gitkraken/vscode-gitlens/compare/releases/core/v0.2.0...gitkraken:releases/core/v0.3.0
-[0.2.0]: https://github.com/gitkraken/vscode-gitlens/compare/releases/core/v0.1.0...gitkraken:releases/core/v0.2.0
-[0.1.0]: https://github.com/gitkraken/vscode-gitlens/releases/tag/releases/core/v0.1.0
+[unreleased]: https://github.com/liao666brant/vscode-gitlens/compare/releases/core/v0.3.0...HEAD
+[0.3.0]: https://github.com/liao666brant/vscode-gitlens/compare/releases/core/v0.2.0...releases/core/v0.3.0
+[0.2.0]: https://github.com/liao666brant/vscode-gitlens/compare/releases/core/v0.1.0...releases/core/v0.2.0
+[0.1.0]: https://github.com/liao666brant/vscode-gitlens/releases/tag/releases/core/v0.1.0

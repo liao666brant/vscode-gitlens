@@ -5,7 +5,7 @@ import { registerIconLibrary } from '@awesome.me/webawesome/dist/components/icon
  * `<wa-icon>` then fetches. VS Code webviews block these fetches under the default CSP,
  * spamming the console.
  *
- * GitLens uses `<code-icon>` (codicons) for all UI iconography. Where a Web Awesome component
+ * WeGit uses `<code-icon>` (codicons) for all UI iconography. Where a Web Awesome component
  * exposes a slot for its internal icon (e.g. `wa-select[slot="expand-icon"]`), we slot a
  * `<code-icon>` directly. Where it does not, the icon is hidden via CSS in the consumer's
  * stylesheet.

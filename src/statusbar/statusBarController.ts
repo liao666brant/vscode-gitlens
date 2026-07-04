@@ -71,15 +71,15 @@ export class StatusBarController implements Disposable {
 						alignment,
 						alignment === StatusBarAlignment.Right ? 999 : 1,
 					);
-				this._statusBarMode.name = 'GitLens Modes';
+				this._statusBarMode.name = 'WeGit Modes';
 				this._statusBarMode.command = 'gitlens.switchMode' satisfies GlCommands;
 				this._statusBarMode.text = mode.statusBarItemName;
 				this._statusBarMode.tooltip = new MarkdownString(
-					`**${mode.statusBarItemName}** ${GlyphChars.Dash} ${mode.description}\n\n---\n\n点击切换 GitLens 模式`,
+					`**${mode.statusBarItemName}** ${GlyphChars.Dash} ${mode.description}\n\n---\n\n点击切换 WeGit 模式`,
 					true,
 				);
 				this._statusBarMode.accessibilityInformation = {
-					label: `GitLens 模式：${mode.statusBarItemName}\n点击切换 GitLens 模式`,
+					label: `WeGit 模式：${mode.statusBarItemName}\n点击切换 WeGit 模式`,
 				};
 				this._statusBarMode.show();
 			} else {
@@ -115,7 +115,7 @@ export class StatusBarController implements Disposable {
 					alignment,
 					alignment === StatusBarAlignment.Right ? 1000 : 0,
 				);
-			this._statusBarBlame.name = 'GitLens Current Line Blame';
+			this._statusBarBlame.name = 'WeGit Current Line Blame';
 			this._statusBarBlame.command = configuration.get('statusBar.command');
 
 			if (configuration.changed(e, 'statusBar.enabled')) {

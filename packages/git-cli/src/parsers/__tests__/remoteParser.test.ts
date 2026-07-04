@@ -6,7 +6,7 @@ suite('Remote Parser Test Suite', () => {
 	suite('parseGitRemotes', () => {
 		test('parses single remote with fetch and push URLs', () => {
 			const data =
-				'origin\thttps://github.com/gitkraken/vscode-gitlens.git (fetch)\norigin\thttps://github.com/gitkraken/vscode-gitlens.git (push)\n';
+				'origin\thttps://github.com/liao666brant/vscode-gitlens.git (fetch)\norigin\thttps://github.com/liao666brant/vscode-gitlens.git (push)\n';
 			const remotes = parseGitRemotes(data, '/repo/path', undefined);
 
 			assert.strictEqual(remotes.length, 1);
@@ -14,17 +14,17 @@ suite('Remote Parser Test Suite', () => {
 			assert.strictEqual(remote.name, 'origin');
 			assert.strictEqual(remote.scheme, 'https://');
 			assert.strictEqual(remote.domain, 'github.com');
-			assert.strictEqual(remote.path, 'gitkraken/vscode-gitlens');
+			assert.strictEqual(remote.path, 'liao666brant/vscode-gitlens');
 			assert.strictEqual(remote.urls.length, 2);
 			assert.strictEqual(remote.urls[0].type, 'fetch');
 			assert.strictEqual(remote.urls[1].type, 'push');
 		});
 
 		test('parses multiple remotes', () => {
-			const data = `origin\tgit@github.com:gitkraken/vscode-gitlens.git (fetch)
-origin\tgit@github.com:gitkraken/vscode-gitlens.git (push)
-upstream\thttps://github.com/eamodio/vscode-gitlens.git (fetch)
-upstream\thttps://github.com/eamodio/vscode-gitlens.git (push)
+			const data = `origin\tgit@github.com:liao666brant/vscode-gitlens.git (fetch)
+origin\tgit@github.com:liao666brant/vscode-gitlens.git (push)
+upstream\thttps://github.com/liao666brant/vscode-gitlens.git (fetch)
+upstream\thttps://github.com/liao666brant/vscode-gitlens.git (push)
 `;
 			const remotes = parseGitRemotes(data, '/repo/path', undefined);
 
@@ -37,7 +37,7 @@ upstream\thttps://github.com/eamodio/vscode-gitlens.git (push)
 			const upstream = remotes.find(r => r.name === 'upstream');
 			assert.ok(upstream);
 			assert.strictEqual(upstream.domain, 'github.com');
-			assert.strictEqual(upstream.path, 'eamodio/vscode-gitlens');
+			assert.strictEqual(upstream.path, 'liao666brant/vscode-gitlens');
 		});
 
 		test('returns empty array for empty data', () => {

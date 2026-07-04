@@ -632,7 +632,7 @@ export class CommitDetailsActions {
 	}
 
 	/**
-	 * Execute a non-webview GitLens command.
+	 * Execute a non-webview WeGit command.
 	 */
 	executeCommand(command: GlExtensionCommands, ...args: unknown[]): void {
 		fireAndForget(this.services.commands.execute(command, ...args), `command: ${command}`);

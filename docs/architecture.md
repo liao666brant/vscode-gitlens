@@ -1,6 +1,6 @@
-# GitLens Architecture Reference
+# WeGit Architecture Reference
 
-Detailed architecture documentation for the GitLens VS Code extension. For the directory structure overview, see `AGENTS.md`.
+Detailed architecture documentation for the WeGit VS Code extension. For the directory structure overview, see `AGENTS.md`.
 
 ## Testing Structure
 
@@ -85,7 +85,7 @@ Git Execution (Node: child_process | Browser: APIs (GitHub))
 - **Host-Guest Communication**: IPC between extension host and webviews
 - Webviews built with **Lit Elements only** for reactive UI components
 - **State Management**: Context providers with Lit reactive patterns and signals
-- **Major webviews**: Commit Details, Home, Rebase, Settings, Welcome
+- **Major webviews**: Commit Details, Rebase, Settings, Welcome
 - Webviews bundled separately from extension (separate webpack config)
 
 ### 5. Caching Strategy

@@ -1,5 +1,5 @@
 /**
- * GitLens-side wrapper around supertalk's AbortSignalHandler that preserves
+ * WeGit-side wrapper around supertalk's AbortSignalHandler that preserves
  * the abort `reason` across the wire.
  *
  * The upstream handler stores `signal.reason` directly in the wire payload.

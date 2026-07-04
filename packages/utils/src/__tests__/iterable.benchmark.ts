@@ -1,7 +1,7 @@
 /**
  * Iterable utilities performance benchmark
  *
- * Compares performance of generator-based vs iterator-based implementations for common iterable operations used throughout GitLens
+ * Compares performance of generator-based vs iterator-based implementations for common iterable operations used throughout WeGit
  */
 
 import { Bench } from 'tinybench';

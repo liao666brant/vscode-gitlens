@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * General-purpose tool for launching VS Code with GitLens and inspecting it
+ * General-purpose tool for launching VS Code with WeGit and inspecting it
  * via Playwright. Supports two modes:
  *
  *   Development mode (default):
@@ -22,7 +22,7 @@
  *   --keep-open              Keep VS Code running (Ctrl+C to stop)
  *   --setting <key=value>    Add a custom VS Code setting (repeatable)
  *   --wait <ms>              Default wait between actions (default 3000)
- *   --activation-wait <ms>  Wait time for GitLens activation (default 8000)
+ *   --activation-wait <ms>  Wait time for WeGit activation (default 8000)
  *   --workspace <path>       Path to open as workspace (default: extension root)
  *   --vscode-path <path>     Path to VS Code Electron binary (auto-detected)
  *   --download-vscode        Download a portable VS Code binary (for WSL/SSH/CI)
@@ -37,7 +37,7 @@
  *   --click <sel>             Click an element matching CSS selector
  *   --click-frame <sel>       Click inside a webview iframe
  *   --screenshot <path>       Save a screenshot
- *   --logs [pattern]          Search extension logs (default pattern: all GitLens)
+ *   --logs [pattern]          Search extension logs (default pattern: all WeGit)
  *   --eval <expr>             Evaluate a JS expression in extension host (requires --with-evaluator)
  *   --pause <ms>              Wait for a specified duration
  *
@@ -186,7 +186,7 @@ function parseArgs(argv) {
 			case '--logs': {
 				const next = argv[i + 1];
 				const hasVal = next && !next.startsWith('--');
-				opts.actions.push({ type: 'logs', value: hasVal ? argv[++i] : 'GitLens' });
+				opts.actions.push({ type: 'logs', value: hasVal ? argv[++i] : 'WeGit' });
 				break;
 			}
 			case '--eval':
@@ -609,7 +609,7 @@ async function main() {
 			console.log('Evaluator bridge connected.');
 		}
 
-		console.log('Waiting for GitLens to activate...');
+		console.log('Waiting for WeGit to activate...');
 		await page.waitForTimeout(opts.activationWait);
 		console.log('Ready.\n');
 

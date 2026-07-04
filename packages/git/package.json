@@ -1,6 +1,6 @@
 {
 	"name": "@gitlens/git",
-	"description": "GitLens Git package",
+	"description": "WeGit Git package",
 	"version": "0.0.1",
 	"license": "SEE LICENSE IN LICENSE",
 	"private": true,

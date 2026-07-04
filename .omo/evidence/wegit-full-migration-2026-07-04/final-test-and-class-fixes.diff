@@ -1,0 +1,102 @@
+diff --git a/src/commands/__tests__/stashSave.test.ts b/src/commands/__tests__/stashSave.test.ts
+index 5540db2cb..3a6bf2756 100644
+--- a/src/commands/__tests__/stashSave.test.ts
++++ b/src/commands/__tests__/stashSave.test.ts
+@@ -147,7 +147,7 @@ suite('StashSave Helpers', () => {
+ 			assert.ok(result != null);
+ 			assert.strictEqual(result.onlyStaged, undefined);
+ 			assert.ok(showWarningMessageStub.calledOnce);
+-			assert.ok((showWarningMessageStub.firstCall.args[0] as string).includes('no staged changes'));
++			assert.ok((showWarningMessageStub.firstCall.args[0] as string).includes('没有可暂存的已暂存更改'));
+ 		});
+ 
+ 		test('no staged changes and user cancels returns undefined', async () => {
+@@ -248,7 +248,7 @@ suite('StashSave Helpers', () => {
+ 
+ 			assert.ok(result != null);
+ 			assert.ok(showWarningMessageStub.calledOnce);
+-			assert.ok((showWarningMessageStub.firstCall.args[0] as string).includes('no unstaged changes'));
++			assert.ok((showWarningMessageStub.firstCall.args[0] as string).includes('没有可暂存的未暂存更改'));
+ 		});
+ 
+ 		test('no working or untracked changes and user cancels returns undefined', async () => {
+diff --git a/src/commands/walkthroughs.ts b/src/commands/walkthroughs.ts
+index 545385549..a0d29774f 100644
+--- a/src/commands/walkthroughs.ts
++++ b/src/commands/walkthroughs.ts
+@@ -97,7 +97,7 @@ export class WalkthroughOpenHelpCenterCommand extends GlCommandBase {
+ }
+ 
+ @command()
+-export class WalkthroughGitLensInspectCommand extends GlCommandBase {
++export class WalkthroughWeGitInspectCommand extends GlCommandBase {
+ 	constructor(private readonly container: Container) {
+ 		super('gitlens.walkthrough.gitlensInspect');
+ 	}
+diff --git a/src/webviews/rpc/services/__tests__/discard.test.ts b/src/webviews/rpc/services/__tests__/discard.test.ts
+index 805207820..e26f4b159 100644
+--- a/src/webviews/rpc/services/__tests__/discard.test.ts
++++ b/src/webviews/rpc/services/__tests__/discard.test.ts
+@@ -1,6 +1,7 @@
+ import * as assert from 'assert';
+ import { execFileSync } from 'child_process';
+ import { existsSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'fs';
++import { rm } from 'fs/promises';
+ import { tmpdir } from 'os';
+ import { join } from 'path';
+ import { Uri } from 'vscode';
+@@ -26,6 +27,31 @@ function git(repo: string, ...args: string[]): string {
+ 	});
+ }
+ 
++const rmMaxAttempts = 20;
++const rmRetryDelay = 100;
++
++function wait(ms: number): Promise<void> {
++	return new Promise(resolve => setTimeout(resolve, ms));
++}
++
++async function rmTestPath(path: string): Promise<void> {
++	let lastError: unknown;
++	for (let attempt = 1; attempt <= rmMaxAttempts; attempt++) {
++		try {
++			await rm(path, { force: true, recursive: true });
++			return;
++		} catch (ex) {
++			lastError = ex;
++			if (attempt === rmMaxAttempts) break;
++
++			await wait(rmRetryDelay);
++		}
++	}
++
++	const message = lastError instanceof Error ? lastError.message : String(lastError);
++	throw new Error(`Failed to remove test path: ${message}`);
++}
++
+ /** Parse `git status --porcelain` into the GitStatusFile the provider would build for `path`. */
+ function statusFileOf(repo: string, path: string): GitStatusFile {
+ 	const out = execFileSync('git', ['status', '--porcelain'], { cwd: repo, encoding: 'utf8', env: gitEnv });
+@@ -53,9 +79,8 @@ function gitExec(repo: string): DiscardExecutor {
+ 	return {
+ 		canRestore: true,
+ 		providerName: 'test',
+-		moveToTrash: uri => {
+-			rmSync(uri.fsPath, { force: true, recursive: true });
+-			return Promise.resolve();
++		moveToTrash: async uri => {
++			await rmTestPath(uri.fsPath);
+ 		},
+ 		unstage: path => {
+ 			git(repo, 'reset', '-q', '--', path);
+@@ -100,8 +125,8 @@ suite('discard.utils — discardOneWith (temp repo)', function () {
+ 		git(repo, 'init', '-q', '-b', 'main');
+ 	});
+ 
+-	teardown(() => {
+-		rmSync(repo, { recursive: true, force: true });
++	teardown(async () => {
++		await rmTestPath(repo);
+ 	});
+ 
+ 	const commit = (msg: string): void => {

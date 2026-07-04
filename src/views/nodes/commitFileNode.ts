@@ -164,7 +164,7 @@ export abstract class CommitFileNodeBase<
 	override getCommand(): Command | undefined {
 		let range: DiffRange;
 		if (this.commit.lines.length) {
-			// TODO@eamodio should the endLine be the last line of the commit?
+			// TODO should the endLine be the last line of the commit?
 			range = {
 				startLine: this.commit.lines[0].line,
 				startCharacter: 1,

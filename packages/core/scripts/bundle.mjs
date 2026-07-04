@@ -124,7 +124,7 @@ const specifierRegex = /(['"])@gitlens\/(utils|ipc|git|git-cli)\/([^'"]+)\1/g;
 // references the internal `@gitlens/*` names. Backticks are required to avoid false positives on
 // URLs or other incidental occurrences of the substring.
 const docMentionRegex = /`@gitlens\/(utils|ipc|git|git-cli)`/g;
-const publishedName = '@gitkraken/core-gitlens';
+const publishedName = '@liao666brant/core-wegit';
 
 async function rewriteSpecifiers() {
 	const distRoot = join(coreRoot, distName);

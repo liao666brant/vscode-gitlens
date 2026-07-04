@@ -1,6 +1,6 @@
-# Supported Links into GitLens
+# Supported Links into WeGit
 
-This document covers the various VSCode link formats that work with GitLens, along with their formats, parameters and descriptions.
+This document covers the various VSCode link formats that work with WeGit, along with their formats, parameters and descriptions.
 
 ## Contents
 
@@ -13,7 +13,7 @@ This document covers the various VSCode link formats that work with GitLens, alo
 - [Comparison](#comparison 'Jump to Comparison')
 - [File/Lines](#filelines 'Jump to File/Lines')
 
-### GitKraken Account Links
+### WeGit Account Links
 
 - [Login](#login 'Jump to Login')
 
@@ -29,13 +29,13 @@ The following are used in link notation in this document:
 
 - _(contents)_ notation means that the _contents_ within the _()_ are optional in the deep link. The actual deep link does not include the _()_ symbols if the contents are included.
 
-- _{reference}_ is a short-form reference to some content previously defined in the document. For example, if we define _branchLink_ as _b_ and _prefix_ as _vscode://eamodio.gitlens/link_, then the notation _{prefix}/{branchLink}_ is short-form for _vscode://eamodio.gitlens/link/b_. The reference name and _{}_ should not be included in the link.
+- _{reference}_ is a short-form reference to some content previously defined in the document. For example, if we define _branchLink_ as _b_ and _prefix_ as _vscode://liao666brant.wegit/link_, then the notation _{prefix}/{branchLink}_ is short-form for _vscode://liao666brant.wegit/link/b_. The reference name and _{}_ should not be included in the link.
 
 ## Repository Item Deep Links
 
 ### Common References
 
-- _{prefix}_ = _vscode://eamodio.gitlens/link_
+- _{prefix}_ = _vscode://liao666brant.wegit/link_
 
 - _{remoteUrl}_ is the pull URL of a git remote, including the .git part. You can see this url when, for example, choosing “Clone” on the repo’s/remote’s page in GitHub.
 
@@ -47,7 +47,7 @@ The following are used in link notation in this document:
 
 ### Notes
 
-- **Repository Matching**: To find a matching repository in repo item deep links, we first check the list of GitLens' known/open repositories in state. We use the repo’s disk path first, if provided, and then the remote URL, if provided, and then the repo ID (first commit SHA), if provided, to find a match within this list. If no matches are found, we check the shared GK folder on the user’s machine to match against the remote URL provided. This shared folder contains a mapping of remote URL to disk path on machine. If matches are found there, we offer the user the option to open one of those matching repos in a prompt.
+- **Repository Matching**: To find a matching repository in repo item deep links, we first check the list of WeGit's known/open repositories in state. We use the repo’s disk path first, if provided, and then the remote URL, if provided, and then the repo ID (first commit SHA), if provided, to find a match within this list. If no matches are found, we check the shared GK folder on the user’s machine to match against the remote URL provided. This shared folder contains a mapping of remote URL to disk path on machine. If matches are found there, we offer the user the option to open one of those matching repos in a prompt.
 
 - **Remote URL**: Make sure you set a remote url on the deep link in which the target the link is pointing to exists.
 
@@ -55,7 +55,7 @@ The following are used in link notation in this document:
 
 #### Description
 
-Used to open a (remote) repository in GitLens. Once the repository is opened, the Commit Graph will open to that repository.
+Used to open a (remote) repository in WeGit. Once the repository is opened, WeGit will bring that repository into focus.
 
 #### Format
 
@@ -63,13 +63,13 @@ _{prefix}/r/{repoId}?{baseQuery}_
 
 #### Example Usage
 
-Right click a remote in the Remotes view and choose "Share -> Copy Link to Repository", and share with a teammate. When they access the link, GitLens will help them clone the repository, open it in GitLens, add the remote you linked, and open the Commit Graph to the repository, step-by-step.
+Right click a remote in the Remotes view and choose "Share -> Copy Link to Repository", and share with a teammate. When they access the link, WeGit will help them clone the repository, open it in WeGit, and add the remote you linked, step-by-step.
 
 ### Branch
 
 #### Description
 
-Used to open a (remote) branch in GitLens. Once the branch's repository is opened, GitLens will open the Commit Graph to that repository and select the branch, or perform another action if specified (see _{action}_ in _References_ below).
+Used to open a (remote) branch in WeGit. Once the branch's repository is opened, WeGit will resolve the branch target, or perform another action if specified (see _{action}_ in _References_ below).
 
 #### Format
 
@@ -79,7 +79,7 @@ _{prefix}/r/{repoId}/b/{branchName}?{baseQuery}(&action={action})(&prId={prId})(
 
 - _{branchName}_ is the name of the branch. Note that the remote name should not be included. Instead, _{remoteUrl}_ is used to determine the remote for the branch. So if the branch _test_ is located on _origin_, for example, _{branchName}_ should just be _test_ and the remote url of _origin_ should be used for the _{remoteUrl}_ parameter. You should not set _{branchName}_ to _origin/test_ in this example.
 
-- _{action}_ is an optional query parameter that represents the action to take on the branch target. By default, the action on all repository item deep links, including branch deep links, is to open the commit graph and select the row pertaining to the item. This parameter allows the link to complete other actions instead:
+- _{action}_ is an optional query parameter that represents the action to take on the branch target. By default, repository item deep links reveal the target in WeGit. This parameter allows the link to complete other actions instead:
   - _switch_: Switch to the branch (with options to checkout, create a new local branch if desired, or create/open a worktree).
 
   - _switch-to-pr_: Does everything that the _switch_ action does, but also opens the inspect overview, which contains details about pull requests related to the branch.
@@ -100,13 +100,13 @@ _{prefix}/r/{repoId}/b/{branchName}?{baseQuery}(&action={action})(&prId={prId})(
 
 #### Example Usage
 
-Right click a branch in the Commit Graph and choose "Share -> Copy Link to Branch", select a remote to copy the branch for, and share with a teammate. When they access the link, GitLens will help them clone the repository, open it in GitLens, add the remote you linked, and open the Commit Graph to the branch, step-by-step.
+Right click a branch in the Branches view and choose "Share -> Copy Link to Branch", select a remote to copy the branch for, and share with a teammate. When they access the link, WeGit will help them clone the repository, open it in WeGit, add the remote you linked, and reveal the branch target, step-by-step.
 
 ### Commit
 
 #### Description
 
-Used to open a (remote) commit in GitLens. Once the commit's repository is opened, GitLens will open the Commit Graph to that repository and select the commit.
+Used to open a (remote) commit in WeGit. Once the commit's repository is opened, WeGit will reveal the commit details.
 
 #### Format
 
@@ -118,13 +118,13 @@ _{prefix}/r/{repoId}/c/{commitSha}?{baseQuery}_
 
 #### Example Usage
 
-Right click a commit in the Commit Graph and choose "Share -> Copy Link to Commit", select a remote to copy the commit for, and share with a teammate. When they access the link, GitLens will help them clone the repository, open it in GitLens, add the remote you linked, and open the Commit Graph to the commit, step-by-step.
+Right click a commit in the Commits view and choose "Share -> Copy Link to Commit", select a remote to copy the commit for, and share with a teammate. When they access the link, WeGit will help them clone the repository, open it in WeGit, add the remote you linked, and reveal the commit details, step-by-step.
 
 ### Tag
 
 #### Description
 
-Used to open a (remote) tag in GitLens. Once the tag's repository is opened, GitLens will open the Commit Graph to that repository and select the tag.
+Used to open a (remote) tag in WeGit. Once the tag's repository is opened, WeGit will reveal the tag target.
 
 #### Format
 
@@ -136,7 +136,7 @@ _{prefix}/r/{repoId}/t/{tagName}?{baseQuery}_
 
 #### Example Usage
 
-Right click a tag in the Tags View and choose "Share -> Copy Link to Tag", select a remote to copy the tag for, and share with a teammate. When they access the link, GitLens will help them clone the repository, open it in GitLens, add the remote you linked, and open the Commit Graph to the tag, step-by-step.
+Right click a tag in the Tags View and choose "Share -> Copy Link to Tag", select a remote to copy the tag for, and share with a teammate. When they access the link, WeGit will help them clone the repository, open it in WeGit, add the remote you linked, and reveal the tag target, step-by-step.
 
 ### Comparison
 
@@ -150,7 +150,7 @@ _{prefix}/r/{repoId}/compare/{ref1}[..|...]{ref2}?{baseQuery}(&prRepoUrl={prRepo
 
 #### References
 
-- _{ref1}_ and _{ref2}_ are the two refs to compare, in reverse order i.e. GitLens will compare _{ref2}_ to _{ref1}_ in the _Search & Compare_ view. These refs can be a branch name, tag name, or commit SHA. A blank ref means “working tree”. Both refs cannot be blank.
+- _{ref1}_ and _{ref2}_ are the two refs to compare, in reverse order i.e. WeGit will compare _{ref2}_ to _{ref1}_ in the _Search & Compare_ view. These refs can be a branch name, tag name, or commit SHA. A blank ref means “working tree”. Both refs cannot be blank.
 
 - _{prRepoUrl}_ is an optional parameter, generally used for Pull Request comparisons, representing the pull URL of the git remote that represents the head commit of the Pull Request. It is formatted similar to _{remoteUrl}_, so see Common References section above to learn how to format it.
 
@@ -158,7 +158,7 @@ _{prefix}/r/{repoId}/compare/{ref1}[..|...]{ref2}?{baseQuery}(&prRepoUrl={prRepo
 
 #### Example Usage
 
-Share the changes of a pull request by right clicking the pull request's branch in the Commit Graph and choose "Compare with Common Base". The changes should be opened in the _Search & Compare_ view. Right click the Comparison item in the _Search & Compare_ view and choose "Share -> Copy Link to Comparison", and choose a remote to copy the comparison for. Share the link with a teammate. When they access the link, GitLens will help them clone the repository, open it in GitLens, add the remote, and open the _Search & Compare_ view to the pull request's changes, step-by-step.
+Share the changes of a pull request by opening the pull request comparison in the _Search & Compare_ view. Right click the Comparison item in the _Search & Compare_ view and choose "Share -> Copy Link to Comparison", and choose a remote to copy the comparison for. Share the link with a teammate. When they access the link, WeGit will help them clone the repository, open it in WeGit, add the remote, and open the _Search & Compare_ view to the pull request's changes, step-by-step.
 
 ### File/Lines
 
@@ -180,23 +180,23 @@ _{prefix}/r/{repoId}/f/{filePath}?{baseQuery}(&lines={lines})(&ref={ref})_
 
 #### Example Usage
 
-To guide a teammate to a specific line of code, right click the line in the editor and choose "Share -> Copy Link to Code". Then choose which remote to target. If you prefer to target a block of code or multiple lines, highlight the lines and then right click the highlighted code and choose "Copy As -> Copy Link to Code". Then share the link with a teammate. When they access the link, GitLens will help them clone the repository, open it in GitLens, add the remote, and open the file to the specified lines of code, step-by-step.
+To guide a teammate to a specific line of code, right click the line in the editor and choose "Share -> Copy Link to Code". Then choose which remote to target. If you prefer to target a block of code or multiple lines, highlight the lines and then right click the highlighted code and choose "Copy As -> Copy Link to Code". Then share the link with a teammate. When they access the link, WeGit will help them clone the repository, open it in WeGit, add the remote, and open the file to the specified lines of code, step-by-step.
 
-## GitKraken Cloud Item Deep Links
+## WeGit Cloud Item Deep Links
 
 ### Common References
 
-- _{prefix}_ = _vscode://eamodio.gitlens/link_
+- _{prefix}_ = _vscode://liao666brant.wegit/link_
 
 ### Notes
 
-- Accessing these deep links requires a GitKraken account.
+- Accessing these deep links requires a WeGit account.
 
 ### Cloud Workspace
 
 #### Description
 
-Used to open a cloud workspace in GitLens.
+Used to open a cloud workspace in WeGit.
 
 #### Format
 
@@ -208,23 +208,23 @@ _{prefix}/workspace/{workspaceId}_
 
 #### Example Usage
 
-Right click a cloud workspace in the _Cloud Workspaces_ view and choose "Share -> Copy Link to Workspace". Use this link to open the view to the chosen workspace in GitLens.
+Right click a cloud workspace in the _Cloud Workspaces_ view and choose "Share -> Copy Link to Workspace". Use this link to open the view to the chosen workspace in WeGit.
 
-## GitKraken Account Links
+## WeGit Account Links
 
 ### Login
 
 #### Description
 
-Used to log in to a GitKraken account from GitLens.
+Used to log in to a WeGit account from WeGit.
 
 #### Format
 
-_vscode://eamodio.gitlens/login?code={code}(&state={state})(&context={context})_
+_vscode://liao666brant.wegit/login?code={code}(&state={state})(&context={context})_
 
 #### References
 
-- _{code}_ is an exchange code used to authenticate the user with GitKraken’s API.
+- _{code}_ is an exchange code used to authenticate the user with WeGit's API.
 
 - _{state}_ is an optional parameter representing the state used to retrieve the code, if applicable. If a state was used to retrieve the code, it must be included in the link or the login will fail.
 
@@ -232,7 +232,7 @@ _vscode://eamodio.gitlens/login?code={code}(&state={state})(&context={context})_
 
 #### Example Usage
 
-External sources, such as GitKraken web pages, can use these links internally to get you into GitLens and logged in to your GitKraken account.
+External sources, such as WeGit web pages, can use these links internally to get you into WeGit and logged in to your WeGit account.
 
 ## Other Links
 
@@ -240,7 +240,7 @@ External sources, such as GitKraken web pages, can use these links internally to
 
 #### Description
 
-Used to run a GitLens command.
+Used to run a WeGit command.
 
 #### Format
 
@@ -249,27 +249,25 @@ _{prefix}/command/{command}(?source={source})_
 #### References
 
 - _{command}_ is the name of the command to run. Currently supported values include:
-  - _graph_ - Runs the `GitLens: Show Graph` command.
+  - _graph_ - Runs the `WeGit: Show Graph` command.
 
-  - _home_ - Runs the `GitLens: Show Home View` command.
+  - _inspect_ - Runs the `WeGit: Inspect Commit Details` command.
 
-  - _inspect_ - Runs the `GitLens: Inspect Commit Details` command.
+  - _install-mcp_ - Runs the `WeGit: Install MCP` command.
 
-  - _install-mcp_ - Runs the `GitLens: Install MCP` command.
+  - _login_ - Runs the `WeGit: Sign In to WeGit...` command.
 
-  - _login_ - Runs the `GitLens: Sign In to GitKraken...` command.
+  - _signup_ - Runs the `WeGit: Sign Up for WeGit...` command.
 
-  - _signup_ - Runs the `GitLens: Sign Up for GitKraken...` command.
+  - _walkthrough_ - Runs the `WeGit: Get Started` command.
 
-  - _walkthrough_ - Runs the `GitLens: Get Started` command.
-
-  - _worktrees_ - Runs the `GitLens: Show Worktrees View` command.
+  - _worktrees_ - Runs the `WeGit: Show Worktrees View` command.
 
 - _{source}_ is an optional parameter representing the `source.detail` for the command's telemetry.
 
 #### Example Usage
 
-External sources, such as GitKraken web pages, can use these links to directly run a GitLens command.
+External sources, such as WeGit web pages, can use these links to directly run a WeGit command.
 
 ### Integrations
 

@@ -33,9 +33,7 @@ export class ConfigureCustomRemoteProviderCommandQuickPickItem extends CommandQu
 	}
 
 	override async execute(): Promise<void> {
-		await env.openExternal(
-			Uri.parse('https://help.gitkraken.com/gitlens/gitlens-settings/#remote-provider-integration-settings'),
-		);
+		await env.openExternal(Uri.parse('https://github.com/liao666brant/vscode-gitlens#readme'));
 	}
 }
 

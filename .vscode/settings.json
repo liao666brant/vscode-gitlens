@@ -48,5 +48,6 @@
 	"oxc.enable.oxfmt": false,
 	"search.exclude": {
 		"**/dist": true
-	}
+	},
+	"cSpell.words": ["wegit"]
 }

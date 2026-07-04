@@ -2,7 +2,7 @@
 
 ## Overview
 
-`@gitlens/git` is a standalone Git operations library extracted from GitLens. It runs in plain Node.js with no VS Code dependency. The package uses wildcard exports (no barrel `index.ts`) — every source file is individually importable.
+`@gitlens/git` is a standalone Git operations library extracted from WeGit. It runs in plain Node.js with no VS Code dependency. The package uses wildcard exports (no barrel `index.ts`) — every source file is individually importable.
 
 ## Quick Start
 

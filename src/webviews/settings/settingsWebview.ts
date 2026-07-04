@@ -211,18 +211,18 @@ export class SettingsWebviewProvider implements WebviewProvider<State, State, Se
 			case 'commit':
 			case 'commit-uncommitted': {
 				const commit = new GitCommit(
-					'~/code/eamodio/vscode-gitlens-demo',
+					'~/code/liao666brant/wegit-demo',
 					'fe26af408293cba5b4bfd77306e1ac9ff7ccaef8',
 					new GitCommitIdentity(
-						'Eric Amodio',
-						'eamodio@gmail.com',
+						'liao666brant',
+						'liao666brant@example.com',
 						new Date('2016-11-12T20:41:00.000Z'),
 						undefined,
 						true,
 					),
 					new GitCommitIdentity(
-						'Eric Amodio',
-						'eamodio@gmail.com',
+						'liao666brant',
+						'liao666brant@example.com',
 						new Date('2020-11-01T06:57:21.000Z'),
 						undefined,
 						true,
@@ -235,10 +235,10 @@ export class SettingsWebviewProvider implements WebviewProvider<State, State, Se
 						filtered: {
 							files: [
 								new GitFileChange(
-									'~/code/eamodio/vscode-gitlens-demo',
+									'~/code/liao666brant/wegit-demo',
 									'code.ts',
 									GitFileIndexStatus.Modified,
-									joinUriPath(fileUri('/code/eamodio/vscode-gitlens-demo'), 'code.ts'),
+									joinUriPath(fileUri('/code/liao666brant/wegit-demo'), 'code.ts'),
 								),
 							],
 							pathspec: 'code.ts',
@@ -260,16 +260,16 @@ export class SettingsWebviewProvider implements WebviewProvider<State, State, Se
 					pr = new PullRequest(
 						{ id: 'github', name: 'GitHub', domain: 'github.com', icon: 'github' },
 						{
-							id: 'eamodio',
-							name: 'Eric Amodio',
+							id: 'liao666brant',
+							name: 'liao666brant',
 							avatarUrl: 'https://avatars1.githubusercontent.com/u/641685?s=32&v=4',
-							url: 'https://github.com/eamodio',
+							url: 'https://github.com/liao666brant',
 						},
 						'1',
 						undefined,
 						'Supercharged',
-						'https://github.com/gitkraken/vscode-gitlens/pulls/1',
-						{ owner: 'gitkraken', repo: 'vscode-gitlens' },
+						'https://github.com/liao666brant/vscode-gitlens/pulls/1',
+						{ owner: 'liao666brant', repo: 'vscode-gitlens' },
 						'merged',
 						new Date('Sat, 12 Nov 2016 19:41:00 GMT'),
 						new Date('Sat, 12 Nov 2016 19:41:00 GMT'),

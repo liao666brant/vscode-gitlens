@@ -133,8 +133,6 @@ export type TreeViewByType = {
 export type WebviewViewByType = {
 	[T in WebviewViewTypes]: T extends 'commitDetails'
 		? CommitsView
-		: T extends 'home'
-		? CommitsView
 		: View;
 };
 
@@ -860,7 +858,7 @@ export abstract class ViewBase<
 	get activeSelection(): ViewNode | undefined {
 		if (this.tree == null || this.root == null) return undefined;
 
-		// TODO@eamodio: https://github.com/microsoft/vscode/issues/157406
+		// TODO: https://github.com/microsoft/vscode/issues/157406
 		return this.tree.selection[0];
 	}
 
@@ -1207,7 +1205,7 @@ export abstract class ViewBase<
 		return this._config;
 	}
 
-	// NOTE: @eamodio uncomment to track node leaks
+	// NOTE: uncomment to track node leaks
 	// private _nodeTracking = new Map<string, string | undefined>();
 	// private registry = new FinalizationRegistry<string>(uuid => {
 	// 	const id = this._nodeTracking.get(uuid);

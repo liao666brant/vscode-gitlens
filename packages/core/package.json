@@ -1,19 +1,18 @@
 {
-	"name": "@gitkraken/core-gitlens",
-	"description": "GitLens core - shared Git primitives",
+	"name": "@liao666brant/core-wegit",
+	"description": "WeGit core - shared Git primitives",
 	"version": "0.3.0",
 	"license": "SEE LICENSE IN LICENSE",
 	"author": {
-		"name": "GitKraken",
-		"url": "https://gitkraken.com"
+		"name": "liao666brant"
 	},
-	"homepage": "https://github.com/gitkraken/vscode-gitlens/tree/main/packages/core",
+	"homepage": "https://github.com/liao666brant/vscode-gitlens/tree/main/packages/core",
 	"bugs": {
-		"url": "https://github.com/gitkraken/vscode-gitlens/issues"
+		"url": "https://github.com/liao666brant/vscode-gitlens/issues"
 	},
 	"repository": {
 		"type": "git",
-		"url": "https://github.com/gitkraken/vscode-gitlens.git",
+		"url": "https://github.com/liao666brant/vscode-gitlens.git",
 		"directory": "packages/core"
 	},
 	"engines": {

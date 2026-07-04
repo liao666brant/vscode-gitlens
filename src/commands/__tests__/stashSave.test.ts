@@ -147,7 +147,7 @@ suite('StashSave Helpers', () => {
 			assert.ok(result != null);
 			assert.strictEqual(result.onlyStaged, undefined);
 			assert.ok(showWarningMessageStub.calledOnce);
-			assert.ok((showWarningMessageStub.firstCall.args[0] as string).includes('no staged changes'));
+			assert.ok((showWarningMessageStub.firstCall.args[0] as string).includes('没有可暂存的已暂存更改'));
 		});
 
 		test('no staged changes and user cancels returns undefined', async () => {
@@ -248,7 +248,7 @@ suite('StashSave Helpers', () => {
 
 			assert.ok(result != null);
 			assert.ok(showWarningMessageStub.calledOnce);
-			assert.ok((showWarningMessageStub.firstCall.args[0] as string).includes('no unstaged changes'));
+			assert.ok((showWarningMessageStub.firstCall.args[0] as string).includes('没有可暂存的未暂存更改'));
 		});
 
 		test('no working or untracked changes and user cancels returns undefined', async () => {

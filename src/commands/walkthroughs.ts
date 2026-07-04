@@ -97,7 +97,7 @@ export class WalkthroughOpenHelpCenterCommand extends GlCommandBase {
 }
 
 @command()
-export class WalkthroughGitLensInspectCommand extends GlCommandBase {
+export class WalkthroughWeGitInspectCommand extends GlCommandBase {
 	constructor(private readonly container: Container) {
 		super('gitlens.walkthrough.gitlensInspect');
 	}

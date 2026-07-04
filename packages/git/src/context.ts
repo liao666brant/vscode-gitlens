@@ -12,7 +12,7 @@ import type { RemoteProviderConfig } from './remotes/matcher.js';
 
 /**
  * Context provided to sub-providers at construction time.
- * Replaces the Container dependency in the GitLens extension.
+ * Replaces the Container dependency in the WeGit extension.
  *
  * This is intentionally minimal — most configuration is passed as explicit
  * per-call options on sub-provider methods, not hidden in a context object.

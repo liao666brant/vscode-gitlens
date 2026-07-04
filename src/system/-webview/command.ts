@@ -54,18 +54,6 @@ export function registerCommand(
 				args[0]?.source,
 			);
 
-			if (command.startsWith('gitlens.home.')) {
-				Container.instance.telemetry.sendEvent(
-					'home/command',
-					{
-						command: command,
-						'context.mode': context?.mode,
-						'context.submode': context?.submode,
-					},
-					args[0]?.source,
-				);
-			}
-
 			void Container.instance.usage.track(`command:${command}:executed`).catch();
 			if (options?.returnResult) {
 				// eslint-disable-next-line @typescript-eslint/no-unsafe-return
@@ -93,13 +81,6 @@ export function registerWebviewCommand(
 				command: command,
 				webview: webview ?? '<missing>',
 			});
-
-			if (webview === 'gitlens.views.home' || command.startsWith('gitlens.home.') || command.endsWith(':home')) {
-				Container.instance.telemetry.sendEvent('home/command', {
-					command: command,
-					webview: webview ?? '<missing>',
-				});
-			}
 
 			void Container.instance.usage.track(`command:${command}:executed`).catch();
 			if (options?.returnResult) {

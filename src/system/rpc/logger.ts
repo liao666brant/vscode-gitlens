@@ -74,7 +74,7 @@ function adaptLogger(prefix: string): SupertalkLogger {
  * wiring an `RpcHost` or `RpcClient` so each line identifies the channel in the log.
  *
  * Example prefixes:
- * - `host(gitlens.views.home|5cf1bc7c)` — host-side logger for the Home webview
+ * - `host(gitlens.views.commitDetails|5cf1bc7c)` — host-side logger for the Commit Details webview
  * - `client(gitlens.views.timeline|4103a120)` — client-side logger inside the Timeline webview
  */
 export function createSupertalkLogger(prefix: string): SupertalkLogger {
@@ -83,7 +83,7 @@ export function createSupertalkLogger(prefix: string): SupertalkLogger {
 
 /**
  * Composes a webview identifier tag matching the existing `WebviewController(id|instance)`
- * format used throughout GitLens logs. Either field may be undefined.
+ * format used throughout WeGit logs. Either field may be undefined.
  */
 export function formatWebviewLogTag(webviewId: string | undefined, webviewInstanceId: string | undefined): string {
 	if (webviewId == null && webviewInstanceId == null) return '?';

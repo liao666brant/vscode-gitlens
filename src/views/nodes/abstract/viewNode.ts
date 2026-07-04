@@ -216,7 +216,7 @@ export abstract class ViewNode<
 
 	splatted: boolean | undefined;
 
-	// NOTE: @eamodio uncomment to track node leaks
+	// NOTE: uncomment to track node leaks
 	// readonly uuid = uuid();
 
 	protected _uniqueId!: string;
@@ -230,7 +230,7 @@ export abstract class ViewNode<
 	) {
 		this.updateContext({ viewType: view.type });
 
-		// NOTE: @eamodio uncomment to track node leaks
+		// NOTE: uncomment to track node leaks
 		// queueMicrotask(() => this.view.registerNode(this));
 		this._uri = uri;
 
@@ -248,11 +248,11 @@ export abstract class ViewNode<
 	}
 
 	protected _disposed = false;
-	// NOTE: @eamodio uncomment to track node leaks
+	// NOTE: uncomment to track node leaks
 	// @debug()
 	dispose(): void {
 		this._disposed = true;
-		// NOTE: @eamodio uncomment to track node leaks
+		// NOTE: uncomment to track node leaks
 		// this.view.unregisterNode(this);
 	}
 

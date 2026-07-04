@@ -2,8 +2,8 @@ import { execPath, platform } from 'node:process';
 import type { Container } from '../../../container.js';
 
 /**
- * Returns git's `sequence.editor` command for the Commit Graph's headless squash/drop/reword, plus
- * the environment it needs.
+ * Returns git's `sequence.editor` command for headless squash/drop/reword flows, plus the environment
+ * it needs.
  *
  * The command is a platform wrapper script shipped in `dist/` (`rebaseTodoEditor.sh`/`.cmd`) that
  * launches the bundled `dist/rebaseTodoEditor.js` as Node. The wrapper sets `ELECTRON_RUN_AS_NODE=1`

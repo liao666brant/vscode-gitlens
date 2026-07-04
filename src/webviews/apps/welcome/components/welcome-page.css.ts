@@ -172,7 +172,7 @@ const header = css`
 		margin-left: auto;
 		margin-right: auto;
 	}
-	.header gitlens-logo-circle {
+	.header wegit-logo-circle {
 		height: calc(46px * 0.6);
 		width: 0;
 		transform: scale(0.6) translate(calc(-46px), calc(-46px * 0.2));
@@ -188,7 +188,7 @@ const header = css`
 	}
 
 	@media (max-width: 640px) {
-		.header gitlens-logo-circle {
+		.header wegit-logo-circle {
 			height: calc(46px * 0.5);
 			transform: scale(0.5) translate(calc(-46px), calc(-46px * 0.25 - 2px));
 			margin-right: 0.3em;
@@ -196,7 +196,7 @@ const header = css`
 	}
 
 	@media (max-width: 300px) {
-		.header gitlens-logo-circle {
+		.header wegit-logo-circle {
 			height: calc(46px * 0.4);
 			transform: scale(0.4) translate(calc(-46px), calc(-46px * 0.3 - 4px));
 			margin-right: 0.2em;

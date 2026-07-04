@@ -1,1 +1,1 @@
-<img src="thumbnails/welcome.webp" alt="Welcome to GitLens Community" />
+<img src="thumbnails/welcome.webp" alt="Welcome to WeGit" />

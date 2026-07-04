@@ -39,7 +39,7 @@ export async function activate(context: ExtensionContext): Promise<GitLensApi | 
 	const defaultDateLocale = configuration.get('defaultDateLocale');
 	Logger.configure(
 		{
-			name: 'GitLens',
+			name: 'WeGit',
 			createChannel: function (name: string) {
 				const channel = window.createOutputChannel(name, { log: true });
 				context.subscriptions.push(channel);
@@ -47,7 +47,7 @@ export async function activate(context: ExtensionContext): Promise<GitLensApi | 
 				// Show message if debug logging is not enabled (level > Debug)
 				if (channel.logLevel === LogLevel.Off || channel.logLevel > LogLevel.Debug) {
 					channel.appendLine(
-						'要启用调试日志，请从命令面板运行 "GitLens: Enable Debug Logging" 或 "Developer: Set Log Level..."',
+						'要启用调试日志，请从命令面板运行 "WeGit: Enable Debug Logging" 或 "Developer: Set Log Level..."',
 					);
 				}
 				return channel;
@@ -97,7 +97,7 @@ export async function activate(context: ExtensionContext): Promise<GitLensApi | 
 		context.extensionMode === ExtensionMode.Development,
 	);
 
-	const sw = new Stopwatch(`GitLens${prerelease ? ' (pre-release)' : ''} v${gitlensVersion}`, {
+	const sw = new Stopwatch(`WeGit${prerelease ? ' (pre-release)' : ''} v${gitlensVersion}`, {
 		log: {
 			level: 'info',
 			message: ` activating in ${env.appName} (${codeVersion}) on the ${isWeb ? 'web' : 'desktop'}; mode=${getExtensionModeLabel(
@@ -236,7 +236,7 @@ export async function activate(context: ExtensionContext): Promise<GitLensApi | 
 	// Signal that the container is now ready
 	await container.ready();
 
-	// TODO@eamodio do we want to capture any vscode settings that are relevant to GitLens?
+	// TODO: do we want to capture any vscode settings that are relevant to WeGit?
 	const flatCfg = flatten(configuration.getAll(true) as unknown as Record<string, unknown>, 'config', {
 		joinArrays: true,
 	});
@@ -279,7 +279,7 @@ export async function activate(context: ExtensionContext): Promise<GitLensApi | 
 }
 
 export function deactivate(): void {
-	Logger.info('GitLens deactivating...');
+	Logger.info('WeGit deactivating...');
 	Container.instance.deactivate();
 }
 
@@ -322,13 +322,13 @@ async function showWhatsNew(
 	previousVersion: string | undefined,
 ) {
 	if (previousVersion == null) {
-		Logger.info(`GitLens first-time install; window.focused=${window.state.focused}`);
+		Logger.info(`WeGit first-time install; window.focused=${window.state.focused}`);
 
 		return;
 	}
 
 	if (previousVersion !== version) {
-		Logger.info(`GitLens upgraded from v${previousVersion} to v${version}; window.focused=${window.state.focused}`);
+		Logger.info(`WeGit upgraded from v${previousVersion} to v${version}; window.focused=${window.state.focused}`);
 	}
 
 	const current = fromString(version);

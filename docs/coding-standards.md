@@ -1,6 +1,6 @@
-# GitLens Coding Standards Reference
+# WeGit Coding Standards Reference
 
-Detailed coding standards for the GitLens codebase. For TypeScript configuration, import organization, and naming conventions, see `AGENTS.md`.
+Detailed coding standards for the WeGit codebase. For TypeScript configuration, import organization, and naming conventions, see `AGENTS.md`.
 
 ## Code Structure Principles
 

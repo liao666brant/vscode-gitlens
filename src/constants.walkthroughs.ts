@@ -1,6 +1,5 @@
 export type WalkthroughContextKeys =
 	| 'gettingStarted'
-	| 'homeView'
 	| 'visualizeCodeHistory'
 	| 'gitBlame'
 	| 'prReviews'
@@ -9,7 +8,6 @@ export type WalkthroughContextKeys =
 
 export const walkthroughProgressSteps: Record<WalkthroughContextKeys, string> = {
 	gettingStarted: 'Getting Started',
-	homeView: 'Home View',
 	visualizeCodeHistory: 'Visualize Code History',
 	aiFeatures: 'AI Features',
 	gitBlame: 'File Blame',

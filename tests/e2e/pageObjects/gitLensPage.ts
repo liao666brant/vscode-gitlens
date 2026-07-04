@@ -1,189 +1,113 @@
 import type { FrameLocator, Locator } from '@playwright/test';
-import type { SimulationState } from '../../../src/community/stubs/pro.js';
 import { MaxTimeout, ShortTimeout } from '../baseTest.js';
 import { VSCodePage } from './vscodePage.js';
 
 /**
- * Page object for GitLens-specific UI interactions.
- * Extends VSCodePage with GitLens views, commands, and components.
+ * Page object for WeGit-specific UI interactions.
+ * Extends VSCodePage with WeGit views, commands, and components.
  */
-export class GitLensPage extends VSCodePage {
+export class WeGitPage extends VSCodePage {
 	async isActivated(): Promise<boolean> {
 		return this.gitlensTab.isVisible();
 	}
 
 	/**
-	 * Simulate a subscription state for testing Pro features.
-	 * This allows tests to access Pro-gated features like worktrees.
-	 *
-	 * The debug module is loaded asynchronously after extension activation,
-	 * so we retry the command until it succeeds.
-	 *
-	 * @param state - Subscription state
-	 */
-	async startSubscriptionSimulation(
-		state: SimulationState = { state: 6 /*SubscriptionState.Paid*/, planId: 'pro' },
-	): Promise<{ success: boolean } & Disposable> {
-		if (!(await this.waitForCommand('gitlens.plus.simulate.subscription'))) {
-			throw new Error('gitlens.plus.simulate.subscription command not found');
-		}
-
-		const success = await this.executeCommand<boolean>('gitlens.plus.simulate.subscription', state);
-		// Wait for the subscription change event to propagate through the system
-		await this.page.waitForTimeout(ShortTimeout);
-		return {
-			success: success,
-			[Symbol.dispose]: async () => {
-				await this.stopSubscriptionSimulation();
-			},
-		};
-	}
-
-	async stopSubscriptionSimulation(): Promise<void> {
-		await this.executeCommand('gitlens.plus.simulate.subscription', { state: null });
-	}
-
-	/**
-	 * Get the count of GitLens-related tabs in the activity bar
-	 * Should be 2: GitLens and GitLens Inspect
+	 * Get the count of WeGit-related tabs in the activity bar
+	 * Should be 2: WeGit and WeGit Inspect
 	 */
 	async getActivityBarTabCount(): Promise<number> {
-		return this.activityBar.countTabs(/GitLens/);
+		return this.activityBar.countTabs(/WeGit/);
 	}
 
 	/**
-	 * Wait for GitLens extension to fully activate
-	 * This is indicated by the GitLens activity bar icon becoming visible
+	 * Wait for WeGit extension to fully activate
+	 * This is indicated by the WeGit activity bar icon becoming visible
 	 */
 	async waitForActivation(timeout = MaxTimeout): Promise<void> {
 		await this.gitlensTab.waitFor({ state: 'visible', timeout: timeout });
 	}
 
-	/** The GitLens activity bar tab */
+	/** The WeGit activity bar tab */
 	get gitlensTab(): Locator {
-		return this.activityBar.getTab('GitLens', true);
+		return this.activityBar.getTab('WeGit', true);
 	}
 
-	/** The GitLens Inspect activity bar tab */
+	/** The WeGit Inspect activity bar tab */
 	get gitlensInspectTab(): Locator {
-		return this.activityBar.getTab('GitLens Inspect', true);
+		return this.activityBar.getTab(/WeGit (Inspect|检查)/, false);
 	}
 
 	/**
-	 * Open the GitLens sidebar and ensure it's visible.
+	 * Open the WeGit sidebar and ensure it's visible.
 	 * Handles the case where the sidebar may be hidden.
 	 * Only clicks the tab if it's not already active (to avoid closing it).
 	 */
-	async openGitLensSidebar(): Promise<void> {
+	async openWeGitSidebar(): Promise<void> {
 		await this.sidebar.open();
-		await this.activityBar.openTab('GitLens', true);
+		await this.activityBar.openTab('WeGit', true);
 	}
 
 	/**
-	 * Open the GitLens Inspect sidebar.
+	 * Open the WeGit Inspect sidebar.
 	 * Only clicks the tab if it's not already active (to avoid closing it).
 	 */
-	async openGitLensInspect(): Promise<void> {
+	async openWeGitInspect(): Promise<void> {
 		await this.sidebar.open();
-		await this.activityBar.openTab('GitLens Inspect', true);
+		await this.activityBar.openTab(/WeGit (Inspect|检查)/, false);
 	}
 
 	// ============================================================================
-	// GitLens Sidebar Views
+	// WeGit Sidebar Views
 	// ============================================================================
 
-	/** Home section in GitLens sidebar */
-	get homeViewSection(): Locator {
-		return this.sidebar.getSection(/Home Section/i);
-	}
-
-	/** Home webview in GitLens sidebar */
-	get homeViewWebview(): Promise<FrameLocator | null> {
-		return this.getGitLensWebview('Home', 'webviewView');
-	}
-
-	async showHomeView(): Promise<void> {
-		await this.executeCommand('gitlens.showHomeView');
-	}
-
-	/** Launchpad section in GitLens sidebar */
-	get launchpadViewSection(): Locator {
-		return this.sidebar.getSection(/Launchpad.*Section/i);
-	}
-
-	/** Launchpad tree in GitLens sidebar */
-	get launchpadViewTreeView(): Locator {
-		return this.sidebar.getTree(/^Launchpad/i);
-	}
-
-	async showLaunchpadView(): Promise<void> {
-		await this.executeCommand('gitlens.showLaunchpad');
-	}
-
-	// ============================================================================
-	// GitLens Inspect Views
-	// ============================================================================
-
-	/** Inspect section in GitLens Inspect sidebar */
+	/** Inspect section in WeGit Inspect sidebar */
 	get inspectViewSection(): Locator {
-		return this.sidebar.getSection(/^Inspect/);
+		return this.sidebar.getSection(/^(Inspect|检查)/);
 	}
 
-	/** Inspect webview in GitLens Inspect sidebar */
+	/** Inspect webview in WeGit Inspect sidebar */
 	get inspectViewWebview(): Promise<FrameLocator | null> {
-		return this.getGitLensWebview('Inspect', 'webviewView');
+		return this.getWeGitWebview('Inspect', 'webviewView').then(
+			webview => webview ?? this.getWeGitWebview('检查', 'webviewView'),
+		);
 	}
 
-	/** Line History section in GitLens Inspect sidebar */
+	/** Line History section in WeGit Inspect sidebar */
 	get lineHistoryViewSection(): Locator {
-		return this.sidebar.getSection(/^Line History/i);
+		return this.sidebar.getSection(/^(Line History|行历史)/i);
 	}
 
-	/** Line History tree in GitLens Inspect sidebar */
+	/** Line History tree in WeGit Inspect sidebar */
 	get lineHistoryViewTreeView(): Locator {
-		return this.sidebar.getTree(/^Line History/i);
+		return this.sidebar.getTree(/^(Line History|行历史)/i);
 	}
 
 	async showLineHistoryView(): Promise<void> {
 		await this.executeCommand('gitlens.showLineHistoryView');
 	}
 
-	/** File History section in GitLens Inspect sidebar */
+	/** File History section in WeGit Inspect sidebar */
 	get fileHistoryViewSection(): Locator {
-		return this.sidebar.getSection(/^File History/i);
+		return this.sidebar.getSection(/^(File History|文件历史)/i);
 	}
 
-	/** File History tree in GitLens Inspect sidebar */
+	/** File History tree in WeGit Inspect sidebar */
 	get fileHistoryViewTreeView(): Locator {
-		return this.sidebar.getTree(/^File History/i);
+		return this.sidebar.getTree(/^(File History|文件历史)/i);
 	}
 
 	async showFileHistoryView(): Promise<void> {
 		await this.executeCommand('gitlens.showFileHistoryView');
 	}
 
-	/** Visual History section in GitLens Inspect sidebar */
-	get visualHistoryViewSection(): Locator {
-		return this.sidebar.getSection(/^Visual File History/i);
-	}
-
-	/** Visual History webview in GitLens Inspect sidebar */
-	get visualHistoryViewWebview(): Promise<FrameLocator | null> {
-		return this.getGitLensWebview('Visual File History', 'webviewView');
-	}
-
-	async showVisualFileHistoryView(): Promise<void> {
-		await this.executeCommand('gitlens.showTimelineView');
-	}
-
-	/** Search & Compare section in GitLens Inspect sidebar */
+	/** Search & Compare section in WeGit Inspect sidebar */
 	get searchCompareViewSection(): Locator {
-		return this.sidebar.getSection(/^Search & Compare/i);
+		return this.sidebar.getSection(/^(Search & Compare|搜索与比较)/i);
 	}
 
-	/** Search & Compare tree in GitLens Inspect sidebar */
+	/** Search & Compare tree in WeGit Inspect sidebar */
 	get searchCompareViewTreeView(): Locator {
-		return this.sidebar.getTree(/^Search & Compare/i);
+		return this.sidebar.getTree(/^(Search & Compare|搜索与比较)/i);
 	}
 
 	async showSearchAndCompareView(): Promise<void> {
@@ -191,27 +115,27 @@ export class GitLensPage extends VSCodePage {
 	}
 
 	// ============================================================================
-	// GitLens Panel Views (Bottom Panel)
+	// WeGit Panel Views (Bottom Panel)
 	// ============================================================================
 
-	/** GitLens tab in the bottom panel */
+	/** WeGit tab in the bottom panel */
 	get gitlensPanel(): Locator {
-		return this.panel.getTab('GitLens', true);
+		return this.panel.getTab('WeGit', true);
 	}
 
 	/** Commit Graph view section in the panel (matched via its panel toolbar) */
 	get commitGraphViewSection(): Locator {
 		// When the Commit Graph view is open, its panel toolbar is labelled
-		// "GitLens: Commit Graph: <repo> actions" and stays visible in both the gated (Community)
+		// "WeGit: Commit Graph: <repo> actions" and stays visible in both the gated (Community)
 		// and loaded (Pro) states. Match that toolbar by accessible name — the panel title <h2>
 		// itself is sr-hidden, and a bare "Graph" text match resolved to the hidden generic
-		// "GitLens: Graph" header.
+		// "WeGit: Graph" header.
 		return this.panel.locator.getByRole('toolbar', { name: /Commit Graph/ }).first();
 	}
 
 	/** Commit Graph webview in the panel */
 	get commitGraphViewWebview(): Promise<FrameLocator | null> {
-		return this.getGitLensWebview('Graph', 'webviewView');
+		return this.getWeGitWebview('Graph', 'webviewView');
 	}
 
 	async showCommitGraphView(): Promise<void> {
@@ -225,37 +149,23 @@ export class GitLensPage extends VSCodePage {
 
 	/** Commit Graph Details webview in the panel */
 	get commitGraphDetailsViewWebview(): Promise<FrameLocator | null> {
-		return this.getGitLensWebview('Graph Details', 'webviewView');
+		return this.getWeGitWebview('Graph Details', 'webviewView');
 	}
 
 	// ============================================================================
-	// GitLens Status Bar Items
+	// WeGit View/WebviewView Commands
 	// ============================================================================
 
-	/** The "Show Commit Graph" status bar button */
-	get commitGraphStatusBarItem(): Locator {
-		return this.statusBar.getItem(/Show the GitLens Commit Graph/i);
-	}
-
-	/** The Launchpad status bar item */
-	get launchpadStatusBarItem(): Locator {
-		return this.statusBar.getItem(/GitLens Launchpad/i);
-	}
-
-	// ============================================================================
-	// GitLens View/WebviewView Commands
-	// ============================================================================
-
-	async showGitLensView(): Promise<void> {
+	async showWeGitView(): Promise<void> {
 		await this.executeCommand('gitlens.views.scm.grouped.focus');
 	}
 
 	get gitlensViewSection(): Locator {
-		return this.sidebar.getSection(/GitLens/i);
+		return this.sidebar.getSection(/WeGit/i);
 	}
 
 	get gitlensViewTreeView(): Locator {
-		return this.sidebar.getTree(/GitLens/i);
+		return this.sidebar.getTree(/WeGit/i);
 	}
 
 	async showCommitsView(): Promise<void> {
@@ -287,7 +197,7 @@ export class GitLensPage extends VSCodePage {
 	}
 
 	// ============================================================================
-	// GitLens Webviews
+	// WeGit Webviews
 	// ============================================================================
 
 	// ============================================================================
@@ -304,7 +214,7 @@ export class GitLensPage extends VSCodePage {
 	/**
 	 * Check if blame annotations are currently visible in the active editor.
 	 *
-	 * VS Code renders GitLens gutter blame decorations as CSS `::before`
+	 * VS Code renders WeGit gutter blame decorations as CSS `::before`
 	 * pseudo-elements on `<span>` elements within `.view-lines`. The decoration
 	 * class names contain the `ced-` prefix (content editor decoration).
 	 *
@@ -330,7 +240,7 @@ export class GitLensPage extends VSCodePage {
 	// ============================================================================
 
 	async getRebaseWebview(): Promise<FrameLocator | null> {
-		return this.getGitLensWebview('Interactive Rebase', 'customEditor');
+		return this.getWeGitWebview('Interactive Rebase', 'customEditor');
 	}
 
 	/**
@@ -364,18 +274,18 @@ export class GitLensPage extends VSCodePage {
 	}
 
 	/**
-	 * Find a GitLens webview by its title.
+	 * Find a WeGit webview by its title.
 	 * VS Code renders webviews outside their logical containers, so we search all webviews
 	 * and identify the correct one by:
-	 * 1. The outer iframe src containing extensionId=eamodio.gitlens and purpose=webviewView/webviewPanel
+	 * 1. The outer iframe src containing extensionId=liao666brant.wegit and purpose=webviewView/webviewPanel
 	 * 2. The inner iframe#active-frame having the specified title attribute
 	 *
-	 * @param title - The title of the webview (e.g., "Graph", "Graph Details", "Home")
+	 * @param title - The title of the webview (e.g., "Graph", "Graph Details", "Welcome")
 	 * @param purpose - The purpose of the webview (e.g., "webviewView", "webviewPanel")
 	 * @param timeout - Timeout in ms
 	 * @returns A FrameLocator for the matching webview content, or null if not found
 	 */
-	async getGitLensWebview(
+	async getWeGitWebview(
 		title: string,
 		purpose: 'webviewView' | 'webviewPanel' | 'customEditor',
 		timeout = MaxTimeout / 2,
@@ -385,11 +295,11 @@ export class GitLensPage extends VSCodePage {
 
 		const startTime = Date.now();
 		while (Date.now() - startTime < timeout) {
-			// Find GitLens webview iframes
+			// Find WeGit webview iframes
 			const iframes = this.page.locator(
 				usePurpose && purpose === 'webviewView'
-					? `iframe.webview[src*="extensionId=eamodio.gitlens"][src*="purpose=${purpose}"]`
-					: `iframe.webview[src*="extensionId=eamodio.gitlens"]`,
+					? `iframe.webview[src*="extensionId=liao666brant.wegit"][src*="purpose=${purpose}"]`
+					: `iframe.webview[src*="extensionId=liao666brant.wegit"]`,
 			);
 
 			iterations++;

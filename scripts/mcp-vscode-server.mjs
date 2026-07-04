@@ -7,7 +7,7 @@
  * inspect DOM, execute commands, and rebuild/reload — all on a single
  * long-lived VS Code instance.
  *
- * Designed to work with any VS Code extension. GitLens-specific defaults
+ * Designed to work with any VS Code extension. WeGit-specific defaults
  * are loaded from .vscode-agent.json if present.
  *
  * Usage (via .mcp.json):
@@ -203,7 +203,7 @@ function getWebviewFrameLocators(currentPage) {
 }
 
 /**
- * Detect a webview's GitLens root app element (e.g. `gl-commit-details-app`, `gl-graph-app`).
+ * Detect a webview's WeGit root app element (e.g. `gl-commit-details-app`, `gl-graph-app`).
  *
  * Webview outer frames are only identified by an opaque `index.html?id=<uuid>` URL with no view
  * name, and `page.frames()` order is unstable — so neither `webview_index` nor `webview_url` can
@@ -542,7 +542,7 @@ async function findWebviewFrameLocator({ title, url: urlMatch, index, root, exte
 			)
 		: webviews;
 
-	// Match by GitLens root app element (e.g. "commitDetails" → gl-commit-details-app). Content-based,
+	// Match by WeGit root app element (e.g. "commitDetails" → gl-commit-details-app). Content-based,
 	// so it's stable regardless of frame order/dimensions/uuid. Non-alphanumerics are stripped from
 	// both sides, so "commitDetails", "commit-details", and "gl-commit-details-app" all match.
 	const matchRoot = async needleRaw => {
@@ -1332,7 +1332,7 @@ server.tool(
 // --- list_webviews -----------------------------------------------------------
 server.tool(
 	'list_webviews',
-	'List all open webviews with their index, id, title, URL, dimensions, content status, and `root` (the GitLens app element, e.g. gl-commit-details-app). To target a specific view, pass a substring of its `root` as `webview_url` (e.g. "commitDetails") — frame index/uuid are unstable, but the root app element is the stable identity.',
+	'List all open webviews with their index, id, title, URL, dimensions, content status, and `root` (the WeGit app element, e.g. gl-commit-details-app). To target a specific view, pass a substring of its `root` as `webview_url` (e.g. "commitDetails") — frame index/uuid are unstable, but the root app element is the stable identity.',
 	{},
 	async () => {
 		requireReady();
@@ -1377,7 +1377,7 @@ server.tool(
 				} catch {
 					entry.hasContent = false;
 				}
-				// GitLens root app element (e.g. gl-commit-details-app) — the stable way to identify a
+				// WeGit root app element (e.g. gl-commit-details-app) — the stable way to identify a
 				// view. Target it with `webview_url` (substring of the root tag) on any webview tool.
 				entry.root = await detectWebviewRoot(frameLocator);
 				results.push(entry);
@@ -1421,7 +1421,7 @@ server.tool(
 		expression: z
 			.string()
 			.describe(
-				'JS expression to evaluate in the webview (e.g. "document.title", "document.querySelector(\'gl-home-app\').shadowRoot.innerHTML")',
+				'JS expression to evaluate in the webview (e.g. "document.title", "document.querySelector(\'gl-welcome-app\').shadowRoot.innerHTML")',
 			),
 		webview_title: z.string().optional().describe('Webview to evaluate in (default: first found)'),
 		webview_url: z
@@ -1560,14 +1560,14 @@ server.tool(
 	'read_logs',
 	'Search VS Code extension output logs for a pattern.',
 	{
-		pattern: z.string().optional().describe('Text pattern to search for (default: "GitLens")'),
+		pattern: z.string().optional().describe('Text pattern to search for (default: "WeGit")'),
 		last_n: z.number().optional().describe('Only return the last N matching lines'),
 	},
 	async args => {
 		requireReady();
 		if (!userDataDir) return errorResult('No user data directory available.');
 		try {
-			const pattern = args.pattern ?? 'GitLens';
+			const pattern = args.pattern ?? 'WeGit';
 			let logs = await findLogs(userDataDir, pattern);
 			if (args.last_n && args.last_n > 0) {
 				logs = logs.slice(-args.last_n);
@@ -1663,7 +1663,7 @@ server.tool(
 // --- rebuild_and_reload ------------------------------------------------------
 server.tool(
 	'rebuild_and_reload',
-	'Run the build command, then restart the extension host. Reconnects the evaluator bridge. For webview-only changes, build webviews and use the view refresh command (e.g. gitlens.views.home.refresh) instead of restarting the extension host.',
+	'Run the build command, then restart the extension host. Reconnects the evaluator bridge. For webview-only changes, build webviews and use the view refresh command instead of restarting the extension host.',
 	{
 		build_command: z
 			.string()
@@ -1700,7 +1700,7 @@ server.tool(
 			// This keeps the Playwright page reference alive while reloading
 			// all extensions with the newly-built code. Extension host code
 			// changes take effect immediately. For webview-only changes,
-			// use the view's refresh command instead (e.g. gitlens.views.home.refresh).
+			// use the view's refresh command instead.
 			if (evaluateFn) {
 				try {
 					await evaluateFn(vscode =>

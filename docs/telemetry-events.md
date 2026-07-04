@@ -1,4 +1,4 @@
-# GitLens Telemetry
+# WeGit Telemetry
 
 > This is a generated file. Do not edit.
 
@@ -82,7 +82,7 @@
 
 ### activate
 
-> Sent when GitLens is activated
+> Sent when WeGit is activated
 
 ```typescript
 {
@@ -830,7 +830,7 @@ void
   'autoInstall': boolean,
   'error.message': string,
   'insiders': boolean,
-  'source': 'account' | 'subscription' | 'graph' | 'settings' | 'home' | 'welcome' | 'rebaseEditor' | 'ai' | 'ai:markdown-preview' | 'ai:markdown-editor' | 'ai:picker' | 'associateIssueWithBranch' | 'commandPalette' | 'deeplink' | 'editor:hover' | 'feature-badge' | 'feature-gate' | 'graph-details' | 'graph-header' | 'graph-kanban' | 'graph-sidebar' | 'graph-treemap' | 'inspect' | 'inspect-overview' | 'integrations' | 'merge-target' | 'notification' | 'prompt' | 'quick-wizard' | 'remoteProvider' | 'scm' | 'scm-input' | 'startReview' | 'startWork' | 'statusbar:hover' | 'view' | 'view:hover' | 'walkthrough' | 'whatsnew'
+  'source': 'account' | 'subscription' | 'graph' | 'settings' | 'welcome' | 'rebaseEditor' | 'ai' | 'ai:markdown-preview' | 'ai:markdown-editor' | 'ai:picker' | 'associateIssueWithBranch' | 'commandPalette' | 'deeplink' | 'editor:hover' | 'feature-badge' | 'feature-gate' | 'graph-details' | 'graph-header' | 'graph-kanban' | 'graph-sidebar' | 'graph-treemap' | 'inspect' | 'inspect-overview' | 'integrations' | 'merge-target' | 'notification' | 'prompt' | 'quick-wizard' | 'remoteProvider' | 'scm' | 'scm-input' | 'startReview' | 'startWork' | 'statusbar:hover' | 'view' | 'view:hover' | 'walkthrough' | 'whatsnew'
 }
 ```
 
@@ -843,7 +843,7 @@ void
   'attempts': number,
   'autoInstall': boolean,
   'insiders': boolean,
-  'source': 'account' | 'subscription' | 'graph' | 'settings' | 'home' | 'welcome' | 'rebaseEditor' | 'ai' | 'ai:markdown-preview' | 'ai:markdown-editor' | 'ai:picker' | 'associateIssueWithBranch' | 'commandPalette' | 'deeplink' | 'editor:hover' | 'feature-badge' | 'feature-gate' | 'graph-details' | 'graph-header' | 'graph-kanban' | 'graph-sidebar' | 'graph-treemap' | 'inspect' | 'inspect-overview' | 'integrations' | 'merge-target' | 'notification' | 'prompt' | 'quick-wizard' | 'remoteProvider' | 'scm' | 'scm-input' | 'startReview' | 'startWork' | 'statusbar:hover' | 'view' | 'view:hover' | 'walkthrough' | 'whatsnew'
+  'source': 'account' | 'subscription' | 'graph' | 'settings' | 'welcome' | 'rebaseEditor' | 'ai' | 'ai:markdown-preview' | 'ai:markdown-editor' | 'ai:picker' | 'associateIssueWithBranch' | 'commandPalette' | 'deeplink' | 'editor:hover' | 'feature-badge' | 'feature-gate' | 'graph-details' | 'graph-header' | 'graph-kanban' | 'graph-sidebar' | 'graph-treemap' | 'inspect' | 'inspect-overview' | 'integrations' | 'merge-target' | 'notification' | 'prompt' | 'quick-wizard' | 'remoteProvider' | 'scm' | 'scm-input' | 'startReview' | 'startWork' | 'statusbar:hover' | 'view' | 'view:hover' | 'walkthrough' | 'whatsnew'
 }
 ```
 
@@ -856,7 +856,7 @@ void
   'attempts': number,
   'autoInstall': boolean,
   'insiders': boolean,
-  'source': 'account' | 'subscription' | 'graph' | 'settings' | 'home' | 'welcome' | 'rebaseEditor' | 'ai' | 'ai:markdown-preview' | 'ai:markdown-editor' | 'ai:picker' | 'associateIssueWithBranch' | 'commandPalette' | 'deeplink' | 'editor:hover' | 'feature-badge' | 'feature-gate' | 'graph-details' | 'graph-header' | 'graph-kanban' | 'graph-sidebar' | 'graph-treemap' | 'inspect' | 'inspect-overview' | 'integrations' | 'merge-target' | 'notification' | 'prompt' | 'quick-wizard' | 'remoteProvider' | 'scm' | 'scm-input' | 'startReview' | 'startWork' | 'statusbar:hover' | 'view' | 'view:hover' | 'walkthrough' | 'whatsnew',
+  'source': 'account' | 'subscription' | 'graph' | 'settings' | 'welcome' | 'rebaseEditor' | 'ai' | 'ai:markdown-preview' | 'ai:markdown-editor' | 'ai:picker' | 'associateIssueWithBranch' | 'commandPalette' | 'deeplink' | 'editor:hover' | 'feature-badge' | 'feature-gate' | 'graph-details' | 'graph-header' | 'graph-kanban' | 'graph-sidebar' | 'graph-treemap' | 'inspect' | 'inspect-overview' | 'integrations' | 'merge-target' | 'notification' | 'prompt' | 'quick-wizard' | 'remoteProvider' | 'scm' | 'scm-input' | 'startReview' | 'startWork' | 'statusbar:hover' | 'view' | 'view:hover' | 'walkthrough' | 'whatsnew',
   'version': string
 }
 ```
@@ -1026,7 +1026,7 @@ or when connection refresh is skipped due to being a non-cloud session
 
 ### command
 
-> Sent when a GitLens command is executed
+> Sent when a WeGit command is executed
 
 ```typescript
 {
@@ -1048,7 +1048,7 @@ or
 
 ### command/core
 
-> Sent when a VS Code command is executed by a GitLens provided action
+> Sent when a VS Code command is executed by a WeGit provided action
 
 ```typescript
 {
@@ -1278,7 +1278,7 @@ background-upgraded the extension while the host kept running the old build
 
 ### graph/action/jumpTo
 
-> Sent when the user clicks on the Jump to HEAD/Reference (alt) header button on the Commit Graph
+> Sent when the user clicks on the Jump to HEAD/Reference (alt) header button on the graph view
 
 ```typescript
 {
@@ -1297,7 +1297,7 @@ background-upgraded the extension while the host kept running the old build
 
 ### graph/action/openRepoOnRemote
 
-> Sent when the user clicks on the "Jump to HEAD"/"Jump to Reference" (alt) header button on the Commit Graph
+> Sent when the user clicks on the "Jump to HEAD"/"Jump to Reference" (alt) header button on the graph view
 
 ```typescript
 {
@@ -1315,7 +1315,7 @@ background-upgraded the extension while the host kept running the old build
 
 ### graph/action/sidebar
 
-> Sent when the user clicks on the "Open Repository on Remote" header button on the Commit Graph
+> Sent when the user clicks on the "Open Repository on Remote" header button on the graph view
 
 ```typescript
 {
@@ -1334,7 +1334,7 @@ background-upgraded the extension while the host kept running the old build
 
 ### graph/autoFetch
 
-> Sent when GitLens auto-fetch fires a `git fetch` for the visible Commit Graph
+> Sent when WeGit auto-fetch fires a `git fetch` for the visible graph view
 
 ```typescript
 {
@@ -1354,7 +1354,7 @@ background-upgraded the extension while the host kept running the old build
 
 ### graph/branchesVisibility/changed
 
-> Sent when the user changes the "branches visibility" on the Commit Graph
+> Sent when the user changes the "branches visibility" on the graph view
 
 ```typescript
 {
@@ -1374,7 +1374,7 @@ background-upgraded the extension while the host kept running the old build
 
 ### graph/columns/changed
 
-> Sent when the user changes the columns on the Commit Graph
+> Sent when the user changes the columns on the graph view
 
 ```typescript
 {
@@ -1395,7 +1395,7 @@ background-upgraded the extension while the host kept running the old build
 
 ### graph/command
 
-> Sent when a Commit Graph command is executed
+> Sent when a graph command is executed
 
 ```typescript
 {
@@ -1406,7 +1406,7 @@ background-upgraded the extension while the host kept running the old build
 
 ### graph/filters/changed
 
-> Sent when the user changes the filters on the Commit Graph
+> Sent when the user changes the filters on the graph view
 
 ```typescript
 {
@@ -1426,7 +1426,7 @@ background-upgraded the extension while the host kept running the old build
 
 ### graph/filters/cleared
 
-> Sent when the user clears all filters on the Commit Graph
+> Sent when the user clears all filters on the graph view
 
 ```typescript
 {
@@ -1448,7 +1448,7 @@ background-upgraded the extension while the host kept running the old build
 
 ### graph/minimap/day/selected
 
-> Sent when the user selects (clicks on) a day on the minimap on the Commit Graph
+> Sent when the user selects (clicks on) a day on the graph minimap
 
 ```typescript
 {
@@ -1511,7 +1511,7 @@ background-upgraded the extension while the host kept running the old build
 
 ### graph/repository/changed
 
-> Sent when the user changes the current repository on the Commit Graph
+> Sent when the user changes the current repository on the graph view
 
 ```typescript
 {
@@ -1534,7 +1534,7 @@ background-upgraded the extension while the host kept running the old build
 
 ### graph/row/hovered
 
-> Sent when the user points at a row on the Commit Graph (first time and every 100 times after)
+> Sent when the user points at a row on the graph view (first time and every 100 times after)
 
 ```typescript
 {
@@ -1553,7 +1553,7 @@ background-upgraded the extension while the host kept running the old build
 
 ### graph/row/selected
 
-> Sent when the user selects (clicks on) a row or rows on the Commit Graph (first time and every 100 times after)
+> Sent when the user selects (clicks on) a row or rows on the graph view (first time and every 100 times after)
 
 ```typescript
 {
@@ -1573,7 +1573,7 @@ background-upgraded the extension while the host kept running the old build
 
 ### graph/rows/loaded
 
-> Sent when rows are loaded into the Commit Graph
+> Sent when rows are loaded into the graph view
 
 ```typescript
 {
@@ -1593,7 +1593,7 @@ background-upgraded the extension while the host kept running the old build
 
 ### graph/scope/changed
 
-> Sent when the user scopes the Commit Graph to a specific branch (Focus Branch feature)
+> Sent when the user scopes the graph view to a specific branch (Focus Branch feature)
 
 ```typescript
 {
@@ -1617,7 +1617,7 @@ background-upgraded the extension while the host kept running the old build
 
 ### graph/scope/cleared
 
-> Sent when the user clears the active Commit Graph scope
+> Sent when the user clears the active graph scope
 
 ```typescript
 {
@@ -1635,7 +1635,7 @@ background-upgraded the extension while the host kept running the old build
 
 ### graph/searched
 
-> Sent when a search was performed on the Commit Graph
+> Sent when a search was performed on the graph view
 
 ```typescript
 {
@@ -1660,7 +1660,7 @@ background-upgraded the extension while the host kept running the old build
 
 ### graph/shown
 
-> Sent when the Commit Graph is shown
+> Sent when the graph view is shown
 
 ```typescript
 {
@@ -1866,92 +1866,6 @@ background-upgraded the extension while the host kept running the old build
 }
 ```
 
-### home/changeBranchMergeTarget
-
-> Sent when the user starts defining a user-specific merge target branch
-
-```typescript
-void
-```
-
-### home/closed
-
-```typescript
-{
-  [`context.${string}`]: string | number | boolean,
-  'context.webview.host': 'view' | 'editor' | 'panel',
-  'context.webview.id': string,
-  'context.webview.instanceId': string,
-  'context.webview.type': string
-}
-```
-
-### home/command
-
-> Sent when a Home command is executed
-
-```typescript
-{
-  'command': string,
-  'webview': string
-}
-```
-
-### home/createBranch
-
-> Sent when the user chooses to create a branch from the home view
-
-```typescript
-void
-```
-
-### home/failed
-
-> Sent when Home fails to load some state
-
-```typescript
-{
-  'error': string,
-  'error.detail': string,
-  'reason': 'subscription'
-}
-```
-
-### home/showAborted
-
-```typescript
-{
-  'context.webview.host': 'view' | 'editor' | 'panel',
-  'context.webview.id': string,
-  'context.webview.instanceId': string,
-  'context.webview.type': string,
-  'duration': number,
-  'loading': boolean
-}
-```
-
-### home/shown
-
-```typescript
-{
-  [`context.${string}`]: string | number | boolean,
-  'context.webview.host': 'view' | 'editor' | 'panel',
-  'context.webview.id': string,
-  'context.webview.instanceId': string,
-  'context.webview.type': string,
-  'duration': number,
-  'loading': boolean
-}
-```
-
-### home/startWork
-
-> Sent when the user chooses to start work on an issue from the home view
-
-```typescript
-void
-```
-
 ### op/gate/deadlock
 
 ```typescript
@@ -2022,7 +1936,7 @@ void
   'repoPrivacy': 'private' | 'public' | 'local',
   'repository.visibility': 'private' | 'public' | 'local',
   // Provided for compatibility with other GK surfaces
-  'source': 'account' | 'subscription' | 'graph' | 'settings' | 'home' | 'welcome' | 'rebaseEditor' | 'ai' | 'ai:markdown-preview' | 'ai:markdown-editor' | 'ai:picker' | 'associateIssueWithBranch' | 'commandPalette' | 'deeplink' | 'editor:hover' | 'feature-badge' | 'feature-gate' | 'graph-details' | 'graph-header' | 'graph-kanban' | 'graph-sidebar' | 'graph-treemap' | 'inspect' | 'inspect-overview' | 'integrations' | 'merge-target' | 'notification' | 'prompt' | 'quick-wizard' | 'remoteProvider' | 'scm' | 'scm-input' | 'startReview' | 'startWork' | 'statusbar:hover' | 'view' | 'view:hover' | 'walkthrough' | 'whatsnew'
+  'source': 'account' | 'subscription' | 'graph' | 'settings' | 'welcome' | 'rebaseEditor' | 'ai' | 'ai:markdown-preview' | 'ai:markdown-editor' | 'ai:picker' | 'associateIssueWithBranch' | 'commandPalette' | 'deeplink' | 'editor:hover' | 'feature-badge' | 'feature-gate' | 'graph-details' | 'graph-header' | 'graph-kanban' | 'graph-sidebar' | 'graph-treemap' | 'inspect' | 'inspect-overview' | 'integrations' | 'merge-target' | 'notification' | 'prompt' | 'quick-wizard' | 'remoteProvider' | 'scm' | 'scm-input' | 'startReview' | 'startWork' | 'statusbar:hover' | 'view' | 'view:hover' | 'walkthrough' | 'whatsnew'
 }
 ```
 
@@ -3111,7 +3025,7 @@ or
 
 ```typescript
 {
-  'context.key': 'homeView' | 'gettingStarted' | 'visualizeCodeHistory' | 'gitBlame' | 'prReviews' | 'mcpFeatures' | 'aiFeatures' | 'graphAgentMonitoring' | 'graphParallelWork' | 'graphAiReview' | 'graphCompose' | 'graphCompare' | 'graphNextSteps'
+  'context.key': 'gettingStarted' | 'visualizeCodeHistory' | 'gitBlame' | 'prReviews' | 'mcpFeatures' | 'aiFeatures' | 'graphAgentMonitoring' | 'graphParallelWork' | 'graphAiReview' | 'graphCompose' | 'graphCompare' | 'graphNextSteps'
 }
 ```
 
@@ -3132,7 +3046,7 @@ or
 ```typescript
 {
   'command': string,
-  'name': 'open/help-center' | 'shown' | 'dismiss' | 'open/home-view',
+  'name': 'open/help-center' | 'shown' | 'dismiss',
   'type': 'command'
 }
 ```
@@ -3141,7 +3055,7 @@ or
 
 ```typescript
 {
-  'name': 'open/help-center' | 'shown' | 'dismiss' | 'open/home-view',
+  'name': 'open/help-center' | 'shown' | 'dismiss',
   'type': 'url',
   'url': string
 }

@@ -20,7 +20,7 @@ export class RegenerateMarkdownDocumentCommand extends ActiveEditorCommand {
 
 		// Only work with gitlens-ai-markdown scheme documents
 		if (uri.scheme !== Schemes.GitLensAIMarkdown) {
-			void window.showErrorMessage('此操作只能用于 GitLens AI markdown 文档。');
+			void window.showErrorMessage('此操作只能用于 WeGit AI markdown 文档。');
 			return;
 		}
 

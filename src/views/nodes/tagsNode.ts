@@ -37,7 +37,7 @@ export class TagsNode extends CacheableChildrenViewNode<'tags', ViewsWithTagsNod
 			const tags = await this.repo.git.tags.getTags({ sort: { orderBy: configuration.get('sortTagsBy') } });
 			if (tags.values.length === 0) return [new MessageNode(this.view, this, '未找到任何标签。')];
 
-			// TODO@eamodio handle paging
+			// TODO handle paging
 			const tagNodes = tags.values.map(
 				t => new TagNode(GitUri.fromRepoPath(this.uri.repoPath!, t.ref), this.view, this, t),
 			);

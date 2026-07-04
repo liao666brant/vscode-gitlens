@@ -78,8 +78,6 @@ export const iconMap = Object.freeze({
 	'pause': '\\f14b',
 	'kanban-view': '\\f14c',
 	'filter-mixed': '\\f14d',
-	'launchpad-view': '\\f128',
-	'launchpad-view-filled': '\\f129',
 	'code-suggestion': '\\f12d',
 	'cloud-patch': '\\f13f',
 	'cloud-patch-share': '\\f140',

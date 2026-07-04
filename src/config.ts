@@ -22,7 +22,6 @@ export interface Config {
 	readonly detectNestedRepositories: boolean;
 	readonly fileAnnotations: FileAnnotationsConfig;
 	readonly gitCommands: GitCommandsConfig;
-	readonly gitkraken: GitKrakenConfig;
 	readonly graph: GraphConfig;
 	readonly heatmap: HeatmapConfig;
 	readonly integrations: IntegrationsConfig;
@@ -230,9 +229,6 @@ interface AIConfig {
 	readonly generateSearchQuery: {
 		readonly customInstructions: string;
 	};
-	readonly gitkraken: {
-		readonly model: AIProviderAndModel | null;
-	};
 	readonly largePromptWarningThreshold: number;
 	readonly model: SupportedAIModels | null;
 	readonly modelOptions: {
@@ -317,26 +313,6 @@ interface GitCommandsConfig {
 	};
 	readonly skipConfirmations: string[];
 	readonly sortBy: GitCommandSorting;
-}
-
-interface GitKrakenConfig {
-	readonly activeOrganizationId: string | null;
-	readonly cli: GitKrakenCliConfig;
-	readonly mcp: GitKrakenMcpConfig;
-}
-
-interface GitKrakenCliConfig {
-	readonly localPath: string | null;
-	readonly insiders: {
-		readonly enabled: boolean | null;
-	};
-}
-
-interface GitKrakenMcpConfig {
-	readonly autoEnabled: boolean;
-	readonly experimental: {
-		readonly enabled: boolean;
-	};
 }
 
 export interface GraphConfig {

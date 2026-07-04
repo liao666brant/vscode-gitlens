@@ -231,7 +231,7 @@ export class VirtualFileSystemService implements Disposable {
 		//
 		// For added files, the path doesn't exist at the real ref — use `deletedOrMissing` so the
 		// FS provider returns empty bytes (matching the "left side is empty" rendering for
-		// added-file diffs in the rest of GitLens).
+		// added-file diffs in the rest of WeGit).
 		const sha = refersToAddedFile ? deletedOrMissing : ref.sha;
 		return this.container.git.getRepositoryService(ref.repoPath).getRevisionUri(sha, path);
 	}

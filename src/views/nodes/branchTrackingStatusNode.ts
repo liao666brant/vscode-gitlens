@@ -138,7 +138,7 @@ export class BranchTrackingStatusNode
 		let showFiles = true;
 		if (!this.options?.showAheadCommits && this.upstreamType === 'ahead' && this.status.upstream.state.ahead) {
 			showFiles = false;
-			// TODO@eamodio fix this
+			// TODO fix this
 			children.push(
 				...(await new BranchTrackingStatusFilesNode(
 					this.view,

@@ -2,14 +2,10 @@ import type { OnboardingItemDefinition } from './onboarding/models/onboarding.js
 
 /** Central registry of all dismissible/onboarding keys */
 export const onboardingDefinitions = {
-	// Home View
-	'home:integrationBanner': { schema: '17.8.0', scope: 'global' },
-	'home:walkthrough': { schema: '17.8.0', scope: 'global' },
-
-	// MCP Banner (shown in home and graph)
+	// MCP Banner
 	'mcp:banner': { schema: '17.8.0', scope: 'global' },
 
-	// AI Hooks Banner (shown in home and graph when MCP banner is hidden)
+	// AI Hooks Banner
 	'hooks:banner': { schema: '17.12.0', scope: 'global' },
 
 	// Rebase Editor

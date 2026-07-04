@@ -80,18 +80,18 @@ async function updateChangelog(newVersion) {
 	const dd = String(today.getDate()).padStart(2, '0');
 
 	const newVersionHeader = `## [Unreleased]\n\n## [${newVersion}] - ${yyyy}-${mm}-${dd}`;
-	const newVersionLink = `[${newVersion}]: https://github.com/gitkraken/vscode-gitlens/compare/releases/core/v${currentVersion}...gitkraken:releases/core/v${newVersion}`;
+	const newVersionLink = `[${newVersion}]: https://github.com/liao666brant/vscode-gitlens/compare/releases/core/v${currentVersion}...releases/core/v${newVersion}`;
 
 	data = data.replace('## [Unreleased]', newVersionHeader);
 
 	const unreleasedRegex =
-		/^\[unreleased\]: https:\/\/github\.com\/gitkraken\/vscode-gitlens\/compare\/releases\/core\/v(.+?)\.\.\.HEAD$/m;
+		/^\[unreleased\]: https:\/\/github\.com\/liao666brant\/vscode-gitlens\/compare\/releases\/core\/v(.+?)\.\.\.HEAD$/m;
 	const unreleasedMatch = unreleasedRegex.exec(data);
 	if (unreleasedMatch) {
-		const newUnreleased = `[unreleased]: https://github.com/gitkraken/vscode-gitlens/compare/releases/core/v${newVersion}...HEAD`;
+		const newUnreleased = `[unreleased]: https://github.com/liao666brant/vscode-gitlens/compare/releases/core/v${newVersion}...HEAD`;
 		data = data.replace(unreleasedMatch[0], `${newUnreleased}\n${newVersionLink}`);
 	} else {
-		data += `\n[unreleased]: https://github.com/gitkraken/vscode-gitlens/compare/releases/core/v${newVersion}...HEAD\n${newVersionLink}\n`;
+		data += `\n[unreleased]: https://github.com/liao666brant/vscode-gitlens/compare/releases/core/v${newVersion}...HEAD\n${newVersionLink}\n`;
 	}
 
 	await writeFile(coreChangelogPath, data);

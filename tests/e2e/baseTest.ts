@@ -11,7 +11,7 @@ import { _electron, test as base } from '@playwright/test';
 import { downloadAndUnzipVSCode } from '@vscode/test-electron/out/download';
 import { GitFixture } from './fixtures/git.js';
 import { VSCodeEvaluator } from './fixtures/vscodeEvaluator.js';
-import { GitLensPage } from './pageObjects/gitLensPage.js';
+import { WeGitPage } from './pageObjects/gitLensPage.js';
 
 export { expect } from '@playwright/test';
 export { GitFixture } from './fixtures/git.js';
@@ -129,7 +129,7 @@ const defaultUserSettings: Record<string, unknown> = {
 	// Skip onboarding/welcome screens — ephemeral test environments shouldn't show welcome views
 	'gitlens.advanced.skipOnboarding': true,
 
-	// Associate git-rebase-todo files with GitLens rebase editor
+	// Associate git-rebase-todo files with the WeGit rebase editor
 	// TODO: is this needed?
 	'workbench.editorAssociations': {
 		'git-rebase-todo': 'gitlens.rebase',
@@ -162,7 +162,7 @@ export interface VSCodeInstance {
 		/** Path to the workspace opened in VS Code */
 		workspacePath: string;
 	};
-	gitlens: GitLensPage;
+	gitlens: WeGitPage;
 	page: Page;
 }
 
@@ -186,7 +186,7 @@ export const test = base.extend<BaseFixtures, WorkerFixtures>({
 	// Default options (can be overridden per-file)
 	vscodeOptions: [{ vscodeVersion: process.env.VSCODE_VERSION ?? 'stable' }, { scope: 'worker', option: true }],
 
-	// vscode launches VS Code with GitLens extension (shared per worker)
+	// vscode launches VS Code with WeGit extension (shared per worker)
 	vscode: [
 		async ({ vscodeOptions }, use) => {
 			// Ensure the E2E runner is built (handles VS Code extension skipping globalSetup)
@@ -245,9 +245,9 @@ export const test = base.extend<BaseFixtures, WorkerFixtures>({
 			const evaluate = evaluator.evaluate.bind(evaluator);
 
 			const page = await electronApp.firstWindow();
-			const gitlens = new GitLensPage(page, evaluate);
+			const gitlens = new WeGitPage(page, evaluate);
 
-			// Wait for GitLens to activate before providing to tests
+			// Wait for WeGit to activate before providing to tests
 			await gitlens.waitForActivation();
 
 			await use({

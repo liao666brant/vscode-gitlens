@@ -1,8 +1,5 @@
 import type { GitFeatures } from '@gitlens/git/features.js';
 import type { RepositoryVisibility } from '@gitlens/git/providers/types.js';
-import { capitalize } from '@gitlens/utils/string.js';
-import type { StoredFeaturePreviewUsagePeriod } from './constants.storage.js';
-import { proFeaturePreviewUsageDurationInDays, proFeaturePreviewUsages } from './constants.subscription.js';
 import type { RequiredSubscriptionPlanIds, Subscription } from './community/stubs/pro.js';
 
 // Re-export Git feature types and constants from @gitlens/git
@@ -95,39 +92,5 @@ export function isProFeatureOnAllRepos(feature: PlusFeatures): feature is ProFea
 }
 
 export type FeaturePreviews = 'graph';
-export const featurePreviews: FeaturePreviews[] = ['graph'];
 
 export type FeaturePreviewStatus = 'eligible' | 'active' | 'expired';
-
-export interface FeaturePreview {
-	feature: FeaturePreviews;
-	usages: StoredFeaturePreviewUsagePeriod[];
-}
-
-export function getFeaturePreviewLabel(feature: FeaturePreviews): string {
-	switch (feature) {
-		case 'graph':
-			return 'Commit Graph';
-		default:
-			return capitalize(feature);
-	}
-}
-
-const hoursInMs = 3600000;
-
-export function getFeaturePreviewStatus(preview: FeaturePreview): FeaturePreviewStatus {
-	const usages = preview?.usages;
-	if (!usages?.length) return 'eligible';
-
-	const remainingHours = (new Date(usages.at(-1)!.expiresOn).getTime() - Date.now()) / hoursInMs;
-
-	if (
-		usages.length <= proFeaturePreviewUsages &&
-		remainingHours > 0 &&
-		remainingHours < 24 * proFeaturePreviewUsageDurationInDays
-	) {
-		return 'active';
-	}
-
-	return 'expired';
-}

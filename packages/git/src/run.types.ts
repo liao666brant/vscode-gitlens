@@ -67,13 +67,13 @@ export interface GitRunOptions {
  * Untyped escape hatch for raw `git <args>` invocation, returned by
  * `GlGitProvider.createUnsafeGit`.
  *
- * "Unsafe" here means **bypasses the typed safety net** the rest of GitLens relies on
+ * "Unsafe" here means **bypasses the typed safety net** the rest of WeGit relies on
  * — sub-provider cancellation/caching/decorator behaviors and signing-awareness do
  * not apply when commands are issued through this object. It does NOT imply command
  * injection risk; the caller still controls the args.
  *
  * Hand instances to libraries that need to issue arbitrary git commands
- * (`@gitkraken/compose-tools`, `@gitkraken/shared-tools` undo). Inside GitLens
+ * (`@gitkraken/compose-tools`, `@gitkraken/shared-tools` undo). Inside WeGit
  * itself, prefer the typed sub-providers on `RepositoryService` (`branches`,
  * `commits`, `diff`, `staging`, `stash`, `status`, …). Holding an `UnsafeGit`
  * just to call `run(...)` for an ad-hoc command is almost always wrong — the

@@ -1,6 +1,3 @@
-export const proFeaturePreviewUsages = 3;
-export const proFeaturePreviewUsageDurationInDays = 1;
-
 // NOTE: Pay attention to gitlens:plus:state in the `package.json` when modifying this enum
 // NOTE: This is reported in telemetry so we should NOT change the values
 export const enum SubscriptionState {

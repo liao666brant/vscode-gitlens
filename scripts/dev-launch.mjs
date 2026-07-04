@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 /**
  * Launches a real, interactive VS Code Extension Development Host running the
- * GitLens build from a chosen worktree — so you can see that worktree's code
+ * WeGit build from a chosen worktree — so you can see that worktree's code
  * live. Unlike scripts/e2e-dev-inspect.mjs (which spins up a separate, headless
  * Electron instance under Xvfb for Playwright to drive), this drives your
  * ALREADY-RUNNING desktop VS Code via the remote CLI, so it works over
@@ -9,7 +9,7 @@
  * the remote, with the dev extension host loaded in the remote.
  *
  * It does the same thing as the "Run" config in .vscode/launch.json
- * (--extensionDevelopmentPath + the "Debugging (GitLens)" profile), just
+ * (--extensionDevelopmentPath + the "Debugging (WeGit)" profile), just
  * triggerable from any terminal — or a Claude Code session.
  *
  * Usage:
@@ -22,7 +22,7 @@
  * in is used. Use --list to pick from all worktrees.
  *
  * [folder-to-open] is the workspace the dev host opens (default: the worktree
- * itself, so GitLens runs against that branch's repo).
+ * itself, so WeGit runs against that branch's repo).
  *
  * Options:
  *   -l, --list            Pick a worktree interactively (plain list when non-TTY)
@@ -32,7 +32,7 @@
  *                         --build=extension → build:extension only (faster)
  *       --build-cmd=<cmd> Custom build command to run in the worktree
  *       --force           Launch even if dist/ looks unbuilt
- *       --profile=<name>  VS Code profile (default: "Debugging (GitLens)")
+ *       --profile=<name>  VS Code profile (default: "Debugging (WeGit)")
  *       --sandbox         Use a fresh throwaway profile (--profile-temp)
  *       --reuse           Reuse the active window instead of opening a new one
  *       --web             Run as a web extension (--extensionDevelopmentKind=web)
@@ -70,7 +70,7 @@ function parseArgs(argv) {
 		build: undefined, // undefined = skip; otherwise a pnpm script name
 		buildCmd: undefined,
 		force: false,
-		profile: 'Debugging (GitLens)',
+		profile: 'Debugging (WeGit)',
 		sandbox: false,
 		reuse: false,
 		web: false,
@@ -139,7 +139,7 @@ function printHelp() {
 			'',
 			'  -l, --list            Pick a worktree (plain list when non-TTY)',
 			'  -b, --build[=target]  Build first (quick|extension|full); default: skip',
-			'      --profile=<name>  VS Code profile (default: "Debugging (GitLens)")',
+			'      --profile=<name>  VS Code profile (default: "Debugging (WeGit)")',
 			'      --sandbox         Fresh throwaway profile (--profile-temp)',
 			'      --reuse           Reuse active window',
 			'      --web             Run as web extension host',

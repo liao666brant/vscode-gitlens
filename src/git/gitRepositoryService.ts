@@ -74,7 +74,7 @@ export class GitRepositoryService {
 	 * PRs).
 	 *
 	 * Hand the result to libraries that need to issue raw `git <args>` commands
-	 * (`@gitkraken/compose-tools`, `@gitkraken/shared-tools` undo). Inside GitLens,
+	 * (compose/rebase helpers, shared undo tooling). Inside WeGit,
 	 * use the typed sub-providers (`this.branches`, `this.commits`, `this.diff`, …)
 	 * for everything else — those carry cancellation, caching, signing-awareness,
 	 * and decorator behaviors that raw invocation skips.

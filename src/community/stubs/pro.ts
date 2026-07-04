@@ -6,14 +6,12 @@ import type { CommitAuthor } from '@gitlens/git/models/author.js';
 import type { RemoteProviderId } from '@gitlens/git/models/remoteProvider.js';
 import type { RepositoryMetadata } from '@gitlens/git/models/repositoryMetadata.js';
 import type { ResourceDescriptor } from '@gitlens/git/models/resourceDescriptor.js';
-import type { SearchQuery } from '@gitlens/git/models/search.js';
 import type {
 	CloudGitSelfManagedHostIntegrationIds,
 	IntegrationIds,
 	IssuesCloudHostIntegrationId,
 } from '../../constants.integrations.js';
 import type { GlRepository } from '../../git/models/repository.js';
-import { IpcRequest } from '../../webviews/ipc/models/ipc.js';
 
 // MIT replacement for removed commercial modules. It keeps community build paths inert.
 type ProStubAny = any;
@@ -355,18 +353,6 @@ export class EnrichmentService {
 	dispose(): void {}
 }
 
-export class LaunchpadProvider {
-	constructor(..._args: unknown[]) {
-		void _args;
-	}
-
-	getCategorizedItems(..._args: unknown[]): Promise<LaunchpadCategorizedResult> {
-		return Promise.resolve({ items: [] });
-	}
-
-	dispose(): void {}
-}
-
 export class ProductConfigProvider {
 	constructor(..._args: unknown[]) {
 		void _args;
@@ -531,48 +517,6 @@ export function confirmDraftStorage(..._args: unknown[]): Promise<boolean> {
 export function getSubscriptionNextPaidPlanId(_subscription: Subscription): string | undefined {
 	return undefined;
 }
-
-export function getLaunchpadItemGroups(_item: LaunchpadItem): LaunchpadGroup[] {
-	return [];
-}
-
-export const launchpadCategoryToGroupMap = new Map<string, LaunchpadGroup>();
-export const sharedCategoryToLaunchpadActionCategoryMap = new Map<string, string>();
-
-export const ChooseAuthorRequest = new IpcRequest<
-	{ picked?: string[]; placeholder?: string; title?: string },
-	{ authors?: string[] }
->('home', 'chooseAuthor');
-export const ChooseComparisonRequest = new IpcRequest<{ placeholder?: string; title?: string }, { range?: string }>(
-	'home',
-	'chooseComparison',
-);
-export const ChooseFileRequest = new IpcRequest<
-	{ openLabel?: string; picked?: string[]; title?: string; type?: 'file' | 'folder' },
-	{ files?: string[] }
->('home', 'chooseFile');
-export const ChooseRefRequest = new IpcRequest<
-	{
-		allowedAdditionalInput?: { range?: boolean; rev?: boolean };
-		include?: string[];
-		picked?: string;
-		placeholder?: string;
-		title?: string;
-	},
-	{ name?: string }
->('home', 'chooseRef');
-export const SearchHistoryDeleteRequest = new IpcRequest<
-	{ query: string; repoPath?: string },
-	{ history: SearchQuery[] }
->('home', 'searchHistory/delete');
-export const SearchHistoryGetRequest = new IpcRequest<{ repoPath?: string }, { history: SearchQuery[] }>(
-	'home',
-	'searchHistory/get',
-);
-export const SearchHistoryStoreRequest = new IpcRequest<
-	{ repoPath?: string; search: SearchQuery },
-	{ history: SearchQuery[] }
->('home', 'searchHistory/store');
 
 export const activeOverviewStateContext: ProStubAny = proStub;
 export type activeOverviewStateContext<T = ProStubAny, T2 = ProStubAny, T3 = ProStubAny, T4 = ProStubAny> = ProStubAny;
@@ -792,8 +736,6 @@ export function getIssueFromGitConfigEntityIdentifier(
 }
 export const getIssueOwner: ProStubAny = proStub;
 export type getIssueOwner<T = ProStubAny, T2 = ProStubAny, T3 = ProStubAny, T4 = ProStubAny> = ProStubAny;
-export const getLaunchpadSummary: ProStubAny = proStub;
-export type getLaunchpadSummary<T = ProStubAny, T2 = ProStubAny, T3 = ProStubAny, T4 = ProStubAny> = ProStubAny;
 export const getPhaseForStatus: ProStubAny = proStub;
 export type getPhaseForStatus<T = ProStubAny, T2 = ProStubAny, T3 = ProStubAny, T4 = ProStubAny> = ProStubAny;
 export const getProviderIdFromEntityIdentifier: ProStubAny = proStub;
@@ -870,8 +812,6 @@ export const GraphTreemapMode: ProStubAny = proStub;
 export type GraphTreemapMode = string;
 export const GraphWebviewShowingArgs: ProStubAny = proStub;
 export type GraphWebviewShowingArgs<T = ProStubAny, T2 = ProStubAny, T3 = ProStubAny, T4 = ProStubAny> = ProStubAny;
-export const groupAndSortLaunchpadItems: ProStubAny = proStub;
-export type groupAndSortLaunchpadItems<T = ProStubAny, T2 = ProStubAny, T3 = ProStubAny, T4 = ProStubAny> = ProStubAny;
 export const inactiveOverviewStateContext: ProStubAny = proStub;
 export type inactiveOverviewStateContext<
 	T = ProStubAny,
@@ -885,43 +825,6 @@ export const isActiveAgentPhase: ProStubAny = proStub;
 export type isActiveAgentPhase<T = ProStubAny, T2 = ProStubAny, T3 = ProStubAny, T4 = ProStubAny> = ProStubAny;
 export const isAgentDescriptor: ProStubAny = proStub;
 export type isAgentDescriptor<T = ProStubAny, T2 = ProStubAny, T3 = ProStubAny, T4 = ProStubAny> = ProStubAny;
-export const LaunchpadCategorizedResult: ProStubAny = proStub;
-export type LaunchpadCategorizedResult = { items?: LaunchpadItem[] };
-export const LaunchpadCommand: ProStubAny = proStub;
-export type LaunchpadCommand<T = ProStubAny, T2 = ProStubAny, T3 = ProStubAny, T4 = ProStubAny> = ProStubAny;
-export const LaunchpadCommandArgs: ProStubAny = proStub;
-export type LaunchpadCommandArgs<T = ProStubAny, T2 = ProStubAny, T3 = ProStubAny, T4 = ProStubAny> = ProStubAny;
-export const LaunchpadGroup: ProStubAny = proStub;
-export type LaunchpadGroup = string;
-export const launchpadGroupIconMap: ProStubAny = proStub;
-export type launchpadGroupIconMap<T = ProStubAny, T2 = ProStubAny, T3 = ProStubAny, T4 = ProStubAny> = ProStubAny;
-export const launchpadGroupLabelMap: ProStubAny = proStub;
-export type launchpadGroupLabelMap<T = ProStubAny, T2 = ProStubAny, T3 = ProStubAny, T4 = ProStubAny> = ProStubAny;
-export const LaunchpadIndicator: ProStubAny = proStub;
-export type LaunchpadIndicator<T = ProStubAny, T2 = ProStubAny, T3 = ProStubAny, T4 = ProStubAny> = ProStubAny;
-export const LaunchpadItem: ProStubAny = proStub;
-export type LaunchpadItem = {
-	url?: string;
-	uuid: string;
-	type: string;
-	actionableCategory: string;
-	suggestedActionCategory: string;
-	suggestedActions: unknown[];
-	failingCI: boolean;
-	hasConflicts: boolean;
-	reviewDecision?: unknown;
-	reviews?: unknown[];
-	approvalReviewCount: number;
-	changeRequestReviewCount: number;
-	commentReviewCount: number;
-	codeSuggestionsCount: number;
-	author?: unknown;
-	createdDate?: unknown;
-	viewer: Record<string, unknown>;
-	[key: string]: unknown;
-};
-export const LaunchpadSummaryResult: ProStubAny = proStub;
-export type LaunchpadSummaryResult<T = ProStubAny, T2 = ProStubAny, T3 = ProStubAny, T4 = ProStubAny> = ProStubAny;
 export const linkStyles: ProStubAny = proStub;
 export type linkStyles<T = ProStubAny, T2 = ProStubAny, T3 = ProStubAny, T4 = ProStubAny> = ProStubAny;
 export const LocalDraft: ProStubAny = proStub;

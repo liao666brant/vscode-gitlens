@@ -24,30 +24,6 @@ export type GlCommandsDeprecated =
 	| 'gitlens.openRepoInRemote'
 	| 'gitlens.showFileHistoryInView';
 
-type InternalHomeWebviewCommands =
-	| 'gitlens.git.branch.setMergeTarget:home'
-	| 'gitlens.deleteBranchOrWorktree:home'
-	| 'gitlens.createBranch:home'
-	| 'gitlens.createPullRequest:home'
-	| 'gitlens.fetch:home'
-	| 'gitlens.mergeIntoCurrent:home'
-	| 'gitlens.openInView.branch:home'
-	| 'gitlens.openMergeTargetComparison:home'
-	| 'gitlens.openPullRequestChanges:home'
-	| 'gitlens.openPullRequestComparison:home'
-	| 'gitlens.openPullRequestDetails:home'
-	| 'gitlens.pausedOperation.abort:home'
-	| 'gitlens.pausedOperation.continue:home'
-	| 'gitlens.pausedOperation.open:home'
-	| 'gitlens.pausedOperation.showConflicts:home'
-	| 'gitlens.pausedOperation.skip:home'
-	| 'gitlens.publishBranch:home'
-	| 'gitlens.pull:home'
-	| 'gitlens.push:home'
-	| 'gitlens.pushBranch:home'
-	| 'gitlens.rebaseCurrentOnto:home'
-	| 'gitlens.switchToBranch:home';
-
 type InternalRebaseEditorCommands = 'gitlens.pausedOperation.showConflicts:rebase';
 
 type InternalScmGroupedViewCommands =
@@ -67,7 +43,7 @@ type InternalWalkthroughCommands =
 	| 'gitlens.walkthrough.openHelpCenter'
 	| 'gitlens.walkthrough.openWalkthrough';
 
-type InternalWelcomeCommands = 'gitlens.welcome.openHelpCenter' | 'gitlens.welcome.showHomeView';
+type InternalWelcomeCommands = 'gitlens.welcome.openHelpCenter';
 
 type InternalGlCommands =
 	| `gitlens.action.${string}`
@@ -105,7 +81,6 @@ type InternalGlCommands =
 	| 'gitlens.toggleFileChanges:statusbar'
 	| 'gitlens.toggleFileHeatmap:mode'
 	| 'gitlens.toggleFileHeatmap:statusbar'
-	| InternalHomeWebviewCommands
 	| InternalRebaseEditorCommands
 	| InternalScmGroupedViewCommands
 	| InternalViewCommands

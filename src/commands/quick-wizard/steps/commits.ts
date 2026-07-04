@@ -562,7 +562,7 @@ async function getShowCommitOrStashStepItems<
 		if (commitOnCurrentBranch) {
 			unpublished = !published;
 			if (unpublished) {
-				// TODO@eamodio Add Undo commit, if HEAD & unpushed
+				// TODO Add Undo commit, if HEAD & unpushed
 
 				items.push(
 					new GitWizardQuickPickItem('推送到此提交...', {

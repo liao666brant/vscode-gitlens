@@ -1,6 +1,6 @@
 {
 	"name": "@gitlens/git-cli",
-	"description": "GitLens Git CLI package",
+	"description": "WeGit Git CLI package",
 	"version": "0.0.1",
 	"license": "SEE LICENSE IN LICENSE",
 	"private": true,

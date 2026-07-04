@@ -270,7 +270,7 @@ export const OpenOnBitbucketQuickInputButton: QuickInputButton = {
 
 export const OpenOnWebQuickInputButton: QuickInputButton = {
 	iconPath: new ThemeIcon('globe'),
-	tooltip: '在 gitkraken.dev 上打开',
+	tooltip: '在网页中打开',
 };
 
 export const RefreshQuickInputButton: QuickInputButton = {

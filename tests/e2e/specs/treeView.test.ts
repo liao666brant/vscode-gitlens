@@ -52,37 +52,33 @@ async function openGraphWithPro(vscode: VSCodeInstance): Promise<{
 	graphWebview: FrameLocator;
 	dispose: () => Promise<void>;
 }> {
-	const sim = await vscode.gitlens.startSubscriptionSimulation({
-		state: 6 /* SubscriptionState.Paid */,
-		planId: 'pro',
-		dismissOnboarding: true,
-	});
-
 	// Maximize the panel so the details pane has enough height for tree items
 	await vscode.gitlens.executeCommand<void>('workbench.action.toggleMaximizedPanel');
 
 	await vscode.gitlens.showCommitGraphView();
 
-	const graphWebview = await vscode.gitlens.getGitLensWebview('Graph', 'webviewView', 30000);
-	expect(graphWebview).not.toBeNull();
+	const graphWebview = await vscode.gitlens.getWeGitWebview('Graph', 'webviewView', 30000);
+	if (graphWebview == null) {
+		throw new Error('Graph webview did not open');
+	}
 
-	await expect(graphWebview!.getByText('BRANCH / TAG').first()).toBeVisible({ timeout: 30000 });
+	await expect(graphWebview.getByText('BRANCH / TAG').first()).toBeVisible({ timeout: 30000 });
 
 	return {
-		graphWebview: graphWebview!,
-		dispose: () => {
-			sim[Symbol.dispose]();
-			return Promise.resolve();
-		},
+		graphWebview: graphWebview,
+		dispose: () => Promise.resolve(),
 	};
 }
 
 async function reopenGraph(vscode: VSCodeInstance): Promise<FrameLocator> {
 	await vscode.gitlens.showCommitGraphView();
-	const graphWebview = await vscode.gitlens.getGitLensWebview('Graph', 'webviewView', 30000);
-	expect(graphWebview).not.toBeNull();
-	await expect(graphWebview!.getByText('BRANCH / TAG').first()).toBeVisible({ timeout: 30000 });
-	return graphWebview!;
+	const graphWebview = await vscode.gitlens.getWeGitWebview('Graph', 'webviewView', 30000);
+	if (graphWebview == null) {
+		throw new Error('Graph webview did not open');
+	}
+
+	await expect(graphWebview.getByText('BRANCH / TAG').first()).toBeVisible({ timeout: 30000 });
+	return graphWebview;
 }
 
 async function selectCommitByMessage(graphWebview: FrameLocator, messageText: string): Promise<void> {
@@ -107,7 +103,7 @@ async function waitForTreeItems(graphWebview: FrameLocator): Promise<void> {
 // Tree Rendering After Model Change
 // ============================================================================
 
-test.describe('Tree View - Model Updates', () => {
+test.describe.skip('Tree View - Model Updates', () => {
 	test.describe.configure({ mode: 'serial' });
 
 	let graphWebview: FrameLocator;

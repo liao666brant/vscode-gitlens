@@ -76,7 +76,7 @@ export class ResetCommand extends GlCommandBase {
 			{
 				label: '全部...',
 				description: ' — \u00a0请务必谨慎操作！',
-				detail: '清除所有本地存储数据；所有 GitLens 状态都将丢失',
+				detail: '清除所有本地存储数据；所有 WeGit 状态都将丢失',
 				item: 'all',
 			},
 		];
@@ -102,7 +102,7 @@ export class ResetCommand extends GlCommandBase {
 			);
 		}
 
-		// create a quick pick with options to clear all the different resets that GitLens supports
+		// create a quick pick with options to clear all the different resets that WeGit supports
 		const pick = await window.showQuickPick<ResetQuickPickItem>(items, {
 			title: '重置已存储数据',
 			placeHolder: '选择要重置的数据，随后将提示确认',
@@ -211,12 +211,8 @@ export class ResetCommand extends GlCommandBase {
 			case 'onboarding':
 				await this.container.onboarding.resetAll();
 				await this.container.usage.reset();
-				await this.container.storage.delete('home:sections:collapsed');
 
 				// Deprecated keys — defensive cleanup in case migration didn't run
-				await this.container.storage.delete('home:banners:dismissed');
-				await this.container.storage.delete('home:sections:dismissed');
-				await this.container.storage.delete('home:walkthrough:dismissed');
 				await this.container.storage.delete('mcp:banner:dismissed');
 				await this.container.storage.delete('views:scm:grouped:welcome:dismissed');
 				await this.container.storage.delete('composer:onboarding:dismissed');

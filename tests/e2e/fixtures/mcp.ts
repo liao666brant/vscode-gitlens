@@ -13,7 +13,7 @@ interface McpFixtures {
  * Extended Playwright test fixture that provides a McpClient.
  *
  * Derives the gk CLI path from `--user-data-dir` (the temp directory
- * E2E tests use), waits for GitLens to auto-install the CLI on first run,
+ * E2E tests use), waits for WeGit to auto-install the CLI on first run,
  * then constructs a McpClient with the latest live IPC discovery file.
  *
  * Usage:

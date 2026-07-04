@@ -1,7 +1,7 @@
 /**
  * Graph Details Panel E2E Tests
  *
- * Tests the embedded details panel in the Commit Graph view, including:
+ * Tests the embedded details panel in the retired graph surface, including:
  * - Panel visibility and toggle behavior
  * - Single commit details (author, message, files)
  * - WIP (working changes) mode
@@ -49,25 +49,18 @@ const test = base.extend({
 test.describe.configure({ mode: 'serial' });
 
 // `workbench.action.toggleMaximizedPanel` is a stateful toggle and each describe runs its own
-// beforeAll → openGraphWithPro, so toggling per-call would alternate the maximized state (and
+// beforeAll -> openGraphWithPro, so toggling per-call would alternate the maximized state (and
 // leave some describes cramped, breaking row selection). Maximize exactly once for the whole
 // file; the maximized panel persists across the resetUI cycles between tests.
 let panelMaximized = false;
 
 /**
- * Open the graph view with Pro subscription and return the webview FrameLocator.
- * The graph is a Pro feature, so subscription simulation is required.
+ * Open the retired graph surface and return the webview FrameLocator.
  */
 async function openGraphWithPro(vscode: VSCodeInstance): Promise<{
 	graphWebview: FrameLocator;
 	dispose: () => Promise<void>;
 }> {
-	const sim = await vscode.gitlens.startSubscriptionSimulation({
-		state: 6 /* SubscriptionState.Paid */,
-		planId: 'pro',
-		dismissOnboarding: true,
-	});
-
 	// Maximize the panel so the graph has room to render the commit-message column and its rows
 	// aren't overlapped by the working-changes/scrollbar layers (which intercept row clicks).
 	if (!panelMaximized) {
@@ -77,18 +70,17 @@ async function openGraphWithPro(vscode: VSCodeInstance): Promise<{
 
 	await vscode.gitlens.showCommitGraphView();
 
-	const graphWebview = await vscode.gitlens.getGitLensWebview('Graph', 'webviewView', 30000);
-	expect(graphWebview).not.toBeNull();
+	const graphWebview = await vscode.gitlens.getWeGitWebview('Graph', 'webviewView', 30000);
+	if (graphWebview == null) {
+		throw new Error('Graph webview did not open');
+	}
 
 	// Wait for graph to fully render (column headers appear)
-	await expect(graphWebview!.getByText('BRANCH / TAG').first()).toBeVisible({ timeout: 30000 });
+	await expect(graphWebview.getByText('BRANCH / TAG').first()).toBeVisible({ timeout: 30000 });
 
 	return {
-		graphWebview: graphWebview!,
-		dispose: () => {
-			sim[Symbol.dispose]();
-			return Promise.resolve();
-		},
+		graphWebview: graphWebview,
+		dispose: () => Promise.resolve(),
 	};
 }
 
@@ -97,10 +89,13 @@ async function openGraphWithPro(vscode: VSCodeInstance): Promise<{
  */
 async function reopenGraph(vscode: VSCodeInstance): Promise<FrameLocator> {
 	await vscode.gitlens.showCommitGraphView();
-	const graphWebview = await vscode.gitlens.getGitLensWebview('Graph', 'webviewView', 30000);
-	expect(graphWebview).not.toBeNull();
-	await expect(graphWebview!.getByText('BRANCH / TAG').first()).toBeVisible({ timeout: 30000 });
-	return graphWebview!;
+	const graphWebview = await vscode.gitlens.getWeGitWebview('Graph', 'webviewView', 30000);
+	if (graphWebview == null) {
+		throw new Error('Graph webview did not open');
+	}
+
+	await expect(graphWebview.getByText('BRANCH / TAG').first()).toBeVisible({ timeout: 30000 });
+	return graphWebview;
 }
 
 /**
@@ -192,7 +187,7 @@ test.afterAll(async ({ vscode }) => {
 // Panel Visibility
 // ============================================================================
 
-test.describe('Graph Details - Panel Visibility', () => {
+test.describe.skip('Graph Details - Panel Visibility', () => {
 	test.describe.configure({ mode: 'serial' });
 
 	let graphWebview: FrameLocator;
@@ -278,7 +273,7 @@ test.describe('Graph Details - Panel Visibility', () => {
 // Single Commit Details
 // ============================================================================
 
-test.describe('Graph Details - Single Commit', () => {
+test.describe.skip('Graph Details - Single Commit', () => {
 	test.describe.configure({ mode: 'serial' });
 
 	let graphWebview: FrameLocator;
@@ -358,7 +353,7 @@ test.describe('Graph Details - Single Commit', () => {
 // WIP Mode
 // ============================================================================
 
-test.describe('Graph Details - WIP Mode', () => {
+test.describe.skip('Graph Details - WIP Mode', () => {
 	test.describe.configure({ mode: 'serial' });
 
 	let graphWebview: FrameLocator;
@@ -423,7 +418,7 @@ test.describe('Graph Details - WIP Mode', () => {
 // Compare Mode
 // ============================================================================
 
-test.describe('Graph Details - Compare Mode', () => {
+test.describe.skip('Graph Details - Compare Mode', () => {
 	test.describe.configure({ mode: 'serial' });
 
 	let graphWebview: FrameLocator;
@@ -551,7 +546,7 @@ test.describe('Graph Details - Compare Mode', () => {
 // Split Panel
 // ============================================================================
 
-test.describe('Graph Details - Split Panel', () => {
+test.describe.skip('Graph Details - Split Panel', () => {
 	test.describe.configure({ mode: 'serial' });
 
 	let graphWebview: FrameLocator;

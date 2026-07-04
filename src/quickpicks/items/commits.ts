@@ -102,7 +102,7 @@ export class CommitFileQuickPickItem extends CommandQuickPickItem {
 			iconPath: getGitFileStatusThemeIcon(file.status),
 		});
 
-		// TODO@eamodio - add line diff details
+		// TODO - add line diff details
 		// this.detail = this.commit.getFormattedDiffStatus({ expand: true });
 	}
 

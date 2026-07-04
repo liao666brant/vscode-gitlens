@@ -2,8 +2,7 @@
  * Serialization benchmark for Supertalk RPC with Graph-scale payloads.
  *
  * Validates that Supertalk's Connection can handle large arrays of
- * GraphRow-like objects (the dominant payload shape for the Commit Graph
- * webview) with acceptable overhead.
+ * GraphRow-like objects with acceptable overhead.
  *
  * Uses `nestedProxies: false` deliberately (not the production default) —
  * benchmarks the non-recursive path where plain data arrays skip the
@@ -22,7 +21,7 @@ import { Connection } from '@eamodio/supertalk';
 import { rpcHandlers } from '../../../system/rpc/handlers.js';
 
 // ============================================================
-// Synthetic GraphRow shape (mirrors @gitkraken/gitkraken-components)
+// Synthetic GraphRow shape mirroring the external graph component payload
 // ============================================================
 
 interface SyntheticHead {

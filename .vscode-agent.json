@@ -1,5 +1,5 @@
 {
-	"extensionId": "eamodio.gitlens",
+	"extensionId": "liao666brant.wegit",
 	"buildCommand": "pnpm run build:extension",
 	"activationWait": 8000,
 	"settings": {

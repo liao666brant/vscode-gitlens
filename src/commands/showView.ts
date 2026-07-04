@@ -1,7 +1,6 @@
 import { window } from 'vscode';
 import type { Container } from '../container.js';
 import { command, executeCoreCommand } from '../system/-webview/command.js';
-import type { HomeWebviewShowingArgs } from '../webviews/home/registration.js';
 import type { WelcomeWebviewShowingArgs } from '../webviews/welcome/registration.js';
 import { GlCommandBase } from './commandBase.js';
 import type { CommandContext } from './commandContext.js';
@@ -15,7 +14,6 @@ export class ShowViewCommand extends GlCommandBase {
 			'gitlens.showCommitsView',
 			'gitlens.showContributorsView',
 			'gitlens.showFileHistoryView',
-			'gitlens.showHomeView',
 			'gitlens.showLineHistoryView',
 			'gitlens.showRemotesView',
 			'gitlens.showRepositoriesView',
@@ -45,7 +43,7 @@ export class ShowViewCommand extends GlCommandBase {
 
 		const message = featureName
 			? `未检测到仓库。要查看 ${featureName}，请打开包含 Git 仓库的文件夹，或在“源代码管理”中通过 URL 克隆。`
-			: '未检测到仓库。要使用 GitLens，请打开包含 Git 仓库的文件夹，或在“源代码管理”中通过 URL 克隆。';
+			: '未检测到仓库。要使用 WeGit，请打开包含 Git 仓库的文件夹，或在“源代码管理”中通过 URL 克隆。';
 
 		const openRepo = { title: '打开文件夹或仓库', isCloseAffordance: true };
 		const result = await window.showInformationMessage(message, openRepo);
@@ -72,8 +70,6 @@ export class ShowViewCommand extends GlCommandBase {
 			case 'gitlens.showFileHistoryView':
 				await this.waitForRepo();
 				return this.container.views.showView('fileHistory');
-			case 'gitlens.showHomeView':
-				return this.container.views.home.show(undefined, ...(args as HomeWebviewShowingArgs));
 			case 'gitlens.showLineHistoryView':
 				await this.waitForRepo();
 				return this.container.views.showView('lineHistory');

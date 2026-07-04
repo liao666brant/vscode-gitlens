@@ -26,12 +26,6 @@ const walkthroughRequiredMapping: Readonly<Map<WalkthroughContextKeys, Walkthrou
 		},
 	],
 	['gitBlame', { usage: ['command:gitlens.toggleFileBlame:executed'] }],
-	[
-		'homeView',
-		{
-			usage: ['homeView:shown', 'command:gitlens.showHomeView:executed'],
-		},
-	],
 ]);
 
 const graphWalkthroughRequiredMapping: Readonly<Map<GraphWalkthroughContextKeys, WalkthroughUsage>> = new Map();

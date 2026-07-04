@@ -32,7 +32,7 @@ import type { State } from './protocol.js';
 const descriptor: CustomEditorDescriptor = {
 	id: 'gitlens.rebase',
 	fileName: 'rebase.html',
-	iconPath: 'images/gitlens-icon.png',
+	iconPath: 'images/wegit-icon.png',
 	title: '交互式变基',
 	contextKeyPrefix: 'gitlens:webview:rebase',
 	trackingFeature: 'rebaseEditor',
@@ -207,7 +207,7 @@ export class RebaseEditorProvider implements CustomTextEditorProvider, Disposabl
 				// can still edit the todo file manually.
 				Logger.error(ex, 'RebaseEditorProvider', `Failed to resolve repository for ${repoUri.toString()}`);
 				void window.showWarningMessage(
-					"GitLens couldn't access this repository, so the Interactive Rebase Editor isn't available here. Falling back to the text editor.",
+					"WeGit couldn't access this repository, so the Interactive Rebase Editor isn't available here. Falling back to the text editor.",
 				);
 				void reopenRebaseTodoEditor('default');
 				return;
@@ -256,7 +256,7 @@ export class RebaseEditorProvider implements CustomTextEditorProvider, Disposabl
 			// generic message here keeps the user from seeing two competing notifications.
 			if (!isChunkLoadError(ex)) {
 				void window.showErrorMessage(
-					'GitLens was unable to open the Interactive Rebase Editor. Falling back to the text editor.',
+					'WeGit was unable to open the Interactive Rebase Editor. Falling back to the text editor.',
 				);
 			}
 		}

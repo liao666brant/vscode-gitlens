@@ -1,0 +1,28 @@
+# Final launchpad/graph/current feature residue scan
+src\community\stubs\pro.ts:358:export class LaunchpadProvider {
+src\community\stubs\pro.ts:363:	getCategorizedItems(..._args: unknown[]): Promise<LaunchpadCategorizedResult> {
+src\community\stubs\pro.ts:535:export function getLaunchpadItemGroups(_item: LaunchpadItem): LaunchpadGroup[] {
+src\community\stubs\pro.ts:539:export const launchpadCategoryToGroupMap = new Map<string, LaunchpadGroup>();
+src\community\stubs\pro.ts:540:export const sharedCategoryToLaunchpadActionCategoryMap = new Map<string, string>();
+src\community\stubs\pro.ts:795:export const getLaunchpadSummary: ProStubAny = proStub;
+src\community\stubs\pro.ts:796:export type getLaunchpadSummary<T = ProStubAny, T2 = ProStubAny, T3 = ProStubAny, T4 = ProStubAny> = ProStubAny;
+src\community\stubs\pro.ts:873:export const groupAndSortLaunchpadItems: ProStubAny = proStub;
+src\community\stubs\pro.ts:874:export type groupAndSortLaunchpadItems<T = ProStubAny, T2 = ProStubAny, T3 = ProStubAny, T4 = ProStubAny> = ProStubAny;
+src\community\stubs\pro.ts:888:export const LaunchpadCategorizedResult: ProStubAny = proStub;
+src\community\stubs\pro.ts:889:export type LaunchpadCategorizedResult = { items?: LaunchpadItem[] };
+src\community\stubs\pro.ts:890:export const LaunchpadCommand: ProStubAny = proStub;
+src\community\stubs\pro.ts:891:export type LaunchpadCommand<T = ProStubAny, T2 = ProStubAny, T3 = ProStubAny, T4 = ProStubAny> = ProStubAny;
+src\community\stubs\pro.ts:892:export const LaunchpadCommandArgs: ProStubAny = proStub;
+src\community\stubs\pro.ts:893:export type LaunchpadCommandArgs<T = ProStubAny, T2 = ProStubAny, T3 = ProStubAny, T4 = ProStubAny> = ProStubAny;
+src\community\stubs\pro.ts:894:export const LaunchpadGroup: ProStubAny = proStub;
+src\community\stubs\pro.ts:895:export type LaunchpadGroup = string;
+src\community\stubs\pro.ts:896:export const launchpadGroupIconMap: ProStubAny = proStub;
+src\community\stubs\pro.ts:897:export type launchpadGroupIconMap<T = ProStubAny, T2 = ProStubAny, T3 = ProStubAny, T4 = ProStubAny> = ProStubAny;
+src\community\stubs\pro.ts:898:export const launchpadGroupLabelMap: ProStubAny = proStub;
+src\community\stubs\pro.ts:899:export type launchpadGroupLabelMap<T = ProStubAny, T2 = ProStubAny, T3 = ProStubAny, T4 = ProStubAny> = ProStubAny;
+src\community\stubs\pro.ts:900:export const LaunchpadIndicator: ProStubAny = proStub;
+src\community\stubs\pro.ts:901:export type LaunchpadIndicator<T = ProStubAny, T2 = ProStubAny, T3 = ProStubAny, T4 = ProStubAny> = ProStubAny;
+src\community\stubs\pro.ts:902:export const LaunchpadItem: ProStubAny = proStub;
+src\community\stubs\pro.ts:903:export type LaunchpadItem = {
+src\community\stubs\pro.ts:923:export const LaunchpadSummaryResult: ProStubAny = proStub;
+src\community\stubs\pro.ts:924:export type LaunchpadSummaryResult<T = ProStubAny, T2 = ProStubAny, T3 = ProStubAny, T4 = ProStubAny> = ProStubAny;

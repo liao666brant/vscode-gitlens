@@ -70,13 +70,13 @@ async function openRebaseEditor(vscode: VSCodeInstance, todoFilePath: string): P
 
 /**
  * Helper to get the rebase webview frame, polling until it appears.
- * Uses a single polling pass via getGitLensWebview's internal loop rather than
+ * Uses a single polling pass via getWeGitWebview's internal loop rather than
  * nesting retry loops (which wasted the full inner timeout on each failed attempt).
  */
 async function getRebaseWebviewWithRetry(
 	vscode: VSCodeInstance,
 ): Promise<NonNullable<Awaited<ReturnType<typeof vscode.gitlens.getRebaseWebview>>>> {
-	const frame = await vscode.gitlens.getGitLensWebview('Interactive Rebase', 'customEditor', 30000);
+	const frame = await vscode.gitlens.getWeGitWebview('Interactive Rebase', 'customEditor', 30000);
 	if (!frame) {
 		throw new Error('Rebase webview frame not found after 30s');
 	}

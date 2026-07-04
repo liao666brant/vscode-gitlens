@@ -1,20 +1,20 @@
 export interface OnboardingItemDefinition<T = undefined> {
 	readonly scope: 'global' | 'workspace';
-	/** GitLens version when this schema was introduced. Bump when data structure changes */
+	/** WeGit version when this schema was introduced. Bump when data structure changes */
 	readonly schema?: `${number}.${number}.${number}`;
-	/** GitLens version when/if this item should be re-shown if the user dismissed it before this version */
+	/** WeGit version when/if this item should be re-shown if the user dismissed it before this version */
 	readonly reshowAfter?: `${number}.${number}.${number}`;
 	/** Type marker for the data shape - value is never used at runtime */
 	readonly state?: T;
 }
 
 export interface OnboardingItem<T> {
-	/** GitLens version of the stored data schema (for migrations) */
+	/** WeGit version of the stored data schema (for migrations) */
 	schema?: `${number}.${number}.${number}`;
 
 	/** ISO timestamp when dismissed */
 	dismissedAt?: string;
-	/** GitLens version when dismissed (e.g., "17.1.0") */
+	/** WeGit version when dismissed (e.g., "17.1.0") */
 	dismissedVersion?: `${number}.${number}.${number}`;
 
 	/** Item-specific metadata */

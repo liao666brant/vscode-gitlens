@@ -603,7 +603,7 @@ export class ViewCommands implements Disposable {
 				settings: { [key: string]: unknown };
 			};
 
-			// TODO@eamodio hash the folder paths to get a unique, but re-usable workspace name?
+			// TODO hash the folder paths to get a unique, but re-usable workspace name?
 			const codeWorkspace: VSCodeWorkspace = {
 				folders: filterMap(selection, n =>
 					n.worktree != null ? { name: n.worktree.name, path: n.worktree.uri.fsPath } : undefined,
@@ -1279,7 +1279,7 @@ export class ViewCommands implements Disposable {
 				throw new Error(`Unexpected command: ${command.command}`);
 		}
 
-		// TODO@eamodio Revisit this
+		// TODO Revisit this
 		// return CommitActions.openChanges(node.file, node instanceof ViewRefFileNode ? node.ref : node.commit, {
 		// 	preserveFocus: true,
 		// 	preview: false,

@@ -8,7 +8,7 @@ import type { TelemetryContext } from '../../shared/contexts/telemetry.js';
 import { telemetryContext } from '../../shared/contexts/telemetry.js';
 import { stateContext } from '../context.js';
 import { welcomeStyles } from './welcome-page.css.js';
-import '../../shared/components/gitlens-logo-circle.js';
+import '../../shared/components/wegit-logo-circle.js';
 import '../../shared/components/button.js';
 import '../../shared/components/code-icon.js';
 import './welcome-parts.js';
@@ -24,9 +24,9 @@ const walkthroughSteps: WalkthroughStep[] = [
 	{
 		id: 'get-started-community',
 		walkthroughKey: 'gettingStarted',
-		title: '欢迎使用 GitLens',
+		title: '欢迎使用 WeGit',
 		body: html`
-			<p>GitLens 社区版保留本地 Git 工作流能力，帮助你查看提交、分支、文件历史和工作区更改。</p>
+			<p>WeGit 是小而美的 Git 工具，保留本地 Git 工作流能力，帮助你查看提交、分支、文件历史和工作区更改。</p>
 			<ul>
 				<li><strong>仓库视图：</strong>浏览分支、提交、标签、stash 和工作区状态</li>
 				<li><strong>Inspect：</strong>查看提交详情、文件变更和相关历史</li>
@@ -35,18 +35,6 @@ const walkthroughSteps: WalkthroughStep[] = [
 			</ul>
 			<div class="card-part--centered">
 				<gl-button href="command:gitlens.showRepositoriesView">打开仓库视图</gl-button>
-			</div>
-		`,
-	},
-
-	{
-		id: 'home-view',
-		walkthroughKey: 'homeView',
-		title: '使用 Home 视图简化工作流',
-		body: html`
-			<p>简化你的工作流，在一个直观的中心轻松跟踪、管理并协作处理分支和拉取请求。</p>
-			<div class="card-part--centered">
-				<gl-button href="command:gitlens.welcome.showHomeView">打开 Home 视图</gl-button>
 			</div>
 		`,
 	},
@@ -152,8 +140,8 @@ export class GlWelcomePage extends LitElement {
 		return html`
 			<div part="page" class="welcome scrollable">
 				<div class="section header">
-					<h1><gitlens-logo-circle></gitlens-logo-circle><span>开始使用 GitLens</span></h1>
-					<p>增强 Git 能力，挖掘仓库中尚未利用的知识，更好地理解、编写和评审代码。</p>
+					<h1><wegit-logo-circle></wegit-logo-circle><span>开始使用 WeGit</span></h1>
+					<p>小而美的 Git 工具，聚焦本地提交、分支、历史和比较工作流。</p>
 				</div>
 				<gl-walkthrough-progress
 					class="section"

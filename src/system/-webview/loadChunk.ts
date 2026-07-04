@@ -40,7 +40,7 @@ const promptExtensionUpgradedReload = once((): void => {
 	const dismiss = { title: 'Not Now', isCloseAffordance: true };
 	void window
 		.showWarningMessage(
-			'GitLens was updated in the background. Reload the window to continue using all features.',
+			'WeGit was updated in the background. Reload the window to continue using all features.',
 			reload,
 			dismiss,
 		)

@@ -1465,7 +1465,7 @@ export class GlRebaseEditor extends GlAppHost<State, RebaseStateProvider> {
 
 		const currentCommitSha = status.currentCommit;
 		const pauseReason = status.pauseReason;
-		const revealTooltip = this.state?.revealLocation === 'graph' ? '在提交图中打开' : '在检查视图中打开';
+		const revealTooltip = '在检查视图中打开';
 
 		// Determine icon based on pause reason
 		let icon: string;
@@ -1759,7 +1759,6 @@ export class GlRebaseEditor extends GlAppHost<State, RebaseStateProvider> {
 			data-id=${entryId}
 			.entry=${entry}
 			.authors=${this.state.authors}
-			.revealLocation=${this.state.revealLocation}
 			?isBase=${entry.sha === this.state?.onto?.sha}
 			?isFirst=${isFirst}
 			?isLast=${isLast}
@@ -1782,7 +1781,7 @@ export class GlRebaseEditor extends GlAppHost<State, RebaseStateProvider> {
 	private renderHeader() {
 		return html`<header tabindex="-1">
 			<div class="header__row">
-				<h1 class="header-title">GitLens Interactive Rebase</h1>
+				<h1 class="header-title">WeGit Interactive Rebase</h1>
 				<div class="header-info">${this.renderSubhead()}</div>
 				<div class="header-actions">
 					${this.renderConflictIndicator()}
@@ -1809,7 +1808,7 @@ export class GlRebaseEditor extends GlAppHost<State, RebaseStateProvider> {
 		const doneCommitCount = this.doneEntries.filter(e => e.type === 'commit').length;
 		const pendingCommitCount = this.state.entries.filter(e => e.type === 'commit').length;
 		const totalCommitCount = doneCommitCount + pendingCommitCount;
-		const revealTooltip = this.state.revealLocation === 'graph' ? '在提交图中打开' : '在检查视图中打开';
+		const revealTooltip = '在检查视图中打开';
 
 		return html`
 			<gl-tooltip content=${revealTooltip}>

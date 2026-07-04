@@ -1,5 +1,5 @@
 /**
- * Subscription service — GitKraken subscription state and change events.
+ * Subscription service — WeGit account state and change events.
  *
  * Exposes both event subscribers (for side-effect-driven consumers) and
  * `Signal.State` properties (for reactive bridging via Supertalk's SignalHandler).
@@ -30,7 +30,7 @@ export class SubscriptionService {
 	readonly subscriptionState = new Signal.State<Subscription | undefined>(undefined);
 
 	/**
-	 * Whether the user has a GitKraken account (signed in).
+	 * Whether the user has a WeGit account (signed in).
 	 * Derived from `subscriptionState` — updated in sync with it.
 	 */
 	readonly hasAccountState = new Signal.State<boolean>(false);
@@ -173,7 +173,7 @@ export class SubscriptionService {
 	}
 
 	/**
-	 * Check if the user has a GitKraken account (signed in).
+	 * Check if the user has a WeGit account (signed in).
 	 */
 	async hasAccount(): Promise<boolean> {
 		const sub = await this.#container.subscription.getSubscription();

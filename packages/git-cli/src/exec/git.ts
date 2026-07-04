@@ -710,7 +710,7 @@ export class Git {
 			promise = deferred.promise;
 			this.pendingCommands.set(cacheKey, promise);
 
-			// Fixes https://github.com/gitkraken/vscode-gitlens/issues/73 & https://github.com/gitkraken/vscode-gitlens/issues/161
+			// Fixes https://github.com/liao666brant/vscode-gitlens/issues/73 & https://github.com/liao666brant/vscode-gitlens/issues/161
 			// See https://stackoverflow.com/questions/4144417/how-to-handle-asian-characters-in-file-names-in-git-on-os-x
 			args.unshift('-c', 'core.quotepath=false', '-c', 'color.ui=false', ...(configs ?? emptyArray));
 
@@ -824,7 +824,7 @@ export class Git {
 
 		const gitCommand = `(spawn) [${spawnOpts.cwd as string}] git ${runArgs.join(' ')}`;
 
-		// Fixes https://github.com/gitkraken/vscode-gitlens/issues/73 & https://github.com/gitkraken/vscode-gitlens/issues/161
+		// Fixes https://github.com/liao666brant/vscode-gitlens/issues/73 & https://github.com/liao666brant/vscode-gitlens/issues/161
 		// See https://stackoverflow.com/questions/4144417/how-to-handle-asian-characters-in-file-names-in-git-on-os-x
 		runArgs.unshift(
 			'-c',

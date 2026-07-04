@@ -70,7 +70,7 @@ export class TelemetryService implements Disposable {
 	private _initializationTimer: ReturnType<typeof setTimeout> | undefined;
 	private ensureTelemetry(container: Container): void {
 		this._enabled =
-			env.isTelemetryEnabled && configuration.getAny<boolean>('gitlens.telemetry.enabled', undefined, true);
+			env.isTelemetryEnabled && configuration.getAny<boolean>('gitlens.telemetry.enabled', undefined, false);
 		if (!this._enabled) {
 			if (this._initializationTimer != null) {
 				clearTimeout(this._initializationTimer);

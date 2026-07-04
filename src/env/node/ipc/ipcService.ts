@@ -28,7 +28,7 @@ interface CliPublishInfo {
  * Owns the single HTTP IPC server for the extension host. CLI and agent capabilities
  * register their handlers here and publish their own discovery file. Both capabilities
  * share the same server (one port, one token); the discovery files live in distinct
- * directories so out-of-process readers (older `gk` binaries; peer GitLens windows)
+ * directories so out-of-process readers (older `gk` binaries; peer WeGit windows)
  * keep working unchanged.
  */
 export class IpcService implements Disposable {
@@ -134,8 +134,8 @@ export class IpcService implements Disposable {
 	}
 
 	/**
-	 * Publish the CLI discovery file (read by `gk` binaries and `@gitkraken/core-gitlens`
-	 * consumers). The `gk:cli:ipc:started` event is fired by the caller so consumers are
+	 * Publish the CLI discovery file (read by legacy CLI/core consumers). The
+	 * `gk:cli:ipc:started` event is fired by the caller so consumers are
 	 * notified even when the discovery-file write fails (server is still up).
 	 */
 	publishCli(info: CliPublishInfo): Promise<void> {
@@ -162,7 +162,7 @@ export class IpcService implements Disposable {
 	}
 
 	/**
-	 * Publish the agents discovery file (read by peer GitLens windows looking for
+	 * Publish the agents discovery file (read by peer WeGit windows looking for
 	 * sibling agent sessions). The agents package owns workspacePaths and re-publishes
 	 * when its paths change.
 	 */

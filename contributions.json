@@ -1292,7 +1292,7 @@
 			"menus": {
 				"extension/context": [
 					{
-						"when": "extension =~ /^eamodio.gitlens?$/ && extensionStatus == installed && gitlens:walkthroughSupported",
+						"when": "extension =~ /^liao666brant.wegit$/ && extensionStatus == installed && gitlens:walkthroughSupported",
 						"group": "9_gitlens",
 						"order": 1
 					}
@@ -2342,10 +2342,6 @@
 			"label": "显示文件历史视图",
 			"commandPalette": "gitlens:enabled"
 		},
-		"gitlens.showHomeView": {
-			"label": "显示主页视图",
-			"commandPalette": true
-		},
 		"gitlens.showInDetailsView": {
 			"label": "检查详情",
 			"icon": "$(eye)",
@@ -2591,7 +2587,7 @@
 			"menus": {
 				"extension/context": [
 					{
-						"when": "extension =~ /^eamodio.gitlens?$/ && extensionStatus == installed",
+						"when": "extension =~ /^liao666brant.wegit$/ && extensionStatus == installed",
 						"group": "9_gitlens",
 						"order": 3
 					}
@@ -3800,7 +3796,7 @@
 			}
 		},
 		"gitlens.views.branches.attach": {
-			"label": "组合到 GitLens 视图",
+			"label": "组合到 WeGit 视图",
 			"icon": "$(close)",
 			"menus": {
 				"view/title": [
@@ -4554,7 +4550,7 @@
 			}
 		},
 		"gitlens.views.commits.attach": {
-			"label": "组合到 GitLens 视图",
+			"label": "组合到 WeGit 视图",
 			"icon": "$(close)",
 			"menus": {
 				"view/title": [
@@ -5311,7 +5307,7 @@
 			}
 		},
 		"gitlens.views.contributors.attach": {
-			"label": "组合到 GitLens 视图",
+			"label": "组合到 WeGit 视图",
 			"icon": "$(close)",
 			"menus": {
 				"view/title": [
@@ -6061,7 +6057,7 @@
 			}
 		},
 		"gitlens.views.fileHistory.attach": {
-			"label": "组合到 GitLens 视图",
+			"label": "组合到 WeGit 视图",
 			"icon": "$(close)",
 			"menus": {
 				"view/title": [
@@ -6597,126 +6593,6 @@
 						"when": "viewItem =~ /gitlens:file\\b((?=.*?\\b\\+committed\\b)|:results)(?!.*?\\+submodule)/",
 						"group": "2_gitlens",
 						"order": 2
-					}
-				]
-			}
-		},
-		"gitlens.views.home.discussions": {
-			"label": "GitHub 讨论",
-			"icon": "$(comment-discussion)",
-			"menus": {
-				"view/item/context": [
-					{
-						"when": "viewItem == gitlens:views:home",
-						"group": "2_gitlens",
-						"order": 99
-					}
-				],
-				"view/title": [
-					{
-						"when": "view == gitlens.views.home",
-						"group": "2_gitlens",
-						"order": 99
-					}
-				]
-			}
-		},
-		"gitlens.views.home.help": {
-			"label": "帮助中心",
-			"icon": "$(question)",
-			"menus": {
-				"view/item/context": [
-					{
-						"when": "viewItem == gitlens:views:home",
-						"group": "1_gitlens",
-						"order": 97
-					}
-				],
-				"view/title": [
-					{
-						"when": "view == gitlens.views.home",
-						"group": "1_gitlens",
-						"order": 97
-					}
-				]
-			}
-		},
-		"gitlens.views.home.info": {
-			"label": "了解主页视图",
-			"icon": "$(question)",
-			"menus": {
-				"view/item/context": [
-					{
-						"when": "viewItem == gitlens:views:home",
-						"group": "inline",
-						"order": 98
-					}
-				],
-				"view/title": [
-					{
-						"when": "view == gitlens.views.home",
-						"group": "navigation",
-						"order": 98
-					}
-				]
-			}
-		},
-		"gitlens.views.home.issues": {
-			"label": "GitHub 议题",
-			"icon": "$(feedback)",
-			"menus": {
-				"view/item/context": [
-					{
-						"when": "viewItem == gitlens:views:home",
-						"group": "2_gitlens",
-						"order": 98
-					}
-				],
-				"view/title": [
-					{
-						"when": "view == gitlens.views.home",
-						"group": "2_gitlens",
-						"order": 98
-					}
-				]
-			}
-		},
-		"gitlens.views.home.refresh": {
-			"label": "刷新",
-			"icon": "$(refresh)",
-			"menus": {
-				"view/item/context": [
-					{
-						"when": "viewItem == gitlens:views:home",
-						"group": "inline",
-						"order": 99
-					}
-				],
-				"view/title": [
-					{
-						"when": "view == gitlens.views.home",
-						"group": "navigation",
-						"order": 99
-					}
-				]
-			}
-		},
-		"gitlens.views.home.whatsNew": {
-			"label": "新功能（发布说明）",
-			"icon": "$(megaphone)",
-			"menus": {
-				"view/item/context": [
-					{
-						"when": "viewItem == gitlens:views:home",
-						"group": "inline",
-						"order": 1
-					}
-				],
-				"view/title": [
-					{
-						"when": "view == gitlens.views.home",
-						"group": "navigation",
-						"order": 1
 					}
 				]
 			}
@@ -7667,7 +7543,7 @@
 			}
 		},
 		"gitlens.views.remotes.attach": {
-			"label": "组合到 GitLens 视图",
+			"label": "组合到 WeGit 视图",
 			"icon": "$(close)",
 			"menus": {
 				"view/title": [
@@ -8129,7 +8005,7 @@
 			}
 		},
 		"gitlens.views.repositories.attach": {
-			"label": "组合到 GitLens 视图",
+			"label": "组合到 WeGit 视图",
 			"icon": "$(close)",
 			"menus": {
 				"view/title": [
@@ -10038,7 +9914,7 @@
 			}
 		},
 		"gitlens.views.searchAndCompare.attach": {
-			"label": "组合到 GitLens 视图",
+			"label": "组合到 WeGit 视图",
 			"icon": "$(close)",
 			"menus": {
 				"view/title": [
@@ -10618,7 +10494,7 @@
 			}
 		},
 		"gitlens.views.stashes.attach": {
-			"label": "组合到 GitLens 视图",
+			"label": "组合到 WeGit 视图",
 			"icon": "$(close)",
 			"menus": {
 				"view/title": [
@@ -10856,7 +10732,7 @@
 			}
 		},
 		"gitlens.views.tags.attach": {
-			"label": "组合到 GitLens 视图",
+			"label": "组合到 WeGit 视图",
 			"icon": "$(close)",
 			"menus": {
 				"view/title": [
@@ -12177,7 +12053,7 @@
 		"gitlens.views.branches": {
 			"name": "分支",
 			"when": "!gitlens:disabled && !(config.gitlens.views.scm.grouped.views.branches || gitlens:views:scm:grouped:views:branches)",
-			"contextualTitle": "GitLens",
+			"contextualTitle": "WeGit",
 			"icon": "$(gitlens-branches-view)",
 			"visibility": "collapsed",
 			"container": "scm",
@@ -12187,7 +12063,7 @@
 			"type": "webview",
 			"name": "检查",
 			"when": "!gitlens:disabled",
-			"contextualTitle": "GitLens",
+			"contextualTitle": "WeGit",
 			"icon": "$(gitlens-commit-view)",
 			"initialSize": 6,
 			"visibility": "visible",
@@ -12197,7 +12073,7 @@
 		"gitlens.views.commits": {
 			"name": "提交",
 			"when": "!gitlens:disabled && !(config.gitlens.views.scm.grouped.views.commits || gitlens:views:scm:grouped:views:commits)",
-			"contextualTitle": "GitLens",
+			"contextualTitle": "WeGit",
 			"icon": "$(gitlens-commits-view)",
 			"visibility": "visible",
 			"container": "scm",
@@ -12206,7 +12082,7 @@
 		"gitlens.views.contributors": {
 			"name": "贡献者",
 			"when": "!gitlens:disabled && !(config.gitlens.views.scm.grouped.views.contributors || gitlens:views:scm:grouped:views:contributors)",
-			"contextualTitle": "GitLens",
+			"contextualTitle": "WeGit",
 			"icon": "$(gitlens-contributors-view)",
 			"visibility": "collapsed",
 			"container": "scm",
@@ -12215,27 +12091,17 @@
 		"gitlens.views.fileHistory": {
 			"name": "文件历史",
 			"when": "!gitlens:disabled && !(config.gitlens.views.scm.grouped.views.fileHistory || gitlens:views:scm:grouped:views:fileHistory)",
-			"contextualTitle": "GitLens",
+			"contextualTitle": "WeGit",
 			"icon": "$(gitlens-history-view)",
 			"initialSize": 2,
 			"visibility": "visible",
 			"container": "gitlensInspect",
 			"order": 2
 		},
-		"gitlens.views.home": {
-			"type": "webview",
-			"name": "主页",
-			"contextualTitle": "GitLens",
-			"icon": "$(gitlens-gitlens)",
-			"initialSize": 6,
-			"visibility": "visible",
-			"container": "gitlens",
-			"order": 1
-		},
 		"gitlens.views.lineHistory": {
 			"name": "行历史",
 			"when": "!gitlens:disabled && !gitlens:hasVirtualFolders",
-			"contextualTitle": "GitLens",
+			"contextualTitle": "WeGit",
 			"icon": "$(gitlens-history-view)",
 			"initialSize": 1,
 			"visibility": "collapsed",
@@ -12245,7 +12111,7 @@
 		"gitlens.views.remotes": {
 			"name": "远程仓库",
 			"when": "!gitlens:disabled && !(config.gitlens.views.scm.grouped.views.remotes || gitlens:views:scm:grouped:views:remotes)",
-			"contextualTitle": "GitLens",
+			"contextualTitle": "WeGit",
 			"icon": "$(gitlens-remotes-view)",
 			"visibility": "collapsed",
 			"container": "scm",
@@ -12254,16 +12120,16 @@
 		"gitlens.views.repositories": {
 			"name": "仓库",
 			"when": "!gitlens:disabled && !(config.gitlens.views.scm.grouped.views.repositories || gitlens:views:scm:grouped:views:repositories)",
-			"contextualTitle": "GitLens",
+			"contextualTitle": "WeGit",
 			"icon": "$(gitlens-repositories-view)",
 			"visibility": "hidden",
 			"container": "scm",
 			"order": 0
 		},
 		"gitlens.views.scm.grouped": {
-			"name": "GitLens",
+			"name": "WeGit",
 			"when": "!gitlens:disabled && ((config.gitlens.views.scm.grouped.views.branches || gitlens:views:scm:grouped:views:branches) || (config.gitlens.views.scm.grouped.views.commits || gitlens:views:scm:grouped:views:commits) || (config.gitlens.views.scm.grouped.views.contributors || gitlens:views:scm:grouped:views:contributors) || (config.gitlens.views.scm.grouped.views.remotes || gitlens:views:scm:grouped:views:remotes) || (config.gitlens.views.scm.grouped.views.repositories || gitlens:views:scm:grouped:views:repositories) || (config.gitlens.views.scm.grouped.views.searchAndCompare || gitlens:views:scm:grouped:views:searchAndCompare) || (config.gitlens.views.scm.grouped.views.stashes || gitlens:views:scm:grouped:views:stashes) || (config.gitlens.views.scm.grouped.views.tags || gitlens:views:scm:grouped:views:tags))",
-			"contextualTitle": "GitLens",
+			"contextualTitle": "WeGit",
 			"icon": "$(gitlens-gitlens)",
 			"visibility": "visible",
 			"container": "scm",
@@ -12274,11 +12140,11 @@
 					"when": "gitlens:views:scm:grouped:loading"
 				},
 				{
-					"contents": "GitLens 将许多相关视图（提交、分支、贮藏等）分组在此处，便于视图管理。\n\n[继续](command:gitlens.views.scm.grouped.welcome.dismiss)\n\n使用上方的标签页进行导航，或分离你想保持独立的视图。你可以随时通过视图标题中的 'x' 重新分组。",
+					"contents": "WeGit 将许多相关视图（提交、分支、贮藏等）分组在此处，便于视图管理。\n\n[继续](command:gitlens.views.scm.grouped.welcome.dismiss)\n\n使用上方的标签页进行导航，或分离你想保持独立的视图。你可以随时通过视图标题中的 'x' 重新分组。",
 					"when": "!gitlens:views:scm:grouped:loading && gitlens:views:scm:grouped:welcome && gitlens:install:new && !config.gitlens.advanced.skipOnboarding"
 				},
 				{
-					"contents": "GitLens 将许多相关视图（提交、分支、贮藏等）分组在此处，便于视图管理。\n\n[继续](command:gitlens.views.scm.grouped.welcome.dismiss)\n\n更喜欢分开显示？[将视图恢复到之前的位置](command:gitlens.views.scm.grouped.welcome.restore)\n\n使用上方的标签页进行导航，或分离你想保持独立的视图。你可以随时通过视图标题中的 'x' 重新分组。",
+					"contents": "WeGit 将许多相关视图（提交、分支、贮藏等）分组在此处，便于视图管理。\n\n[继续](command:gitlens.views.scm.grouped.welcome.dismiss)\n\n更喜欢分开显示？[将视图恢复到之前的位置](command:gitlens.views.scm.grouped.welcome.restore)\n\n使用上方的标签页进行导航，或分离你想保持独立的视图。你可以随时通过视图标题中的 'x' 重新分组。",
 					"when": "!gitlens:views:scm:grouped:loading && gitlens:views:scm:grouped:welcome && !gitlens:install:new && !config.gitlens.advanced.skipOnboarding"
 				},
 				{
@@ -12298,7 +12164,7 @@
 		"gitlens.views.searchAndCompare": {
 			"name": "搜索与比较",
 			"when": "!gitlens:disabled && !(config.gitlens.views.scm.grouped.views.searchAndCompare || gitlens:views:scm:grouped:views:searchAndCompare)",
-			"contextualTitle": "GitLens",
+			"contextualTitle": "WeGit",
 			"icon": "$(gitlens-search-view)",
 			"initialSize": 2,
 			"visibility": "visible",
@@ -12322,7 +12188,7 @@
 		"gitlens.views.stashes": {
 			"name": "存储",
 			"when": "!gitlens:disabled && !gitlens:hasVirtualFolders && !(config.gitlens.views.scm.grouped.views.stashes || gitlens:views:scm:grouped:views:stashes)",
-			"contextualTitle": "GitLens",
+			"contextualTitle": "WeGit",
 			"icon": "$(gitlens-stashes-view)",
 			"visibility": "collapsed",
 			"container": "scm",
@@ -12331,7 +12197,7 @@
 		"gitlens.views.tags": {
 			"name": "标签",
 			"when": "!gitlens:disabled && !(config.gitlens.views.scm.grouped.views.tags || gitlens:views:scm:grouped:views:tags)",
-			"contextualTitle": "GitLens",
+			"contextualTitle": "WeGit",
 			"icon": "$(gitlens-tags-view)",
 			"visibility": "collapsed",
 			"container": "scm",
@@ -12340,7 +12206,7 @@
 		"gitlens.views.welcome": {
 			"type": "webview",
 			"name": "欢迎",
-			"contextualTitle": "GitLens",
+			"contextualTitle": "WeGit",
 			"icon": "$(gitlens-gitlens)",
 			"initialSize": 1,
 			"visibility": "visible",

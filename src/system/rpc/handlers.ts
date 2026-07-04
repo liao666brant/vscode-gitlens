@@ -176,7 +176,7 @@ export const regExpHandler: Handler<RegExp, WireRegExp> = {
 // ============================================================
 
 /**
- * Default set of RPC handlers for GitLens.
+ * Default set of RPC handlers for WeGit.
  * Includes: Date, Map, Set, RegExp
  *
  * Note: Uri is NOT included because it requires VS Code's Uri class

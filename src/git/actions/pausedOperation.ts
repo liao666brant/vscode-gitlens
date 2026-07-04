@@ -42,7 +42,7 @@ async function continuePausedOperationCore(svc: GitRepositoryService, skip: bool
 			const skip = { title: '跳过' };
 			const cancel = { title: '取消', isCloseAffordance: true };
 
-			// TODO@eamodio: We should offer a continue with allowing an empty commit option
+			// TODO: We should offer a continue with allowing an empty commit option
 
 			const result = await window.showInformationMessage(
 				`无法继续 ${operation.type} 操作，因为 ${pausedAt} 产生了空提交。\n\n是否要跳过 ${pausedAt}？`,

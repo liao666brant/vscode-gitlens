@@ -438,7 +438,7 @@ export class GraphGitSubProvider implements GitGraphSubProvider {
 
 					// First-parent rewriteable chain from HEAD: include each commit only while HEAD and
 					// every commit down to it has exactly one parent. Stops at (excludes) the first merge
-					// and the root — mirrors GitKraken's getDistinctCommitsFromHeadToFirstMergeCommit.
+					// and the root — mirrors the shared getDistinctCommitsFromHeadToFirstMergeCommit behavior.
 					// Off-chain commits (a merge's other-parent ancestry, or anything below the first merge)
 					// are reachable-from-HEAD but NOT safely history-rewriteable by a plain interactive
 					// rebase. Relies on the same "commit emitted before its parents" ordering as above.

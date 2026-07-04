@@ -1,0 +1,12 @@
+{
+	"name": "wegit",
+	"displayName": "WeGit — 小而美的 Git 工具",
+	"publisher": "liao666brant",
+	"author": "liao666brant",
+	"icon": "images/wegit-icon.png",
+	"hasOldLogo": false,
+	"hasWeGitLogo": true,
+	"rebaseIcon": true,
+	"settingsIcon": true,
+	"hasGitKrakenRedirect": false
+}

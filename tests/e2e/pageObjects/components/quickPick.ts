@@ -82,8 +82,8 @@ export class QuickPick {
 		const locator = this.container.locator(QuickPickItemSelector).filter({ visible: true });
 		await locator.first().waitFor({ state: 'visible', timeout: MaxTimeout });
 
-		const items = locator.allTextContents();
-		return items;
+		const items = await locator.allTextContents();
+		return items.filter((item): item is string => typeof item === 'string');
 	}
 
 	/** Check if the quick pick is visible */
@@ -206,7 +206,7 @@ export class QuickPick {
 	/** Cancel/close the quick pick - presses Escape until fully closed */
 	async cancel(): Promise<void> {
 		// Press Escape multiple times to ensure wizard is fully closed
-		// (GitLens wizards may have multiple nested states)
+		// (WeGit wizards may have multiple nested states)
 		for (let i = 0; i < 5 && (await this.isVisible()); i++) {
 			await this.page.keyboard.press('Escape');
 			await this.page.waitForTimeout(ShortTimeout / 4);

@@ -180,7 +180,7 @@ export class GitProviderService implements UnifiedDisposable {
 
 	// True when `repo` is a worktree whose common repository is registered with the service (open
 	// or closed). A registered common repo guarantees the repo-family's identity/remotes are known
-	// to GitLens — either the common repo's own add event processed storage/telemetry when it was
+	// to WeGit — either the common repo's own add event processed storage/telemetry when it was
 	// first opened, or a sibling entry (e.g. the opened URI form for a canonical-URI closed
 	// duplicate) did. Since the worktree inherits the common repo's remotes and initial-commit
 	// sha, the worktree's add can safely skip visibility invalidation and the remote-context
@@ -1383,7 +1383,7 @@ export class GitProviderService implements UnifiedDisposable {
 
 						let connected = isRemoteMaybeIntegrationConnected(remote);
 						// If we don't know if we are connected, only check if the remote is the default or there is only one
-						// TODO@eamodio is the above still a valid requirement?
+						// TODO is the above still a valid requirement?
 						if (connected == null && (remote.default || remotes.length === 1)) {
 							const integration = await getRemoteIntegration(remote);
 							connected = await integration?.isConnected();
@@ -2207,7 +2207,7 @@ export class GitProviderService implements UnifiedDisposable {
 			// `opened: true` means "ensure this repo is surfaced" — re-open a found-but-closed repo (a newly-
 			// discovered repo gets `opened` applied at creation). An explicit open request reflects current user
 			// intent (e.g. following a deep link), so it intentionally overrides a prior `closedByScm`: this only
-			// flips GitLens's own visibility and never touches vscode.git's SCM, so it can't override the user's SCM
+			// flips WeGit's own visibility and never touches vscode.git's SCM, so it can't override the user's SCM
 			// close (passive re-opening still respects `closedByScm` — see the auto-reopen skip in GlCliGitProvider).
 			// `opened: false`/unset never mutate a found repo — closing one a consumer merely looked up would be destructive.
 			const ensureOpened = (repo: GlRepository | undefined): GlRepository | undefined => {

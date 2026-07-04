@@ -1,7 +1,7 @@
 {
-	"name": "gitlens",
-	"displayName": "GitLens — Git 增强工具",
-	"description": "在 VS Code 中增强 Git 功能 — 通过 Git blame 注释查看代码作者信息，无缝浏览和探索 Git 仓库，并通过强大的比较命令获得宝贵见解。",
+	"name": "wegit",
+	"displayName": "WeGit — 小而美的 Git 工具",
+	"description": "小而美的 Git 工具：在 VS Code 中查看提交、分支、文件历史、blame 注释和常用 Git 工作流。",
 	"version": "18.2.0",
 	"engines": {
 		"node": ">= 22.18.0",
@@ -9,31 +9,23 @@
 		"vscode": "^1.101.0"
 	},
 	"license": "SEE LICENSE IN LICENSE",
-	"publisher": "eamodio",
+	"publisher": "liao666brant",
 	"author": {
-		"name": "Eric Amodio",
-		"email": "eamodio@gmail.com"
+		"name": "liao666brant"
 	},
-	"homepage": "https://gitkraken.com/gitlens",
+	"homepage": "https://github.com/liao666brant/vscode-gitlens",
 	"bugs": {
-		"url": "https://github.com/gitkraken/vscode-gitlens/issues"
+		"url": "https://github.com/liao666brant/vscode-gitlens/issues"
 	},
 	"repository": {
 		"type": "git",
-		"url": "https://github.com/gitkraken/vscode-gitlens.git"
+		"url": "https://github.com/liao666brant/vscode-gitlens.git"
 	},
 	"customElements": "custom-elements.json",
 	"main": "./dist/gitlens.js",
 	"browser": "./dist/browser/gitlens.js",
-	"icon": "images/gitlens-icon.png",
+	"icon": "images/wegit-icon.png",
 	"preview": false,
-	"badges": [
-		{
-			"url": "https://img.shields.io/badge/gitkraken--community-gitlens-blue.svg?logo=slack&labelColor=555555",
-			"href": "https://slack.gitkraken.com/",
-			"description": "Join us in the #gitlens channel"
-		}
-	],
 	"categories": [
 		"Other",
 		"SCM Providers"
@@ -43,7 +35,7 @@
 		"theme": "dark"
 	},
 	"keywords": [
-		"gitlens",
+		"wegit",
 		"git",
 		"blame",
 		"log",
@@ -72,14 +64,14 @@
 				"properties": {
 					"gitlens.statusBar.enabled": {
 						"type": "boolean",
-						"default": true,
+						"default": false,
 						"markdownDescription": "Specifies whether to provide blame information in the status bar",
 						"scope": "window",
 						"order": 10
 					},
 					"gitlens.statusBar.pullRequests.enabled": {
 						"type": "boolean",
-						"default": true,
+						"default": false,
 						"markdownDescription": "Specifies whether to provide information about the Pull Request (if any) that introduced the commit in the status bar. Requires a connection to a supported remote service (e.g. GitHub)",
 						"scope": "window",
 						"order": 20
@@ -87,7 +79,7 @@
 					"gitlens.statusBar.format": {
 						"type": "string",
 						"default": "${author}, ${agoOrDate}${' via  'pullRequest}",
-						"markdownDescription": "Specifies the format of the blame information in the status bar. See [_Commit Tokens_](https://github.com/gitkraken/vscode-gitlens/wiki/Custom-Formatting#commit-tokens) in the GitLens docs. Date formatting is controlled by the `#gitlens.statusBar.dateFormat#` setting",
+						"markdownDescription": "Specifies the format of the blame information in the status bar. See [_Commit Tokens_](https://github.com/liao666brant/vscode-gitlens/wiki/Custom-Formatting#commit-tokens) in the WeGit docs. Date formatting is controlled by the `#gitlens.statusBar.dateFormat#` setting",
 						"scope": "window",
 						"order": 30
 					},
@@ -248,7 +240,7 @@
 					"gitlens.blame.format": {
 						"type": "string",
 						"default": "${message|50?} ${agoOrDate|14-}",
-						"markdownDescription": "Specifies the format of the file blame annotations. See [_Commit Tokens_](https://github.com/gitkraken/vscode-gitlens/wiki/Custom-Formatting#commit-tokens) in the GitLens docs. Date formatting is controlled by the `#gitlens.blame.dateFormat#` setting",
+						"markdownDescription": "Specifies the format of the file blame annotations. See [_Commit Tokens_](https://github.com/liao666brant/vscode-gitlens/wiki/Custom-Formatting#commit-tokens) in the WeGit docs. Date formatting is controlled by the `#gitlens.blame.dateFormat#` setting",
 						"scope": "window",
 						"order": 20
 					},
@@ -495,14 +487,6 @@
 				}
 			},
 			{
-				"id": "home",
-				"title": "主页",
-				"order": 55,
-				"properties": {
-					"gitlens.home.preview.enabled": {}
-				}
-			},
-			{
 				"id": "views",
 				"title": "视图",
 				"order": 100,
@@ -532,7 +516,7 @@
 							"Search & Compare view",
 							"File History view"
 						],
-						"markdownDescription": "Specifies the default view to show when the _GitLens_ view is opened",
+						"markdownDescription": "Specifies the default view to show when the _WeGit_ view is opened",
 						"scope": "window",
 						"order": 2
 					},
@@ -597,7 +581,7 @@
 							}
 						},
 						"additionalProperties": false,
-						"markdownDescription": "Specifies which views will be grouped into the _GitLens_ view on the Source Control side bar",
+						"markdownDescription": "Specifies which views will be grouped into the _WeGit_ view on the Source Control side bar",
 						"scope": "window",
 						"order": 3
 					},
@@ -662,7 +646,7 @@
 							}
 						},
 						"additionalProperties": false,
-						"markdownDescription": "Specifies which views will be hidden, when grouped into the _GitLens_ view on the Source Control side bar",
+						"markdownDescription": "Specifies which views will be hidden, when grouped into the _WeGit_ view on the Source Control side bar",
 						"scope": "window",
 						"order": 4
 					},
@@ -725,63 +709,63 @@
 					"gitlens.views.formats.commits.label": {
 						"type": "string",
 						"default": "${❰ tips|11? ❱➤  }${message}",
-						"markdownDescription": "Specifies the format of commits in the views. See [_Commit Tokens_](https://github.com/gitkraken/vscode-gitlens/wiki/Custom-Formatting#commit-tokens) in the GitLens docs",
+						"markdownDescription": "Specifies the format of commits in the views. See [_Commit Tokens_](https://github.com/liao666brant/vscode-gitlens/wiki/Custom-Formatting#commit-tokens) in the WeGit docs",
 						"scope": "window",
 						"order": 30
 					},
 					"gitlens.views.formats.commits.description": {
 						"type": "string",
 						"default": "${author, }${agoOrDate}",
-						"markdownDescription": "Specifies the description format of commits in the views. See [_Commit Tokens_](https://github.com/gitkraken/vscode-gitlens/wiki/Custom-Formatting#commit-tokens) in the GitLens docs",
+						"markdownDescription": "Specifies the description format of commits in the views. See [_Commit Tokens_](https://github.com/liao666brant/vscode-gitlens/wiki/Custom-Formatting#commit-tokens) in the WeGit docs",
 						"scope": "window",
 						"order": 31
 					},
 					"gitlens.views.formats.commits.tooltip": {
 						"type": "string",
 						"default": "${avatar} &nbsp;__${author}__${signature} &nbsp;$(history) ${agoAndDateBothSources} \\\n${link}${' via  'pullRequest}${'&nbsp;&nbsp;'changesDetail} ${message}${\n\n---\n\nfootnotes}\n\n${tips}",
-						"markdownDescription": "Specifies the tooltip format (in markdown) of commits in the views. See [_Commit Tokens_](https://github.com/eamodio/vscode-gitlens/wiki/Custom-Formatting#commit-tokens) in the GitLens docs",
+						"markdownDescription": "Specifies the tooltip format (in markdown) of commits in the views. See [_Commit Tokens_](https://github.com/liao666brant/vscode-gitlens/wiki/Custom-Formatting#commit-tokens) in the WeGit docs",
 						"scope": "window",
 						"order": 32
 					},
 					"gitlens.views.formats.commits.tooltipWithStatus": {
 						"type": "string",
 						"default": "${avatar} &nbsp;__${author}__${signature} &nbsp;$(history) ${agoAndDateBothSources} \\\n${link}${' via  'pullRequest}&nbsp;&nbsp;•&nbsp;&nbsp;{{slot-status}} ${message}${\n\n---\n\nfootnotes}\n\n${tips}",
-						"markdownDescription": "Specifies the tooltip format (in markdown) of \"file\" commits in the views. See [_Commit Tokens_](https://github.com/eamodio/vscode-gitlens/wiki/Custom-Formatting#commit-tokens) in the GitLens docs",
+						"markdownDescription": "Specifies the tooltip format (in markdown) of \"file\" commits in the views. See [_Commit Tokens_](https://github.com/liao666brant/vscode-gitlens/wiki/Custom-Formatting#commit-tokens) in the WeGit docs",
 						"scope": "window",
 						"order": 32
 					},
 					"gitlens.views.formats.files.label": {
 						"type": "string",
 						"default": "${working  }${file}",
-						"markdownDescription": "Specifies the format of a file in the views. See [_File Tokens_](https://github.com/gitkraken/vscode-gitlens/wiki/Custom-Formatting#file-tokens) in the GitLens docs",
+						"markdownDescription": "Specifies the format of a file in the views. See [_File Tokens_](https://github.com/liao666brant/vscode-gitlens/wiki/Custom-Formatting#file-tokens) in the WeGit docs",
 						"scope": "window",
 						"order": 40
 					},
 					"gitlens.views.formats.files.description": {
 						"type": "string",
 						"default": "${directory}${  ←  originalPath}",
-						"markdownDescription": "Specifies the description format of a file in the views. See [_File Tokens_](https://github.com/gitkraken/vscode-gitlens/wiki/Custom-Formatting#file-tokens) in the GitLens docs",
+						"markdownDescription": "Specifies the description format of a file in the views. See [_File Tokens_](https://github.com/liao666brant/vscode-gitlens/wiki/Custom-Formatting#file-tokens) in the WeGit docs",
 						"scope": "window",
 						"order": 41
 					},
 					"gitlens.views.formats.stashes.label": {
 						"type": "string",
 						"default": "${message}",
-						"markdownDescription": "Specifies the format of stashes in the views. See [_Commit Tokens_](https://github.com/gitkraken/vscode-gitlens/wiki/Custom-Formatting#commit-tokens) in the GitLens docs",
+						"markdownDescription": "Specifies the format of stashes in the views. See [_Commit Tokens_](https://github.com/liao666brant/vscode-gitlens/wiki/Custom-Formatting#commit-tokens) in the WeGit docs",
 						"scope": "window",
 						"order": 50
 					},
 					"gitlens.views.formats.stashes.description": {
 						"type": "string",
 						"default": "${stashOnRef, }${agoOrDate}",
-						"markdownDescription": "Specifies the description format of stashes in the views. See [_Commit Tokens_](https://github.com/gitkraken/vscode-gitlens/wiki/Custom-Formatting#commit-tokens) in the GitLens docs",
+						"markdownDescription": "Specifies the description format of stashes in the views. See [_Commit Tokens_](https://github.com/liao666brant/vscode-gitlens/wiki/Custom-Formatting#commit-tokens) in the WeGit docs",
 						"scope": "window",
 						"order": 51
 					},
 					"gitlens.views.formats.stashes.tooltip": {
 						"type": "string",
 						"default": "${link}${' on `'stashOnRef`}${'\\\n&nbsp;&nbsp;'changesDetail} \\\n &nbsp;$(history) ${agoAndDate} ${message}${\n\n---\n\nfootnotes}",
-						"markdownDescription": "Specifies the tooltip format (in markdown) of stashes in the views. See [_Commit Tokens_](https://github.com/eamodio/vscode-gitlens/wiki/Custom-Formatting#commit-tokens) in the GitLens docs",
+						"markdownDescription": "Specifies the tooltip format (in markdown) of stashes in the views. See [_Commit Tokens_](https://github.com/liao666brant/vscode-gitlens/wiki/Custom-Formatting#commit-tokens) in the WeGit docs",
 						"scope": "window",
 						"order": 52
 					},
@@ -2067,13 +2051,11 @@
 					},
 					"gitlens.rebaseEditor.revealLocation": {
 						"type": "string",
-						"default": "graph",
+						"default": "inspect",
 						"enum": [
-							"graph",
 							"inspect"
 						],
 						"enumDescriptions": [
-							"Reveals commits in the _Commit Graph_",
 							"Reveals commits in the _Inspect_ view"
 						],
 						"markdownDescription": "Specifies where to reveal commits and references",
@@ -2859,7 +2841,7 @@
 							"Adds a chorded set of shortcut keys that start with `Ctrl+Shift+G` (`⌥⌘G` on macOS)",
 							"No shortcut keys will be added"
 						],
-						"markdownDescription": "Specifies the keymap to use for GitLens shortcut keys",
+						"markdownDescription": "Specifies the keymap to use for WeGit shortcut keys",
 						"scope": "window",
 						"order": 10
 					}
@@ -2873,7 +2855,7 @@
 					"gitlens.mode.statusBar.enabled": {
 						"type": "boolean",
 						"default": true,
-						"markdownDescription": "Specifies whether to provide the active GitLens mode in the status bar",
+						"markdownDescription": "Specifies whether to provide the active WeGit mode in the status bar",
 						"scope": "window",
 						"order": 10
 					},
@@ -2888,13 +2870,13 @@
 							"Aligns to the left",
 							"Aligns to the right"
 						],
-						"markdownDescription": "Specifies the active GitLens mode alignment in the status bar",
+						"markdownDescription": "Specifies the active WeGit mode alignment in the status bar",
 						"scope": "window",
 						"order": 11
 					},
 					"gitlens.mode.active": {
 						"type": "string",
-						"markdownDescription": "Specifies the active GitLens mode, if any",
+						"markdownDescription": "Specifies the active WeGit mode, if any",
 						"scope": "window",
 						"order": 20
 					},
@@ -2995,7 +2977,7 @@
 								"description": "for reviewing code, enables many visual features"
 							}
 						},
-						"markdownDescription": "Specifies the user-defined GitLens modes",
+						"markdownDescription": "Specifies the user-defined WeGit modes",
 						"scope": "window",
 						"order": 30
 					}
@@ -3015,8 +2997,8 @@
 					},
 					"gitlens.telemetry.enabled": {
 						"type": "boolean",
-						"default": true,
-						"markdownDescription": "Specifies whether to allow GitLens to send product usage telemetry.\n\n_**Note:** For GitLens to send any telemetry BOTH this setting and VS Code telemetry must be enabled. If either one is disabled no telemetry will be sent._",
+						"default": false,
+						"markdownDescription": "Specifies whether to allow WeGit to send product usage telemetry.\n\n_**Note:** For WeGit to send any telemetry BOTH this setting and VS Code telemetry must be enabled. If either one is disabled no telemetry will be sent._",
 						"scope": "window",
 						"order": 1
 					},
@@ -3141,7 +3123,7 @@
 					"gitlens.advanced.repositorySearch.enabled": {
 						"type": "boolean",
 						"default": true,
-						"markdownDescription": "Specifies whether GitLens should automatically scan workspace folders to discover Git repositories. When disabled, GitLens relies solely on VS Code's built-in SCM to report repository opens and closes.",
+						"markdownDescription": "Specifies whether WeGit should automatically scan workspace folders to discover Git repositories. When disabled, WeGit relies solely on VS Code's built-in SCM to report repository opens and closes.",
 						"scope": "window",
 						"order": 11
 					},
@@ -3278,7 +3260,7 @@
 					"gitlens.advanced.caching.gitPath": {
 						"type": "boolean",
 						"default": true,
-						"markdownDescription": "Specifies whether to cache (per-workspace) the path to the Git executable to use for GitLens",
+						"markdownDescription": "Specifies whether to cache (per-workspace) the path to the Git executable to use for WeGit",
 						"scope": "window",
 						"order": 91
 					},
@@ -3332,7 +3314,7 @@
 					},
 					"gitlens.outputLevel": {
 						"type": "string",
-						"markdownDeprecationMessage": "This setting is deprecated. Use the **GitLens: Enable Debug Logging** and **GitLens: Disable Debug Logging** commands, or the **Developer: Set Log Level...** command to control logging."
+						"markdownDeprecationMessage": "This setting is deprecated. Use the **WeGit: Enable Debug Logging** and **WeGit: Disable Debug Logging** commands, or the **Developer: Set Log Level...** command to control logging."
 					},
 					"gitlens.defaultCurrentUserNameStyle": {
 						"type": "string",
@@ -3382,8 +3364,8 @@
 						"order": 70
 					},
 					"gitlens.insiders": {
-						"deprecationMessage": "Deprecated. Use the pre-release edition of GitLens instead",
-						"markdownDeprecationMessage": "Deprecated. Use the pre-release of GitLens instead"
+						"deprecationMessage": "Deprecated. Use the pre-release edition of WeGit instead",
+						"markdownDeprecationMessage": "Deprecated. Use the pre-release of WeGit instead"
 					}
 				}
 			},
@@ -3395,14 +3377,14 @@
 					"gitlens.signing.showSignatureBadges": {
 						"type": "boolean",
 						"default": true,
-						"markdownDescription": "Specifies whether to show signature verification badges on commits in the Commit Graph and other views",
+						"markdownDescription": "Specifies whether to show signature verification badges on commits in supported views",
 						"scope": "window",
 						"order": 20
 					},
 					"gitlens.signing.enableKeyGeneration": {
 						"type": "boolean",
 						"default": true,
-						"markdownDescription": "Specifies whether to enable the ability to generate signing keys from within GitLens",
+						"markdownDescription": "Specifies whether to enable the ability to generate signing keys from within WeGit",
 						"scope": "window",
 						"order": 30
 					}
@@ -3462,7 +3444,7 @@
 					"light": "#1a7f37",
 					"highContrast": "#68ff79"
 				},
-				"description": "Specifies the icon color of open issues in the GitLens views"
+				"description": "Specifies the icon color of open issues in the WeGit views"
 			},
 			{
 				"id": "gitlens.closedAutolinkedIssueIconColor",
@@ -3471,11 +3453,11 @@
 					"light": "#8250df",
 					"highContrast": "#8945ff"
 				},
-				"description": "Specifies the icon color of closed issues in the GitLens views"
+				"description": "Specifies the icon color of closed issues in the WeGit views"
 			},
 			{
 				"id": "gitlens.closedPullRequestIconColor",
-				"description": "Specifies the icon color of closed pull requests in the GitLens views",
+				"description": "Specifies the icon color of closed pull requests in the WeGit views",
 				"defaults": {
 					"dark": "#f85149",
 					"light": "#cf222e",
@@ -3484,7 +3466,7 @@
 			},
 			{
 				"id": "gitlens.openPullRequestIconColor",
-				"description": "Specifies the icon color of open pull requests in the GitLens views",
+				"description": "Specifies the icon color of open pull requests in the WeGit views",
 				"defaults": {
 					"dark": "#3fb950",
 					"light": "#1a7f37",
@@ -3493,7 +3475,7 @@
 			},
 			{
 				"id": "gitlens.mergedPullRequestIconColor",
-				"description": "Specifies the icon color of merged pull requests in the GitLens views",
+				"description": "Specifies the icon color of merged pull requests in the WeGit views",
 				"defaults": {
 					"dark": "#a371f7",
 					"light": "#8250df",
@@ -3502,7 +3484,7 @@
 			},
 			{
 				"id": "gitlens.unpublishedChangesIconColor",
-				"description": "Specifies the icon color of unpublished changes in the GitLens views",
+				"description": "Specifies the icon color of unpublished changes in the WeGit views",
 				"defaults": {
 					"dark": "#35b15e",
 					"light": "#35b15e",
@@ -3511,7 +3493,7 @@
 			},
 			{
 				"id": "gitlens.unpublishedCommitIconColor",
-				"description": "Specifies the icon color of unpublished commits in the GitLens views",
+				"description": "Specifies the icon color of unpublished commits in the WeGit views",
 				"defaults": {
 					"dark": "#35b15e",
 					"light": "#35b15e",
@@ -3520,7 +3502,7 @@
 			},
 			{
 				"id": "gitlens.unpulledChangesIconColor",
-				"description": "Specifies the icon color of unpulled changes in the GitLens views",
+				"description": "Specifies the icon color of unpulled changes in the WeGit views",
 				"defaults": {
 					"dark": "#b15e35",
 					"light": "#b15e35",
@@ -3712,7 +3694,7 @@
 			{
 				"command": "gitlens.addAuthors",
 				"title": "添加协作者...",
-				"category": "GitLens",
+				"category": "WeGit",
 				"icon": "$(person-add)"
 			},
 			{
@@ -3728,33 +3710,33 @@
 			{
 				"command": "gitlens.applyPatchFromClipboard",
 				"title": "应用复制的更改（补丁）",
-				"category": "GitLens"
+				"category": "WeGit"
 			},
 			{
 				"command": "gitlens.browseRepoAtRevision",
 				"title": "从版本浏览仓库",
-				"category": "GitLens",
+				"category": "WeGit",
 				"icon": "$(folder-opened)",
 				"enablement": "gitlens:enabled && resourceScheme =~ /^(gitlens|pr)$/"
 			},
 			{
 				"command": "gitlens.browseRepoAtRevisionInNewWindow",
 				"title": "在新窗口中从版本浏览仓库",
-				"category": "GitLens",
+				"category": "WeGit",
 				"icon": "$(folder-opened)",
 				"enablement": "gitlens:enabled && resourceScheme =~ /^(gitlens|pr)$/"
 			},
 			{
 				"command": "gitlens.browseRepoBeforeRevision",
 				"title": "从版本之前浏览仓库",
-				"category": "GitLens",
+				"category": "WeGit",
 				"icon": "$(folder-opened)",
 				"enablement": "gitlens:enabled && resourceScheme =~ /^(gitlens|pr)$/"
 			},
 			{
 				"command": "gitlens.browseRepoBeforeRevisionInNewWindow",
 				"title": "在新窗口中从版本之前浏览仓库",
-				"category": "GitLens",
+				"category": "WeGit",
 				"icon": "$(folder-opened)",
 				"enablement": "gitlens:enabled && resourceScheme =~ /^(gitlens|pr)$/"
 			},
@@ -3767,30 +3749,30 @@
 			{
 				"command": "gitlens.clearFileAnnotations",
 				"title": "清除文件注释",
-				"category": "GitLens",
+				"category": "WeGit",
 				"icon": "$(gitlens-gitlens-filled)"
 			},
 			{
 				"command": "gitlens.closeUnchangedFiles",
 				"title": "关闭未更改的文件",
-				"category": "GitLens"
+				"category": "WeGit"
 			},
 			{
 				"command": "gitlens.compareHeadWith",
 				"title": "将 HEAD 与...比较",
-				"category": "GitLens",
+				"category": "WeGit",
 				"icon": "$(compare-changes)"
 			},
 			{
 				"command": "gitlens.compareWith",
 				"title": "比较引用...",
-				"category": "GitLens",
+				"category": "WeGit",
 				"icon": "$(compare-changes)"
 			},
 			{
 				"command": "gitlens.compareWorkingWith",
 				"title": "将工作树与...比较",
-				"category": "GitLens",
+				"category": "WeGit",
 				"icon": "$(compare-changes)"
 			},
 			{
@@ -3801,7 +3783,7 @@
 			{
 				"command": "gitlens.copyCurrentBranch",
 				"title": "复制当前分支名",
-				"category": "GitLens",
+				"category": "WeGit",
 				"icon": "$(copy)"
 			},
 			{
@@ -3837,7 +3819,7 @@
 			{
 				"command": "gitlens.copyDeepLinkToRepo",
 				"title": "复制仓库链接",
-				"category": "GitLens",
+				"category": "WeGit",
 				"icon": "$(copy)"
 			},
 			{
@@ -3848,13 +3830,13 @@
 			{
 				"command": "gitlens.copyMessageToClipboard",
 				"title": "复制消息",
-				"category": "GitLens",
+				"category": "WeGit",
 				"icon": "$(copy)"
 			},
 			{
 				"command": "gitlens.copyPatchToClipboard",
 				"title": "复制更改（补丁）",
-				"category": "GitLens"
+				"category": "WeGit"
 			},
 			{
 				"command": "gitlens.copyPatchToClipboard:scm",
@@ -3867,7 +3849,7 @@
 			{
 				"command": "gitlens.copyRelativePathToClipboard",
 				"title": "复制相对路径",
-				"category": "GitLens",
+				"category": "WeGit",
 				"icon": "$(copy)"
 			},
 			{
@@ -3883,7 +3865,7 @@
 			{
 				"command": "gitlens.copyRemoteCommitUrl",
 				"title": "复制远程提交 URL",
-				"category": "GitLens",
+				"category": "WeGit",
 				"icon": "$(copy)"
 			},
 			{
@@ -3894,13 +3876,13 @@
 			{
 				"command": "gitlens.copyRemoteFileUrlFrom",
 				"title": "复制远程文件 URL 从...",
-				"category": "GitLens",
+				"category": "WeGit",
 				"icon": "$(copy)"
 			},
 			{
 				"command": "gitlens.copyRemoteFileUrlToClipboard",
 				"title": "复制远程文件 URL",
-				"category": "GitLens",
+				"category": "WeGit",
 				"icon": "$(copy)"
 			},
 			{
@@ -3926,7 +3908,7 @@
 			{
 				"command": "gitlens.copyShaToClipboard",
 				"title": "复制 SHA",
-				"category": "GitLens",
+				"category": "WeGit",
 				"icon": "$(copy)"
 			},
 			{
@@ -3938,42 +3920,42 @@
 			{
 				"command": "gitlens.createPatch",
 				"title": "创建补丁...",
-				"category": "GitLens"
+				"category": "WeGit"
 			},
 			{
 				"command": "gitlens.diffDirectory",
 				"title": "打开目录比较（difftool）与...",
-				"category": "GitLens"
+				"category": "WeGit"
 			},
 			{
 				"command": "gitlens.diffDirectoryWithHead",
 				"title": "打开目录比较（difftool）",
-				"category": "GitLens"
+				"category": "WeGit"
 			},
 			{
 				"command": "gitlens.diffFolderWithRevision",
 				"title": "打开文件夹与版本的更改...",
-				"category": "GitLens"
+				"category": "WeGit"
 			},
 			{
 				"command": "gitlens.diffFolderWithRevisionFrom",
 				"title": "打开文件夹与分支或标签的更改...",
-				"category": "GitLens"
+				"category": "WeGit"
 			},
 			{
 				"command": "gitlens.diffLineWithPrevious",
 				"title": "打开与上一版本的行更改",
-				"category": "GitLens"
+				"category": "WeGit"
 			},
 			{
 				"command": "gitlens.diffLineWithWorking",
 				"title": "打开与工作文件的行更改",
-				"category": "GitLens"
+				"category": "WeGit"
 			},
 			{
 				"command": "gitlens.diffWithNext",
 				"title": "打开与下一版本的更改",
-				"category": "GitLens",
+				"category": "WeGit",
 				"icon": "$(gitlens-next-commit)",
 				"enablement": "gitlens:enabled && resourceScheme =~ /^(gitlens|git|pr)$/"
 			},
@@ -3992,7 +3974,7 @@
 			{
 				"command": "gitlens.diffWithPrevious",
 				"title": "打开与上一版本的更改",
-				"category": "GitLens",
+				"category": "WeGit",
 				"icon": "$(gitlens-prev-commit)"
 			},
 			{
@@ -4018,18 +4000,18 @@
 			{
 				"command": "gitlens.diffWithRevision",
 				"title": "打开与版本的更改...",
-				"category": "GitLens",
+				"category": "WeGit",
 				"icon": "$(gitlens-prev-commit-menu)"
 			},
 			{
 				"command": "gitlens.diffWithRevisionFrom",
 				"title": "打开与分支或标签的更改...",
-				"category": "GitLens"
+				"category": "WeGit"
 			},
 			{
 				"command": "gitlens.diffWithWorking",
 				"title": "打开与工作文件的更改",
-				"category": "GitLens",
+				"category": "WeGit",
 				"icon": "$(gitlens-compare-ref-working)"
 			},
 			{
@@ -4050,22 +4032,22 @@
 			{
 				"command": "gitlens.disableDebugLogging",
 				"title": "禁用调试日志",
-				"category": "GitLens"
+				"category": "WeGit"
 			},
 			{
 				"command": "gitlens.enableDebugLogging",
 				"title": "启用调试日志",
-				"category": "GitLens"
+				"category": "WeGit"
 			},
 			{
 				"command": "gitlens.externalDiff",
 				"title": "打开更改（差异工具）",
-				"category": "GitLens"
+				"category": "WeGit"
 			},
 			{
 				"command": "gitlens.externalDiffAll",
 				"title": "打开所有更改（差异工具）",
-				"category": "GitLens"
+				"category": "WeGit"
 			},
 			{
 				"command": "gitlens.fetch:views",
@@ -4076,175 +4058,175 @@
 			{
 				"command": "gitlens.fetchRepositories",
 				"title": "拉取",
-				"category": "GitLens",
+				"category": "WeGit",
 				"icon": "$(repo-fetch)",
 				"enablement": "!operationInProgress"
 			},
 			{
 				"command": "gitlens.getStarted",
 				"title": "开始使用",
-				"category": "GitLens"
+				"category": "WeGit"
 			},
 			{
 				"command": "gitlens.git.branch",
 				"title": "Git 分支...",
-				"category": "GitLens"
+				"category": "WeGit"
 			},
 			{
 				"command": "gitlens.git.branch.create",
 				"title": "Git 创建分支...",
-				"category": "GitLens"
+				"category": "WeGit"
 			},
 			{
 				"command": "gitlens.git.branch.delete",
 				"title": "Git 删除分支...",
-				"category": "GitLens"
+				"category": "WeGit"
 			},
 			{
 				"command": "gitlens.git.branch.prune",
 				"title": "Git 修剪分支...",
-				"category": "GitLens"
+				"category": "WeGit"
 			},
 			{
 				"command": "gitlens.git.branch.rename",
 				"title": "Git 重命名分支...",
-				"category": "GitLens"
+				"category": "WeGit"
 			},
 			{
 				"command": "gitlens.git.branch.setMergeTarget",
 				"title": "Git 更改分支合并目标...",
-				"category": "GitLens"
+				"category": "WeGit"
 			},
 			{
 				"command": "gitlens.git.branch.setUpstream",
 				"title": "Git 更改分支上游...",
-				"category": "GitLens"
+				"category": "WeGit"
 			},
 			{
 				"command": "gitlens.git.checkout",
 				"title": "Git 检出...",
-				"category": "GitLens"
+				"category": "WeGit"
 			},
 			{
 				"command": "gitlens.git.cherryPick",
 				"title": "Git 拣选...",
-				"category": "GitLens"
+				"category": "WeGit"
 			},
 			{
 				"command": "gitlens.git.history",
 				"title": "Git 历史（日志）...",
-				"category": "GitLens"
+				"category": "WeGit"
 			},
 			{
 				"command": "gitlens.git.merge",
 				"title": "Git 合并...",
-				"category": "GitLens"
+				"category": "WeGit"
 			},
 			{
 				"command": "gitlens.git.rebase",
 				"title": "Git 变基...",
-				"category": "GitLens"
+				"category": "WeGit"
 			},
 			{
 				"command": "gitlens.git.remote",
 				"title": "Git 远程...",
-				"category": "GitLens"
+				"category": "WeGit"
 			},
 			{
 				"command": "gitlens.git.remote.add",
 				"title": "Git 添加远程...",
-				"category": "GitLens"
+				"category": "WeGit"
 			},
 			{
 				"command": "gitlens.git.remote.prune",
 				"title": "Git 修剪远程...",
-				"category": "GitLens"
+				"category": "WeGit"
 			},
 			{
 				"command": "gitlens.git.remote.remove",
 				"title": "Git 移除远程...",
-				"category": "GitLens"
+				"category": "WeGit"
 			},
 			{
 				"command": "gitlens.git.reset",
 				"title": "Git 重置...",
-				"category": "GitLens"
+				"category": "WeGit"
 			},
 			{
 				"command": "gitlens.git.revert",
 				"title": "Git 还原...",
-				"category": "GitLens"
+				"category": "WeGit"
 			},
 			{
 				"command": "gitlens.git.setupCommitSigning",
 				"title": "设置提交签名...",
-				"category": "GitLens",
+				"category": "WeGit",
 				"icon": "$(key)"
 			},
 			{
 				"command": "gitlens.git.show",
 				"title": "Git 显示...",
-				"category": "GitLens"
+				"category": "WeGit"
 			},
 			{
 				"command": "gitlens.git.stash",
 				"title": "Git 储藏...",
-				"category": "GitLens"
+				"category": "WeGit"
 			},
 			{
 				"command": "gitlens.git.stash.drop",
 				"title": "Git 丢弃储藏...",
-				"category": "GitLens"
+				"category": "WeGit"
 			},
 			{
 				"command": "gitlens.git.stash.list",
 				"title": "Git 储藏列表...",
-				"category": "GitLens"
+				"category": "WeGit"
 			},
 			{
 				"command": "gitlens.git.stash.pop",
 				"title": "Git 弹出储藏...",
-				"category": "GitLens"
+				"category": "WeGit"
 			},
 			{
 				"command": "gitlens.git.stash.push",
 				"title": "Git 推送储藏...",
-				"category": "GitLens"
+				"category": "WeGit"
 			},
 			{
 				"command": "gitlens.git.stash.rename",
 				"title": "Git 重命名储藏...",
-				"category": "GitLens"
+				"category": "WeGit"
 			},
 			{
 				"command": "gitlens.git.status",
 				"title": "Git 状态...",
-				"category": "GitLens"
+				"category": "WeGit"
 			},
 			{
 				"command": "gitlens.git.switch",
 				"title": "Git 切换到...",
-				"category": "GitLens"
+				"category": "WeGit"
 			},
 			{
 				"command": "gitlens.git.tag",
 				"title": "Git 标签...",
-				"category": "GitLens"
+				"category": "WeGit"
 			},
 			{
 				"command": "gitlens.git.tag.create",
 				"title": "Git 创建标签...",
-				"category": "GitLens"
+				"category": "WeGit"
 			},
 			{
 				"command": "gitlens.git.tag.delete",
 				"title": "Git 删除标签...",
-				"category": "GitLens"
+				"category": "WeGit"
 			},
 			{
 				"command": "gitlens.gitCommands",
 				"title": "Git 命令面板",
-				"category": "GitLens"
+				"category": "WeGit"
 			},
 			{
 				"command": "gitlens.inviteToLiveShare",
@@ -4254,13 +4236,13 @@
 			{
 				"command": "gitlens.openBlamePriorToChange",
 				"title": "打开更改前的责任人",
-				"category": "GitLens",
+				"category": "WeGit",
 				"icon": "$(versions)"
 			},
 			{
 				"command": "gitlens.openBranchesOnRemote",
 				"title": "在远程上打开分支",
-				"category": "GitLens",
+				"category": "WeGit",
 				"icon": "$(globe)"
 			},
 			{
@@ -4271,18 +4253,18 @@
 			{
 				"command": "gitlens.openBranchOnRemote",
 				"title": "在远程上打开分支",
-				"category": "GitLens",
+				"category": "WeGit",
 				"icon": "$(globe)"
 			},
 			{
 				"command": "gitlens.openChangedFiles",
 				"title": "打开已更改的文件",
-				"category": "GitLens"
+				"category": "WeGit"
 			},
 			{
 				"command": "gitlens.openCommitOnRemote",
 				"title": "在远程上打开提交",
-				"category": "GitLens",
+				"category": "WeGit",
 				"icon": "$(globe)"
 			},
 			{
@@ -4293,41 +4275,41 @@
 			{
 				"command": "gitlens.openCurrentBranchOnRemote",
 				"title": "在远程上打开当前分支",
-				"category": "GitLens",
+				"category": "WeGit",
 				"icon": "$(globe)"
 			},
 			{
 				"command": "gitlens.openFileFromRemote",
 				"title": "从远程打开文件",
-				"category": "GitLens"
+				"category": "WeGit"
 			},
 			{
 				"command": "gitlens.openFileHistory",
 				"title": "打开文件历史",
-				"category": "GitLens"
+				"category": "WeGit"
 			},
 			{
 				"command": "gitlens.openFileOnRemote",
 				"title": "在远程上打开文件",
-				"category": "GitLens",
+				"category": "WeGit",
 				"icon": "$(globe)"
 			},
 			{
 				"command": "gitlens.openFileOnRemoteFrom",
 				"title": "从...在远程上打开文件",
-				"category": "GitLens",
+				"category": "WeGit",
 				"icon": "$(globe)"
 			},
 			{
 				"command": "gitlens.openFileRevision",
 				"title": "打开版本文件...",
-				"category": "GitLens",
+				"category": "WeGit",
 				"icon": "$(gitlens-open-revision)"
 			},
 			{
 				"command": "gitlens.openFileRevisionFrom",
 				"title": "从...打开版本文件",
-				"category": "GitLens",
+				"category": "WeGit",
 				"icon": "$(gitlens-open-revision)"
 			},
 			{
@@ -4342,17 +4324,17 @@
 			{
 				"command": "gitlens.openOnlyChangedFiles",
 				"title": "打开已更改并关闭未更改的文件",
-				"category": "GitLens"
+				"category": "WeGit"
 			},
 			{
 				"command": "gitlens.openPatch",
 				"title": "打开补丁...",
-				"category": "GitLens"
+				"category": "WeGit"
 			},
 			{
 				"command": "gitlens.openRepoOnRemote",
 				"title": "在远程上打开仓库",
-				"category": "GitLens",
+				"category": "WeGit",
 				"icon": "$(globe)"
 			},
 			{
@@ -4363,7 +4345,7 @@
 			{
 				"command": "gitlens.openRevisionFile",
 				"title": "打开版本文件",
-				"category": "GitLens",
+				"category": "WeGit",
 				"icon": "$(gitlens-open-revision)",
 				"enablement": "gitlens:enabled && resourceScheme =~ /^(gitlens|pr)$/"
 			},
@@ -4376,12 +4358,12 @@
 			{
 				"command": "gitlens.openRevisionFromRemote",
 				"title": "从远程打开版本文件",
-				"category": "GitLens"
+				"category": "WeGit"
 			},
 			{
 				"command": "gitlens.openWorkingFile",
 				"title": "打开文件",
-				"category": "GitLens",
+				"category": "WeGit",
 				"icon": "$(go-to-file)"
 			},
 			{
@@ -4397,7 +4379,7 @@
 			{
 				"command": "gitlens.pastePatchFromClipboard",
 				"title": "粘贴复制的更改（补丁）",
-				"category": "GitLens"
+				"category": "WeGit"
 			},
 			{
 				"command": "gitlens.pruneRemote:views",
@@ -4413,21 +4395,21 @@
 			{
 				"command": "gitlens.pullRepositories",
 				"title": "拉取",
-				"category": "GitLens",
+				"category": "WeGit",
 				"icon": "$(repo-pull)",
 				"enablement": "!operationInProgress"
 			},
 			{
 				"command": "gitlens.pushRepositories",
 				"title": "推送",
-				"category": "GitLens",
+				"category": "WeGit",
 				"icon": "$(repo-push)",
 				"enablement": "!operationInProgress"
 			},
 			{
 				"command": "gitlens.quickOpenFileHistory",
 				"title": "快速打开文件历史",
-				"category": "GitLens"
+				"category": "WeGit"
 			},
 			{
 				"command": "gitlens.rebase.abort:editor/title",
@@ -4442,7 +4424,7 @@
 			{
 				"command": "gitlens.rebase.disableEditor",
 				"title": "禁用交互式变基编辑器",
-				"category": "GitLens"
+				"category": "WeGit"
 			},
 			{
 				"command": "gitlens.rebase.disableEditor:editor/title",
@@ -4451,7 +4433,7 @@
 			{
 				"command": "gitlens.rebase.enableEditor",
 				"title": "启用交互式变基编辑器",
-				"category": "GitLens"
+				"category": "WeGit"
 			},
 			{
 				"command": "gitlens.rebase.enableEditor:editor/title",
@@ -4490,12 +4472,12 @@
 			{
 				"command": "gitlens.reset",
 				"title": "重置存储的数据...",
-				"category": "GitLens"
+				"category": "WeGit"
 			},
 			{
 				"command": "gitlens.resetViewsLayout",
 				"title": "重置视图布局",
-				"category": "GitLens"
+				"category": "WeGit"
 			},
 			{
 				"command": "gitlens.restore.file:views",
@@ -4508,7 +4490,7 @@
 			{
 				"command": "gitlens.revealCommitInView",
 				"title": "在侧边栏中显示提交",
-				"category": "GitLens"
+				"category": "WeGit"
 			},
 			{
 				"command": "gitlens.setRemoteAsDefault:views",
@@ -4523,49 +4505,44 @@
 			{
 				"command": "gitlens.showBranchesView",
 				"title": "显示分支视图",
-				"category": "GitLens"
+				"category": "WeGit"
 			},
 			{
 				"command": "gitlens.showCommitDetailsView",
 				"title": "显示检查视图",
-				"category": "GitLens"
+				"category": "WeGit"
 			},
 			{
 				"command": "gitlens.showCommitInView",
 				"title": "检查提交详情",
-				"category": "GitLens",
+				"category": "WeGit",
 				"icon": "$(eye)"
 			},
 			{
 				"command": "gitlens.showCommitSearch",
 				"title": "搜索提交",
-				"category": "GitLens",
+				"category": "WeGit",
 				"icon": "$(search)"
 			},
 			{
 				"command": "gitlens.showCommitsInView",
 				"title": "在选中范围内搜索提交",
-				"category": "GitLens"
+				"category": "WeGit"
 			},
 			{
 				"command": "gitlens.showCommitsView",
 				"title": "显示提交视图",
-				"category": "GitLens"
+				"category": "WeGit"
 			},
 			{
 				"command": "gitlens.showContributorsView",
 				"title": "显示贡献者视图",
-				"category": "GitLens"
+				"category": "WeGit"
 			},
 			{
 				"command": "gitlens.showFileHistoryView",
 				"title": "显示文件历史视图",
-				"category": "GitLens"
-			},
-			{
-				"command": "gitlens.showHomeView",
-				"title": "显示主页视图",
-				"category": "GitLens"
+				"category": "WeGit"
 			},
 			{
 				"command": "gitlens.showInDetailsView",
@@ -4575,53 +4552,53 @@
 			{
 				"command": "gitlens.showLastQuickPick",
 				"title": "显示上次打开的快速选择",
-				"category": "GitLens"
+				"category": "WeGit"
 			},
 			{
 				"command": "gitlens.showLineCommitInView",
 				"title": "检查行提交详情",
-				"category": "GitLens",
+				"category": "WeGit",
 				"icon": "$(eye)"
 			},
 			{
 				"command": "gitlens.showLineHistoryView",
 				"title": "显示行历史视图",
-				"category": "GitLens"
+				"category": "WeGit"
 			},
 			{
 				"command": "gitlens.showQuickBranchHistory",
 				"title": "显示分支历史",
-				"category": "GitLens"
+				"category": "WeGit"
 			},
 			{
 				"command": "gitlens.showQuickCommitDetails",
 				"title": "快速显示提交",
-				"category": "GitLens"
+				"category": "WeGit"
 			},
 			{
 				"command": "gitlens.showQuickCommitFileDetails",
 				"title": "快速显示行提交",
-				"category": "GitLens"
+				"category": "WeGit"
 			},
 			{
 				"command": "gitlens.showQuickFileHistory",
 				"title": "显示文件历史",
-				"category": "GitLens"
+				"category": "WeGit"
 			},
 			{
 				"command": "gitlens.showQuickRepoHistory",
 				"title": "显示当前分支历史",
-				"category": "GitLens"
+				"category": "WeGit"
 			},
 			{
 				"command": "gitlens.showQuickRepoStatus",
 				"title": "显示仓库状态",
-				"category": "GitLens"
+				"category": "WeGit"
 			},
 			{
 				"command": "gitlens.showQuickRevisionDetails",
 				"title": "显示修订提交",
-				"category": "GitLens",
+				"category": "WeGit",
 				"icon": "$(gitlens-commit-horizontal)",
 				"enablement": "gitlens:enabled && resourceScheme =~ /^(gitlens|pr)$/"
 			},
@@ -4640,33 +4617,33 @@
 			{
 				"command": "gitlens.showQuickStashList",
 				"title": "显示存储",
-				"category": "GitLens"
+				"category": "WeGit"
 			},
 			{
 				"command": "gitlens.showRemotesView",
 				"title": "显示远程视图",
-				"category": "GitLens"
+				"category": "WeGit"
 			},
 			{
 				"command": "gitlens.showRepositoriesView",
 				"title": "显示仓库视图",
-				"category": "GitLens"
+				"category": "WeGit"
 			},
 			{
 				"command": "gitlens.showSearchAndCompareView",
 				"title": "显示搜索和比较视图",
-				"category": "GitLens"
+				"category": "WeGit"
 			},
 			{
 				"command": "gitlens.showSettingsPage",
 				"title": "打开设置",
-				"category": "GitLens",
+				"category": "WeGit",
 				"icon": "$(gear)"
 			},
 			{
 				"command": "gitlens.showSettingsPage!autolinks",
 				"title": "配置自动链接",
-				"category": "GitLens",
+				"category": "WeGit",
 				"icon": "$(gear)"
 			},
 			{
@@ -4727,17 +4704,17 @@
 			{
 				"command": "gitlens.showStashesView",
 				"title": "显示存储视图",
-				"category": "GitLens"
+				"category": "WeGit"
 			},
 			{
 				"command": "gitlens.showTagsView",
 				"title": "显示标签视图",
-				"category": "GitLens"
+				"category": "WeGit"
 			},
 			{
 				"command": "gitlens.showWelcomeView",
 				"title": "显示欢迎视图",
-				"category": "GitLens"
+				"category": "WeGit"
 			},
 			{
 				"command": "gitlens.star.branch:views",
@@ -4780,7 +4757,7 @@
 			{
 				"command": "gitlens.stashesApply",
 				"title": "应用一个存储...",
-				"category": "GitLens",
+				"category": "WeGit",
 				"icon": "$(gitlens-stash-pop)",
 				"enablement": "!operationInProgress"
 			},
@@ -4799,14 +4776,14 @@
 			{
 				"command": "gitlens.stashSave",
 				"title": "存储所有更改...",
-				"category": "GitLens",
+				"category": "WeGit",
 				"icon": "$(gitlens-stash-save)",
 				"enablement": "!operationInProgress"
 			},
 			{
 				"command": "gitlens.stashSave:scm",
 				"title": "存储所有更改...",
-				"category": "GitLens",
+				"category": "WeGit",
 				"icon": "$(gitlens-stash-save)",
 				"enablement": "!operationInProgress"
 			},
@@ -4831,21 +4808,21 @@
 			{
 				"command": "gitlens.stashSave.staged:scm",
 				"title": "存储已暂存更改...",
-				"category": "GitLens",
+				"category": "WeGit",
 				"icon": "$(gitlens-stash-save)",
 				"enablement": "!operationInProgress"
 			},
 			{
 				"command": "gitlens.stashSave.unstaged:scm",
 				"title": "存储未暂存更改...",
-				"category": "GitLens",
+				"category": "WeGit",
 				"icon": "$(gitlens-stash-save)",
 				"enablement": "!operationInProgress"
 			},
 			{
 				"command": "gitlens.switchMode",
 				"title": "切换模式",
-				"category": "GitLens"
+				"category": "WeGit"
 			},
 			{
 				"command": "gitlens.switchToAnotherBranch:views",
@@ -4862,7 +4839,7 @@
 			{
 				"command": "gitlens.toggleFileBlame",
 				"title": "切换文件责任人",
-				"category": "GitLens",
+				"category": "WeGit",
 				"icon": "$(gitlens-gitlens)"
 			},
 			{
@@ -4883,7 +4860,7 @@
 			{
 				"command": "gitlens.toggleFileChanges",
 				"title": "切换文件更改",
-				"category": "GitLens",
+				"category": "WeGit",
 				"icon": "$(gitlens-gitlens)"
 			},
 			{
@@ -4899,7 +4876,7 @@
 			{
 				"command": "gitlens.toggleFileHeatmap",
 				"title": "切换文件热力图",
-				"category": "GitLens",
+				"category": "WeGit",
 				"icon": "$(gitlens-gitlens)"
 			},
 			{
@@ -4925,12 +4902,12 @@
 			{
 				"command": "gitlens.toggleReviewMode",
 				"title": "切换审阅模式",
-				"category": "GitLens"
+				"category": "WeGit"
 			},
 			{
 				"command": "gitlens.toggleZenMode",
 				"title": "切换禅模式",
-				"category": "GitLens"
+				"category": "WeGit"
 			},
 			{
 				"command": "gitlens.unsetRemoteAsDefault:views",
@@ -4984,7 +4961,7 @@
 			},
 			{
 				"command": "gitlens.views.branches.attach",
-				"title": "组合到 GitLens 视图",
+				"title": "组合到 WeGit 视图",
 				"icon": "$(close)"
 			},
 			{
@@ -5141,7 +5118,7 @@
 			},
 			{
 				"command": "gitlens.views.commits.attach",
-				"title": "组合到 GitLens 视图",
+				"title": "组合到 WeGit 视图",
 				"icon": "$(close)"
 			},
 			{
@@ -5268,7 +5245,7 @@
 			},
 			{
 				"command": "gitlens.views.contributors.attach",
-				"title": "组合到 GitLens 视图",
+				"title": "组合到 WeGit 视图",
 				"icon": "$(close)"
 			},
 			{
@@ -5451,7 +5428,7 @@
 			},
 			{
 				"command": "gitlens.views.fileHistory.attach",
-				"title": "组合到 GitLens 视图",
+				"title": "组合到 WeGit 视图",
 				"icon": "$(close)"
 			},
 			{
@@ -5548,36 +5525,6 @@
 			{
 				"command": "gitlens.views.highlightRevisionChanges",
 				"title": "高亮来自此提交的更改"
-			},
-			{
-				"command": "gitlens.views.home.discussions",
-				"title": "GitHub 讨论",
-				"icon": "$(comment-discussion)"
-			},
-			{
-				"command": "gitlens.views.home.help",
-				"title": "帮助中心",
-				"icon": "$(question)"
-			},
-			{
-				"command": "gitlens.views.home.info",
-				"title": "了解主页视图",
-				"icon": "$(question)"
-			},
-			{
-				"command": "gitlens.views.home.issues",
-				"title": "GitHub 议题",
-				"icon": "$(feedback)"
-			},
-			{
-				"command": "gitlens.views.home.refresh",
-				"title": "刷新",
-				"icon": "$(refresh)"
-			},
-			{
-				"command": "gitlens.views.home.whatsNew",
-				"title": "新功能（发布说明）",
-				"icon": "$(megaphone)"
 			},
 			{
 				"command": "gitlens.views.lineHistory.changeBase",
@@ -5806,7 +5753,7 @@
 			},
 			{
 				"command": "gitlens.views.remotes.attach",
-				"title": "组合到 GitLens 视图",
+				"title": "组合到 WeGit 视图",
 				"icon": "$(close)"
 			},
 			{
@@ -5901,7 +5848,7 @@
 			},
 			{
 				"command": "gitlens.views.repositories.attach",
-				"title": "组合到 GitLens 视图",
+				"title": "组合到 WeGit 视图",
 				"icon": "$(close)"
 			},
 			{
@@ -6372,7 +6319,7 @@
 			},
 			{
 				"command": "gitlens.views.searchAndCompare.attach",
-				"title": "组合到 GitLens 视图",
+				"title": "组合到 WeGit 视图",
 				"icon": "$(close)"
 			},
 			{
@@ -6506,7 +6453,7 @@
 			},
 			{
 				"command": "gitlens.views.stashes.attach",
-				"title": "组合到 GitLens 视图",
+				"title": "组合到 WeGit 视图",
 				"icon": "$(close)"
 			},
 			{
@@ -6560,7 +6507,7 @@
 			},
 			{
 				"command": "gitlens.views.tags.attach",
-				"title": "组合到 GitLens 视图",
+				"title": "组合到 WeGit 视图",
 				"icon": "$(close)"
 			},
 			{
@@ -7198,20 +7145,6 @@
 				"default": {
 					"fontPath": "dist/glicons.woff2",
 					"fontCharacter": "\\f14d"
-				}
-			},
-			"gitlens-launchpad-view": {
-				"description": "launchpad-view icon",
-				"default": {
-					"fontPath": "dist/glicons.woff2",
-					"fontCharacter": "\\f128"
-				}
-			},
-			"gitlens-launchpad-view-filled": {
-				"description": "launchpad-view-filled icon",
-				"default": {
-					"fontPath": "dist/glicons.woff2",
-					"fontCharacter": "\\f129"
 				}
 			},
 			"gitlens-code-suggestion": {
@@ -8635,30 +8568,6 @@
 					"when": "false"
 				},
 				{
-					"command": "gitlens.views.home.discussions",
-					"when": "false"
-				},
-				{
-					"command": "gitlens.views.home.help",
-					"when": "false"
-				},
-				{
-					"command": "gitlens.views.home.info",
-					"when": "false"
-				},
-				{
-					"command": "gitlens.views.home.issues",
-					"when": "false"
-				},
-				{
-					"command": "gitlens.views.home.refresh",
-					"when": "false"
-				},
-				{
-					"command": "gitlens.views.home.whatsNew",
-					"when": "false"
-				},
-				{
 					"command": "gitlens.views.lineHistory.changeBase",
 					"when": "false"
 				},
@@ -9844,12 +9753,12 @@
 			"extension/context": [
 				{
 					"command": "gitlens.getStarted",
-					"when": "extension =~ /^eamodio.gitlens?$/ && extensionStatus == installed && gitlens:walkthroughSupported",
+					"when": "extension =~ /^liao666brant.wegit$/ && extensionStatus == installed && gitlens:walkthroughSupported",
 					"group": "9_gitlens@1"
 				},
 				{
 					"command": "gitlens.showSettingsPage",
-					"when": "extension =~ /^eamodio.gitlens?$/ && extensionStatus == installed",
+					"when": "extension =~ /^liao666brant.wegit$/ && extensionStatus == installed",
 					"group": "9_gitlens@3"
 				}
 			],
@@ -13408,36 +13317,6 @@
 					"group": "9_gitlens@1"
 				},
 				{
-					"command": "gitlens.views.home.whatsNew",
-					"when": "viewItem == gitlens:views:home",
-					"group": "inline@1"
-				},
-				{
-					"command": "gitlens.views.home.info",
-					"when": "viewItem == gitlens:views:home",
-					"group": "inline@98"
-				},
-				{
-					"command": "gitlens.views.home.refresh",
-					"when": "viewItem == gitlens:views:home",
-					"group": "inline@99"
-				},
-				{
-					"command": "gitlens.views.home.help",
-					"when": "viewItem == gitlens:views:home",
-					"group": "1_gitlens@97"
-				},
-				{
-					"command": "gitlens.views.home.issues",
-					"when": "viewItem == gitlens:views:home",
-					"group": "2_gitlens@98"
-				},
-				{
-					"command": "gitlens.views.home.discussions",
-					"when": "viewItem == gitlens:views:home",
-					"group": "2_gitlens@99"
-				},
-				{
 					"command": "gitlens.views.lineHistory.setEditorFollowingOff",
 					"when": "viewItem == gitlens:views:lineHistory && gitlens:views:lineHistory:editorFollowing",
 					"group": "inline@10"
@@ -15093,36 +14972,6 @@
 					"group": "9_gitlens@1"
 				},
 				{
-					"command": "gitlens.views.home.whatsNew",
-					"when": "view == gitlens.views.home",
-					"group": "navigation@1"
-				},
-				{
-					"command": "gitlens.views.home.info",
-					"when": "view == gitlens.views.home",
-					"group": "navigation@98"
-				},
-				{
-					"command": "gitlens.views.home.refresh",
-					"when": "view == gitlens.views.home",
-					"group": "navigation@99"
-				},
-				{
-					"command": "gitlens.views.home.help",
-					"when": "view == gitlens.views.home",
-					"group": "1_gitlens@97"
-				},
-				{
-					"command": "gitlens.views.home.issues",
-					"when": "view == gitlens.views.home",
-					"group": "2_gitlens@98"
-				},
-				{
-					"command": "gitlens.views.home.discussions",
-					"when": "view == gitlens.views.home",
-					"group": "2_gitlens@99"
-				},
-				{
 					"command": "gitlens.views.lineHistory.setEditorFollowingOff",
 					"when": "view == gitlens.views.lineHistory && gitlens:views:lineHistory:editorFollowing",
 					"group": "navigation@10"
@@ -16736,7 +16585,7 @@
 		"customEditors": [
 			{
 				"viewType": "gitlens.rebase",
-				"displayName": "GitLens Interactive Rebase Editor",
+				"displayName": "WeGit Interactive Rebase Editor",
 				"selector": [
 					{
 						"filenamePattern": "git-rebase-todo"
@@ -16752,7 +16601,7 @@
 					"label": "${path} (${query.ref})",
 					"normalizeDriveLetter": true,
 					"tildify": true,
-					"workspaceSuffix": "GitLens"
+					"workspaceSuffix": "WeGit"
 				}
 			},
 			{
@@ -16767,19 +16616,19 @@
 			"activitybar": [
 				{
 					"id": "gitlens",
-					"title": "GitLens",
+					"title": "WeGit",
 					"icon": "$(gitlens-gitlens)"
 				},
 				{
 					"id": "gitlensInspect",
-					"title": "GitLens 检查",
+					"title": "WeGit 检查",
 					"icon": "$(gitlens-gitlens-inspect)"
 				}
 			],
 			"panel": [
 				{
 					"id": "gitlensPanel",
-					"title": "GitLens",
+					"title": "WeGit",
 					"icon": "$(gitlens-graph)"
 				}
 			]
@@ -16792,12 +16641,12 @@
 			},
 			{
 				"view": "gitlens.views.scm.grouped",
-				"contents": "GitLens 将许多相关视图（提交、分支、贮藏等）分组在此处，便于视图管理。\n\n[继续](command:gitlens.views.scm.grouped.welcome.dismiss)\n\n使用上方的标签页进行导航，或分离你想保持独立的视图。你可以随时通过视图标题中的 'x' 重新分组。",
+				"contents": "WeGit 将许多相关视图（提交、分支、贮藏等）分组在此处，便于视图管理。\n\n[继续](command:gitlens.views.scm.grouped.welcome.dismiss)\n\n使用上方的标签页进行导航，或分离你想保持独立的视图。你可以随时通过视图标题中的 'x' 重新分组。",
 				"when": "!gitlens:views:scm:grouped:loading && gitlens:views:scm:grouped:welcome && gitlens:install:new && !config.gitlens.advanced.skipOnboarding"
 			},
 			{
 				"view": "gitlens.views.scm.grouped",
-				"contents": "GitLens 将许多相关视图（提交、分支、贮藏等）分组在此处，便于视图管理。\n\n[继续](command:gitlens.views.scm.grouped.welcome.dismiss)\n\n更喜欢分开显示？[将视图恢复到之前的位置](command:gitlens.views.scm.grouped.welcome.restore)\n\n使用上方的标签页进行导航，或分离你想保持独立的视图。你可以随时通过视图标题中的 'x' 重新分组。",
+				"contents": "WeGit 将许多相关视图（提交、分支、贮藏等）分组在此处，便于视图管理。\n\n[继续](command:gitlens.views.scm.grouped.welcome.dismiss)\n\n更喜欢分开显示？[将视图恢复到之前的位置](command:gitlens.views.scm.grouped.welcome.restore)\n\n使用上方的标签页进行导航，或分离你想保持独立的视图。你可以随时通过视图标题中的 'x' 重新分组。",
 				"when": "!gitlens:views:scm:grouped:loading && gitlens:views:scm:grouped:welcome && !gitlens:install:new && !config.gitlens.advanced.skipOnboarding"
 			},
 			{
@@ -16837,7 +16686,7 @@
 					"id": "gitlens.views.repositories",
 					"name": "仓库",
 					"when": "!gitlens:disabled && !(config.gitlens.views.scm.grouped.views.repositories || gitlens:views:scm:grouped:views:repositories)",
-					"contextualTitle": "GitLens",
+					"contextualTitle": "WeGit",
 					"icon": "$(gitlens-repositories-view)",
 					"visibility": "hidden"
 				},
@@ -16845,7 +16694,7 @@
 					"id": "gitlens.views.commits",
 					"name": "提交",
 					"when": "!gitlens:disabled && !(config.gitlens.views.scm.grouped.views.commits || gitlens:views:scm:grouped:views:commits)",
-					"contextualTitle": "GitLens",
+					"contextualTitle": "WeGit",
 					"icon": "$(gitlens-commits-view)",
 					"visibility": "visible"
 				},
@@ -16853,7 +16702,7 @@
 					"id": "gitlens.views.branches",
 					"name": "分支",
 					"when": "!gitlens:disabled && !(config.gitlens.views.scm.grouped.views.branches || gitlens:views:scm:grouped:views:branches)",
-					"contextualTitle": "GitLens",
+					"contextualTitle": "WeGit",
 					"icon": "$(gitlens-branches-view)",
 					"visibility": "collapsed"
 				},
@@ -16861,7 +16710,7 @@
 					"id": "gitlens.views.remotes",
 					"name": "远程仓库",
 					"when": "!gitlens:disabled && !(config.gitlens.views.scm.grouped.views.remotes || gitlens:views:scm:grouped:views:remotes)",
-					"contextualTitle": "GitLens",
+					"contextualTitle": "WeGit",
 					"icon": "$(gitlens-remotes-view)",
 					"visibility": "collapsed"
 				},
@@ -16869,7 +16718,7 @@
 					"id": "gitlens.views.stashes",
 					"name": "存储",
 					"when": "!gitlens:disabled && !gitlens:hasVirtualFolders && !(config.gitlens.views.scm.grouped.views.stashes || gitlens:views:scm:grouped:views:stashes)",
-					"contextualTitle": "GitLens",
+					"contextualTitle": "WeGit",
 					"icon": "$(gitlens-stashes-view)",
 					"visibility": "collapsed"
 				},
@@ -16877,7 +16726,7 @@
 					"id": "gitlens.views.tags",
 					"name": "标签",
 					"when": "!gitlens:disabled && !(config.gitlens.views.scm.grouped.views.tags || gitlens:views:scm:grouped:views:tags)",
-					"contextualTitle": "GitLens",
+					"contextualTitle": "WeGit",
 					"icon": "$(gitlens-tags-view)",
 					"visibility": "collapsed"
 				},
@@ -16885,15 +16734,15 @@
 					"id": "gitlens.views.contributors",
 					"name": "贡献者",
 					"when": "!gitlens:disabled && !(config.gitlens.views.scm.grouped.views.contributors || gitlens:views:scm:grouped:views:contributors)",
-					"contextualTitle": "GitLens",
+					"contextualTitle": "WeGit",
 					"icon": "$(gitlens-contributors-view)",
 					"visibility": "collapsed"
 				},
 				{
 					"id": "gitlens.views.scm.grouped",
-					"name": "GitLens",
+					"name": "WeGit",
 					"when": "!gitlens:disabled && ((config.gitlens.views.scm.grouped.views.branches || gitlens:views:scm:grouped:views:branches) || (config.gitlens.views.scm.grouped.views.commits || gitlens:views:scm:grouped:views:commits) || (config.gitlens.views.scm.grouped.views.contributors || gitlens:views:scm:grouped:views:contributors) || (config.gitlens.views.scm.grouped.views.remotes || gitlens:views:scm:grouped:views:remotes) || (config.gitlens.views.scm.grouped.views.repositories || gitlens:views:scm:grouped:views:repositories) || (config.gitlens.views.scm.grouped.views.searchAndCompare || gitlens:views:scm:grouped:views:searchAndCompare) || (config.gitlens.views.scm.grouped.views.stashes || gitlens:views:scm:grouped:views:stashes) || (config.gitlens.views.scm.grouped.views.tags || gitlens:views:scm:grouped:views:tags))",
-					"contextualTitle": "GitLens",
+					"contextualTitle": "WeGit",
 					"icon": "$(gitlens-gitlens)",
 					"visibility": "visible"
 				}
@@ -16904,7 +16753,7 @@
 					"id": "gitlens.views.commitDetails",
 					"name": "检查",
 					"when": "!gitlens:disabled",
-					"contextualTitle": "GitLens",
+					"contextualTitle": "WeGit",
 					"icon": "$(gitlens-commit-view)",
 					"initialSize": 6,
 					"visibility": "visible"
@@ -16913,7 +16762,7 @@
 					"id": "gitlens.views.lineHistory",
 					"name": "行历史",
 					"when": "!gitlens:disabled && !gitlens:hasVirtualFolders",
-					"contextualTitle": "GitLens",
+					"contextualTitle": "WeGit",
 					"icon": "$(gitlens-history-view)",
 					"initialSize": 1,
 					"visibility": "collapsed"
@@ -16922,7 +16771,7 @@
 					"id": "gitlens.views.fileHistory",
 					"name": "文件历史",
 					"when": "!gitlens:disabled && !(config.gitlens.views.scm.grouped.views.fileHistory || gitlens:views:scm:grouped:views:fileHistory)",
-					"contextualTitle": "GitLens",
+					"contextualTitle": "WeGit",
 					"icon": "$(gitlens-history-view)",
 					"initialSize": 2,
 					"visibility": "visible"
@@ -16931,7 +16780,7 @@
 					"id": "gitlens.views.searchAndCompare",
 					"name": "搜索与比较",
 					"when": "!gitlens:disabled && !(config.gitlens.views.scm.grouped.views.searchAndCompare || gitlens:views:scm:grouped:views:searchAndCompare)",
-					"contextualTitle": "GitLens",
+					"contextualTitle": "WeGit",
 					"icon": "$(gitlens-search-view)",
 					"initialSize": 2,
 					"visibility": "visible"
@@ -16942,18 +16791,9 @@
 					"type": "webview",
 					"id": "gitlens.views.welcome",
 					"name": "欢迎",
-					"contextualTitle": "GitLens",
+					"contextualTitle": "WeGit",
 					"icon": "$(gitlens-gitlens)",
 					"initialSize": 1,
-					"visibility": "visible"
-				},
-				{
-					"type": "webview",
-					"id": "gitlens.views.home",
-					"name": "主页",
-					"contextualTitle": "GitLens",
-					"icon": "$(gitlens-gitlens)",
-					"initialSize": 6,
 					"visibility": "visible"
 				}
 			]
@@ -16961,7 +16801,7 @@
 		"walkthroughs": [
 			{
 				"id": "welcome",
-				"title": "开始使用 GitLens",
+				"title": "开始使用 WeGit",
 				"description": "Supercharge Git and unlock untapped knowledge within your repo to better understand, write, and review code.",
 				"steps": [
 					{
@@ -16996,10 +16836,10 @@
 		"build:webviews:quick": "node ./scripts/build.mjs --build=webviews --quick",
 		"build:icons": "pnpm run icons:svgo && pnpm fantasticon && pnpm run icons:apply && pnpm run icons:export",
 		"build:packages": "tsc -b packages/utils packages/ipc packages/git packages/git-cli",
-		"build:core": "pnpm run build:packages && pnpm --filter @gitkraken/core-gitlens run bundle",
+		"build:core": "pnpm run build:packages && pnpm --filter @liao666brant/core-wegit run bundle",
 		"check": "oxlint --type-aware --type-check",
 		"check:fix": "oxlint --type-aware --type-check --fix",
-		"pack:core": "pnpm --filter @gitkraken/core-gitlens pack",
+		"pack:core": "pnpm --filter @liao666brant/core-wegit pack",
 		"benchmark": "node ./scripts/runBenchmark.mjs",
 		"benchmark:list": "node ./scripts/runBenchmark.mjs --list",
 		"// Extracts the contributions from package.json into contributions.json": "//",
@@ -17051,7 +16891,7 @@
 		"watch:extension": "node ./scripts/build.mjs --watch --build=extension",
 		"watch:tests": "node ./scripts/build.mjs --watch --build=unit-tests",
 		"watch:webviews": "node ./scripts/build.mjs --watch --build=webviews",
-		"web": "vscode-test-web --extensionDevelopmentPath=. --folder-uri=vscode-vfs://github/gitkraken/vscode-gitlens",
+		"web": "vscode-test-web --extensionDevelopmentPath=. --folder-uri=vscode-vfs://github/liao666brant/vscode-gitlens",
 		"web:serve": "node -e \"const p = require('path'); const h = require('os').homedir(); require('child_process').execSync('pnpx  serve --cors -l 5000 --ssl-cert '+p.resolve(h, 'certs/localhost.pem')+' --ssl-key '+p.resolve(h, 'certs/localhost-key.pem'), { stdio: 'inherit' })\"",
 		"update-dts": "pushd \"src/@types\" && pnpx  @vscode/dts dev && popd",
 		"update-dts:main": "pushd \"src/@types\" && pnpx  @vscode/dts main && popd",

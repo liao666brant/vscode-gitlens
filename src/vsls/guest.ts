@@ -50,7 +50,7 @@ export class VslsGuestService implements Disposable {
 
 		void this.container.git.setEnabledContext(false);
 		void window.showWarningMessage(
-			'GitLens 功能将不可用。无法连接到主机的 GitLens 服务。主机可能已禁用 GitLens 来宾访问，或未安装 GitLens。',
+			'WeGit 功能将不可用。无法连接到主机的 WeGit 服务。主机可能已禁用 WeGit 来宾访问，或未安装 WeGit。',
 		);
 	}
 

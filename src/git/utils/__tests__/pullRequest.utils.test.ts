@@ -17,12 +17,16 @@ suite('Test PR URL parsing to identity: getPullRequestIdentityFromMaybeUrl()', (
 	}
 
 	test('cannot recognize GitHub or GitLab URLs, sees only numbers', () => {
-		t('full URL', 'https://github.com/eamodio/vscode-gitlens/pull/16', '16');
+		t('full URL', 'https://github.com/liao666brant/vscode-gitlens/pull/16', '16');
 		t('numeric repo name', 'https://github.com/sergeibbb/1/pull/16', '1');
 
 		t('no protocol', '/github.com/sergeibbb/1/pull/16?diff=unified', '1');
 		t('no domain', '/sergeibbb/1/pull/16#hello', '1');
-		t('domain vs. no domain', 'https://github.com/eamodio/vscode-gitlens/pull/1#hello/sergeibbb/2/pull/16', '1');
+		t(
+			'domain vs. no domain',
+			'https://github.com/liao666brant/vscode-gitlens/pull/1#hello/sergeibbb/2/pull/16',
+			'1',
+		);
 		t('has "pull/" fragment', '/pull/16/files#hello', '16');
 	});
 

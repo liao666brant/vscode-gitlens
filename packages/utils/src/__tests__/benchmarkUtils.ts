@@ -224,16 +224,16 @@ export function generateGitTestData(): {
 	return {
 		// Tiny: ~100 bytes - single git remote
 		tiny:
-			'origin\thttps://github.com/gitkraken/vscode-gitlens.git (fetch)\n' +
-			'origin\thttps://github.com/gitkraken/vscode-gitlens.git (push)\n',
+			'origin\thttps://github.com/liao666brant/vscode-gitlens.git (fetch)\n' +
+			'origin\thttps://github.com/liao666brant/vscode-gitlens.git (push)\n',
 
 		// Small: ~600 bytes - typical git remote -v output (5 remotes)
 		small: Array(5)
 			.fill(null)
 			.map(
 				(_, i) =>
-					`remote${i}\thttps://github.com/gitkraken/vscode-gitlens${i}.git (fetch)\n` +
-					`remote${i}\thttps://github.com/gitkraken/vscode-gitlens${i}.git (push)`,
+					`remote${i}\thttps://github.com/liao666brant/vscode-gitlens${i}.git (fetch)\n` +
+					`remote${i}\thttps://github.com/liao666brant/vscode-gitlens${i}.git (push)`,
 			)
 			.join('\n'),
 

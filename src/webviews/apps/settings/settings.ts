@@ -16,7 +16,7 @@ import { formatDate, setDefaultDateLocales } from '../shared/date.js';
 import { DOM } from '../shared/dom.js';
 import type { Disposable } from '../shared/events.js';
 import '../shared/components/feature-badge.js';
-import '../shared/components/gitlens-logo.js';
+import '../shared/components/wegit-logo.js';
 
 const topOffset = 83;
 const offset = (new Date().getTimezoneOffset() / 60) * 100;

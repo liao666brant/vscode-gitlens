@@ -7,7 +7,7 @@
 			"type": "extensionHost",
 			"request": "launch",
 			"runtimeExecutable": "${execPath}",
-			"args": ["--profile=Debugging (GitLens)", "--extensionDevelopmentPath=${workspaceFolder}"],
+			"args": ["--profile=Debugging (WeGit)", "--extensionDevelopmentPath=${workspaceFolder}"],
 			"debugWebviews": true,
 			"rendererDebugOptions": {
 				"outFiles": ["${workspaceFolder}/dist/webviews/**/*.js"],
@@ -17,7 +17,7 @@
 				"sourceMapRenames": true,
 				"sourceMaps": true,
 				"trace": true,
-				"urlFilter": "*eamodio.gitlens*",
+				"urlFilter": "*liao666brant.wegit*",
 				"webRoot": "${workspaceFolder}/src/webviews/apps"
 			},
 			"outFiles": ["${workspaceFolder}/dist/**/*.js"],
@@ -40,8 +40,8 @@
 			"request": "launch",
 			"runtimeExecutable": "${execPath}",
 			"args": [
-				// "--folder-uri=vscode-vfs://github/gitkraken/vscode-gitlens",
-				"--profile=Debugging (GitLens)",
+				// "--folder-uri=vscode-vfs://github/liao666brant/vscode-gitlens",
+				"--profile=Debugging (WeGit)",
 				"--extensionDevelopmentPath=${workspaceFolder}",
 				"--extensionDevelopmentKind=web"
 			],
@@ -55,7 +55,7 @@
 				"sourceMapRenames": true,
 				"sourceMaps": true,
 				"trace": true,
-				"urlFilter": "*eamodio.gitlens*",
+				"urlFilter": "*liao666brant.wegit*",
 				"webRoot": "${workspaceFolder}"
 			},
 			"outFiles": ["${workspaceFolder}/dist/browser/**/*.js"],
@@ -87,7 +87,7 @@
 				"sourceMapRenames": true,
 				"sourceMaps": true,
 				"trace": true,
-				"urlFilter": "*eamodio.gitlens*",
+				"urlFilter": "*liao666brant.wegit*",
 				"webRoot": "${workspaceFolder}/src/webviews/apps"
 			},
 			"outFiles": ["${workspaceFolder}/dist/**/*.js"],
@@ -125,7 +125,7 @@
 			"type": "extensionHost",
 			"request": "launch",
 			"runtimeExecutable": "${execPath}",
-			"args": ["--profile=Debugging (GitLens)", "--extensionDevelopmentPath=${workspaceFolder}"],
+			"args": ["--profile=Debugging (WeGit)", "--extensionDevelopmentPath=${workspaceFolder}"],
 			"debugWebviews": true,
 			"rendererDebugOptions": {
 				"outFiles": ["${workspaceFolder}/dist/webviews/**/*.js"],
@@ -135,7 +135,7 @@
 				"sourceMapRenames": true,
 				"sourceMaps": true,
 				"trace": true,
-				"urlFilter": "*eamodio.gitlens*",
+				"urlFilter": "*liao666brant.wegit*",
 				"webRoot": "${workspaceFolder}/src/webviews/apps"
 			},
 			"outFiles": ["${workspaceFolder}/dist/**/*.js"],
@@ -159,8 +159,8 @@
 			"request": "launch",
 			"runtimeExecutable": "${execPath}",
 			"args": [
-				// "--folder-uri=vscode-vfs://github/gitkraken/vscode-gitlens",
-				"--profile=Debugging (GitLens)",
+				// "--folder-uri=vscode-vfs://github/liao666brant/vscode-gitlens",
+				"--profile=Debugging (WeGit)",
 				"--extensionDevelopmentPath=${workspaceFolder}",
 				"--extensionDevelopmentKind=web"
 			],
@@ -174,7 +174,7 @@
 				"sourceMapRenames": true,
 				"sourceMaps": true,
 				"trace": true,
-				"urlFilter": "*eamodio.gitlens*",
+				"urlFilter": "*liao666brant.wegit*",
 				"webRoot": "${workspaceFolder}"
 			},
 			"outFiles": ["${workspaceFolder}/dist/browser/**/*.js"],
@@ -206,7 +206,7 @@
 				"sourceMapRenames": true,
 				"sourceMaps": true,
 				"trace": true,
-				"urlFilter": "*eamodio.gitlens*",
+				"urlFilter": "*liao666brant.wegit*",
 				"webRoot": "${workspaceFolder}/src/webviews/apps"
 			},
 			"outFiles": ["${workspaceFolder}/dist/**/*.js"],

@@ -1,6 +1,6 @@
 # Testing Guide
 
-How to run, debug, and interpret tests in the GitLens codebase. For test creation templates, use `/add-test`.
+How to run, debug, and interpret tests in the WeGit codebase. For test creation templates, use `/add-test`.
 
 ## Testing Structure
 

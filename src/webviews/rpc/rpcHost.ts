@@ -24,7 +24,7 @@ import { createHostEndpoint } from './hostEndpoint.js';
 export interface RpcHostOptions {
 	/**
 	 * Webview identifier used to tag log lines produced by this RPC channel.
-	 * Example: `gitlens.views.home`.
+	 * Example: `gitlens.views.commitDetails`.
 	 */
 	webviewId?: WebviewIds;
 
@@ -44,7 +44,7 @@ export interface RpcHostOptions {
 	/**
 	 * Enable nested proxy mode for deep traversal of arguments and return values.
 	 *
-	 * Required for GitLens webviews: GetOverviewBranch has six Promise<> lazy
+	 * Required for WeGit webviews: GetOverviewBranch has six Promise<> lazy
 	 * fields that rely on Supertalk's Promise proxying, and the JSON transport
 	 * (encodeRpcPayload) destroys nested Dates without the DateHandler traversal.
 	 *

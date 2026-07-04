@@ -22,7 +22,7 @@ import type { DisposableEndpoint } from './webviewEndpoint.js';
 export interface RpcClientOptions {
 	/**
 	 * Webview identifier used to tag log lines produced by this RPC channel.
-	 * Example: `gitlens.views.home`. Falls back to `?` when not provided.
+	 * Example: `gitlens.views.commitDetails`. Falls back to `?` when not provided.
 	 *
 	 * Accepts a function to defer resolution for cases where the id isn't known
 	 * at `RpcController` construction time (e.g. Timeline serves both panel and
@@ -51,7 +51,7 @@ export interface RpcClientOptions {
 	/**
 	 * Enable nested proxy mode for deep traversal of arguments and return values.
 	 *
-	 * Required for GitLens webviews: GetOverviewBranch has six Promise<> lazy
+	 * Required for WeGit webviews: GetOverviewBranch has six Promise<> lazy
 	 * fields that rely on Supertalk's Promise proxying, and the JSON transport
 	 * (encodeRpcPayload) destroys nested Dates without the DateHandler traversal.
 	 *

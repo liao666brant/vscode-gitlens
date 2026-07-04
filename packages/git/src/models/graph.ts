@@ -20,12 +20,12 @@ export interface GitGraphRowHead {
 	context?: string | object;
 	upstream?: { name: string; id: string };
 	/** Set when this branch is checked out in a (non-default) worktree. Grouped so producers can't
-	 *  half-populate id-without-path or vice versa. GitLens consumers should read this field. */
+	 *  half-populate id-without-path or vice versa. WeGit consumers should read this field. */
 	worktree?: { id: string; path: string };
 	/** Upstream-component-compatibility mirror of `worktree?.id`. The bundled
 	 *  `@gitkraken/gitkraken-components` library still reads `worktreeId` to switch between
 	 *  WORKTREE and HEAD ref-badge styling — keeping it populated preserves the visual cue.
-	 *  Producers MUST set this whenever they set `worktree`; do not read it from GitLens code,
+	 *  Producers MUST set this whenever they set `worktree`; do not read it from WeGit code,
 	 *  read `worktree.id` instead. */
 	worktreeId?: string;
 }

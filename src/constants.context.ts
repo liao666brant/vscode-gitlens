@@ -37,9 +37,9 @@ export type ContextKeys = {
 	'gitlens:gk:organization:drafts:byob': boolean;
 	'gitlens:gk:organization:drafts:enabled': boolean;
 	'gitlens:hasVirtualFolders': boolean;
-	/** Indicates that this is the first run of a new install of GitLens */
+	/** Indicates that this is the first run of a new install of WeGit */
 	'gitlens:install:new': boolean;
-	/** Indicates that this is the first run after an upgrade of GitLens */
+	/** Indicates that this is the first run after an upgrade of WeGit */
 	'gitlens:install:upgradedFrom': string;
 	'gitlens:plus': Exclude<SubscriptionPlanIds, 'community'>;
 	'gitlens:plus:disabled': boolean;

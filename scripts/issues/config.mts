@@ -1,5 +1,5 @@
 export const config = {
-	owner: 'gitkraken',
+	owner: 'liao666brant',
 	repo: 'vscode-gitlens',
 	cacheDir: '.work/triage/cache',
 	packsDir: '.work/triage/packs',

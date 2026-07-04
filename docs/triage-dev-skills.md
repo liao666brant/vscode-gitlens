@@ -15,20 +15,20 @@ How to use the issue workflow skills to triage, investigate, prioritize, update 
 
 ### Dev Pipeline — Scope, plan, and review implementation
 
-| Skill             | Purpose                                                                                | Modifies code?   |
-| ----------------- | -------------------------------------------------------------------------------------- | ---------------- |
-| `/dev-scope`      | Define what and why — bridge from triage to planning                                   | No               |
-| `/analyze`        | Devil's-advocate design analysis — use when no plan/goals doc exists yet               | No               |
-| `/deep-planning`  | Design technical approach — trade-offs and alternatives                                | No               |
-| `/challenge-plan` | Stress-test the plan before implementation                                             | No               |
-| `/worktree`       | Create isolated git worktree for implementation (after plan is ready)                  | **Yes** (branch) |
-| `/live-exercise`  | Live UI working loop — use during implementation for any UI-bearing change             | No               |
-| `/review`         | Lightweight static code review against GitLens standards (lighter than `/deep-review`) | No               |
-| `/deep-review`    | Post-implementation code review against goals — traces code paths                      | No               |
-| `/ux-review`      | Post-implementation UX review against goals                                            | No               |
-| `/commit`         | Create well-formatted git commits                                                      | **Yes**          |
-| `/audit-commits`  | Audit commits for linked issues and CHANGELOG entries                                  | **Yes**          |
-| `/create-issue`   | Create GitHub follow-up issues from uncommitted work or commits                        | **Yes** (GitHub) |
+| Skill             | Purpose                                                                              | Modifies code?   |
+| ----------------- | ------------------------------------------------------------------------------------ | ---------------- |
+| `/dev-scope`      | Define what and why — bridge from triage to planning                                 | No               |
+| `/analyze`        | Devil's-advocate design analysis — use when no plan/goals doc exists yet             | No               |
+| `/deep-planning`  | Design technical approach — trade-offs and alternatives                              | No               |
+| `/challenge-plan` | Stress-test the plan before implementation                                           | No               |
+| `/worktree`       | Create isolated git worktree for implementation (after plan is ready)                | **Yes** (branch) |
+| `/live-exercise`  | Live UI working loop — use during implementation for any UI-bearing change           | No               |
+| `/review`         | Lightweight static code review against WeGit standards (lighter than `/deep-review`) | No               |
+| `/deep-review`    | Post-implementation code review against goals — traces code paths                    | No               |
+| `/ux-review`      | Post-implementation UX review against goals                                          | No               |
+| `/commit`         | Create well-formatted git commits                                                    | **Yes**          |
+| `/audit-commits`  | Audit commits for linked issues and CHANGELOG entries                                | **Yes**          |
+| `/create-issue`   | Create GitHub follow-up issues from uncommitted work or commits                      | **Yes** (GitHub) |
 
 All analysis skills are read-only. `/update-issues`, `/commit`, `/audit-commits`, `/create-issue`, and `/worktree` all have real-world side effects (GitHub, git, filesystem) — each requires confirmation before applying.
 
@@ -335,7 +335,7 @@ The bridge between pipelines is `/dev-scope`. It reads investigation reports (if
    - **Ready** — proceed to implementation
    - **Needs Revision** — plan has issues that should be addressed first
    - **Reconsider** — blocking issues found, needs human judgment
-4. `/worktree` spins up an isolated git worktree following GitLens conventions (sibling directory, typed branch prefix). Implementation happens there, keeping your main workspace clean.
+4. `/worktree` spins up an isolated git worktree following WeGit conventions (sibling directory, typed branch prefix). Implementation happens there, keeping your main workspace clean.
 
 **Workflow B — Scope a feature idea (no issue):**
 
@@ -360,7 +360,7 @@ After implementing the changes, run reviews against the goals document:
 
 1. `/deep-review` traces code paths for correctness, verifying the implementation matches success criteria. For smaller change sets, `/review` is the lighter static alternative.
 2. `/ux-review` walks through user flows, checking discoverability, accessibility, and workflow continuity
-3. `/commit` creates a well-formatted commit following GitLens conventions
+3. `/commit` creates a well-formatted commit following WeGit conventions
 4. `/audit-commits` verifies each user-facing commit has a linked issue and a CHANGELOG entry — use `/create-issue` to file any follow-ups it surfaces
 
 **Workflow D — End-to-end from triage to implementation:**
@@ -665,7 +665,7 @@ Every skill works standalone or chained. Here are all supported input modes:
 | Impact audit         | `/review impact`                        |
 | Full (code + impact) | `/review full`                          |
 
-**When to use vs `/deep-review`:** `/review` is a static checklist against GitLens standards — lighter and faster. `/deep-review` traces code paths against a `goals.md` for correctness.
+**When to use vs `/deep-review`:** `/review` is a static checklist against WeGit standards — lighter and faster. `/deep-review` traces code paths against a `goals.md` for correctness.
 
 ### `/worktree`
 
@@ -674,7 +674,7 @@ Every skill works standalone or chained. Here are all supported input modes:
 | Typed branch   | `/worktree feature/#5096-natural-search` |
 | Session-scoped | `/worktree bug/graph-performance`        |
 
-**Side effect:** creates a sibling directory under `<repo>.worktrees/` following GitLens conventions, plus the branch.
+**Side effect:** creates a sibling directory under `<repo>.worktrees/` following WeGit conventions, plus the branch.
 
 ### `/live-exercise`
 

@@ -20,7 +20,6 @@ import { configuration } from '../system/-webview/configuration.js';
 import { getContext, setContext } from '../system/-webview/context.js';
 import { getViewFocusCommand } from '../system/-webview/vscode/views.js';
 import { registerCommitDetailsWebviewView } from '../webviews/commitDetails/registration.js';
-import { registerHomeWebviewView } from '../webviews/home/registration.js';
 import type { WebviewsController } from '../webviews/webviewsController.js';
 import { registerWelcomeWebviewView } from '../webviews/welcome/registration.js';
 import { BranchesView } from './branchesView.js';
@@ -106,15 +105,15 @@ export class Views implements Disposable {
 		this._welcomeDismissed = container.onboarding.isDismissed('views:scmGrouped:welcome');
 
 		let newInstall = false;
-		let showGitLensView = false;
+		let showWeGitView = false;
 		if (!configuration.get('advanced.skipOnboarding')) {
-			// If this is a new install, expand the GitLens view and show the home view by default, unless we are skipping onboarding
+			// If this is a new install, expand the WeGit view by default, unless we are skipping onboarding
 			newInstall = getContext('gitlens:install:new', false);
-			showGitLensView = newInstall;
-			if (!showGitLensView) {
+			showWeGitView = newInstall;
+			if (!showWeGitView) {
 				const upgradedFrom = getContext('gitlens:install:upgradedFrom');
 				if (upgradedFrom && compare(upgradedFrom, '16.0.2') === -1) {
-					showGitLensView = !this._welcomeDismissed;
+					showWeGitView = !this._welcomeDismissed;
 				}
 			}
 		} else if (!this._welcomeDismissed) {
@@ -129,7 +128,7 @@ export class Views implements Disposable {
 		this.updateScmGroupedViewsRegistration();
 
 		if (
-			showGitLensView &&
+			showWeGitView &&
 			!env.remoteName &&
 			env.appHost === 'desktop' &&
 			container.extensionMode === ExtensionMode.Production
@@ -138,9 +137,6 @@ export class Views implements Disposable {
 				disposable?.dispose();
 				setTimeout(() => {
 					executeCoreCommand(getViewFocusCommand('gitlens.views.scm.grouped'), { preserveFocus: true });
-					if (newInstall) {
-						executeCoreCommand(getViewFocusCommand('gitlens.views.home'), { preserveFocus: true });
-					}
 				}, 0);
 			});
 		}
@@ -376,7 +372,6 @@ export class Views implements Disposable {
 	private registerWebviewViews(webviews: WebviewsController) {
 		return [
 			(this._commitDetailsView = registerCommitDetailsWebviewView(webviews)),
-			(this._homeView = registerHomeWebviewView(webviews)),
 			(this._welcomeView = registerWelcomeWebviewView(webviews)),
 		];
 	}
@@ -492,8 +487,8 @@ export class Views implements Disposable {
 
 		const result = await window.showInformationMessage(
 			newInstall
-				? 'GitLens 将许多相关视图（提交、分支、储藏等）组合在一起，便于视图管理。使用视图标题中的选项卡来导航、分离或重新组合视图。'
-				: '在 GitLens 16 中，我们将许多相关视图（提交、分支、储藏等）组合在一起，便于视图管理。使用视图标题中的选项卡来导航、分离或重新组合视图。',
+				? 'WeGit 将许多相关视图（提交、分支、储藏等）组合在一起，便于视图管理。使用视图标题中的选项卡来导航、分离或重新组合视图。'
+				: '在 WeGit 16 中，我们将许多相关视图（提交、分支、储藏等）组合在一起，便于视图管理。使用视图标题中的选项卡来导航、分离或重新组合视图。',
 			...buttons,
 		);
 
@@ -652,11 +647,6 @@ export class Views implements Disposable {
 	private _fileHistoryView!: FileHistoryView | undefined;
 	get fileHistory(): FileHistoryView {
 		return this._fileHistoryView ?? this.getScmGroupedView('fileHistory');
-	}
-
-	private _homeView!: ReturnType<typeof registerHomeWebviewView>;
-	get home(): ReturnType<typeof registerHomeWebviewView> {
-		return this._homeView;
 	}
 
 	private _lineHistoryView!: LineHistoryView;

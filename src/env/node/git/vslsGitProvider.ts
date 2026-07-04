@@ -120,7 +120,7 @@ export class VslsGitProvider extends GlCliGitProvider {
 	}
 
 	override canHandlePathOrUri(scheme: string, pathOrUri: string | Uri): string | undefined {
-		// TODO@eamodio To support virtual repositories, we need to verify that the path is local here (by converting the shared path to a local path)
+		// TODO To support virtual repositories, we need to verify that the path is local here (by converting the shared path to a local path)
 		const path = super.canHandlePathOrUri(scheme, pathOrUri);
 		return path != null ? `${scheme}:${path}` : undefined;
 	}

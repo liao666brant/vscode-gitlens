@@ -1,0 +1,57 @@
+packages/core/README.md:3:Shared Git primitives from [GitLens](https://github.com/gitkraken/vscode-gitlens).
+packages/core/README.md:43:Independent from the [GitLens VS Code extension](https://github.com/gitkraken/vscode-gitlens). Breaking changes may happen on any minor bump while the package is `0.x`.
+contributions.json:1295:						"when": "extension =~ /^eamodio.gitlens?$/ && extensionStatus == installed && gitlens:walkthroughSupported",
+contributions.json:2594:						"when": "extension =~ /^eamodio.gitlens?$/ && extensionStatus == installed",
+contributions.json:3803:			"label": "组合到 GitLens 视图",
+contributions.json:4557:			"label": "组合到 GitLens 视图",
+contributions.json:5314:			"label": "组合到 GitLens 视图",
+contributions.json:6064:			"label": "组合到 GitLens 视图",
+contributions.json:7670:			"label": "组合到 GitLens 视图",
+contributions.json:8132:			"label": "组合到 GitLens 视图",
+contributions.json:10041:			"label": "组合到 GitLens 视图",
+contributions.json:10621:			"label": "组合到 GitLens 视图",
+contributions.json:10859:			"label": "组合到 GitLens 视图",
+contributions.json:12180:			"contextualTitle": "GitLens",
+contributions.json:12190:			"contextualTitle": "GitLens",
+contributions.json:12200:			"contextualTitle": "GitLens",
+contributions.json:12209:			"contextualTitle": "GitLens",
+contributions.json:12218:			"contextualTitle": "GitLens",
+contributions.json:12228:			"contextualTitle": "GitLens",
+contributions.json:12238:			"contextualTitle": "GitLens",
+contributions.json:12248:			"contextualTitle": "GitLens",
+contributions.json:12257:			"contextualTitle": "GitLens",
+contributions.json:12264:			"name": "GitLens",
+contributions.json:12266:			"contextualTitle": "GitLens",
+contributions.json:12277:					"contents": "GitLens 将许多相关视图（提交、分支、贮藏等）分组在此处，便于视图管理。\n\n[继续](command:gitlens.views.scm.grouped.welcome.dismiss)\n\n使用上方的标签页进行导航，或分离你想保持独立的视图。你可以随时通过视图标题中的 'x' 重新分组。",
+contributions.json:12281:					"contents": "GitLens 将许多相关视图（提交、分支、贮藏等）分组在此处，便于视图管理。\n\n[继续](command:gitlens.views.scm.grouped.welcome.dismiss)\n\n更喜欢分开显示？[将视图恢复到之前的位置](command:gitlens.views.scm.grouped.welcome.restore)\n\n使用上方的标签页进行导航，或分离你想保持独立的视图。你可以随时通过视图标题中的 'x' 重新分组。",
+contributions.json:12301:			"contextualTitle": "GitLens",
+contributions.json:12325:			"contextualTitle": "GitLens",
+contributions.json:12334:			"contextualTitle": "GitLens",
+contributions.json:12343:			"contextualTitle": "GitLens",
+README.md:1:# GitLens &mdash; Supercharge Git in VS Code
+README.md:5:[GitLens](https://gitkraken.com/gitlens?utm_source=gitlens-extension&utm_medium=in-app-links&utm_campaign=gitlens-logo-links 'Learn more about GitLens') is a powerful [open-source](https://github.com/gitkraken/vscode-gitlens 'Open GitLens on GitHub') extension for Visual Studio Code built and maintained by GitKraken.
+README.md:11:Install GitLens by clicking `Install` on the banner above, or from the Extensions side bar in VS Code by searching for GitLens.
+README.md:14:  <a title="Watch the GitLens Getting Started video" href="https://www.youtube.com/watch?v=UQPb73Zz9qk"><img src="https://raw.githubusercontent.com/gitkraken/vscode-gitlens/main/images/docs/get-started-video.png" alt="Watch the GitLens Getting Started video" /></a>
+README.md:19:> Have questions or concerns? Talk to our engineering team directly through our [GitHub Discussions](https://github.com/gitkraken/vscode-gitlens/discussions/categories/feedback) page. Having a positive experience with GitLens? Feel free to [write a review](https://marketplace.visualstudio.com/items?itemName=eamodio.gitlens&ssr=false#review-details).
+README.md:21:## GitLens Community
+README.md:23:**GitLens Community** is free and gives you powerful tools to manage Git and understand how your code has evolved and by whom. Explore repository history, inspect commits, compare revisions, navigate file and line history, and use on-demand file annotations to understand changes without leaving VS Code.
+README.md:34:GitLens offers a wide range of features—here are the three most popular workflows that users rely on to boost their productivity:
+README.md:36:- [**Interactive Code History**](#interactive-code-history) &mdash; Understanding code in repositories with multiple branches and contributors can be difficult. GitLens provides the context you need with file annotations, commit details, repository views, and history navigation.
+README.md:48:Understanding who made changes, when, and why can be challenging. GitLens simplifies this with Inspect, file annotations, and history views that give you clear context and actionable Git details.
+README.md:79:Worktrees enable efficient multitasking by allowing you to work on multiple branches without stashing changes or leaving your current branch. They preserve your workflow while letting you shift focus when needed. For example, you can easily review a pull request on a worktree in a separate VS Code window with GitLens.
+README.md:93:  <figcaption>GitLens Inspect as shown above has been manually moved into the Secondary Side Bar</figcaption>
+README.md:98:### GitLens Inspect
+README.md:107:### GitLens
+README.md:109:Quick access to many GitLens features, help, and support.
+README.md:136:Stop worrying about memorizing Git commands; GitLens provides a rich set of commands to help you do everything you need.
+README.md:158:Context switching kills productivity. GitLens reveals buried knowledge within your repository and can link external references in commit messages.
+README.md:168:Support documentation can be found on the [GitLens Help Center](https://help.gitkraken.com/gitlens/gitlens-home/). If you need further assistance or have any questions, there are various support channels and community forums available for GitLens:
+README.md:176:Join the GitLens community on [GitHub Discussions](https://github.com/gitkraken/vscode-gitlens/discussions) to connect with other users, share your experiences, and discuss topics related to GitLens.
+README.md:180:GitLens is an open-source project that greatly benefits from the contributions and feedback from its community.
+README.md:182:Your contributions, feedback, and engagement in the GitLens community are invaluable, and play a significant role in shaping the future of GitLens. Thank you for your support!
+README.md:186:Want to contribute to GitLens? Follow the [CONTRIBUTING](https://github.com/gitkraken/vscode-gitlens/blob/main/CONTRIBUTING.md) docs to get started.
+README.md:190:Contributions to the documentation are greatly appreciated. If you find any areas that can be improved or have suggestions for new documentation, you can submit them as pull requests to the [GitLens Docs](https://github.com/gitkraken/gitlens-docs) repository.
+walkthroughs/welcome\get-started-community.md:1:<img src="thumbnails/welcome.webp" alt="Welcome to GitLens Community" />
+src/webviews/apps/welcome\components\welcome-page.ts:27:		title: '欢迎使用 GitLens',
+src/webviews/apps/welcome\components\welcome-page.ts:29:			<p>GitLens 社区版保留本地 Git 工作流能力，帮助你查看提交、分支、文件历史和工作区更改。</p>
+src/webviews/apps/welcome\components\welcome-page.ts:155:					<h1><gitlens-logo-circle></gitlens-logo-circle><span>开始使用 GitLens</span></h1>

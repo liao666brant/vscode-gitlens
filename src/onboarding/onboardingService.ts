@@ -145,10 +145,6 @@ export class OnboardingService implements Disposable {
 				return this.storage.get('views:scm:grouped:welcome:dismissed') ?? false;
 			case 'mcp:banner':
 				return this.storage.get('mcp:banner:dismissed') ?? false;
-			case 'home:walkthrough':
-				return this.storage.get('home:walkthrough:dismissed') ?? false;
-			case 'home:integrationBanner':
-				return this.storage.get('home:sections:collapsed')?.includes('integrationBanner') ?? false;
 			case 'composer:onboarding':
 				return this.storage.get('composer:onboarding:dismissed') != null;
 			default:
@@ -157,7 +153,7 @@ export class OnboardingService implements Disposable {
 		/* eslint-enable @typescript-eslint/no-deprecated */
 	}
 
-	/** Dismiss an onboarding item, recording the current timestamp and GitLens version */
+	/** Dismiss an onboarding item, recording the current timestamp and WeGit version */
 	async dismiss(key: OnboardingKeys): Promise<void> {
 		const { scope } = onboardingDefinitions[key];
 
@@ -276,7 +272,6 @@ export class OnboardingService implements Disposable {
 			const batch1: { legacy: keyof DeprecatedGlobalStorage; current: OnboardingKeys }[] = [
 				{ legacy: 'views:scm:grouped:welcome:dismissed', current: 'views:scmGrouped:welcome' },
 				{ legacy: 'mcp:banner:dismissed', current: 'mcp:banner' },
-				{ legacy: 'home:walkthrough:dismissed', current: 'home:walkthrough' },
 			];
 
 			for (const { legacy, current } of batch1) {
@@ -292,22 +287,8 @@ export class OnboardingService implements Disposable {
 			}
 		}
 
-		// Batch 2 (17.9.0): home:sections:collapsed + composer onboarding
+		// Batch 2 (17.9.0): composer onboarding
 		if (!migratedVersion || compare(migratedVersion, '17.9.0') < 0) {
-			// Migrate onboarding items from home:sections:collapsed array
-			const collapsedSections = this.storage.get('home:sections:collapsed');
-			if (collapsedSections != null) {
-				const sectionMap: Record<string, OnboardingKeys> = { integrationBanner: 'home:integrationBanner' };
-
-				for (const section of collapsedSections) {
-					const key = sectionMap[section];
-					if (key && !this.isDismissed(key, true)) {
-						await this.dismiss(key);
-					}
-				}
-				await this.storage.delete('home:sections:collapsed');
-			}
-
 			// Intentionally reading/deleting deprecated keys during migration
 			// eslint-disable-next-line @typescript-eslint/no-deprecated
 			const composerDismissed = this.storage.get('composer:onboarding:dismissed');

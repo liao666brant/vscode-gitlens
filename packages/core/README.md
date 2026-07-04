@@ -1,38 +1,34 @@
-# @gitkraken/core-gitlens
+# @liao666brant/core-wegit
 
-Shared Git primitives from [GitLens](https://github.com/gitkraken/vscode-gitlens).
+Shared Git primitives for WeGit.
 
 This package flattens the MIT-licensed workspace packages into a single tarball:
 
-| Subpath     | Source package     | License       |
+| Subpath     | Source workspace   | License       |
 | ----------- | ------------------ | ------------- |
-| `utils/*`   | `@gitlens/utils`   | See `LICENSE` |
-| `git/*`     | `@gitlens/git`     | See `LICENSE` |
-| `git-cli/*` | `@gitlens/git-cli` | See `LICENSE` |
+| `utils/*`   | `packages/utils`   | See `LICENSE` |
+| `git/*`     | `packages/git`     | See `LICENSE` |
+| `git-cli/*` | `packages/git-cli` | See `LICENSE` |
 
 ## Usage
 
 ```ts
-import { Logger } from '@gitkraken/core-gitlens/utils/logger.js';
-import { GitService } from '@gitkraken/core-gitlens/git/service.js';
-import { Repository } from '@gitkraken/core-gitlens/git/models/repository.js';
-import { CliGitProvider } from '@gitkraken/core-gitlens/git-cli/cliGitProvider.js';
+import { Logger } from '@liao666brant/core-wegit/utils/logger.js';
+import { GitService } from '@liao666brant/core-wegit/git/service.js';
+import { Repository } from '@liao666brant/core-wegit/git/models/repository.js';
+import { CliGitProvider } from '@liao666brant/core-wegit/git-cli/cliGitProvider.js';
 ```
 
 All exports are fully typed and source-mapped back to the original TypeScript sources shipped in `src/`.
 
-### Node vs browser
+## Node vs Browser
 
 `utils/` uses internal `#env/*` imports that resolve differently based on the target:
 
 - Node: `dist/utils/env/node/*.js`
-- Browser / webworker bundlers (webpack, Vite, esbuild, Rspack): `dist/utils/env/browser/*.js`
+- Browser / webworker bundlers: `dist/utils/env/browser/*.js`
 
-No consumer configuration required — the runtime / bundler picks the right variant automatically via the package's `"imports"` field.
-
-### Tree-shaking
-
-The package is marked `"sideEffects": false` and uses per-file subpath exports.
+No consumer configuration required. The runtime or bundler picks the right variant via the package's `"imports"` field.
 
 ## Licensing
 
@@ -40,8 +36,8 @@ The package is marked `"sideEffects": false` and uses per-file subpath exports.
 
 ## Versioning
 
-Independent from the [GitLens VS Code extension](https://github.com/gitkraken/vscode-gitlens). Breaking changes may happen on any minor bump while the package is `0.x`.
+Independent from the WeGit VS Code extension. Breaking changes may happen on any minor bump while the package is `0.x`.
 
 ## Source
 
-Built from the `packages/` workspace of [vscode-gitlens](https://github.com/gitkraken/vscode-gitlens). See `packages/core/scripts/bundle.mjs` in that repo for the flattening logic.
+Built from the `packages/` workspace of this repository. See `packages/core/scripts/bundle.mjs` for the flattening logic.

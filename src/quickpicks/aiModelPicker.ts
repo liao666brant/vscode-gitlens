@@ -1,7 +1,7 @@
 import type { Disposable, QuickInputButton, QuickPickItem } from 'vscode';
 import { QuickInputButtons, ThemeIcon, window } from 'vscode';
 import { getSettledValue } from '@gitlens/utils/promise.js';
-import { ensureAccess, isSubscriptionPaidPlan } from '../community/stubs/pro.js';
+import { ensureAccess } from '../community/stubs/pro.js';
 import type {
 	AIModel,
 	AIModelDescriptor,
@@ -42,18 +42,15 @@ export async function showAIProviderPicker(
 ): Promise<ProviderQuickPickItem | undefined> {
 	if (!(await ensureAccess(container, { showPicker: true }, source))) return undefined;
 
-	const [providersResult, modelResult, subscriptionResult] = await Promise.allSettled([
+	const [providersResult, modelResult] = await Promise.allSettled([
 		container.ai.getProvidersConfiguration(),
 		// Fetch the *scope's* current model when invoked for a scoped operation so the
 		// "current model" detail line in the picker reflects the scope, not the global default.
 		container.ai.getModel({ silent: true, scope: titles?.scope }, { source: 'ai:picker' }),
-		container.subscription.getSubscription(),
 	]);
 
 	const providers = getSettledValue(providersResult) ?? new Map<AIProviders, AIProviderDescriptorWithConfiguration>();
 	const currentModelName = getSettledValue(modelResult)?.name;
-	const subscription = getSettledValue(subscriptionResult)!;
-	const hasPaidPlan = isSubscriptionPaidPlan(subscription.plan.effective.id) && subscription.account?.verified;
 
 	const quickpick = window.createQuickPick<ProviderQuickPickItem>();
 	quickpick.ignoreFocusOut = getQuickPickIgnoreFocusOut();
@@ -63,12 +60,7 @@ export async function showAIProviderPicker(
 	const disposables: Disposable[] = [];
 
 	try {
-		const pickedProvider =
-			(current?.provider ?? providers.get('gitkraken')?.configured)
-				? 'gitkraken'
-				: providers.get('vscode')?.configured
-					? 'vscode'
-					: undefined;
+		const pickedProvider = current?.provider ?? (providers.get('vscode')?.configured ? 'vscode' : undefined);
 
 		let addedRequiredKeySeparator = false;
 		while (true) {
@@ -84,19 +76,8 @@ export async function showAIProviderPicker(
 					iconPath: p.id === current?.provider ? new ThemeIcon('check') : new ThemeIcon('blank'),
 					provider: p.id,
 					picked: p.id === pickedProvider,
-					detail:
-						p.id === current?.provider && currentModelName
-							? `      ${currentModelName}`
-							: p.id === 'gitkraken'
-								? '      由 GitKraken 提供的模型'
-								: undefined,
+					detail: p.id === current?.provider && currentModelName ? `      ${currentModelName}` : undefined,
 					buttons: !p.primary ? (p.configured ? [ClearAIKeyButton] : [ConfigureAIKeyButton]) : undefined,
-					description:
-						p.id === 'gitkraken'
-							? hasPaidPlan
-								? '  已包含在您的计划中'
-								: '  当前社区构建不可用'
-							: undefined,
 				} satisfies ProviderQuickPickItem);
 			}
 
@@ -141,7 +122,7 @@ export async function showAIModelPicker(
 	current?: AIModelDescriptor,
 	source?: Source,
 	titles?: { title?: string; placeholder?: string },
-	scope?: AIModelScope,
+	_scope?: AIModelScope,
 ): Promise<ModelQuickPickItem | Directive | undefined> {
 	if (!(await ensureAccess(container, { showPicker: true }, source))) return undefined;
 
@@ -157,24 +138,17 @@ export async function showAIModelPicker(
 			directive: Directive.Noop,
 		} satisfies ModelQuickPickItem | DirectiveQuickPickItem);
 	} else {
-		const scopedDefaultModelId =
-			provider === 'gitkraken' && (scope === 'compose' || scope === 'review')
-				? 'gemini:gemini-3-flash-preview'
-				: undefined;
-		const useScopedDefault = scopedDefaultModelId != null && current?.provider !== provider;
-
 		for (const m of models) {
 			if (m.hidden) continue;
 
 			const matchesCurrent = m.provider.id === current?.provider && m.id === current?.model;
-			const picked = matchesCurrent || (useScopedDefault && m.id === scopedDefaultModelId);
 
 			items.push({
 				label: m.name,
 				description: m.default ? '  推荐' : undefined,
 				iconPath: matchesCurrent ? new ThemeIcon('check') : new ThemeIcon('blank'),
 				model: m,
-				picked: picked,
+				picked: matchesCurrent,
 			} satisfies ModelQuickPickItem);
 		}
 	}

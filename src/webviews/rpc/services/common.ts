@@ -66,7 +66,7 @@ export interface SharedWebviewServices {
  * Use this for simple webviews that need all shared services without overrides.
  * Complex webviews should instantiate individual service classes directly.
  *
- * @param container - The GitLens Container
+ * @param container - The WeGit Container
  * @param host - The webview host
  * @param updateTelemetryContext - Callback to update the provider's telemetry context
  * @param buffer - Optional event visibility buffer

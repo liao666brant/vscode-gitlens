@@ -4,10 +4,10 @@ import type { RebaseTodoAction } from './rebaseTodo.js';
 import { applyRebaseActionToTodo } from './rebaseTodo.js';
 
 /**
- * Standalone Node script used as git's `sequence.editor` for the Commit Graph's headless
- * squash/drop/reword. Bundled to `dist/rebaseTodoEditor.js` and launched as Node by the platform
- * wrapper scripts (`rebaseTodoEditor.sh`/`.cmd`), it rewrites the `git-rebase-todo` git hands it
- * (argv[2]) in place, applying the action from the environment to the selected commits.
+ * Standalone Node script used as git's `sequence.editor` for headless squash/drop/reword flows.
+ * Bundled to `dist/rebaseTodoEditor.js` and launched as Node by the platform wrapper scripts
+ * (`rebaseTodoEditor.sh`/`.cmd`), it rewrites the `git-rebase-todo` git hands it (argv[2]) in place,
+ * applying the action from the environment to the selected commits.
  *
  * Imports the shared {@link applyRebaseActionToTodo} so the transform has a single source of truth.
  * Must not import `vscode` (it runs in a plain Node subprocess, not the extension host).

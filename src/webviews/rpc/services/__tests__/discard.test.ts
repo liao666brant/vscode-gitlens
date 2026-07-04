@@ -1,6 +1,7 @@
 import * as assert from 'assert';
 import { execFileSync } from 'child_process';
 import { existsSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'fs';
+import { rm } from 'fs/promises';
 import { tmpdir } from 'os';
 import { join } from 'path';
 import { Uri } from 'vscode';
@@ -24,6 +25,31 @@ function git(repo: string, ...args: string[]): string {
 		encoding: 'utf8',
 		env: gitEnv,
 	});
+}
+
+const rmMaxAttempts = 20;
+const rmRetryDelay = 100;
+
+function wait(ms: number): Promise<void> {
+	return new Promise(resolve => setTimeout(resolve, ms));
+}
+
+async function rmTestPath(path: string): Promise<void> {
+	let lastError: unknown;
+	for (let attempt = 1; attempt <= rmMaxAttempts; attempt++) {
+		try {
+			await rm(path, { force: true, recursive: true });
+			return;
+		} catch (ex) {
+			lastError = ex;
+			if (attempt === rmMaxAttempts) break;
+
+			await wait(rmRetryDelay);
+		}
+	}
+
+	const message = lastError instanceof Error ? lastError.message : String(lastError);
+	throw new Error(`Failed to remove test path: ${message}`);
 }
 
 /** Parse `git status --porcelain` into the GitStatusFile the provider would build for `path`. */
@@ -53,9 +79,8 @@ function gitExec(repo: string): DiscardExecutor {
 	return {
 		canRestore: true,
 		providerName: 'test',
-		moveToTrash: uri => {
-			rmSync(uri.fsPath, { force: true, recursive: true });
-			return Promise.resolve();
+		moveToTrash: async uri => {
+			await rmTestPath(uri.fsPath);
 		},
 		unstage: path => {
 			git(repo, 'reset', '-q', '--', path);
@@ -100,8 +125,8 @@ suite('discard.utils — discardOneWith (temp repo)', function () {
 		git(repo, 'init', '-q', '-b', 'main');
 	});
 
-	teardown(() => {
-		rmSync(repo, { recursive: true, force: true });
+	teardown(async () => {
+		await rmTestPath(repo);
 	});
 
 	const commit = (msg: string): void => {

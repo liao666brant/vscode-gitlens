@@ -32,8 +32,8 @@ export type RemoteProviderId =
 	| 'gerrit'
 	| 'gitea'
 	| 'github'
-	| 'cloud-github-enterprise' // TODO@eamodio this shouldn't really be here, since it's not a valid remote provider id
-	| 'cloud-gitlab-self-hosted' // TODO@eamodio this shouldn't really be here, since it's not a valid remote provider id
+	| 'cloud-github-enterprise' // TODO this shouldn't really be here, since it's not a valid remote provider id
+	| 'cloud-gitlab-self-hosted' // TODO this shouldn't really be here, since it's not a valid remote provider id
 	| 'gitlab'
 	| 'google-source';
 

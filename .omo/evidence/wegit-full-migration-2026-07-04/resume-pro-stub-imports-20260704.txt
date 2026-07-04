@@ -1,0 +1,80 @@
+src\cache.ts:13:import type { GitHostIntegration, IntegrationBase } from './community/stubs/pro.js';
+src\config.ts:1:import type { AIProviderAndModel, SupportedAIModels } from './community/stubs/pro.js';
+src\autolinks\autolinksProvider.ts:27:} from '../community/stubs/pro.js';
+src\autolinks\autolinksProvider.ts:33:} from '../community/stubs/pro.js';
+src\constants.commands.ts:213:export type GlPlusCommands = FilterCommands<'gitlens.plus.', GlCommands>;
+src\constants.context.ts:13:import type { OrgAIProviders, PromoKeys, SubscriptionPlanIds } from './community/stubs/pro.js';
+src\constants.storage.ts:14:} from './community/stubs/pro.js';
+src\constants.telemetry.ts:11:} from './community/stubs/pro.js';
+src\container.ts:43:} from './community/stubs/pro.js';
+src\container.ts:50:} from './community/stubs/pro.js';
+src\documents\markdown.ts:10:import type { AIResultContext } from '../community/stubs/pro.js';
+src\eventBus.ts:10:import type { Draft, LocalDraft } from './community/stubs/pro.js';
+src\features.ts:6:import type { RequiredSubscriptionPlanIds, Subscription } from './community/stubs/pro.js';
+src\features.ts:63:export function isProFeature(feature: PlusFeatures): feature is ProFeatures {
+src\features.ts:70:			return isProFeatureOnAllRepos(feature);
+src\features.ts:78:export function isProFeatureOnAllRepos(feature: PlusFeatures): feature is ProFeatures {
+src\errors.ts:3:import type { RequiredSubscriptionPlanIds, Subscription } from './community/stubs/pro.js';
+src\errors.ts:4:import { isSubscriptionPaidPlan } from './community/stubs/pro.js';
+src\errors.ts:15:} from './community/stubs/pro.js';
+src\onboarding\walkthroughStateProvider.ts:8:import type { SubscriptionChangeEvent } from '../community/stubs/pro.js';
+src\uris\uriService.ts:11:} from '../community/stubs/pro.js';
+src\commands\git\branch\create.ts:20:import { getIssueOwner } from '../../../community/stubs/pro.js';
+src\system\webview.ts:1:import type { GlPlusCommands, GlWebviewCommands } from '../constants.commands.js';
+src\system\webview.ts:5:	command: GlWebviewCommands | GlPlusCommands,
+src\quickpicks\aiModelPicker.ts:4:import { ensureAccess, isSubscriptionPaidPlan } from '../community/stubs/pro.js';
+src\quickpicks\aiModelPicker.ts:11:} from '../community/stubs/pro.js';
+src\uris\deepLinks\deepLinkService.ts:24:import { ensureAccount, ensurePaidPlan } from '../../community/stubs/pro.js';
+src\webviews\welcome\registration.ts:18:			plusFeature: false,
+src\telemetry\aiFeedbackProvider.ts:7:import type { AIResultContext } from '../community/stubs/pro.js';
+src\webviews\webviewsController.ts:230:				if (descriptor.plusFeature && getContext('gitlens:plus:disabled') === true) {
+src\webviews\protocol.ts:6:import type { Promo, PromoLocation, PromoPlans } from '../community/stubs/pro.js';
+src\webviews\webviewDescriptors.ts:20:	readonly plusFeature: boolean;
+src\webviews\webviewDescriptors.ts:36:	readonly plusFeature: boolean;
+src\webviews\webviewDescriptors.ts:51:	readonly plusFeature: boolean;
+src\quickpicks\remoteProviderPicker.ts:25:import { convertRemoteProviderIdToIntegrationId, providersMetadata } from '../community/stubs/pro.js';
+src\webviews\webviewController.ts:32:import { getSubscriptionNextPaidPlanId } from '../community/stubs/pro.js';
+src\webviews\webviewController.ts:308:		if (!this.descriptor.plusFeature) {
+src\quickpicks\organizationMembersPicker.ts:8:import type { OrganizationMember } from '../community/stubs/pro.js';
+src\commands\git\stash\push.ts:3:import type { AIModel } from '../../../community/stubs/pro.js';
+src\webviews\settings\settingsWebview.ts:15:import { isIssueCloudIntegrationId } from '../../community/stubs/pro.js';
+src\webviews\settings\settingsWebview.ts:16:import type { ConnectionStateChangeEvent, SubscriptionChangeEvent } from '../../community/stubs/pro.js';
+src\webviews\settings\registration.ts:23:			plusFeature: false,
+src\webviews\home\registration.ts:18:			plusFeature: false,
+src\webviews\home\protocol.ts:1:import type { AIModel, Subscription } from '../../community/stubs/pro.js';
+src\webviews\home\homeWebview.ts:41:import { providersMetadata } from '../../community/stubs/pro.js';
+src\webviews\home\homeWebview.ts:47:} from '../../community/stubs/pro.js';
+src\webviews\home\homeWebview.ts:60:import * as branchRefCommands from '../../community/stubs/pro.js';
+src\webviews\commitDetails\registration.ts:19:			plusFeature: false,
+src\git\utils\-webview\repository.utils.ts:7:import { getIntegrationIdForRemote } from '../../../community/stubs/pro.js';
+src\git\utils\-webview\remote.utils.ts:12:import type { GitHostIntegration } from '../../../community/stubs/pro.js';
+src\git\utils\-webview\remote.utils.ts:18:} from '../../../community/stubs/pro.js';
+src\git\utils\-webview\log.utils.ts:7:import type { AIGenerateChangelogChange, AIGenerateChangelogChanges } from '../../../community/stubs/pro.js';
+src\git\utils\-webview\branch.issue.utils.ts:11:import type { GitConfigEntityIdentifier } from '../../../community/stubs/pro.js';
+src\git\utils\-webview\branch.issue.utils.ts:16:} from '../../../community/stubs/pro.js';
+src\git\search.naturalLanguage.ts:4:import type { NaturalLanguageSearchOptions } from '../community/stubs/pro.js';
+src\git\remotes\remoteProviderConfigs.ts:5:import type { ConfiguredIntegrationDescriptor } from '../../community/stubs/pro.js';
+src\git\remotes\remoteProviderConfigs.ts:6:import { isCloudGitSelfManagedHostIntegrationId } from '../../community/stubs/pro.js';
+src\webviews\apps\home\components\onboarding.ts:7:import { ruleStyles } from '../../../../community/stubs/pro.js';
+src\webviews\rebase\rebaseEditor.ts:40:	plusFeature: false,
+src\webviews\rpc\services\subscription.ts:13:import type { Subscription } from '../../../community/stubs/pro.js';
+src\git\graphRowProcessor.ts:10:import type { GraphItemRefContext, GraphItemRefGroupContext } from '../community/stubs/pro.js';
+src\git\gitUri.ts:15:import type { GitHubAuthorityMetadata } from '../community/stubs/pro.js';
+src\git\gitProviderService.ts:61:import { isAdvancedFeature, isProFeatureOnAllRepos } from '../features.js';
+src\git\gitProviderService.ts:63:import { isSubscriptionPaidPlan } from '../community/stubs/pro.js';
+src\git\gitProviderService.ts:64:import type { Subscription, SubscriptionChangeEvent } from '../community/stubs/pro.js';
+src\git\gitProviderService.ts:1003:		if (feature != null && (isProFeatureOnAllRepos(feature) || isAdvancedFeature(feature))) {
+src\webviews\rpc\services\integrations.ts:12:import { providersMetadata } from '../../../community/stubs/pro.js';
+src\webviews\apps\commitDetails\components\gl-details-commit-panel.ts:20:import type { RunningOperationExecState } from '../../../../community/stubs/pro.js';
+src\views\nodes\resultsCommitsNode.ts:14:import type { AIGenerateChangelogChanges } from '../../community/stubs/pro.js';
+src\views\nodes\abstract\repositoriesSubscribeableNode.ts:7:import type { SubscriptionChangeEvent } from '../../../community/stubs/pro.js';
+src\views\nodes\abstract\viewNode.ts:25:} from '../../../community/stubs/pro.js';
+src\webviews\apps\shared\components\chips\action-chip.ts:5:import { linkStyles, ruleStyles } from '../../../../../community/stubs/pro.js';
+src\webviews\apps\shared\components\details-header\gl-details-header.ts:4:import type { RunningOperationExecState } from '../../../../../community/stubs/pro.js';
+src\webviews\apps\shared\components\details-header\gl-details-header.ts:5:import { chipStateSuffix, statusIconFor } from '../../../../../community/stubs/pro.js';
+src\webviews\apps\shared\contexts\subscription.ts:3:import type { Subscription } from '../../../../community/stubs/pro.js';
+src\webviews\apps\shared\contexts\promos.ts:2:import type { Promo, PromoLocation, PromoPlans } from '../../../../community/stubs/pro.js';
+src\webviews\apps\shared\components\search\search-input.ts:24:} from '../../../../../community/stubs/pro.js';
+src\webviews\apps\shared\components\search\search-box.ts:9:import type { AppState } from '../../../../../community/stubs/pro.js';
+src\webviews\apps\shared\components\markdown\markdown.ts:8:import { ruleStyles } from '../../../../../community/stubs/pro.js';
+src\webviews\apps\shared\components\tree\base.ts:3:import type { DraftPatchFileChange } from '../../../../../community/stubs/pro.js';

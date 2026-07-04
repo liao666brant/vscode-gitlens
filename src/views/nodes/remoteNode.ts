@@ -54,7 +54,7 @@ export class RemoteNode extends ViewNode<'remote', ViewsWithRemotes> {
 		});
 		if (branches.values.length === 0) return [new MessageNode(this.view, this, '未找到任何分支。')];
 
-		// TODO@eamodio handle paging
+		// TODO handle paging
 		const branchNodes = branches.values.map(
 			b =>
 				new BranchNode(GitUri.fromRepoPath(this.uri.repoPath!, b.ref), this.view, this, this.repo, b, false, {

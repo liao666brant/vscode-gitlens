@@ -1,0 +1,66 @@
+.\tests\e2e\specs\treeView.test.ts:66:	const graphWebview = await vscode.gitlens.getGitLensWebview('Graph', 'webviewView', 30000);
+.\tests\e2e\specs\treeView.test.ts:82:	const graphWebview = await vscode.gitlens.getGitLensWebview('Graph', 'webviewView', 30000);
+.\tests\e2e\specs\rebase.test.ts:73: * Uses a single polling pass via getGitLensWebview's internal loop rather than
+.\tests\e2e\specs\rebase.test.ts:79:	const frame = await vscode.gitlens.getGitLensWebview('Interactive Rebase', 'customEditor', 30000);
+.\tests\e2e\specs\quickWizard.test.ts:37:import type { GitLensPage } from '../pageObjects/gitLensPage.js';
+.\tests\e2e\specs\quickWizard.test.ts:238:async function testDirectGitCommand(gitlens: GitLensPage, suffix: string, step: Step): Promise<void> {
+.\tests\e2e\specs\graphReview.test.ts:112:		const wv = await vscode.gitlens.getGitLensWebview('Graph', 'webviewView', 60000);
+.\tests\e2e\specs\graphDetails.test.ts:80:	const graphWebview = await vscode.gitlens.getGitLensWebview('Graph', 'webviewView', 30000);
+.\tests\e2e\specs\graphDetails.test.ts:100:	const graphWebview = await vscode.gitlens.getGitLensWebview('Graph', 'webviewView', 30000);
+.\src\documents\markdown.ts:4:	decodeGitLensRevisionUriAuthority,
+.\src\documents\markdown.ts:5:	encodeGitLensRevisionUriAuthority,
+.\src\documents\markdown.ts:31:		this.registration = workspace.registerTextDocumentContentProvider(Schemes.GitLensAIMarkdown, this);
+.\src\documents\markdown.ts:41:			if (document.uri.scheme === Schemes.GitLensAIMarkdown) {
+.\src\documents\markdown.ts:59:			scheme: Schemes.GitLensAIMarkdown,
+.\src\documents\markdown.ts:60:			authority: metadata ? encodeGitLensRevisionUriAuthority(metadata) : undefined,
+.\src\documents\markdown.ts:121:			if (tab.input instanceof TabInputCustom && tab.input.uri.scheme === Schemes.GitLensAIMarkdown) {
+.\src\documents\markdown.ts:135:	const metadata = decodeGitLensRevisionUriAuthority<MarkdownContentMetadata>(authority);
+.\src\constants.ts:99:	GitLens = 'gitlens',
+.\src\constants.ts:100:	GitLensAIMarkdown = 'gitlens-ai-markdown',
+.\src\constants.ts:101:	GitLensVirtual = 'gitlens-virtual',
+.\src\constants.ts:113:		Schemes.GitLens,
+.\src\env\node\git\cliGitProvider.ts:25:import { encodeGitLensRevisionUriAuthority } from '@gitlens/git/utils/uriAuthority.js';
+.\src\env\node\git\cliGitProvider.ts:95:		Schemes.GitLens,
+.\src\env\node\git\cliGitProvider.ts:183:							scheme === Schemes.GitLens
+.\src\env\node\git\cliGitProvider.ts:1086:			scheme: Schemes.GitLens,
+.\src\env\node\git\cliGitProvider.ts:1087:			authority: encodeGitLensRevisionUriAuthority(metadata),
+.\tests\e2e\baseTest.ts:14:import { GitLensPage } from './pageObjects/gitLensPage.js';
+.\tests\e2e\baseTest.ts:165:	gitlens: GitLensPage;
+.\tests\e2e\baseTest.ts:248:			const gitlens = new GitLensPage(page, evaluate);
+.\packages\git-cli\src\providers\diff.ts:35:import { encodeGitLensRevisionUriAuthority } from '@gitlens/git/utils/uriAuthority.js';
+.\packages\git-cli\src\providers\diff.ts:1133:					authority: encodeGitLensRevisionUriAuthority({ ref: sha, repoPath: repoPath }),
+.\packages\git\src\utils\uriAuthority.ts:14:export function encodeGitLensRevisionUriAuthority<T>(metadata: T): string {
+.\packages\git\src\utils\uriAuthority.ts:18:export function decodeGitLensRevisionUriAuthority<T>(authority: string): T {
+.\src\commands\walkthroughs.ts:100:export class WalkthroughGitLensInspectCommand extends GlCommandBase {
+.\src\commands\regenerateMarkdownDocument.ts:3:import { decodeGitLensRevisionUriAuthority } from '@gitlens/git/utils/uriAuthority.js';
+.\src\commands\regenerateMarkdownDocument.ts:22:		if (uri.scheme !== Schemes.GitLensAIMarkdown) {
+.\src\commands\regenerateMarkdownDocument.ts:35:			const metadata = decodeGitLensRevisionUriAuthority<MarkdownContentMetadata>(authority);
+.\src\extension.ts:17:import type { GitLensApi, OpenIssueActionContext } from './api/gitlens.d.js';
+.\src\extension.ts:35:export async function activate(context: ExtensionContext): Promise<GitLensApi | undefined> {
+.\src\repositories.ts:3:import { decodeGitLensRevisionUriAuthority } from '@gitlens/git/utils/uriAuthority.js';
+.\src\repositories.ts:36:		case Schemes.GitLens: {
+.\src\repositories.ts:39:			const metadata = decodeGitLensRevisionUriAuthority<RevisionUriData>(uri.authority);
+.\src\api\gitlens.d.ts:101:export interface GitLensApi {
+.\src\api\api.ts:4:import type { Action, ActionContext, ActionRunner, GitLensApi } from './gitlens.d.js';
+.\src\api\api.ts:8:export class Api implements GitLensApi {
+.\src\git\gitUri.ts:5:import { decodeGitLensRevisionUriAuthority, decodeRemoteHubAuthority } from '@gitlens/git/utils/uriAuthority.js';
+.\src\git\gitUri.ts:68:		if (uri.scheme === Schemes.GitLens) {
+.\src\git\gitUri.ts:69:			const data = GitUri.parseGitLensRevisionUri(uri, commitOrRepoPath);
+.\src\git\gitUri.ts:102:	private static parseGitLensRevisionUri(
+.\src\git\gitUri.ts:106:		const metadata = decodeGitLensRevisionUriAuthority<RevisionUriData>(uri.authority);
+.\src\git\gitUri.ts:304:		if (uri.scheme === Schemes.GitLens) return new GitUri(uri);
+.\src\git\gitRepositoryService.ts:147:		if (typeof pathOrUri !== 'string' && pathOrUri.scheme === Schemes.GitLens) {
+.\src\git\gitRepositoryService.ts:296:		if (workingUri.scheme !== Schemes.GitLens) return undefined;
+.\src\git\fsProvider.ts:22:export function fromGitLensFSUri(uri: Uri): { path: string; ref: string; repoPath: string; submoduleSha?: string } {
+.\src\git\fsProvider.ts:47:			workspace.registerFileSystemProvider(Schemes.GitLens, this, {
+.\src\git\fsProvider.ts:70:		const { path, ref, repoPath } = fromGitLensFSUri(uri);
+.\src\git\fsProvider.ts:87:		const { path, ref, repoPath, submoduleSha } = fromGitLensFSUri(uri);
+.\src\git\fsProvider.ts:128:		const { path, ref, repoPath, submoduleSha } = fromGitLensFSUri(uri);
+.\src\system\-webview\vscode\editors.ts:235:		if (background || title || (uri.scheme === Schemes.GitLens && imageMimetypes[extname(uri.fsPath)])) {
+.\src\virtual\virtualFileSystemProvider.ts:5:	decodeGitLensRevisionUriAuthority,
+.\src\virtual\virtualFileSystemProvider.ts:6:	encodeGitLensRevisionUriAuthority,
+.\src\virtual\virtualFileSystemProvider.ts:22:		scheme: Schemes.GitLensVirtual,
+.\src\virtual\virtualFileSystemProvider.ts:23:		authority: encodeGitLensRevisionUriAuthority(authority),
+.\src\virtual\virtualFileSystemProvider.ts:29:	if (uri.scheme !== Schemes.GitLensVirtual) {
+.\src\virtual\virtualFileSystemProvider.ts:33:	const authority = decodeGitLensRevisionUriAuthority<VirtualUriAuthority>(uri.authority);
+.\src\virtual\virtualFileSystemProvider.ts:56:			workspace.registerFileSystemProvider(Schemes.GitLensVirtual, this, {

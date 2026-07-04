@@ -234,7 +234,7 @@ export class GlSearchBox extends GlElement {
 	}
 
 	logSearch(query: SearchQuery): void {
-		void this.searchInput?.logSearch(query);
+		this.searchInput?.logSearch(query);
 	}
 
 	setSearchQuery(query: string): void {
@@ -256,16 +256,16 @@ export class GlSearchBox extends GlElement {
 		this.searchInput?.setExternalSearchQuery(search);
 	}
 
-	async pickAuthors(): Promise<void> {
-		await this.searchInput?.pickAuthors();
+	pickAuthors(): void {
+		this.searchInput?.pickAuthors();
 	}
 
-	async pickRefs(): Promise<void> {
-		await this.searchInput?.pickRefs();
+	pickRefs(): void {
+		this.searchInput?.pickRefs();
 	}
 
-	async pickFiles(): Promise<void> {
-		await this.searchInput?.pickFiles();
+	pickFiles(): void {
+		this.searchInput?.pickFiles();
 	}
 
 	insertSearchOperator(operator: string): void {

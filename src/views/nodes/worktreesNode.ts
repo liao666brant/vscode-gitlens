@@ -84,7 +84,7 @@ export class WorktreesNode extends CacheableChildrenViewNode<'worktrees', ViewsW
 		item.id = this.id;
 		item.contextValue = ContextValues.Worktrees;
 		item.description = access.allowed ? undefined : ` ${GlyphChars.Warning}  此功能在当前社区构建中不可用`;
-		// TODO@eamodio `folder` icon won't work here for some reason
+		// TODO `folder` icon won't work here for some reason
 		item.iconPath = new ThemeIcon('folder-opened');
 		return item;
 	}

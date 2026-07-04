@@ -255,7 +255,7 @@ export class AutolinksProvider implements Disposable {
 							(getIntegrationIdForRemote(link.provider as RemoteProvider) ??
 							convertRemoteProviderIdToIntegrationId(link.provider.id as RemoteProviderId));
 				// Fall back to the old logic assuming that integration id might be saved as provider id.
-				// TODO: it should be removed when we put providers and integrations in order. Conversation: https://github.com/gitkraken/vscode-gitlens/pull/3996#discussion_r1936422826
+				// TODO: it should be removed when we put providers and integrations in order. Conversation: https://github.com/liao666brant/vscode-gitlens/pull/3996#discussion_r1936422826
 				integrationId ??= link.provider.id as IntegrationIds;
 				try {
 					linkIntegration = await this.container.integrations.get(integrationId);

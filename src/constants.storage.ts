@@ -45,16 +45,6 @@ export type DeprecatedGlobalStorage = {
 	/** @deprecated use `confirm:ai:tos` */
 	'confirm:sendToOpenAI': boolean;
 	/** @deprecated */
-	'home:actions:completed': ('dismissed:welcome' | 'opened:scm')[];
-	/** @deprecated */
-	'home:steps:completed': string[];
-	/** @deprecated */
-	'home:sections:dismissed': string[];
-	/** @deprecated */
-	'home:status:pinned': boolean;
-	/** @deprecated */
-	'home:banners:dismissed': string[];
-	/** @deprecated */
 	pendingWelcomeOnFocus: boolean;
 	/** @deprecated */
 	'plus:discountNotificationShown': boolean;
@@ -68,9 +58,6 @@ export type DeprecatedGlobalStorage = {
 	'views:commitDetails:dismissed': 'sidebar'[];
 	/** @deprecated */
 	'views:welcome:visible': boolean;
-	/** @deprecated Use OnboardingService */
-	'home:walkthrough:dismissed': boolean;
-	/** @deprecated Use OnboardingService */
 	'mcp:banner:dismissed': boolean;
 	/** @deprecated Use OnboardingService */
 	'views:scm:grouped:welcome:dismissed': boolean;
@@ -105,7 +92,6 @@ interface GlobalStorageCore {
 	preVersion: string;
 	'product:config': Stored<StoredProductConfig>;
 	'confirm:draft:storage': boolean;
-	'home:sections:collapsed': string[];
 	'graph:searchMode': StoredGraphSearchMode;
 	'graph:useNaturalLanguageSearch': boolean;
 	'integrations:configured': StoredIntegrationConfigurations;
@@ -172,7 +158,7 @@ export interface StoredPromo {
 	code?: string;
 	plan?: PaidSubscriptionPlanIds;
 	states?: SubscriptionState[];
-	locations?: ('account' | 'badge' | 'gate' | 'home')[];
+	locations?: ('account' | 'badge' | 'gate')[];
 	expiresOn?: number;
 	startsOn?: number;
 	percentile?: number;

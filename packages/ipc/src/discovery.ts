@@ -4,15 +4,15 @@ import { join } from 'path';
 import { kill, ppid } from 'process';
 
 /**
- * Directory scanned by `gk` binaries (and `@gitkraken/core-gitlens` consumers) for the
+ * Compatibility directory scanned by legacy `gk` binaries and core consumers for the
  * extension's CLI-capable IPC server discovery file. Anything written here is assumed
  * by older `gk` versions to be a CLI server — do NOT write agent-only files here.
  */
 export const cliDiscoveryDir = join(tmpdir(), 'gitkraken', 'gitlens');
 
 /**
- * Directory scanned by peer GitLens windows for agent-session-capable IPC servers.
- * Stable across GitLens versions; older windows still scan it, so don't move it.
+ * Directory scanned by peer WeGit windows for agent-session-capable IPC servers.
+ * Stable across legacy versions; older windows still scan it, so don't move it.
  */
 export const agentDiscoveryDir = join(tmpdir(), 'gitkraken', 'gitlens', 'agents');
 

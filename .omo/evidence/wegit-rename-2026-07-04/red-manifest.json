@@ -1,0 +1,20 @@
+{
+	"ok": false,
+	"package": {
+		"name": "gitlens",
+		"displayName": "GitLens — Git 增强工具",
+		"publisher": "eamodio",
+		"author": {
+			"name": "Eric Amodio",
+			"email": "eamodio@gmail.com"
+		}
+	},
+	"core": {
+		"name": "@gitkraken/core-gitlens",
+		"description": "GitLens core - shared Git primitives",
+		"author": {
+			"name": "GitKraken",
+			"url": "https://gitkraken.com"
+		}
+	}
+}
