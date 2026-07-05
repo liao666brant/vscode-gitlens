@@ -26,7 +26,6 @@ import {
 import { GlElement } from './components/element.js';
 import { ipcContext } from './contexts/ipc.js';
 import { loggerContext, LoggerContext } from './contexts/logger.js';
-import { PromosContext, promosContext } from './contexts/promos.js';
 import { telemetryContext, TelemetryContext } from './contexts/telemetry.js';
 import type { WebviewContext } from './contexts/webview.js';
 import { webviewContext } from './contexts/webview.js';
@@ -43,7 +42,7 @@ import { computeThemeColors, onDidChangeTheme, watchThemeColors } from './theme.
  * Base class for webview applications (both legacy and RPC-based).
  *
  * Provides all shared infrastructure that webview apps need:
- * - 5 Lit context providers (ipc, logger, promos, telemetry, webview)
+ * - 4 Lit context providers (ipc, logger, telemetry, webview)
  * - Focus tracking (debounced notifications to host)
  * - Theme color computation and change handling
  * - Host→webview focus/visibility notification dispatch
@@ -69,9 +68,6 @@ export abstract class GlWebviewApp extends GlElement {
 
 	@provide({ context: loggerContext })
 	protected _logger!: LoggerContext;
-
-	@provide({ context: promosContext })
-	protected _promos!: PromosContext;
 
 	@provide({ context: telemetryContext })
 	protected _telemetry!: TelemetryContext;
@@ -139,7 +135,6 @@ export abstract class GlWebviewApp extends GlElement {
 				}
 			}),
 			this._ipc,
-			(this._promos = new PromosContext(this._ipc)),
 			(this._telemetry = new TelemetryContext(this._ipc)),
 		);
 
@@ -210,7 +205,6 @@ export abstract class App<
 	private readonly _api: HostIpcApi;
 	private readonly _hostIpc: HostIpc;
 	private readonly _logger: LoggerContext;
-	private readonly _promos: PromosContext;
 	protected readonly _telemetry: TelemetryContext;
 	private readonly _webview: WebviewContext;
 
@@ -238,9 +232,6 @@ export abstract class App<
 		this._hostIpc = new HostIpc(this.appName);
 		disposables.push(this._hostIpc);
 
-		this._promos = new PromosContext(this._hostIpc);
-		disposables.push(this._promos);
-
 		this._telemetry = new TelemetryContext(this._hostIpc);
 		disposables.push(this._telemetry);
 
@@ -259,7 +250,6 @@ export abstract class App<
 
 		new ContextProvider(document.body, { context: ipcContext, initialValue: this._hostIpc });
 		new ContextProvider(document.body, { context: loggerContext, initialValue: this._logger });
-		new ContextProvider(document.body, { context: promosContext, initialValue: this._promos });
 		new ContextProvider(document.body, { context: telemetryContext, initialValue: this._telemetry });
 		new ContextProvider(document.body, { context: webviewContext, initialValue: this._webview });
 

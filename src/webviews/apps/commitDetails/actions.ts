@@ -84,7 +84,6 @@ export interface ResolvedServices {
 	readonly storage: ResolvedSubService<'storage'>;
 	readonly ai: ResolvedSubService<'ai'>;
 	readonly autolinks: ResolvedSubService<'autolinks'>;
-	readonly subscription: ResolvedSubService<'subscription'>;
 	readonly integrations: ResolvedSubService<'integrations'>;
 	readonly files: ResolvedSubService<'files'>;
 	readonly pullRequests: ResolvedSubService<'pullRequests'>;

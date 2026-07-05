@@ -23,7 +23,6 @@ import { PullRequestsService } from './pullRequests.js';
 import { RepositoriesService } from './repositories.js';
 import { RepositoryService } from './repository.js';
 import { StorageService } from './storage.js';
-import { SubscriptionService } from './subscription.js';
 import { TelemetryService } from './telemetry.js';
 import type { RpcServiceHost } from './types.js';
 
@@ -43,7 +42,6 @@ export interface SharedWebviewServices {
 	readonly repository: RepositoryService;
 	readonly config: ConfigService;
 	readonly storage: StorageService;
-	readonly subscription: SubscriptionService;
 	readonly integrations: IntegrationsService;
 	readonly onboarding: OnboardingRpcService;
 	readonly ai: AIService;
@@ -84,7 +82,6 @@ export function createSharedServices(
 		repository: new RepositoryService(container, buffer, tracker),
 		config: new ConfigService(buffer, tracker),
 		storage: new StorageService(container),
-		subscription: new SubscriptionService(container, buffer, tracker),
 		integrations: new IntegrationsService(container, buffer, tracker),
 		onboarding: new OnboardingRpcService(container, buffer, tracker),
 		ai: new AIService(),

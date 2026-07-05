@@ -15,7 +15,7 @@
  *
  * Service Layout:
  * - SharedWebviewServices: repositories, repository, config, storage,
- *   subscription, integrations, ai, autolinks, commands, telemetry, files, pullRequests
+ *   integrations, ai, autolinks, commands, telemetry, files, pullRequests
  * - inspect: view-specific commit/WIP queries, navigation, commit actions, AI ops
  */
 import type { GitCommitSearchContext } from '@gitlens/git/models/search.js';

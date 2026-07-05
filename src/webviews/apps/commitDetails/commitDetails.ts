@@ -153,7 +153,6 @@ export class GlCommitDetailsApp extends SignalWatcherWebviewApp {
 			storage,
 			ai,
 			autolinks,
-			subscription,
 			integrations,
 			files,
 			pullRequests,
@@ -168,7 +167,6 @@ export class GlCommitDetailsApp extends SignalWatcherWebviewApp {
 			services.storage,
 			services.ai,
 			services.autolinks,
-			services.subscription,
 			services.integrations,
 			services.files,
 			services.pullRequests,
@@ -176,19 +174,8 @@ export class GlCommitDetailsApp extends SignalWatcherWebviewApp {
 			services.telemetry,
 		]);
 
-		// Supertalk remote proxy properties are thenable at runtime (ProxyProperty with .then()),
-		// but Remote<T> types them as synchronous values. The lint rule correctly detects the
-		// thenable; the disable is required — this is how Supertalk property access works.
-		/* eslint-disable @typescript-eslint/await-thenable */
-		const [orgSettingsSignal, hasAccountSignal] = await Promise.all([
-			subscription.orgSettingsState,
-			subscription.hasAccountState,
-		]);
-		/* eslint-enable @typescript-eslint/await-thenable */
-
-		// Connect remote signal bridges — single .get() instead of double .get().get()
-		s.orgSettings.connect(orgSettingsSignal);
-		s.hasAccount.connect(hasAccountSignal);
+		// orgSettings and hasAccount stay at their community-default bridge values
+		// ({ ai: false, drafts: false } / false) — no host subscription service in community build.
 
 		// Create resources — fetchers read current state signals via closure
 		const resources: CommitDetailsResources = {
@@ -226,7 +213,6 @@ export class GlCommitDetailsApp extends SignalWatcherWebviewApp {
 			storage: storage,
 			ai: ai,
 			autolinks: autolinks,
-			subscription: subscription,
 			integrations: integrations,
 			files: files,
 			pullRequests: pullRequests,
