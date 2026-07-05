@@ -44,7 +44,7 @@ export const uncommittedSha = '0000000000000000000000000000000000000000';
  * - RpcController for RPC lifecycle management
  * - Instance-owned state created via createCommitDetailsState()
  * - HostContext for portable persistence and RPC endpoint creation
- * - RemoteSignalBridge for host-pushed signals (orgSettings, hasAccount)
+ * - RemoteSignalBridge for host-pushed signals (hasAccount)
  * - Resources for async data lifecycle (commit, wip, reachability, generate)
  */
 @customElement('gl-commit-details-app')
@@ -120,7 +120,6 @@ export class GlCommitDetailsApp extends SignalWatcherWebviewApp {
 		this._resources = undefined;
 
 		// Disconnect remote signal bridges
-		this._state.orgSettings.disconnect();
 		this._state.hasAccount.disconnect();
 
 		// Clear actions reference
@@ -171,8 +170,7 @@ export class GlCommitDetailsApp extends SignalWatcherWebviewApp {
 			services.telemetry,
 		]);
 
-		// orgSettings and hasAccount stay at their community-default bridge values
-		// ({ drafts: false } / false) — no host subscription service in community build.
+		// hasAccount stays at its community-default bridge value (false) — no host subscription service in community build.
 
 		// Create resources — fetchers read current state signals via closure
 		const resources: CommitDetailsResources = {
@@ -489,7 +487,6 @@ export class GlCommitDetailsApp extends SignalWatcherWebviewApp {
 		const commit = s.currentCommit.get();
 		const wip = s.wipState.get();
 		const prefs = s.preferences.get();
-		const org = s.orgSettings.get();
 		const reach = resources?.reachability.value.get();
 		const reachStatus = resources?.reachability.status.get() ?? 'idle';
 		const reachState = mapReachabilityStatus(reachStatus);
@@ -514,7 +511,6 @@ export class GlCommitDetailsApp extends SignalWatcherWebviewApp {
 								.preferences=${prefs}
 								.showSearchBox=${prefs?.showSearchBox ?? true}
 								.searchBoxFilter=${prefs?.searchBoxFilter ?? true}
-								.orgSettings=${org}
 								.isUncommitted=${s.isUncommitted.get()}
 								.filesCollapsable=${false}
 								.autolinksEnabled=${s.capabilities.autolinksEnabled}
@@ -566,7 +562,6 @@ export class GlCommitDetailsApp extends SignalWatcherWebviewApp {
 								.preferences=${prefs}
 								.showSearchBox=${prefs?.showSearchBox ?? true}
 								.searchBoxFilter=${prefs?.searchBoxFilter ?? true}
-								.orgSettings=${org}
 								.isUncommitted=${true}
 								.emptyText=${'No working changes'}
 								@file-open=${(e: CustomEvent<FileChangeListItemDetail>) =>

@@ -998,7 +998,7 @@ export class GlFileTreePane extends LitElement {
 	private onTreeItemSelected(e: CustomEvent<TreeItemSelectionDetail>): void {
 		if (!e.detail.context) return;
 
-		this.dispatchFileEvent(this.selectionAction, e.detail.context[0], e.detail);
+		this.dispatchFileEvent(this.selectionAction, e.detail.context[0] as FileItem, e.detail);
 	}
 
 	private onSelectionChanged(e: CustomEvent<TreeSelectionChangedDetail>): void {

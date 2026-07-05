@@ -19,9 +19,6 @@
  * - repositories.onRepositoryChanged (workspace-level repo changes)
  * - config.onConfigChanged
  * - integrations.onIntegrationsChanged
- *
- * Note: subscription events (onSubscriptionChanged, onOrgSettingsChanged) are handled
- * via signal bridges — see commitDetails.ts _onRpcReady.
  */
 import type {
 	CommitDetailsServices,
@@ -63,8 +60,6 @@ export function setupSubscriptions(
 				handleRepositoryChanged(state, event, actions),
 			),
 		() => services.config.onConfigChanged(() => handleConfigChanged(actions)),
-		// Note: onSubscriptionChanged removed — hasAccount signal bridged from host
-		// Note: onOrgSettingsChanged removed — orgSettings signal bridged from host
 		() =>
 			services.integrations.onIntegrationsChanged(data => handleIntegrationsChanged(state, data.hasAnyConnected)),
 		// Host requests WIP mode on an already-live webview (deep links, etc.)

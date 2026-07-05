@@ -16,13 +16,6 @@ import type { TreeViewNodeTypes, TreeViewTypes } from '../../../constants.views.
 import type { GitUri } from '../../../git/gitUri.js';
 import { unknownGitUri } from '../../../git/gitUri.js';
 import type { GlRepository } from '../../../git/models/repository.js';
-import type {
-	CloudWorkspace,
-	CloudWorkspaceRepositoryDescriptor,
-	Draft,
-	LocalWorkspace,
-	LocalWorkspaceRepositoryDescriptor,
-} from '../../../community/stubs/pro.js';
 import type { View } from '../../viewBase.js';
 import type { BranchTrackingStatus } from '../branchTrackingStatusNode.js';
 import type { TreeViewNodesByType } from '../utils/-webview/node.utils.js';
@@ -106,7 +99,6 @@ export interface AmbientContext {
 	readonly comparisonId?: string;
 	readonly comparisonFiltered?: boolean;
 	readonly contributor?: GitContributor;
-	readonly draft?: Draft;
 	readonly file?: GitFile;
 	readonly pausedOperation?: GitPausedOperation;
 	readonly pullRequest?: PullRequest;
@@ -119,8 +111,6 @@ export interface AmbientContext {
 	readonly storedComparisonId?: string;
 	readonly tag?: GitTag;
 	readonly viewType?: TreeViewTypes;
-	readonly workspace?: CloudWorkspace | LocalWorkspace;
-	readonly wsRepositoryDescriptor?: CloudWorkspaceRepositoryDescriptor | LocalWorkspaceRepositoryDescriptor;
 	readonly worktree?: GitWorktree;
 
 	readonly worktreesByBranch?: Map<string, GitWorktree>;
@@ -130,12 +120,6 @@ export function getViewNodeId(type: string, context: AmbientContext): string {
 	let uniqueness = '';
 	if (context.root) {
 		uniqueness += '/root';
-	}
-	if (context.workspace != null) {
-		uniqueness += `/ws/${context.workspace.id}`;
-	}
-	if (context.wsRepositoryDescriptor != null) {
-		uniqueness += `/wsrepo/${context.wsRepositoryDescriptor.id}`;
 	}
 	if (context.repository != null || context.repoPath != null) {
 		uniqueness += `/repo/${context.repository?.id ?? context.repoPath}`;
@@ -186,9 +170,6 @@ export function getViewNodeId(type: string, context: AmbientContext): string {
 	}
 	if (context.file != null) {
 		uniqueness += `/file/${context.file.path}+${context.file.status}`;
-	}
-	if (context.draft != null) {
-		uniqueness += `/draft/${context.draft.id}`;
 	}
 
 	return `gitlens://${context.viewType ?? 'view'}/${type}${uniqueness}`;

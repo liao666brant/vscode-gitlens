@@ -268,19 +268,6 @@ export function decodeEntityIdentifiersFromGitConfig(encoded: string): GitConfig
 
 export const DidChangeNotification: ProStubAny = proStub;
 export type DidChangeNotification<T = ProStubAny, T2 = ProStubAny, T3 = ProStubAny, T4 = ProStubAny> = ProStubAny;
-export const Draft: ProStubAny = proStub;
-export type Draft = {
-	id?: string;
-	title?: string;
-	updatedAt?: string | number | Date;
-	visibility?: string;
-	author?: { id?: string; email?: string; name?: string; avatarUri?: string };
-	deepLinkUrl?: string;
-	organizationId?: string;
-	[key: string]: unknown;
-};
-export const DraftPatchFileChange: ProStubAny = proStub;
-export type DraftPatchFileChange<T = ProStubAny, T2 = ProStubAny, T3 = ProStubAny, T4 = ProStubAny> = ProStubAny;
 export function encodeIssueOrPullRequestForGitConfig(
 	issue: IssueOrPullRequest,
 	_owner: ResourceDescriptor,
@@ -312,22 +299,12 @@ export type IntegrationConnectedKey = `integration:connected:${string}`;
 
 export const AgentDescriptor: ProStubAny = proStub;
 export type AgentDescriptor = { id: string; label: string; kind?: string; [key: string]: unknown };
-export const AgentRoute: ProStubAny = proStub;
-export type AgentRoute = string;
-export const AIActionType: ProStubAny = proStub;
-export type AIActionType = string;
-export const AiAllAccessOptInPathPrefix: ProStubAny = proStub;
-export type AiAllAccessOptInPathPrefix<T = ProStubAny, T2 = ProStubAny, T3 = ProStubAny, T4 = ProStubAny> = ProStubAny;
 export const AIGenerateChangelogChange: ProStubAny = proStub;
 export type AIGenerateChangelogChange<T = ProStubAny, T2 = ProStubAny, T3 = ProStubAny, T4 = ProStubAny> = ProStubAny;
 export const AIGenerateChangelogChanges: ProStubAny = proStub;
 export type AIGenerateChangelogChanges<T = ProStubAny, T2 = ProStubAny, T3 = ProStubAny, T4 = ProStubAny> = ProStubAny;
-export const AppState: ProStubAny = proStub;
-export type AppState<T = ProStubAny, T2 = ProStubAny, T3 = ProStubAny, T4 = ProStubAny> = ProStubAny;
 export const AuthenticationRequiredError: ProStubAny = proStub;
 export type AuthenticationRequiredError<T = ProStubAny, T2 = ProStubAny, T3 = ProStubAny, T4 = ProStubAny> = ProStubAny;
-export const AuthenticationUriPathPrefix: ProStubAny = proStub;
-export type AuthenticationUriPathPrefix<T = ProStubAny, T2 = ProStubAny, T3 = ProStubAny, T4 = ProStubAny> = ProStubAny;
 export const Change: ProStubAny = proStub;
 export type Change = {
 	repository: GlRepository | { name?: string; path: string; uri: string };
@@ -337,49 +314,12 @@ export type Change = {
 };
 export const chipStateSuffix: ProStubAny = proStub;
 export type chipStateSuffix<T = ProStubAny, T2 = ProStubAny, T3 = ProStubAny, T4 = ProStubAny> = ProStubAny;
-export const CloudIntegrationAuthenticationUriPathPrefix: ProStubAny = proStub;
-export type CloudIntegrationAuthenticationUriPathPrefix<
-	T = ProStubAny,
-	T2 = ProStubAny,
-	T3 = ProStubAny,
-	T4 = ProStubAny,
-> = ProStubAny;
-export const CloudWorkspace: ProStubAny = proStub;
-export type CloudWorkspace<T = ProStubAny, T2 = ProStubAny, T3 = ProStubAny, T4 = ProStubAny> = ProStubAny;
-export const CloudWorkspaceRepositoryDescriptor: ProStubAny = proStub;
-export type CloudWorkspaceRepositoryDescriptor<
-	T = ProStubAny,
-	T2 = ProStubAny,
-	T3 = ProStubAny,
-	T4 = ProStubAny,
-> = ProStubAny;
-export const GraphColumnConfig: ProStubAny = proStub;
-export type GraphColumnConfig = { width?: number; isHidden?: boolean; mode?: string };
-export const GraphDisplayMode: ProStubAny = proStub;
-export type GraphDisplayMode = string;
 export const GraphItemRefContext: ProStubAny = proStub;
 export type GraphItemRefContext<T = ProStubAny, T2 = ProStubAny, T3 = ProStubAny, T4 = ProStubAny> = ProStubAny;
 export const GraphItemRefGroupContext: ProStubAny = proStub;
 export type GraphItemRefGroupContext<T = ProStubAny, T2 = ProStubAny, T3 = ProStubAny, T4 = ProStubAny> = ProStubAny;
-export const GraphSidebarPanel: ProStubAny = proStub;
-export type GraphSidebarPanel = string;
-export const GraphTreemapMode: ProStubAny = proStub;
-export type GraphTreemapMode = string;
 export const linkStyles: ProStubAny = proStub;
 export type linkStyles<T = ProStubAny, T2 = ProStubAny, T3 = ProStubAny, T4 = ProStubAny> = ProStubAny;
-export const LocalDraft: ProStubAny = proStub;
-export type LocalDraft<T = ProStubAny, T2 = ProStubAny, T3 = ProStubAny, T4 = ProStubAny> = ProStubAny;
-export const LocalWorkspace: ProStubAny = proStub;
-export type LocalWorkspace<T = ProStubAny, T2 = ProStubAny, T3 = ProStubAny, T4 = ProStubAny> = ProStubAny;
-export const LocalWorkspaceRepositoryDescriptor: ProStubAny = proStub;
-export type LocalWorkspaceRepositoryDescriptor<
-	T = ProStubAny,
-	T2 = ProStubAny,
-	T3 = ProStubAny,
-	T4 = ProStubAny,
-> = ProStubAny;
-export const LoginUriPathPrefix: ProStubAny = proStub;
-export type LoginUriPathPrefix<T = ProStubAny, T2 = ProStubAny, T3 = ProStubAny, T4 = ProStubAny> = ProStubAny;
 export const NaturalLanguageSearchOptions: ProStubAny = proStub;
 export type NaturalLanguageSearchOptions<
 	T = ProStubAny,
@@ -387,10 +327,6 @@ export type NaturalLanguageSearchOptions<
 	T3 = ProStubAny,
 	T4 = ProStubAny,
 > = ProStubAny;
-export const OrganizationMember: ProStubAny = proStub;
-export type OrganizationMember<T = ProStubAny, T2 = ProStubAny, T3 = ProStubAny, T4 = ProStubAny> = ProStubAny;
-export const OrganizationRole: ProStubAny = proStub;
-export type OrganizationRole = string;
 export const RequiredSubscriptionPlanIds: ProStubAny = proStub;
 export type RequiredSubscriptionPlanIds = string;
 export const ruleStyles: ProStubAny = proStub;
@@ -399,16 +335,3 @@ export const RunningOperationExecState: ProStubAny = proStub;
 export type RunningOperationExecState<T = ProStubAny, T2 = ProStubAny, T3 = ProStubAny, T4 = ProStubAny> = ProStubAny;
 export const statusIconFor: ProStubAny = proStub;
 export type statusIconFor<T = ProStubAny, T2 = ProStubAny, T3 = ProStubAny, T4 = ProStubAny> = ProStubAny;
-export const SubscriptionUpdatedUriPathPrefix: ProStubAny = proStub;
-export type SubscriptionUpdatedUriPathPrefix<
-	T = ProStubAny,
-	T2 = ProStubAny,
-	T3 = ProStubAny,
-	T4 = ProStubAny,
-> = ProStubAny;
-export const TimelinePeriod: ProStubAny = proStub;
-export type TimelinePeriod = string;
-export const TimelineSliceBy: ProStubAny = proStub;
-export type TimelineSliceBy = string;
-export const VisualizationMode: ProStubAny = proStub;
-export type VisualizationMode = string;

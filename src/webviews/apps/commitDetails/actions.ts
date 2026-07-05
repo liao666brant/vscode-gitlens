@@ -811,7 +811,7 @@ export class CommitDetailsActions {
 				a => (this.state.capabilities.autolinksEnabled = a === true),
 				noop,
 			);
-			// Note: hasAccount and orgSettings use RemoteSignalBridge (connected in commitDetails.ts)
+			// Note: hasAccount uses RemoteSignalBridge (connected in commitDetails.ts)
 			void this.services.integrations
 				.getIntegrationStates()
 				.then(s => (this.state.capabilities.hasIntegrationsConnected = s.some(i => i.connected)), noop);

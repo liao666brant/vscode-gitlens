@@ -9,7 +9,7 @@
  * 1. Persisted (survive hide/show/refresh) — mode, pinned, commitRef
  * 2. Ephemeral UI — navigationStack, inReview, draftState
  * 3. Domain Data — currentCommit, wipState, preferences, enrichment signals
- * 4. Remote Bridges — orgSettings, hasAccount (connected to host signals post-RPC)
+ * 4. Remote Bridges — hasAccount (connected to host signals post-RPC)
  * 5. Resource-owned (NOT in state) — loading, reachability
  * 6. Derived — computed from above (canNavigateBack, wipStatus, etc.)
  *
@@ -77,9 +77,6 @@ export function createCommitDetailsState(storage?: HostStorage) {
 	/** Current WIP state — set by actions after resource fetch. */
 	const wipState = signal<Wip | undefined>(undefined);
 	const preferences = signal<Preferences | undefined>(undefined);
-
-	/** Organization settings — connected to remote signal once RPC connects. Single `.get()`. */
-	const orgSettings = createRemoteSignalBridge({ drafts: false });
 
 	/** Whether the user has a WeGit account — connected to remote signal once RPC connects. Single `.get()`. */
 	const hasAccount = createRemoteSignalBridge(false);
@@ -168,7 +165,6 @@ export function createCommitDetailsState(storage?: HostStorage) {
 		searchContext: searchContext,
 		wipState: wipState,
 		preferences: preferences,
-		orgSettings: orgSettings,
 		hasAccount: hasAccount,
 		capabilities: capabilities,
 

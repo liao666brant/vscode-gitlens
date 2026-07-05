@@ -143,9 +143,6 @@ export interface State extends WebviewState<'gitlens.views.commitDetails'> {
 
 	pinned: boolean;
 	preferences: Preferences;
-	orgSettings: {
-		drafts: boolean;
-	};
 
 	commit?: CommitDetails;
 	autolinksEnabled: boolean;

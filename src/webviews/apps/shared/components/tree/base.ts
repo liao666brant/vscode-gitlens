@@ -1,6 +1,5 @@
 import type { TemplateResult } from 'lit';
 import type { GitFileStatus } from '@gitlens/git/models/fileStatus.js';
-import type { DraftPatchFileChange } from '../../../../../community/stubs/pro.js';
 
 export interface TreeItemBase {
 	// node properties
@@ -144,7 +143,7 @@ export interface TreeModelFlat extends TreeModelBase {
 
 export interface TreeItemSelectionDetail {
 	node: TreeItemBase;
-	context?: DraftPatchFileChange[];
+	context?: unknown[];
 	dblClick: boolean;
 	altKey: boolean;
 	ctrlKey: boolean;

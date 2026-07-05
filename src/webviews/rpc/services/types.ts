@@ -99,14 +99,6 @@ export interface CommitSelectedEventData {
 }
 
 /**
- * Organization settings relevant to webviews.
- */
-export interface OrgSettings {
-	readonly ai: boolean;
-	readonly drafts: boolean;
-}
-
-/**
  * Aggregate repositories state for webviews.
  */
 export interface RepositoriesState {

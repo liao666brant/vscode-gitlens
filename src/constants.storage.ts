@@ -1,12 +1,4 @@
-import type {
-	GraphDisplayMode,
-	GraphSidebarPanel,
-	GraphTreemapMode,
-	IntegrationConnectedKey,
-	TimelinePeriod,
-	TimelineSliceBy,
-	VisualizationMode,
-} from './community/stubs/pro.js';
+import type { IntegrationConnectedKey } from './community/stubs/pro.js';
 import type { GitRevisionRangeNotation } from '@gitlens/git/models/revision.js';
 import type { GraphBranchesVisibility, ViewShowBranchComparison } from './config.js';
 import type { IntegrationIds } from './constants.integrations.js';
@@ -15,7 +7,6 @@ import type { GroupableTreeViewTypes, TreeViewTypes } from './constants.views.js
 import type { Environment } from './container.js';
 import type { OnboardingStorage } from './onboarding/models/onboarding.js';
 import type { DeepLinkServiceState } from './uris/deepLinks/deepLink.js';
-import type { OverviewRecentThreshold } from './webviews/shared/overviewBranches.js';
 
 export type SecretKeys = IntegrationAuthenticationKeys | `gitlens.plus.auth:${Environment}` | 'deepLinks:pending';
 
@@ -127,12 +118,7 @@ interface WorkspaceStorageCore {
 	'branch:comparisons': StoredBranchComparisons;
 	'gitComandPalette:usage': StoredRecentUsage;
 	gitPath: string;
-	'graph:columns': Record<string, StoredGraphColumn>;
 	'graph:filtersByRepo': Record<string, StoredGraphFilters>;
-	'graph:state': StoredGraphState;
-	/** Per-worktree commit draft for the Graph's WIP details panel. Key is the worktree's
-	 *  fsPath — invariant whether the user opens the main repo or the worktree directly. */
-	'graph:wipDrafts': Record<string, StoredGraphWipDraft>;
 	/** Unified onboarding/dismissible UI state (workspace-scoped items) */
 	'onboarding:state': OnboardingStorage;
 	'starred:repositories': StoredStarred;
@@ -259,63 +245,6 @@ export interface StoredDeepLinkContext {
 	agent?: unknown;
 	/** Worktree path for CLI dispatch `cwd`. */
 	worktreePath?: string | undefined;
-}
-
-export interface StoredGraphColumn {
-	isHidden?: boolean;
-	mode?: string;
-	width?: number;
-}
-
-export interface StoredGraphState {
-	displayMode?: GraphDisplayMode;
-	visualizationMode?: VisualizationMode;
-	panels?: {
-		details?: {
-			visible?: boolean;
-			position?: number;
-			bottomPosition?: number;
-			/** Whether the file-tree search box is visible. */
-			showSearchBox?: boolean;
-			/** How the file-tree search box presents non-matches: `true` hides them (filter), `false` dims them (highlight). */
-			searchBoxFilter?: boolean;
-		};
-		sidebar?: {
-			visible?: boolean;
-			position?: number;
-			activePanel?: GraphSidebarPanel;
-			/** How the sidebar's filter input presents non-matches: `true` hides them (filter), `false` dims them (highlight). */
-			searchBoxFilter?: boolean;
-		};
-		minimap?: {
-			visible?: boolean;
-			position?: number;
-		};
-	};
-	overview?: {
-		recentThreshold?: OverviewRecentThreshold;
-	};
-	timeline?: {
-		period?: TimelinePeriod;
-		sliceBy?: TimelineSliceBy;
-		showAllBranches?: boolean;
-	};
-	treemap?: {
-		mode?: GraphTreemapMode;
-	};
-}
-
-export interface StoredGraphWipDraft {
-	/** The commit message currently in the WIP commit input. */
-	message: string;
-	/** `true` when the message is user-authored (typed, AI-generated, or restored from an undone
-	 *  commit) and must not be dropped by the HEAD-move auto-clear path. Mirrors the in-memory
-	 *  `commitMessageDirty` signal on the details panel. */
-	messageDirty: boolean;
-	/** Present iff amend mode was active when the draft was saved. `baseSha` records the worktree
-	 *  HEAD the amend was bound to so the existing HEAD-move auto-clear (in
-	 *  `gl-graph-details-panel.ts`) can detect a stale amend on restore. */
-	amend?: { baseSha: string };
 }
 
 export type StoredGraphExcludeTypes = 'remotes' | 'stashes' | 'tags';

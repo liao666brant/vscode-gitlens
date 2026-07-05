@@ -1,10 +1,3 @@
-import type {
-	AgentDescriptor,
-	AgentRoute,
-	AIActionType,
-	GraphColumnConfig,
-	OrganizationRole,
-} from './community/stubs/pro.js';
 import type { GitContributionTiers } from '@gitlens/git/models/contributor.js';
 import type { Flatten } from '@gitlens/utils/object.js';
 import type { Config, GraphBranchesVisibility, GraphConfig } from './config.js';
@@ -67,55 +60,6 @@ export interface TelemetryEvents extends WebviewShowAbortedEvents, WebviewShownE
 	/** Sent when a lazily-loaded webpack chunk fails to load — typically because VS Code
 	 * background-upgraded the extension while the host kept running the old build */
 	'extension/chunkLoad/failed': ExtensionChunkLoadFailedEvent;
-
-	/** Sent when explaining changes from wip, commits, stashes, patches, etc. */
-	'ai/explain': AIExplainEvent;
-
-	/** Sent when reviewing changes from wip, commits, or commit ranges */
-	'ai/review': AIReviewEvent;
-
-	/** Sent when generating summaries from commits, stashes, patches, etc. */
-	'ai/generate': AIGenerateEvent;
-
-	/** Sent when AI is enabled */
-	'ai/enabled': void;
-
-	/** Sent when switching ai models */
-	'ai/switchModel': AISwitchModelEvent;
-
-	/** Sent when a user provides feedback (rating and optional details) for an AI feature */
-	'ai/feedback': AIFeedbackEvent;
-
-	/** Sent when the user clicks "Get More Credits" on the weekly AI usage-limit notification */
-	'ai/credits/addOnClicked': AICreditsNotificationEvent;
-	/** Sent when the user dismisses the weekly AI usage-limit notification */
-	'ai/credits/addOnDismissed': AICreditsNotificationEvent;
-
-	/** Sent when user dismisses the AI All Access banner */
-	'aiAllAccess/bannerDismissed': void;
-
-	/** Sent when user opens the AI All Access page */
-	'aiAllAccess/opened': void;
-
-	/** Sent when user opts in to AI All Access */
-	'aiAllAccess/optedIn': void;
-
-	/** Sent when an agent hook is installed */
-	'agents/hookInstalled': AgentProviderEvent;
-	/** Sent when an agent hook is uninstalled */
-	'agents/hookUninstalled': AgentProviderEvent;
-	/** Sent when an agent session starts */
-	'agents/session/started': AgentProviderEvent;
-	/** Sent when an agent session ends */
-	'agents/session/ended': AgentProviderEvent;
-	/** Sent when a permission request is resolved */
-	'agents/permission/resolved': AgentPermissionResolvedEvent;
-	/** Sent when a reconciliation poll (`list-sessions`) finds the polled session set differs from
-	 *  what the live IPC hook path had already tracked. In a single window this should be rare and
-	 *  usually means a hook event was dropped; a nonzero `sync.discovered` is expected in multi-window
-	 *  setups, where the machine-wide poll can surface a session owned by another window that never
-	 *  routed its hook events here — so don't treat every event as a dropped IPC signal */
-	'agents/session/syncDiscrepancy': AgentSyncDiscrepancyEvent;
 
 	/** Sent when a CLI install attempt is started */
 	'cli/install/started': CLIInstallStartedEvent;
@@ -216,8 +160,6 @@ export interface TelemetryEvents extends WebviewShowAbortedEvents, WebviewShownE
 	'graph/scope/changed': GraphScopeChangedEvent;
 	/** Sent when the user clears the active graph scope */
 	'graph/scope/cleared': GraphContextEventData;
-	/** Sent when the user changes the columns on the graph view */
-	'graph/columns/changed': GraphColumnsChangedEvent;
 	/** Sent when the user changes the filters on the graph view */
 	'graph/filters/changed': GraphFiltersChangedEvent;
 	/** Sent when the user clears all filters on the graph view */
@@ -349,8 +291,6 @@ export interface TelemetryEvents extends WebviewShowAbortedEvents, WebviewShownE
 	'startReview/title/action': StartReviewTitleActionEvent;
 	/** Sent when the user chooses to manage integrations */
 	'startReview/action': StartReviewActionEvent;
-	/** Sent when the manual-vs-agent flow resolves (manual, cancel, or a specific agent) */
-	'startReview/agent/resolved': StartReviewAgentResolvedEvent;
 
 	/** Sent when the user opens Start Work; use `instance` to correlate a StartWork "session" */
 	'startWork/open': StartWorkEventDataBase;
@@ -368,8 +308,6 @@ export interface TelemetryEvents extends WebviewShowAbortedEvents, WebviewShownE
 	'startWork/title/action': StartWorkTitleActionEvent;
 	/** Sent when the user chooses to manage integrations */
 	'startWork/action': StartWorkActionEvent;
-	/** Sent when the manual-vs-agent flow resolves (manual, cancel, or a specific agent) */
-	'startWork/agent/resolved': StartWorkAgentResolvedEvent;
 
 	/** Sent when the user opens Start Work; use `instance` to correlate an Associate Issue with Branch "session" */
 	'associateIssueWithBranch/open': StartWorkEventDataBase;
@@ -426,28 +364,6 @@ interface AccountValidationFailedEvent {
 	statusCode: number | undefined;
 }
 
-interface AgentProviderEvent {
-	'agent.provider': string;
-}
-
-interface AgentPermissionResolvedEvent {
-	'agent.provider': string;
-	'permission.tool': string;
-	'permission.decision': string;
-}
-
-interface AgentSyncDiscrepancyEvent {
-	'agent.provider': string;
-	/** Sessions the poll reported alive that the live IPC path had not tracked. */
-	'sync.discovered': number;
-	/** Tracked sessions the poll no longer reports alive (teardown the live path missed). */
-	'sync.missing': number;
-	/** Total alive sessions reported by the poll. */
-	'sync.polled': number;
-	/** Total sessions tracked (from the live path) before the poll reconciled. */
-	'sync.tracked': number;
-}
-
 interface ActivateEvent extends ConfigEventData {
 	'activation.elapsed': number;
 	'activation.mode': string | undefined;
@@ -456,138 +372,6 @@ interface ActivateEvent extends ConfigEventData {
 interface ExtensionChunkLoadFailedEvent {
 	'error.code': string | undefined;
 	'error.message': string;
-}
-
-interface AIEventDataBase {
-	id: string | undefined;
-
-	'model.id': string;
-	'model.provider.name': string;
-
-	'usage.promptTokens'?: number;
-	'usage.completionTokens'?: number;
-	'usage.totalTokens'?: number;
-	'usage.limits.used'?: number;
-	'usage.limits.limit'?: number;
-	'usage.limits.resetsOn'?: string;
-}
-
-interface AIEventDataSendBase extends AIEventDataBase {
-	correlationId?: string;
-
-	'retry.count': number;
-	duration?: number;
-	'input.length'?: number;
-	'output.length'?: number;
-
-	'config.largePromptThreshold'?: number;
-	'config.usedCustomInstructions'?: boolean;
-
-	'diff.files.count'?: number;
-	'diff.hunks.count'?: number;
-	'diff.lines.count'?: number;
-	'diff.hash'?: string;
-
-	'customInstructions.used'?: boolean;
-	'customInstructions.length'?: number;
-	'customInstructions.setting.used'?: boolean;
-	'customInstructions.setting.length'?: number;
-	'customInstructions.commitMessage.setting.used'?: boolean;
-	'customInstructions.commitMessage.setting.length'?: number;
-
-	'warning.exceededLargePromptThreshold'?: boolean;
-	'warning.promptTruncated'?: boolean;
-
-	failed?: boolean;
-	'failed.reason'?: 'user-declined' | 'user-cancelled' | 'error';
-	'failed.cancelled.reason'?: 'large-prompt';
-	'failed.error'?: string;
-	'failed.error.detail'?: string;
-}
-
-interface AIExplainEvent extends AIEventDataSendBase {
-	type: 'change';
-	changeType:
-		| 'wip'
-		| 'stash'
-		| 'commit'
-		| 'branch'
-		| 'compare'
-		| `draft-${'patch' | 'stash' | 'suggested_pr_change'}`;
-}
-
-interface AIReviewEvent extends AIEventDataSendBase {
-	type: 'review';
-	reviewType: 'commit' | 'wip' | 'compare';
-	reviewMode: 'single-pass' | 'two-pass';
-}
-
-export interface AIGenerateChangelogEventData extends AIEventDataSendBase {
-	type: 'changelog';
-}
-
-export interface AIGenerateCommitMessageEventData extends AIEventDataSendBase {
-	type: 'commitMessage';
-}
-
-export interface AIGenerateCreatePullRequestEventData extends AIEventDataSendBase {
-	type: 'createPullRequest';
-}
-
-export interface AIGenerateCreateDraftEventData extends AIEventDataSendBase {
-	type: 'draftMessage';
-	draftType: 'patch' | 'stash' | 'suggested_pr_change';
-}
-
-export interface AIGenerateCommitsEventData extends AIEventDataSendBase {
-	type: 'commits';
-}
-
-export interface AIGenerateResolveConflictsEventData extends AIEventDataSendBase {
-	type: 'resolveConflicts';
-}
-
-export interface AIGenerateSearchQueryEventData extends AIEventDataSendBase {
-	type: 'searchQuery';
-}
-
-export interface AIGenerateStashMessageEventData extends AIEventDataSendBase {
-	type: 'stashMessage';
-}
-
-type AIGenerateEvent =
-	| AIGenerateChangelogEventData
-	| AIGenerateCommitMessageEventData
-	| AIGenerateCreateDraftEventData
-	| AIGenerateCreatePullRequestEventData
-	| AIGenerateCommitsEventData
-	| AIGenerateResolveConflictsEventData
-	| AIGenerateSearchQueryEventData
-	| AIGenerateStashMessageEventData;
-
-export type AISwitchModelEvent = { failed: true };
-
-export type AIFeedbackUnhelpfulReasons =
-	| 'suggestionInaccurate'
-	| 'notRelevant'
-	| 'missedImportantContext'
-	| 'unclearOrPoorlyFormatted'
-	| 'genericOrRepetitive'
-	| 'other';
-
-export interface AIFeedbackEvent extends AIEventDataBase {
-	/** The AI feature that feedback was submitted for */
-	type: AIActionType;
-	feature: string;
-	sentiment: 'helpful' | 'unhelpful';
-	/** Unhelpful reasons selected (if any) - comma-separated list of AIFeedbackUnhelpfulReasons values */
-	'unhelpful.reasons'?: string;
-	/** Custom feedback provided (if any) */
-	'unhelpful.custom'?: string;
-}
-
-interface AICreditsNotificationEvent {
-	'organization.role': OrganizationRole | undefined;
 }
 
 export interface CLIInstallStartedEvent {
@@ -829,16 +613,6 @@ interface GraphScopeChangedEvent extends GraphContextEventData {
 	/** Whether the scope's merge-target tip SHA is known at scope time (proxy for "merge-target resolved") */
 	'scope.hasMergeTarget': boolean;
 }
-
-type GraphColumnEventData = {
-	[K in `column.${string}.${keyof GraphColumnConfig}`]?: K extends `column.${string}.${infer P}`
-		? P extends keyof GraphColumnConfig
-			? GraphColumnConfig[P]
-			: never
-		: never;
-};
-
-interface GraphColumnsChangedEvent extends GraphColumnEventData, GraphContextEventData {}
 
 interface GraphFiltersChangedEvent extends GraphContextEventData {
 	key: string;
@@ -1202,8 +976,6 @@ interface RepositoryVisibilityEvent extends Partial<RepositoryEventData> {
 interface StartReviewEventDataBase {
 	/** @order 1 */
 	instance: number;
-	/** Route requested by the caller for the manual-vs-agent flow; `undefined` when the caller didn't opt in. */
-	'context.showOpenInAgent'?: AgentRoute;
 }
 
 interface StartReviewEventData extends StartReviewEventDataBase {
@@ -1230,13 +1002,9 @@ type StartReviewActionEvent = StartReviewConnectedEventData & {
 	action: 'manage' | 'connect';
 };
 
-type StartReviewAgentResolvedEvent = StartReviewConnectedEventData & AgentResolvedEventData;
-
 interface StartWorkEventDataBase {
 	/** @order 1 */
 	instance: number;
-	/** Route requested by the caller for the manual-vs-agent flow; `undefined` when the caller didn't opt in. */
-	'context.showOpenInAgent'?: AgentRoute;
 }
 
 interface StartWorkEventData extends StartWorkEventDataBase {
@@ -1262,18 +1030,6 @@ type StartWorkTitleActionEvent = StartWorkConnectedEventData & {
 type StartWorkActionEvent = StartWorkConnectedEventData & {
 	action: 'manage' | 'connect';
 };
-
-type StartWorkAgentResolvedEvent = StartWorkConnectedEventData & AgentResolvedEventData;
-
-type AgentResolvedEventData =
-	| {
-			'agent.resolution': 'manual' | 'cancel';
-	  }
-	| {
-			'agent.resolution': 'agent';
-			'agent.id': string;
-			'agent.kind': AgentDescriptor['kind'];
-	  };
 
 interface UsageTrackEvent {
 	'usage.key': TrackedUsageKeys;
@@ -1331,9 +1087,6 @@ export type WebviewTelemetryEvents = {
 export type Sources =
 	| 'account'
 	| 'ai'
-	| 'ai:markdown-preview'
-	| 'ai:markdown-editor'
-	| 'ai:picker'
 	| 'associateIssueWithBranch'
 	| 'commandPalette'
 	| 'deeplink'
@@ -1382,23 +1135,7 @@ export type TrackedUsage = {
 /**
  * Actions that happen without a command
  */
-export type TrackedGlActions =
-	| 'gitlens.ai.generateCommits'
-	| 'gitlens.ai.openInAgent'
-	| 'gitlens.ai.openInAgent.dispatchFailed'
-	| 'gitlens.ai.openInAgent.useDefaultsFallback'
-	| 'gitlens.ai.review.copied'
-	| 'gitlens.ai.review.sentToChat'
-	| 'gitlens.graph.details.compareMode'
-	| 'gitlens.graph.details.composeMode'
-	| 'gitlens.graph.details.resolveMode'
-	| 'gitlens.graph.details.reviewMode'
-	| 'gitlens.graph.details.wipShown'
-	| 'gitlens.graph.overview.shown'
-	| 'gitlens.graph.scope.changed'
-	| 'gitlens.graph.walkthrough.started'
-	| 'gitlens.mcp.ipcRequest'
-	| 'gitlens.mcp.bundledMcpDefinitionProvided';
+export type TrackedGlActions = 'gitlens.mcp.ipcRequest' | 'gitlens.mcp.bundledMcpDefinitionProvided';
 
 export type TrackedUsageFeatures =
 	| `${WebviewPanelTypes}Webview`
