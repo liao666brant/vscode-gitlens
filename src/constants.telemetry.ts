@@ -2,7 +2,6 @@ import type {
 	AgentDescriptor,
 	AgentRoute,
 	AIActionType,
-	AIProviders,
 	GraphColumnConfig,
 	OrganizationRole,
 } from './community/stubs/pro.js';
@@ -463,7 +462,6 @@ interface AIEventDataBase {
 	id: string | undefined;
 
 	'model.id': string;
-	'model.provider.id': AIProviders;
 	'model.provider.name': string;
 
 	'usage.promptTokens'?: number;
@@ -567,9 +565,7 @@ type AIGenerateEvent =
 	| AIGenerateSearchQueryEventData
 	| AIGenerateStashMessageEventData;
 
-export type AISwitchModelEvent =
-	| { 'model.id': string; 'model.provider.id': AIProviders; 'model.provider.name': string }
-	| { failed: true };
+export type AISwitchModelEvent = { failed: true };
 
 export type AIFeedbackUnhelpfulReasons =
 	| 'suggestionInaccurate'

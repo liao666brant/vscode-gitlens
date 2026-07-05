@@ -6,11 +6,7 @@ import type { IpcMessage } from '../../ipc/models/ipc.js';
 import type { UpdateConfigurationParams } from '../../protocol.js';
 import { DidChangeConfigurationNotification, UpdateConfigurationCommand } from '../../protocol.js';
 import type { State } from '../../settings/protocol.js';
-import {
-	DidChangeAccountNotification,
-	DidOpenAnchorNotification,
-	GenerateConfigurationPreviewRequest,
-} from '../../settings/protocol.js';
+import { DidOpenAnchorNotification, GenerateConfigurationPreviewRequest } from '../../settings/protocol.js';
 import { App } from '../shared/appBase.js';
 import { formatDate, setDefaultDateLocales } from '../shared/date.js';
 import { DOM } from '../shared/dom.js';
@@ -149,12 +145,6 @@ export class SettingsApp extends App<State> {
 				this.setState(this.state);
 
 				this.updateState();
-				break;
-
-			case DidChangeAccountNotification.is(msg):
-				this.state.hasAccount = msg.params.hasAccount;
-				this.setState(this.state);
-				this.renderAutolinkIntegration();
 				break;
 
 			default:

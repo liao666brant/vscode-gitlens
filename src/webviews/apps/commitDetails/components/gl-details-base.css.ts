@@ -359,31 +359,6 @@ export const detailsBaseStyles = [
 			border-bottom-right-radius: 0;
 		}
 
-		/* AI content */
-		.ai-content {
-			font-size: var(--gl-font-base);
-			border: 0.1rem solid var(--vscode-input-border, transparent);
-			background: var(--vscode-input-background);
-			margin-top: 1rem;
-			padding: 0.5rem;
-			border-radius: 2px;
-		}
-		.ai-content.has-error {
-			border-left-color: var(--color-alert-errorBorder);
-			border-left-width: 0.3rem;
-			padding-left: 0.8rem;
-		}
-		.ai-content:empty {
-			display: none;
-		}
-		.ai-content__summary {
-			display: block;
-			margin: 0;
-			overflow-y: auto;
-			overflow-x: hidden;
-			max-height: 20rem;
-		}
-
 		/* Popover content */
 		.popover-content {
 			background-color: var(--color-background--level-15);

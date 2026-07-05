@@ -1,10 +1,8 @@
-import type { AIProviderAndModel, SupportedAIModels } from './community/stubs/pro.js';
 import type { DateTimeFormat } from '@gitlens/utils/date.js';
 import type { GroupableTreeViewTypes } from './constants.views.js';
 
 export interface Config {
 	readonly advanced: AdvancedConfig;
-	readonly ai: AIConfig;
 	readonly autolinks: AutolinkConfig[] | null;
 	readonly blame: BlameConfig;
 	readonly changes: ChangesConfig;
@@ -187,65 +185,6 @@ export interface AdvancedConfig {
 	readonly repositorySearchDepth: number | null;
 	readonly similarityThreshold: number | null;
 	readonly skipOnboarding: boolean;
-}
-
-interface AIConfig {
-	readonly enabled: boolean;
-	readonly openInAgent: 'ask' | 'manual' | 'agent';
-	readonly defaultAgent: string | null;
-	readonly exclude: {
-		/** Glob patterns for files to exclude from AI prompts (like files.exclude). May be undefined on extension upgrade due to VS Code bug. */
-		readonly files: Record<string, boolean> | undefined;
-	};
-	readonly azure: {
-		readonly url: string | null;
-	};
-	readonly explainChanges: {
-		readonly customInstructions: string;
-	};
-	readonly reviewChanges: {
-		readonly customInstructions: string;
-	};
-	readonly generateChangelog: {
-		readonly customInstructions: string;
-	};
-	readonly generatePullRequestMessage: {
-		readonly customInstructions: string;
-		readonly enabled: boolean;
-	};
-	readonly generateCommitMessage: {
-		readonly customInstructions: string;
-		readonly enabled: boolean;
-	};
-	readonly generateCommits: {
-		readonly customInstructions: string;
-	};
-	readonly generateStashMessage: {
-		readonly customInstructions: string;
-	};
-	readonly generateCreatePullRequest: {
-		readonly customInstructions: string;
-	};
-	readonly generateSearchQuery: {
-		readonly customInstructions: string;
-	};
-	readonly largePromptWarningThreshold: number;
-	readonly model: SupportedAIModels | null;
-	readonly modelOptions: {
-		readonly temperature: number;
-	};
-	readonly ollama: {
-		readonly url: string | null;
-	};
-	readonly openai: {
-		readonly url: string | null;
-	};
-	readonly openaicompatible: {
-		readonly url: string | null;
-	};
-	readonly vscode: {
-		readonly model: AIProviderAndModel | null;
-	};
 }
 
 export interface AutolinkConfig {

@@ -22,7 +22,7 @@ import { createActions } from './actions.js';
 import type { CommitDetailsActions, CommitDetailsResources, ResolvedServices } from './actions.js';
 import type { FileChangeListItemDetail } from './components/gl-details-base.js';
 import { setupSubscriptions } from './events.js';
-import type { CommitDetailsState, ExplainState } from './state.js';
+import type { CommitDetailsState } from './state.js';
 import { createCommitDetailsState } from './state.js';
 import '../shared/components/code-icon.js';
 import '../shared/components/gl-error-banner.js';
@@ -45,7 +45,7 @@ export const uncommittedSha = '0000000000000000000000000000000000000000';
  * - Instance-owned state created via createCommitDetailsState()
  * - HostContext for portable persistence and RPC endpoint creation
  * - RemoteSignalBridge for host-pushed signals (orgSettings, hasAccount)
- * - Resources for async data lifecycle (commit, wip, reachability, explain, generate)
+ * - Resources for async data lifecycle (commit, wip, reachability, generate)
  */
 @customElement('gl-commit-details-app')
 export class GlCommitDetailsApp extends SignalWatcherWebviewApp {
@@ -117,7 +117,6 @@ export class GlCommitDetailsApp extends SignalWatcherWebviewApp {
 		this._resources?.commit.dispose();
 		this._resources?.wip.dispose();
 		this._resources?.reachability.dispose();
-		this._resources?.explain.dispose();
 		this._resources = undefined;
 
 		// Disconnect remote signal bridges
@@ -151,7 +150,6 @@ export class GlCommitDetailsApp extends SignalWatcherWebviewApp {
 			commands,
 			config,
 			storage,
-			ai,
 			autolinks,
 			integrations,
 			files,
@@ -165,7 +163,6 @@ export class GlCommitDetailsApp extends SignalWatcherWebviewApp {
 			services.commands,
 			services.config,
 			services.storage,
-			services.ai,
 			services.autolinks,
 			services.integrations,
 			services.files,
@@ -175,7 +172,7 @@ export class GlCommitDetailsApp extends SignalWatcherWebviewApp {
 		]);
 
 		// orgSettings and hasAccount stay at their community-default bridge values
-		// ({ ai: false, drafts: false } / false) — no host subscription service in community build.
+		// ({ drafts: false } / false) — no host subscription service in community build.
 
 		// Create resources — fetchers read current state signals via closure
 		const resources: CommitDetailsResources = {
@@ -185,20 +182,6 @@ export class GlCommitDetailsApp extends SignalWatcherWebviewApp {
 				const commit = s.currentCommit.get();
 				if (commit == null) return undefined;
 				return repository.getCommitReachability(commit.repoPath, commit.sha, _signal);
-			}),
-			explain: createResource<ExplainState | undefined, [string | undefined]>(async (signal, prompt) => {
-				const commit = s.currentCommit.get();
-				if (commit == null) return undefined;
-
-				try {
-					const result = await inspect.explainCommit(commit.repoPath, commit.sha, prompt, signal);
-					if (result.error) {
-						return { error: { message: result.error.message ?? 'Error retrieving content' } };
-					}
-					return { result: result.result };
-				} catch (_ex) {
-					return { error: { message: 'Error retrieving content' } };
-				}
 			}),
 		};
 		this._resources = resources;
@@ -211,7 +194,6 @@ export class GlCommitDetailsApp extends SignalWatcherWebviewApp {
 			commands: commands,
 			config: config,
 			storage: storage,
-			ai: ai,
 			autolinks: autolinks,
 			integrations: integrations,
 			files: files,
@@ -508,7 +490,6 @@ export class GlCommitDetailsApp extends SignalWatcherWebviewApp {
 		const wip = s.wipState.get();
 		const prefs = s.preferences.get();
 		const org = s.orgSettings.get();
-		const explain = resources?.explain.value.get();
 		const reach = resources?.reachability.value.get();
 		const reachStatus = resources?.reachability.status.get() ?? 'idle';
 		const reachState = mapReachabilityStatus(reachStatus);
@@ -545,18 +526,14 @@ export class GlCommitDetailsApp extends SignalWatcherWebviewApp {
 								.hasAccount=${s.hasAccount.get()}
 								.hasIntegrationsConnected=${s.capabilities.hasIntegrationsConnected}
 								.hasRemotes=${s.hasRemotes.get()}
-								.explain=${explain}
 								.searchContext=${searchCtx}
 								.reachability=${reach}
 								.reachabilityState=${reachState}
 								.branchName=${commit?.stashOnRef}
-								.aiEnabled=${org?.ai !== false}
 								@toggle-mode=${(e: CustomEvent<{ mode: 'review' | 'compose' | 'compare' }>) =>
 									actions?.openCommitInGraphMode(e.detail.mode, commit)}
 								@gl-stash-apply=${(e: CustomEvent<StashApplyCommandArgs>) =>
 									actions?.executeCommand('gitlens.stashesApply', e.detail)}
-								@explain-commit=${(e: CustomEvent<{ prompt?: string }>) =>
-									void actions?.explainCommit(e.detail?.prompt)}
 								@load-reachability=${() => void actions?.loadReachability()}
 								@refresh-reachability=${() => actions?.refreshReachability()}
 								@open-on-remote=${(e: CustomEvent<{ sha: string }>) =>

@@ -35,7 +35,7 @@ import { createSharedServices, proxyServices } from '../rpc/services/common.js';
 import type { WebviewHost, WebviewProvider, WebviewShowingArgs } from '../webviewProvider.js';
 import type { WebviewShowOptions } from '../webviewsController.js';
 import { isSerializedState } from '../webviewsController.js';
-import type { CommitDetailsServices, CommitSelectionEvent, ExplainResult } from './commitDetailsService.js';
+import type { CommitDetailsServices, CommitSelectionEvent } from './commitDetailsService.js';
 import type { ComparisonContext } from './commitDetailsWebview.utils.js';
 import {
 	getFileCommitFromContext,
@@ -459,9 +459,9 @@ export class CommitDetailsWebviewProvider implements WebviewProvider<State, Stat
 		}
 	}
 
-	/** Computes hasAccount fresh (no caching) */
+	/** Always false in the community build (no host account service). */
 	async getHasAccount(): Promise<boolean> {
-		return (await this.container.subscription.getSubscription())?.account != null;
+		return Promise.resolve(false);
 	}
 
 	private onCommitSelected(e: CommitSelectedEvent) {
@@ -533,16 +533,6 @@ export class CommitDetailsWebviewProvider implements WebviewProvider<State, Stat
 				passive: true, // Line tracker selections are passive
 			});
 		}
-	}
-
-	private onExplainRequest(
-		_repoPath: string,
-		_sha: string,
-		_prompt?: string,
-		signal?: AbortSignal,
-	): Promise<ExplainResult> {
-		signal?.throwIfAborted();
-		return Promise.resolve({ error: { message: 'AI explain is not available in this build.' } });
 	}
 
 	private _wipConflictMarkerCache = new Map<string, { mtime: number; count: number }>();
@@ -969,11 +959,6 @@ export class CommitDetailsWebviewProvider implements WebviewProvider<State, Stat
 				openAutolinkSettings: async () => {
 					await executeCommand('gitlens.showSettingsPage!autolinks');
 				},
-
-				// ── AI Operations ──
-
-				explainCommit: (repoPath: string, sha: string, prompt?: string, signal?: AbortSignal) =>
-					this.onExplainRequest(repoPath, sha, prompt, signal),
 			},
 		} satisfies CommitDetailsServices);
 	}

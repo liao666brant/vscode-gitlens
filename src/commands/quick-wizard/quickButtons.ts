@@ -132,12 +132,6 @@ export const FetchQuickInputButton: QuickInputButton = {
 	location: getQuickInputButtonLocation(QuickInputButtonLocation.Inline),
 };
 
-export const GenerateStashMessageQuickInputButton: QuickInputButton = {
-	iconPath: new ThemeIcon('sparkle'),
-	tooltip: '生成存储消息',
-	location: getQuickInputButtonLocation(QuickInputButtonLocation.Input),
-};
-
 export const LoadMoreQuickInputButton: QuickInputButton = {
 	iconPath: new ThemeIcon('refresh'),
 	tooltip: '加载更多',

@@ -9,8 +9,6 @@ import { configuration } from '../system/-webview/configuration.js';
 import { GlCommandBase } from './commandBase.js';
 
 const resetTypes = [
-	'ai',
-	'ai:confirmations',
 	'avatars',
 	'integrations',
 	'onboarding',
@@ -32,16 +30,6 @@ export class ResetCommand extends GlCommandBase {
 		type ResetQuickPickItem = QuickPickItemOfT<ResetType>;
 
 		const items: ResetQuickPickItem[] = [
-			{
-				label: 'AI 密钥...',
-				detail: '清除本地存储的 AI 密钥',
-				item: 'ai',
-			},
-			{
-				label: 'AI 确认项...',
-				detail: '清除已接受的 AI 确认项',
-				item: 'ai:confirmations',
-			},
 			{
 				label: '头像缓存...',
 				detail: '清除已存储的头像缓存',
@@ -119,14 +107,6 @@ export class ResetCommand extends GlCommandBase {
 				confirmationMessage = '您确定要重置全部数据吗？';
 				confirm.title = '重置全部';
 				break;
-			case 'ai':
-				confirmationMessage = '您确定要重置所有已存储的 AI 密钥吗？';
-				confirm.title = '重置 AI 密钥';
-				break;
-			case 'ai:confirmations':
-				confirmationMessage = '您确定要重置所有 AI 确认项吗？';
-				confirm.title = '重置 AI 确认项';
-				break;
 			case 'avatars':
 				confirmationMessage = '您确定要重置头像缓存吗？';
 				confirm.title = '重置头像缓存';
@@ -190,14 +170,6 @@ export class ResetCommand extends GlCommandBase {
 				}
 
 				await this.container.storage.reset();
-				break;
-
-			case 'ai':
-				await this.container.ai.reset(true);
-				break;
-
-			case 'ai:confirmations':
-				this.container.ai.resetConfirmations();
 				break;
 
 			case 'avatars':

@@ -41,11 +41,6 @@ export interface DidOpenAnchorParams {
 }
 export const DidOpenAnchorNotification = new IpcNotification<DidOpenAnchorParams>(scope, 'didOpenAnchor');
 
-export interface DidChangeAccountParams {
-	hasAccount: boolean;
-}
-export const DidChangeAccountNotification = new IpcNotification<DidChangeAccountParams>(scope, 'didChangeAccount');
-
 export interface DidChangeIssueIntegrationConnectedParams {
 	integrationId: IssuesCloudHostIntegrationId;
 	connected: boolean;

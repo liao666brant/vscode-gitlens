@@ -1,6 +1,4 @@
 import type {
-	AIProviderAndModel,
-	AIProviders,
 	GraphDisplayMode,
 	GraphSidebarPanel,
 	GraphTreemapMode,
@@ -19,11 +17,7 @@ import type { OnboardingStorage } from './onboarding/models/onboarding.js';
 import type { DeepLinkServiceState } from './uris/deepLinks/deepLink.js';
 import type { OverviewRecentThreshold } from './webviews/shared/overviewBranches.js';
 
-export type SecretKeys =
-	| IntegrationAuthenticationKeys
-	| `gitlens.${AIProviders}.key`
-	| `gitlens.plus.auth:${Environment}`
-	| 'deepLinks:pending';
+export type SecretKeys = IntegrationAuthenticationKeys | `gitlens.plus.auth:${Environment}` | 'deepLinks:pending';
 
 export type IntegrationAuthenticationKeys =
 	| `gitlens.integration.auth:${IntegrationIds}|${string}`
@@ -35,10 +29,6 @@ export const enum SyncedStorageKeys {
 }
 
 export type DeprecatedGlobalStorage = {
-	/** @deprecated */
-	'confirm:ai:generateRebase': boolean;
-	/** @deprecated use `confirm:ai:tos` */
-	'confirm:sendToOpenAI': boolean;
 	/** @deprecated */
 	pendingWelcomeOnFocus: boolean;
 	/** @deprecated */
@@ -61,17 +51,10 @@ export type DeprecatedGlobalStorage = {
 } & {
 	/** @deprecated */
 	[key in `disallow:connection:${string}`]: any;
-} & {
-	/** @deprecated use `confirm:ai:tos` */
-	[key in `confirm:ai:tos:${AIProviders}`]: boolean;
 };
 
 interface GlobalStorageCore {
 	avatars: [string, StoredAvatar][];
-	'ai:scope:compose:model': AIProviderAndModel;
-	'ai:scope:review:model': AIProviderAndModel;
-	'confirm:ai:generateCommits': boolean;
-	'confirm:ai:tos': boolean;
 	repoVisibility: [string, StoredRepoVisibilityInfo][];
 	pendingWhatsNewOnFocus: boolean;
 	'synced:version': string;
@@ -133,21 +116,15 @@ export interface StoredConfiguredIntegrationDescriptor {
 }
 
 export type DeprecatedWorkspaceStorage = {
-	/** @deprecated use `confirm:ai:tos` */
-	'confirm:sendToOpenAI': boolean;
 	/** @deprecated */
 	'graph:banners:dismissed': Record<string, boolean>;
 	/** @deprecated */
 	'views:searchAndCompare:keepResults': boolean;
-} & {
-	/** @deprecated use `confirm:ai:tos` */
-	[key in `confirm:ai:tos:${AIProviders}`]: boolean;
 };
 
 interface WorkspaceStorageCore {
 	assumeRepositoriesOnStartup?: boolean;
 	'branch:comparisons': StoredBranchComparisons;
-	'confirm:ai:tos': boolean;
 	'gitComandPalette:usage': StoredRecentUsage;
 	gitPath: string;
 	'graph:columns': Record<string, StoredGraphColumn>;

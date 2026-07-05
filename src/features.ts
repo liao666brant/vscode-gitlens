@@ -34,24 +34,7 @@ export type RepoFeatureAccess =
 
 export type PlusFeatures = ProFeatures | AdvancedFeatures;
 
-export type ProFeatures =
-	| 'timeline'
-	| 'worktrees'
-	| 'graph'
-	| 'startReview'
-	| 'startWork'
-	| 'associateIssueWithBranch'
-	| ProAIFeatures;
-export type ProAIFeatures =
-	| 'explain-changes'
-	| 'review-changes'
-	| 'generate-stashMessage'
-	| 'generate-changelog'
-	| 'generate-create-pullRequest'
-	| 'generate-commits'
-	| 'generate-commitMessage'
-	| 'conflict-resolution'
-	| 'generate-searchQuery';
+export type ProFeatures = 'timeline' | 'worktrees' | 'graph' | 'startReview' | 'startWork' | 'associateIssueWithBranch';
 
 export type AdvancedFeatures = never;
 
@@ -64,14 +47,6 @@ export function isProFeatureOnAllRepos(feature: PlusFeatures): feature is ProFea
 		case 'startReview':
 		case 'startWork':
 		case 'associateIssueWithBranch':
-		case 'explain-changes':
-		case 'review-changes':
-		case 'generate-stashMessage':
-		case 'generate-changelog':
-		case 'generate-create-pullRequest':
-		case 'generate-commits':
-		case 'generate-commitMessage':
-		case 'generate-searchQuery':
 			return true;
 		default:
 			return false;

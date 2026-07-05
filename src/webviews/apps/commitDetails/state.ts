@@ -10,7 +10,7 @@
  * 2. Ephemeral UI — navigationStack, inReview, draftState
  * 3. Domain Data — currentCommit, wipState, preferences, enrichment signals
  * 4. Remote Bridges — orgSettings, hasAccount (connected to host signals post-RPC)
- * 5. Resource-owned (NOT in state) — loading, reachability, explain
+ * 5. Resource-owned (NOT in state) — loading, reachability
  * 6. Derived — computed from above (canNavigateBack, wipStatus, etc.)
  *
  * Signals removed from state (now resource-owned in commitDetails.ts):
@@ -18,7 +18,6 @@
  * - loadingWip → wipResource.loading
  * - reachabilityState → reachabilityResource.status
  * - reachability → reachabilityResource.value
- * - explainState → explainResource.value
  */
 import { computed } from '@lit-labs/signals';
 import { signalObject } from 'signal-utils/object';
@@ -38,16 +37,6 @@ import type { NavigationState } from '../shared/controllers/navigationStack.js';
 import type { HostStorage } from '../shared/host/storage.js';
 import { createRemoteSignalBridge } from '../shared/state/remoteSignal.js';
 import { createStateGroup } from '../shared/state/signals.js';
-
-// ============================================================
-// Explain/Generate State (for AI features)
-// ============================================================
-
-export interface ExplainState {
-	cancelled?: boolean;
-	error?: { message: string };
-	result?: { summary: string; body: string };
-}
 
 /**
  * Creates a new Commit Details state instance with all signals initialized to defaults.
@@ -90,7 +79,7 @@ export function createCommitDetailsState(storage?: HostStorage) {
 	const preferences = signal<Preferences | undefined>(undefined);
 
 	/** Organization settings — connected to remote signal once RPC connects. Single `.get()`. */
-	const orgSettings = createRemoteSignalBridge({ ai: false, drafts: false });
+	const orgSettings = createRemoteSignalBridge({ drafts: false });
 
 	/** Whether the user has a WeGit account — connected to remote signal once RPC connects. Single `.get()`. */
 	const hasAccount = createRemoteSignalBridge(false);

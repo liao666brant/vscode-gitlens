@@ -1,18 +1,11 @@
 import type { Uri } from 'vscode';
 import { AuthenticationError } from '@gitlens/git/errors.js';
 import type { RequiredSubscriptionPlanIds, Subscription } from './community/stubs/pro.js';
-import { isSubscriptionPaidPlan } from './community/stubs/pro.js';
 
 export type { AuthTokenInfo } from '@gitlens/git/errors.js';
 export { AuthenticationError, AuthenticationErrorReason } from '@gitlens/git/errors.js';
 export { RequestClientError, RequestNotFoundError, RequestRateLimitError } from '@gitlens/git/errors.js';
-export {
-	AIError,
-	AIErrorReason,
-	AINoRequestDataError,
-	AuthenticationRequiredError,
-	classifyNetworkError,
-} from './community/stubs/pro.js';
+export { AuthenticationRequiredError } from './community/stubs/pro.js';
 
 export class AccessDeniedError extends Error {
 	public readonly subscription: Subscription;
@@ -22,7 +15,7 @@ export class AccessDeniedError extends Error {
 		let message;
 		if (subscription.account?.verified === false) {
 			message = '需要验证邮箱';
-		} else if (required != null && isSubscriptionPaidPlan(required)) {
+		} else if (required != null) {
 			message = '此功能在当前社区构建中不可用';
 		} else {
 			message = '需要订阅计划';

@@ -9,7 +9,6 @@ import type {
 } from './constants.views.js';
 import type { GraphWalkthroughContextKeys, WalkthroughContextKeys } from './constants.walkthroughs.js';
 import type { Features } from './features.js';
-import type { OrgAIProviders } from './community/stubs/pro.js';
 
 interface CompareSelectedInfo {
 	label: string;
@@ -30,9 +29,6 @@ export type ContextKeys = {
 	'gitlens:enabled': boolean;
 	'gitlens:gk:cli:installed': boolean;
 	'gitlens:gk:hasOrganizations': boolean;
-	'gitlens:gk:organization:ai:enabled': boolean;
-	'gitlens:gk:organization:ai:enforceProviders': boolean;
-	'gitlens:gk:organization:ai:providers': OrgAIProviders;
 	'gitlens:gk:organization:drafts:byob': boolean;
 	'gitlens:gk:organization:drafts:enabled': boolean;
 	'gitlens:hasVirtualFolders': boolean;

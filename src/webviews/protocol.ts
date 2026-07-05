@@ -3,7 +3,6 @@ import type { Config } from '../config.js';
 import type { GlCommands } from '../constants.commands.js';
 import type { Source, WebviewTelemetryEvents } from '../constants.telemetry.js';
 import type { WebviewIds } from '../constants.views.js';
-import type { Promo, PromoLocation, PromoPlans } from '../community/stubs/pro.js';
 import type { ConfigPath, ConfigPathValue, Path, PathValue } from '../system/-webview/configuration.js';
 import { IpcCommand, IpcNotification, IpcRequest } from './ipc/models/ipc.js';
 
@@ -33,18 +32,6 @@ export interface ExecuteCommandParams {
 	args?: unknown[];
 }
 export const ExecuteCommand = new IpcCommand<ExecuteCommandParams>('core', 'command/execute');
-
-export interface ApplicablePromoRequestParams {
-	plan?: PromoPlans;
-	location?: PromoLocation;
-}
-export interface ApplicablePromoResponse {
-	promo: Promo | undefined;
-}
-export const ApplicablePromoRequest = new IpcRequest<ApplicablePromoRequestParams, ApplicablePromoResponse>(
-	'core',
-	'promos/applicable',
-);
 
 export interface UpdateConfigurationParams {
 	changes: {

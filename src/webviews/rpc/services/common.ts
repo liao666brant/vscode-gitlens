@@ -10,7 +10,6 @@
 import { proxy } from '@eamodio/supertalk';
 import type { Container } from '../../../container.js';
 import type { EventVisibilityBuffer, SubscriptionTracker } from '../eventVisibilityBuffer.js';
-import { AIService } from './ai.js';
 import { AutolinksService } from './autolinks.js';
 import { BranchesService } from './branches.js';
 import { CommandsService } from './commands.js';
@@ -44,7 +43,6 @@ export interface SharedWebviewServices {
 	readonly storage: StorageService;
 	readonly integrations: IntegrationsService;
 	readonly onboarding: OnboardingRpcService;
-	readonly ai: AIService;
 	readonly autolinks: AutolinksService;
 	readonly branches: BranchesService;
 	readonly commands: CommandsService;
@@ -84,7 +82,6 @@ export function createSharedServices(
 		storage: new StorageService(container),
 		integrations: new IntegrationsService(container, buffer, tracker),
 		onboarding: new OnboardingRpcService(container, buffer, tracker),
-		ai: new AIService(),
 		autolinks: new AutolinksService(container),
 		branches: new BranchesService(container),
 		commands: new CommandsService(container, host),

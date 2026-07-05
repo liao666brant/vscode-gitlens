@@ -393,8 +393,6 @@ export class SearchGitCommand extends QuickCommand<State> {
 			);
 		}
 
-		const aiAllowed = this.container.ai.enabled && this.container.ai.allowed;
-
 		const matchCaseButton = createMatchCaseToggle(state.matchCase);
 		const matchAllButton = createMatchAllToggle(state.matchAll);
 		const matchRegexButton = createMatchRegexToggle(state.matchRegex);
@@ -402,10 +400,7 @@ export class SearchGitCommand extends QuickCommand<State> {
 
 		const step = createPickStep<(typeof items)[number]>({
 			title: appendReposToTitle(context.title, state, context),
-			placeholder:
-				aiAllowed && state.naturalLanguage
-					? '例如：“显示我上个月的提交”'
-					: '例如：“更新依赖” author:liao666brant',
+			placeholder: '例如：“更新依赖” author:liao666brant',
 			ignoreFocusOut: true,
 			matchOnDescription: true,
 			matchOnDetail: true,
@@ -510,23 +505,7 @@ export class SearchGitCommand extends QuickCommand<State> {
 						picked: true,
 					};
 
-					if (aiAllowed) {
-						const naturalLanguageItem: QuickPickItemOfT<Items> = {
-							label: '使用自然语言搜索',
-							description: quickpick.value,
-							iconPath: new ThemeIcon('sparkle'),
-							alwaysShow: true,
-							item: { type: 'search', useNaturalLanguage: true },
-						};
-
-						if (state.naturalLanguage) {
-							newItems.splice(0, 0, naturalLanguageItem, searchItem);
-						} else {
-							newItems.splice(0, 0, searchItem, naturalLanguageItem);
-						}
-					} else {
-						newItems.splice(0, 0, searchItem);
-					}
+					newItems.splice(0, 0, searchItem);
 
 					quickpick.items = newItems;
 					quickpick.activeItems = [quickpick.items[0]];

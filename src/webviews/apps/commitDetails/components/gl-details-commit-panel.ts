@@ -44,16 +44,10 @@ import '../../shared/components/panes/pane-group.js';
 import '../../shared/components/rich/issue-pull-request.js';
 import '../../shared/components/split-panel/split-panel.js';
 import '../../shared/components/progress.js';
-import '../../shared/components/ai-input.js';
 import '../../shared/components/details-header/gl-details-header.js';
 import '../../shared/components/nav-buttons.js';
 
 type State = IpcSerialized<_State>;
-interface ExplainState {
-	cancelled?: boolean;
-	error?: { message: string };
-	result?: { summary: string; body: string };
-}
 
 @customElement('gl-details-commit-panel')
 export class GlDetailsCommitPanel extends GlDetailsBase {
@@ -79,12 +73,6 @@ export class GlDetailsCommitPanel extends GlDetailsBase {
 		return this.commit?.stashNumber != null;
 	}
 
-	@state()
-	explainBusy = false;
-
-	@property({ type: Object })
-	explain?: ExplainState;
-
 	@property({ type: Object })
 	reachability?: GitCommitReachability;
 
@@ -102,10 +90,6 @@ export class GlDetailsCommitPanel extends GlDetailsBase {
 
 	@property({ type: String, attribute: 'branch-name' })
 	branchName?: string;
-
-	// Sub-panel mode support (review/compose body swap)
-	@property({ type: Boolean })
-	aiEnabled = false;
 
 	/** Host advertises that it supports compare mode (graph orchestrator does, standalone doesn't). */
 	@property({ type: Boolean, attribute: 'compare-enabled' })
@@ -223,12 +207,7 @@ export class GlDetailsCommitPanel extends GlDetailsBase {
 	}
 
 	override updated(changedProperties: Map<string, any>): void {
-		if (changedProperties.has('explain')) {
-			this.explainBusy = false;
-			this.renderRoot.querySelector('[data-region="commit-explanation"]')?.scrollIntoView();
-		}
 		if (changedProperties.has('commit')) {
-			this.explainBusy = false;
 			this._reachabilityExpanded = false;
 			this.renderRoot.querySelector('[data-region="message"]')?.scrollTo?.(0, 0);
 		}
@@ -290,7 +269,7 @@ export class GlDetailsCommitPanel extends GlDetailsBase {
 								<div slot="start" class="msg-slot">${this.renderEmbeddedMessage()}</div>
 								<div slot="divider" class="split__handle"></div>
 								<div slot="end" class="bottom-section">
-									${this.renderEmbeddedAutolinks()} ${this.renderEmbeddedExplainInput()}
+									${this.renderEmbeddedAutolinks()}
 									<div class="files">
 										<webview-pane-group flexible>
 											${this.renderChangedFiles(fileMode, renderOpts)}
@@ -411,9 +390,8 @@ export class GlDetailsCommitPanel extends GlDetailsBase {
 	}
 
 	private computeCommitModes(): ('review' | 'compose')[] {
-		if (!this.aiEnabled) return [];
-		// Working changes support both Compose and Review; a real commit supports Review only.
-		return this.isUncommitted ? ['compose', 'review'] : ['review'];
+		// ponytail: AI review/compose removed; modes always empty in community build.
+		return [];
 	}
 
 	private renderEmbeddedMetadataBar() {
@@ -711,16 +689,6 @@ export class GlDetailsCommitPanel extends GlDetailsBase {
 
 	private renderEmbeddedAutolinks() {
 		return html`<div class="autolinks">${this.renderAutoLinksChips()}</div>`;
-	}
-
-	private renderEmbeddedExplainInput() {
-		if (this.orgSettings?.ai === false) return nothing;
-
-		return html`<gl-ai-input
-			multiline
-			.busy=${this.explainBusy}
-			@gl-explain=${this.onExplainChanges}
-		></gl-ai-input>`;
 	}
 
 	private onToggleReachability() {
@@ -1100,23 +1068,6 @@ export class GlDetailsCommitPanel extends GlDetailsBase {
 				</div>
 			</div>
 		</gl-popover>`;
-	}
-
-	private onExplainChanges(e: CustomEvent<{ prompt?: string }> | MouseEvent) {
-		if (this.explainBusy) {
-			e.preventDefault();
-			e.stopPropagation();
-			return;
-		}
-
-		e.stopPropagation();
-		this.explainBusy = true;
-
-		const prompt = e instanceof CustomEvent ? e.detail?.prompt : undefined;
-
-		this.dispatchEvent(
-			new CustomEvent('explain-commit', { detail: { prompt: prompt }, bubbles: true, composed: true }),
-		);
 	}
 
 	override getFileActions(file: File, _options?: Partial<TreeItemBase>): TreeItemAction[] {

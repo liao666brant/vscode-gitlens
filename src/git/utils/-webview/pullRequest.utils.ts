@@ -1,5 +1,4 @@
-import type { ProgressOptions } from 'vscode';
-import { ProgressLocation, Uri, window } from 'vscode';
+import { Uri, window } from 'vscode';
 import type { PullRequest, PullRequestComparisonRefs } from '@gitlens/git/models/pullRequest.js';
 import type { CreatePullRequestRemoteResource } from '@gitlens/git/models/remoteResource.js';
 import type { LeftRightCommitCountResult } from '@gitlens/git/providers/commits.js';
@@ -12,47 +11,18 @@ import { createRevisionRange } from '@gitlens/git/utils/revision.utils.js';
 import { Schemes } from '../../../constants.js';
 import type { Source } from '../../../constants.telemetry.js';
 import type { Container } from '../../../container.js';
-import { AuthenticationRequiredError } from '../../../errors.js';
 import type { GlRepository } from '../../models/repository.js';
 
-export async function describePullRequestWithAI(
-	container: Container,
-	repo: string | GlRepository,
-	{ base, head }: CreatePullRequestRemoteResource,
-	source: Source,
-	options?: { progress?: ProgressOptions },
+// ponytail: AI PR 描述生成在社区构建中已移除；社区构建不提供 AI 功能。
+// 保留函数签名以避免改动 remote.utils.ts 调用点，始终返回 undefined。
+export function describePullRequestWithAI(
+	_container: Container,
+	_repo: string | GlRepository,
+	_resource: CreatePullRequestRemoteResource,
+	_source: Source,
+	_options?: { progress?: unknown },
 ): Promise<{ title: string; description: string } | undefined> {
-	if (!base?.remote || !head?.remote || !base?.branch || !head?.branch) {
-		return undefined;
-	}
-
-	if (typeof repo === 'string') {
-		const r = container.git.getRepository(repo);
-		if (r == null) return undefined;
-
-		repo = r;
-	}
-
-	try {
-		const result = await container.ai.actions.generateCreatePullRequest(
-			repo,
-			`${base.remote.name}/${base.branch}`,
-			`${head.remote.name}/${head.branch}`,
-			source,
-			{
-				progress: { location: ProgressLocation.Notification },
-				...options,
-			},
-		);
-		if (result === 'cancelled') return undefined;
-
-		return result?.result ? { title: result.result.summary, description: result.result.body } : undefined;
-	} catch (ex) {
-		if (ex instanceof AuthenticationRequiredError) return undefined;
-
-		void window.showErrorMessage(ex.message);
-		return undefined;
-	}
+	return Promise.resolve(undefined);
 }
 
 export async function ensurePullRequestRefs(

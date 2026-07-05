@@ -3,7 +3,7 @@ import { InputBoxValidationSeverity, QuickInputButtons, window } from 'vscode';
 import { debug } from '@gitlens/utils/decorators/log.js';
 import { isPromise } from '@gitlens/utils/promise.js';
 import type { GlCommands } from '../../constants.commands.js';
-import { Container } from '../../container.js';
+import type { Container } from '../../container.js';
 import { Directive, isDirective, isDirectiveQuickPickItem } from '../../quickpicks/items/directive.js';
 import { configuration } from '../../system/-webview/configuration.js';
 import type { KeyMapping } from '../../system/-webview/keyboard.js';
@@ -725,26 +725,14 @@ export abstract class QuickWizardCommandBase extends GlCommandBase {
 										return;
 
 									case Directive.SignIn: {
-										const result = await Container.instance.subscription.loginOrSignUp(false, {
-											source: 'quick-wizard',
-											detail: {
-												action: rootStep.command?.key,
-												'step.title': step.title,
-											},
-										});
-										resolve(result ? await rootStep.command?.retry() : undefined);
+										// ponytail: community build has no sign-in flow — sign-in directive is a no-op
+										resolve(undefined);
 										return;
 									}
 
 									case Directive.RequiresVerification: {
-										const result = await Container.instance.subscription.resendVerification({
-											source: 'quick-wizard',
-											detail: {
-												action: rootStep.command?.key,
-												'step.title': step.title,
-											},
-										});
-										resolve(result ? await rootStep.command?.retry() : undefined);
+										// ponytail: community build has no verification flow — directive is a no-op
+										resolve(undefined);
 										return;
 									}
 								}

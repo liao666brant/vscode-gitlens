@@ -6,7 +6,7 @@
  * 2. Make RPC calls to the backend
  *
  * Patterns used:
- * - Resources: commit, wip, reachability, explain, generate resources handle
+ * - Resources: commit, wip, reachability, generate resources handle
  *   fetch/cancel/staleness (replaces CancellableRequest + manual loading)
  * - Auto-persistence: persisted signals are auto-saved via `startAutoPersist()`
  *   (replaces manual `persistState()` / `getHostIpcApi().setState()`)
@@ -58,7 +58,7 @@ import {
 } from '../shared/actions/rpc.js';
 import { NavigationStack } from '../shared/controllers/navigationStack.js';
 import type { Resource } from '../shared/state/resource.js';
-import type { CommitDetailsState, ExplainState } from './state.js';
+import type { CommitDetailsState } from './state.js';
 
 // ============================================================
 // Resolved Services Type (resolve-once pattern)
@@ -82,7 +82,6 @@ export interface ResolvedServices {
 	readonly commands: ResolvedSubService<'commands'>;
 	readonly config: ResolvedSubService<'config'>;
 	readonly storage: ResolvedSubService<'storage'>;
-	readonly ai: ResolvedSubService<'ai'>;
 	readonly autolinks: ResolvedSubService<'autolinks'>;
 	readonly integrations: ResolvedSubService<'integrations'>;
 	readonly files: ResolvedSubService<'files'>;
@@ -97,7 +96,6 @@ export interface CommitDetailsResources {
 	readonly commit: Resource<CommitDetails | undefined, [string, string]>;
 	readonly wip: Resource<Wip | undefined, [string | undefined]>;
 	readonly reachability: Resource<GitCommitReachability | undefined>;
-	readonly explain: Resource<ExplainState | undefined, [string | undefined]>;
 }
 
 interface FetchCommitOptions {
@@ -184,7 +182,6 @@ export class CommitDetailsActions {
 		this.resources.commit.cancel();
 		this.resources.wip.cancel();
 		this.resources.reachability.cancel();
-		this.resources.explain.cancel();
 	}
 
 	/**
@@ -735,21 +732,6 @@ export class CommitDetailsActions {
 	}
 
 	// ============================================================
-	// AI Actions (via resources)
-	// ============================================================
-
-	/**
-	 * Generate an AI explanation of the current commit.
-	 * Resource handles cancel-previous and staleness.
-	 */
-	async explainCommit(prompt?: string): Promise<void> {
-		const commit = this.state.currentCommit.get();
-		if (!commit) return;
-
-		await this.resources.explain.fetch(prompt);
-	}
-
-	// ============================================================
 	// Reachability Actions (via resource)
 	// ============================================================
 
@@ -872,7 +854,6 @@ export class CommitDetailsActions {
 
 		this.state.error.set(undefined);
 		this.resources.reachability.cancel();
-		this.resources.explain.cancel();
 
 		// Abort any prior in-flight enrichment so a slow autolinks / PR / signature lookup from
 		// the previous selection can't overwrite the new selection's state. Host-side methods
@@ -1045,7 +1026,6 @@ export class CommitDetailsActions {
 				searchBoxFilterResult,
 				configResult,
 				coreConfigResult,
-				aiEnabledResult,
 			] = await Promise.allSettled([
 				this.services.storage.getWorkspace('views:commitDetails:pullRequestExpanded'),
 				this.services.storage.getWorkspace('views:commitDetails:showSearchBox'),
@@ -1065,7 +1045,6 @@ export class CommitDetailsActions {
 					'git.enableSmartCommit',
 					'scm.defaultViewSortKey',
 				),
-				this.services.ai.isEnabled(),
 			]);
 
 			const pullRequestExpanded = getSettledValue(pullRequestExpandedResult);
@@ -1075,7 +1054,6 @@ export class CommitDetailsActions {
 				getSettledValue(configResult) ?? [];
 			const [indentGuides, indent, enableSmartCommit, workingFilesOrderBy] =
 				getSettledValue(coreConfigResult) ?? [];
-			const aiEnabled = getSettledValue(aiEnabledResult);
 
 			this.state.preferences.set({
 				currentUserNameStyle: currentUserNameStyle ?? 'you',
@@ -1093,7 +1071,6 @@ export class CommitDetailsActions {
 				indentGuides: indentGuides ?? 'onHover',
 				indent: indent,
 				workingFilesOrderBy: workingFilesOrderBy ?? 'path',
-				aiEnabled: aiEnabled ?? false,
 				enableSmartCommit: enableSmartCommit ?? false,
 				showSignatureBadges: showSignatureBadges ?? false,
 				showSearchBox: showSearchBox ?? true,

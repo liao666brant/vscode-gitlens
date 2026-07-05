@@ -137,55 +137,6 @@ export interface IntegrationChangeEventData {
 	readonly integrations: IntegrationStateInfo[];
 }
 
-/**
- * Serializable AI model info.
- * A simplified shape that crosses the RPC boundary safely.
- */
-export interface AiModelInfo {
-	readonly id: string;
-	readonly name: string;
-	readonly provider: { readonly id: string; readonly name: string };
-}
-
-/**
- * AI and MCP state for webview integrations UI.
- *
- * Consolidates AI enablement (setting + org) and MCP installation state
- * into a single object. MCP is nested under AI because MCP requires AI
- * to be enabled.
- */
-export interface AIState {
-	/** Whether AI is enabled via settings (`ai.enabled`). */
-	readonly enabled: boolean;
-	/** Whether AI is enabled by the organization. */
-	readonly orgEnabled: boolean;
-	/** MCP state, nested under AI since MCP requires AI to be enabled. */
-	readonly mcp: {
-		readonly bundled: boolean;
-		readonly settingEnabled: boolean;
-		readonly installed: boolean;
-	};
-	/** AI hooks state — whether a hook-supporting agent is detected. */
-	readonly hooks: {
-		/** Per-agent Claude hook state from `gk agents list`. `supported` may be false if gkcli is missing. */
-		readonly claude: {
-			readonly detected: boolean;
-			readonly supported: boolean;
-			readonly installed: boolean;
-		};
-		/**
-		 * True when the install action is currently relevant (supported, detected, not yet installed).
-		 * Banners and the integrations-chip "Install" CTA gate on this; the uninstall CTA gates on `claude.installed`.
-		 */
-		readonly canInstallClaudeHook: boolean;
-	};
-	/**
-	 * Currently-selected default coding agent (resolved from `gitlens.ai.defaultAgent`).
-	 * Undefined when no default is set or the persisted agent is not currently available.
-	 */
-	readonly defaultAgent: { readonly id: string; readonly label: string } | undefined;
-}
-
 // ============================================================
 // Commit Signature DTO
 // ============================================================
@@ -340,14 +291,14 @@ export interface RpcServiceHost {
  * @example
  * ```typescript
  * // Service interface
- * explainCommit(sha: string): Promise<RpcResult<{ summary: string }, 'noAI' | 'rateLimited'>>;
+ * fetchUsage(sha: string): Promise<RpcResult<{ summary: string }, 'noAccess' | 'rateLimited'>>;
  *
  * // Host implementation
  * return { value: { summary: '...' } };
  * return { error: { message: 'Rate limited', reason: 'rateLimited' } };
  *
  * // Webview consumer
- * const result = await services.explainCommit(sha);
+ * const result = await services.fetchUsage(sha);
  * if ('error' in result) {
  *   if (result.error.reason === 'rateLimited') { ... }
  * }

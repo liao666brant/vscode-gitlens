@@ -29,7 +29,6 @@ import type {
 	WebviewViewTypes,
 } from '../constants.views.js';
 import type { Container } from '../container.js';
-import { getSubscriptionNextPaidPlanId } from '../community/stubs/pro.js';
 import { executeCommand, executeCoreCommand } from '../system/-webview/command.js';
 import { setContext } from '../system/-webview/context.js';
 import { getViewFocusCommand } from '../system/-webview/vscode/views.js';
@@ -47,7 +46,6 @@ import type {
 } from './ipc/models/ipc.js';
 import type { WebviewFocusChangedParams, WebviewState } from './protocol.js';
 import {
-	ApplicablePromoRequest,
 	DidChangeHostWindowFocusNotification,
 	DidChangeWebviewFocusNotification,
 	DidChangeWebviewVisibilityNotification,
@@ -728,16 +726,6 @@ export class WebviewController<
 				}
 				break;
 
-			case ApplicablePromoRequest.is(e): {
-				const subscription = await this.container.subscription.getSubscription();
-				const promo = await this.container.productConfig.getApplicablePromo(
-					subscription.state,
-					e.params.plan ?? getSubscriptionNextPaidPlanId(subscription),
-					e.params.location,
-				);
-				void this.respond(ApplicablePromoRequest, e, { promo: promo });
-				break;
-			}
 			case TelemetrySendEventCommand.is(e):
 				this.sendTelemetryEvent(
 					e.params.name,

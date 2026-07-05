@@ -60,8 +60,7 @@ import { isUriScopedGitCacheReset } from '../eventBus.js';
 import type { FeatureAccess, PlusFeatures, RepoFeatureAccess } from '../features.js';
 import { isAdvancedFeature, isProFeatureOnAllRepos } from '../features.js';
 import { showBlameInvalidIgnoreRevsFileWarningMessage } from '../messages.js';
-import { isSubscriptionPaidPlan } from '../community/stubs/pro.js';
-import type { Subscription, SubscriptionChangeEvent } from '../community/stubs/pro.js';
+import { communitySubscription } from '../community/stubs/pro.js';
 import type { RepoComparisonKey } from '../repositories.js';
 import { asRepoComparisonKey, Repositories } from '../repositories.js';
 import { configuration } from '../system/-webview/configuration.js';
@@ -333,7 +332,6 @@ export class GitProviderService implements UnifiedDisposable {
 			}),
 			this._onDidChangeProviders,
 			this._onDidChangeRepositories,
-			container.subscription.onDidChange(this.onSubscriptionChanged, this),
 			window.onDidChangeWindowState(this.onWindowStateChanged, this),
 			workspace.onDidChangeWorkspaceFolders(this.onWorkspaceFoldersChanged, this),
 			configuration.onDidChange(this.onConfigurationChanged, this),
@@ -449,12 +447,6 @@ export class GitProviderService implements UnifiedDisposable {
 
 	private registerCommands(): Disposable[] {
 		return [];
-	}
-
-	@trace()
-	private onSubscriptionChanged(e: SubscriptionChangeEvent) {
-		this.clearAccessCache();
-		this._subscription = e.current;
 	}
 
 	@trace({ args: e => ({ e: `focused=${e.focused}` }) })
@@ -942,11 +934,6 @@ export class GitProviderService implements UnifiedDisposable {
 		return provider.discoverRepositories(uri, options);
 	}
 
-	private _subscription: Subscription | undefined;
-	private async getSubscription(): Promise<Subscription> {
-		return this._subscription ?? (this._subscription = await this.container.subscription.getSubscription());
-	}
-
 	private _accessCache = new Map<PlusFeatures | undefined, Promise<FeatureAccess>>();
 	private _accessCacheByRepo = new Map<string /* path */, Promise<RepoFeatureAccess>>();
 	private clearAccessCache(): void {
@@ -989,15 +976,10 @@ export class GitProviderService implements UnifiedDisposable {
 		feature?: PlusFeatures,
 		repoPath?: string | Uri,
 	): Promise<FeatureAccess | RepoFeatureAccess> {
-		const subscription = await this.getSubscription();
+		const subscription = communitySubscription;
 
 		if (this.container.telemetry.enabled) {
 			queueMicrotask(() => void this.visibility());
-		}
-
-		const plan = subscription.plan.effective.id;
-		if (isSubscriptionPaidPlan(plan)) {
-			return { allowed: subscription.account?.verified !== false, subscription: { current: subscription } };
 		}
 
 		if (feature != null && (isProFeatureOnAllRepos(feature) || isAdvancedFeature(feature))) {

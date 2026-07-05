@@ -3,7 +3,6 @@ import { Disposable, TreeItem, TreeItemCollapsibleState, window } from 'vscode';
 import { debounce } from '@gitlens/utils/debounce.js';
 import { trace } from '@gitlens/utils/decorators/log.js';
 import { weakEvent } from '@gitlens/utils/event.js';
-import { szudzikPairing } from '@gitlens/utils/function.js';
 import { Logger } from '@gitlens/utils/logger.js';
 import type { RepositoriesChangeEvent } from '../../git/gitProviderService.js';
 import { GitUri, unknownGitUri } from '../../git/gitUri.js';
@@ -99,7 +98,7 @@ export class RepositoriesNode extends SubscribeableViewNode<
 	}
 
 	protected override etag(): number {
-		return szudzikPairing(this.view.container.git.etag, this.view.container.subscription.etag);
+		return this.view.container.git.etag;
 	}
 
 	@trace({ args: false })

@@ -1,16 +1,13 @@
 import type { Event } from 'vscode';
 import { Disposable, env, EventEmitter } from 'vscode';
 import { wait } from '@gitlens/utils/promise.js';
-import type { SubscriptionState } from '../constants.subscription.js';
 import type { TrackedUsageKeys } from '../constants.telemetry.js';
 import type { GraphWalkthroughContextKeys, WalkthroughContextKeys } from '../constants.walkthroughs.js';
 import type { Container } from '../container.js';
-import type { SubscriptionChangeEvent } from '../community/stubs/pro.js';
 import { setContext } from '../system/-webview/context.js';
 import type { UsageChangeEvent } from './usageTracker.js';
 
 type WalkthroughUsage = {
-	subscriptionStates?: SubscriptionState[] | Readonly<SubscriptionState[]>;
 	subscriptionCommands?: TrackedUsageKeys[] | Readonly<TrackedUsageKeys[]>;
 	usage: TrackedUsageKeys[];
 };
@@ -42,7 +39,6 @@ export class WalkthroughStateProvider implements Disposable {
 	protected disposables: Disposable[] = [];
 	private readonly completed = new Set<WalkthroughContextKeys>();
 	private readonly graphCompleted = new Set<GraphWalkthroughContextKeys>();
-	private subscriptionState: SubscriptionState | undefined;
 
 	readonly isWalkthroughSupported = isWalkthroughSupported();
 
@@ -51,18 +47,12 @@ export class WalkthroughStateProvider implements Disposable {
 			void setContext('gitlens:walkthroughSupported', true);
 		}
 
-		this.disposables.push(
-			this._onDidChangeProgress,
-			this.container.usage.onDidChange(this.onUsageChanged, this),
-			this.container.subscription.onDidChange(this.onSubscriptionChanged, this),
-		);
+		this.disposables.push(this._onDidChangeProgress, this.container.usage.onDidChange(this.onUsageChanged, this));
 
-		void this.initializeState();
+		this.initializeState();
 	}
 
-	private async initializeState() {
-		this.subscriptionState = (await this.container.subscription.getSubscription(true)).state;
-
+	private initializeState() {
 		for (const key of walkthroughRequiredMapping.keys()) {
 			if (this.validateStep(key)) {
 				void this.completeStep(key);
@@ -116,29 +106,6 @@ export class WalkthroughStateProvider implements Disposable {
 			}
 		}
 
-		if (shouldFire) {
-			this._onDidChangeProgress.fire(undefined);
-		}
-	}
-
-	private onSubscriptionChanged(e: SubscriptionChangeEvent) {
-		this.subscriptionState = e.current.state;
-		const stepsToValidate = this.getStepsFromSubscriptionState(e.current.state);
-		let shouldFire = false;
-		for (const step of stepsToValidate) {
-			// no need to check if the step is already completed
-			if (this.completed.has(step)) {
-				continue;
-			}
-
-			if (this.validateStep(step)) {
-				void this.completeStep(step);
-				this.container.telemetry.sendEvent('walkthrough/completion', {
-					'context.key': step,
-				});
-				shouldFire = true;
-			}
-		}
 		if (shouldFire) {
 			this._onDidChangeProgress.fire(undefined);
 		}
@@ -222,17 +189,6 @@ export class WalkthroughStateProvider implements Disposable {
 		return keys;
 	}
 
-	private getStepsFromSubscriptionState(_state: SubscriptionState): WalkthroughContextKeys[] {
-		const keys: WalkthroughContextKeys[] = [];
-		for (const [key, { subscriptionStates }] of walkthroughRequiredMapping) {
-			if (subscriptionStates != null) {
-				keys.push(key);
-			}
-		}
-
-		return keys;
-	}
-
 	private async completeGraphStep(key: GraphWalkthroughContextKeys) {
 		this.graphCompleted.add(key);
 		await this.waitForWalkthroughInitialized();
@@ -261,20 +217,13 @@ export class WalkthroughStateProvider implements Disposable {
 	}
 
 	private validateStep(key: WalkthroughContextKeys): boolean {
-		const { subscriptionStates, subscriptionCommands, usage } = walkthroughRequiredMapping.get(key)!;
+		const { subscriptionCommands, usage } = walkthroughRequiredMapping.get(key)!;
 
-		let subscriptionState: boolean | undefined;
-		if (subscriptionStates != null && subscriptionStates.length > 0) {
-			subscriptionState = this.subscriptionState != null && subscriptionStates.includes(this.subscriptionState);
-		}
 		let subscriptionCommandState: boolean | undefined;
 		if (subscriptionCommands != null && subscriptionCommands.length > 0) {
 			subscriptionCommandState = subscriptionCommands.some(event => this.container.usage.isUsed(event));
 		}
-		if (
-			(subscriptionState === undefined && subscriptionCommandState === false) ||
-			(subscriptionState === false && subscriptionCommandState !== true)
-		) {
+		if (subscriptionCommandState === false) {
 			return false;
 		}
 

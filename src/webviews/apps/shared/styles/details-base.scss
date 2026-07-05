@@ -388,30 +388,3 @@ ul {
 		display: none;
 	}
 }
-
-.ai-content {
-	font-size: 1.3rem;
-	border: 0.1rem solid var(--vscode-input-border, transparent);
-	background: var(--vscode-input-background);
-	margin-top: 1rem;
-	padding: 0.5rem;
-	border-radius: 2px;
-
-	&.has-error {
-		border-left-color: var(--color-alert-errorBorder);
-		border-left-width: 0.3rem;
-		padding-left: 0.8rem;
-	}
-
-	&:empty {
-		display: none;
-	}
-
-	&__summary {
-		display: block;
-		margin: 0;
-		overflow-y: auto;
-		overflow-x: hidden;
-		max-height: 20rem;
-	}
-}

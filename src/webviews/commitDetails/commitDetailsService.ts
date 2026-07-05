@@ -71,23 +71,12 @@ export interface InitialContext {
 }
 
 // ============================================================
-// Result Types
-// ============================================================
-
-/**
- * Result type for AI explain operation.
- */
-export type ExplainResult =
-	| { result: { summary: string; body: string }; error?: never }
-	| { error: { message: string } };
-
-// ============================================================
 // View-Specific Sub-Service: Inspect
 // ============================================================
 
 /**
  * Inspect service for Commit Details — the single view-specific sub-service
- * that owns commit/WIP queries, navigation, commit actions, and AI operations.
+ * that owns commit/WIP queries, navigation, commit actions.
  *
  * This replaces the old git/actions/navigation/ai sub-services with one
  * cohesive interface. Generic git operations (stage, unstage, fetch, push, pull,
@@ -180,15 +169,6 @@ export interface CommitInspectService {
 	 * Open autolink settings.
 	 */
 	openAutolinkSettings(): Promise<void>;
-
-	// ── AI Operations ──
-
-	/**
-	 * Generate an AI explanation of a commit.
-	 * @param sha - Commit SHA (use 'wip' for uncommitted changes)
-	 * @param signal - Optional AbortSignal for cooperative cancellation
-	 */
-	explainCommit(repoPath: string, sha: string, prompt?: string, signal?: AbortSignal): Promise<ExplainResult>;
 }
 
 // ============================================================
@@ -199,7 +179,7 @@ export interface CommitInspectService {
  * RPC service interface for Commit Details webview.
  *
  * Extends SharedWebviewServices with one view-specific sub-service:
- * - `inspect`: commit/WIP queries, navigation, commit actions, AI operations
+ * - `inspect`: commit/WIP queries, navigation, commit actions
  *
  * Drafts operations are now on the shared `drafts` service (via SharedWebviewServices).
  */

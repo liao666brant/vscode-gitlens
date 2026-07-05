@@ -13,7 +13,7 @@ import type { WebviewTelemetryContext } from '../../constants.telemetry.js';
 import type { Container } from '../../container.js';
 import { CommitFormatter } from '../../git/formatters/commitFormatter.js';
 import { isIssueCloudIntegrationId } from '../../community/stubs/pro.js';
-import type { ConnectionStateChangeEvent, SubscriptionChangeEvent } from '../../community/stubs/pro.js';
+import type { ConnectionStateChangeEvent } from '../../community/stubs/pro.js';
 import type { ConfigPath, CoreConfigPath } from '../../system/-webview/configuration.js';
 import { configuration } from '../../system/-webview/configuration.js';
 import type { IpcParams, IpcResponse } from '../ipc/handlerRegistry.js';
@@ -28,7 +28,6 @@ import {
 import type { WebviewHost, WebviewProvider } from '../webviewProvider.js';
 import type { State } from './protocol.js';
 import {
-	DidChangeAccountNotification,
 	DidChangeIssueIntegrationConnectedNotification,
 	DidOpenAnchorNotification,
 	GenerateConfigurationPreviewRequest,
@@ -45,7 +44,6 @@ export class SettingsWebviewProvider implements WebviewProvider<State, State, Se
 	) {
 		this._disposable = Disposable.from(
 			configuration.onDidChangeAny(this.onAnyConfigurationChanged, this),
-			container.subscription.onDidChange(this.onSubscriptionChanged, this),
 			container.integrations.onDidChangeConnectionState(this.onIntegrationConnectionStateChanged, this),
 		);
 	}
@@ -60,10 +58,6 @@ export class SettingsWebviewProvider implements WebviewProvider<State, State, Se
 		};
 	}
 
-	private onSubscriptionChanged(e: SubscriptionChangeEvent) {
-		void this.host.notify(DidChangeAccountNotification, { hasAccount: e.current.account != null });
-	}
-
 	private onIntegrationConnectionStateChanged(e: ConnectionStateChangeEvent) {
 		const key = e.key;
 		if (isIssueCloudIntegrationId(key)) {
@@ -75,7 +69,7 @@ export class SettingsWebviewProvider implements WebviewProvider<State, State, Se
 	}
 
 	async getAccountState(): Promise<boolean> {
-		return (await this.container.subscription.getSubscription()).account != null;
+		return Promise.resolve(false);
 	}
 
 	async getJiraConnected(): Promise<boolean> {

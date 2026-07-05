@@ -4,13 +4,11 @@ import { IpcService } from '@env/ipc/ipcService.js';
 import { setTelemetryService } from '@env/providers.js';
 import { debug } from '@gitlens/utils/decorators/log.js';
 import { memoize } from '@gitlens/utils/decorators/memoize.js';
-import { Logger } from '@gitlens/utils/logger.js';
 import { FileAnnotationController } from './annotations/fileAnnotationController.js';
 import { ActionRunners } from './api/actionRunners.js';
 import { AutolinksProvider } from './autolinks/autolinksProvider.js';
 import { setDefaultGravatarsStyle } from './avatars.js';
 import { CacheProvider } from './cache.js';
-import type { AgentSessionState } from './agents/models/agentSessionState.js';
 import type { ToggleFileAnnotationCommandArgs } from './commands/toggleFileAnnotations.js';
 import type { DateSource, DateStyle, Mode } from './config.js';
 import type { GlCommands } from './constants.commands.js';
@@ -23,35 +21,11 @@ import { registerPublishListener } from './git/publishListener.js';
 import { OnboardingService } from './onboarding/onboardingService.js';
 import { UsageTracker } from './onboarding/usageTracker.js';
 import { WalkthroughStateProvider } from './onboarding/walkthroughStateProvider.js';
-import {
-	AccountAuthenticationProvider,
-	AIProviderService,
-	ConfiguredIntegrationService,
-	DraftService,
-	EnrichmentService,
-	IntegrationAuthenticationService,
-	IntegrationService,
-	OrganizationService,
-	ProductConfigProvider,
-	RepositoryIdentityService,
-	ServerConnection,
-	SubscriptionService,
-	UrlsProvider,
-	WorkspacesApi,
-	WorkspacesService,
-} from './community/stubs/pro.js';
-import type {
-	AzureDevOpsApi,
-	BitbucketApi,
-	CloudIntegrationService,
-	GitHubApi,
-	GitLabApi,
-} from './community/stubs/pro.js';
+import { IntegrationService, RepositoryIdentityService } from './community/stubs/pro.js';
 import { StatusBarController } from './statusbar/statusBarController.js';
 import { executeCommand } from './system/-webview/command.js';
 import { configuration } from './system/-webview/configuration.js';
 import { Keyboard } from './system/-webview/keyboard.js';
-import { loadChunk } from './system/-webview/loadChunk.js';
 import type { Storage } from './system/-webview/storage.js';
 import { TelemetryService } from './telemetry/telemetry.js';
 import { GitTerminalLinkProvider } from './terminal/linkProvider.js';
@@ -69,14 +43,6 @@ import { WebviewCommandRegistrar } from './webviews/webviewCommandRegistrar.js';
 import { WebviewsController } from './webviews/webviewsController.js';
 
 export type Environment = 'dev' | 'staging' | 'production';
-
-type AgentStatusServiceLike = {
-	readonly sessions: readonly AgentSessionState[];
-	getSerializedSessions(): AgentSessionState[];
-	onDidChange(listener: () => void): Disposable;
-	onDidChangeSessions(listener: (sessions: AgentSessionState[]) => void): Disposable;
-	onDidChangeHooksInstallState(listener: () => void): Disposable;
-};
 
 export class Container {
 	static #instance: Container | undefined;
@@ -177,15 +143,6 @@ export class Container {
 		},
 	};
 
-	get agentStatus(): AgentStatusServiceLike | undefined {
-		return undefined;
-	}
-
-	private readonly _onDidChangeAgentStatus = new EventEmitter<void>();
-	get onDidChangeAgentStatus(): Event<void> {
-		return this._onDidChangeAgentStatus.event;
-	}
-	private readonly _connection: ServerConnection;
 	private _disposables: Disposable[];
 	private _terminalLinks: GitTerminalLinkProvider | undefined;
 
@@ -212,16 +169,8 @@ export class Container {
 		];
 		setTelemetryService(this._telemetry);
 
-		this._urls = new UrlsProvider(this.env);
-		this._disposables.push((this._connection = new ServerConnection(this, this._urls)));
-
-		this._disposables.push(
-			(this._accountAuthentication = new AccountAuthenticationProvider(this, this._connection)),
-		);
 		this._disposables.push((this._uri = new UriService(this)));
-		this._disposables.push((this._subscription = new SubscriptionService(this, this._connection, previousVersion)));
 		this._disposables.push((this._walkthrough = new WalkthroughStateProvider(this)));
-		this._disposables.push((this._organizations = new OrganizationService(this, this._connection)));
 
 		this._disposables.push((this._eventBus = new EventBus()));
 		this._disposables.push((this._ipc = new IpcService(this)));
@@ -255,8 +204,6 @@ export class Container {
 		this._disposables.push(registerSettingsWebviewCommands(settingsPanels));
 
 		this._disposables.push(new ViewFileDecorationProvider());
-
-		this._disposables.push(this._onDidChangeAgentStatus);
 
 		if (configuration.get('terminalLinks.enabled')) {
 			this._disposables.push((this._terminalLinks = new GitTerminalLinkProvider(this)));
@@ -323,22 +270,9 @@ export class Container {
 		}
 	}
 
-	private _accountAuthentication: AccountAuthenticationProvider;
-	get accountAuthentication(): AccountAuthenticationProvider {
-		return this._accountAuthentication;
-	}
-
 	private readonly _actionRunners: ActionRunners;
 	get actionRunners(): ActionRunners {
 		return this._actionRunners;
-	}
-
-	private _ai: AIProviderService | undefined;
-	get ai(): AIProviderService {
-		if (this._ai == null) {
-			this._disposables.push((this._ai = new AIProviderService(this, this._connection)));
-		}
-		return this._ai;
 	}
 
 	private _autolinks: AutolinksProvider | undefined;
@@ -359,35 +293,6 @@ export class Container {
 		return this._cache;
 	}
 
-	private _cloudIntegrations: Promise<CloudIntegrationService | undefined> | undefined;
-	get cloudIntegrations(): Promise<CloudIntegrationService | undefined> {
-		if (this._cloudIntegrations == null) {
-			async function load(this: Container) {
-				try {
-					const cloudIntegrations = new (
-						await loadChunk(() => import(/* webpackChunkName: "integrations" */ './community/stubs/pro.js'))
-					).CloudIntegrationService(this, this._connection);
-					return cloudIntegrations;
-				} catch (ex) {
-					Logger.error(ex);
-					return undefined;
-				}
-			}
-
-			this._cloudIntegrations = load.call(this);
-		}
-
-		return this._cloudIntegrations;
-	}
-
-	private _drafts: DraftService | undefined;
-	get drafts(): DraftService {
-		if (this._drafts == null) {
-			this._disposables.push((this._drafts = new DraftService(this, this._connection)));
-		}
-		return this._drafts;
-	}
-
 	private readonly _context: ExtensionContext;
 	get context(): ExtensionContext {
 		return this._context;
@@ -406,15 +311,6 @@ export class Container {
 	private readonly _documentTracker: GitDocumentTracker;
 	get documentTracker(): GitDocumentTracker {
 		return this._documentTracker;
-	}
-
-	private _enrichments: EnrichmentService | undefined;
-	get enrichments(): EnrichmentService {
-		if (this._enrichments == null) {
-			this._disposables.push((this._enrichments = new EnrichmentService(this, this._connection)));
-		}
-
-		return this._enrichments;
 	}
 
 	@memoize()
@@ -451,95 +347,6 @@ export class Container {
 		return this._git;
 	}
 
-	private _azure: Promise<AzureDevOpsApi | undefined> | undefined;
-	get azure(): Promise<AzureDevOpsApi | undefined> {
-		if (this._azure == null) {
-			async function load(this: Container) {
-				try {
-					const azure = new (
-						await loadChunk(() => import(/* webpackChunkName: "integrations" */ './community/stubs/pro.js'))
-					).AzureDevOpsApi(this);
-					this._disposables.push(azure);
-					return azure;
-				} catch (ex) {
-					Logger.error(ex);
-					return undefined;
-				}
-			}
-
-			this._azure = load.call(this);
-		}
-
-		return this._azure;
-	}
-
-	private _bitbucket: Promise<BitbucketApi | undefined> | undefined;
-	get bitbucket(): Promise<BitbucketApi | undefined> {
-		if (this._bitbucket == null) {
-			async function load(this: Container) {
-				try {
-					const bitbucket = new (
-						await loadChunk(() => import(/* webpackChunkName: "integrations" */ './community/stubs/pro.js'))
-					).BitbucketApi(this);
-					this._disposables.push(bitbucket);
-					return bitbucket;
-				} catch (ex) {
-					Logger.error(ex);
-					return undefined;
-				}
-			}
-
-			this._bitbucket = load.call(this);
-		}
-
-		return this._bitbucket;
-	}
-
-	private _github: Promise<GitHubApi | undefined> | undefined;
-	get github(): Promise<GitHubApi | undefined> {
-		if (this._github == null) {
-			async function load(this: Container) {
-				try {
-					const { createGitHubApi } = await loadChunk(
-						() => import(/* webpackChunkName: "integrations" */ './community/stubs/pro.js'),
-					);
-					const github = createGitHubApi();
-					this._disposables.push(github);
-					return github;
-				} catch (ex) {
-					Logger.error(ex);
-					return undefined;
-				}
-			}
-
-			this._github = load.call(this);
-		}
-
-		return this._github;
-	}
-
-	private _gitlab: Promise<GitLabApi | undefined> | undefined;
-	get gitlab(): Promise<GitLabApi | undefined> {
-		if (this._gitlab == null) {
-			async function load(this: Container) {
-				try {
-					const gitlab = new (
-						await loadChunk(() => import(/* webpackChunkName: "integrations" */ './community/stubs/pro.js'))
-					).GitLabApi(this);
-					this._disposables.push(gitlab);
-					return gitlab;
-				} catch (ex) {
-					Logger.error(ex);
-					return undefined;
-				}
-			}
-
-			this._gitlab = load.call(this);
-		}
-
-		return this._gitlab;
-	}
-
 	@memoize()
 	get id(): string {
 		return this._context.extension.id;
@@ -548,13 +355,7 @@ export class Container {
 	private _integrations: IntegrationService | undefined;
 	get integrations(): IntegrationService {
 		if (this._integrations == null) {
-			const configuredIntegrationService = new ConfiguredIntegrationService(this);
-			const authService = new IntegrationAuthenticationService(this, configuredIntegrationService);
-			this._disposables.push(
-				authService,
-				configuredIntegrationService,
-				(this._integrations = new IntegrationService(this, authService, configuredIntegrationService)),
-			);
+			this._disposables.push((this._integrations = new IntegrationService(this)));
 		}
 		return this._integrations;
 	}
@@ -575,11 +376,6 @@ export class Container {
 		return this._mode;
 	}
 
-	private _organizations: OrganizationService;
-	get organizations(): OrganizationService {
-		return this._organizations;
-	}
-
 	private readonly _prerelease;
 	get prerelease(): boolean {
 		return this._prerelease;
@@ -588,12 +384,6 @@ export class Container {
 	@memoize()
 	get prereleaseOrDebugging(): boolean {
 		return this._prerelease || this.debugging;
-	}
-
-	private _productConfig: ProductConfigProvider | undefined;
-	get productConfig(): ProductConfigProvider {
-		this._productConfig ??= new ProductConfigProvider(this, this._connection);
-		return this._productConfig;
 	}
 
 	private readonly _rebaseEditor: RebaseEditorProvider;
@@ -632,11 +422,6 @@ export class Container {
 		return this._onboarding;
 	}
 
-	private _subscription: SubscriptionService;
-	get subscription(): SubscriptionService {
-		return this._subscription;
-	}
-
 	private readonly _telemetry: TelemetryService;
 	get telemetry(): TelemetryService {
 		return this._telemetry;
@@ -645,11 +430,6 @@ export class Container {
 	private readonly _uri: UriService;
 	get uri(): UriService {
 		return this._uri;
-	}
-
-	private readonly _urls: UrlsProvider;
-	get urls(): UrlsProvider {
-		return this._urls;
 	}
 
 	private readonly _usage: UsageTracker;
@@ -680,21 +460,6 @@ export class Container {
 	private readonly _vsls: VslsController;
 	get vsls(): VslsController {
 		return this._vsls;
-	}
-
-	private _workspaces: WorkspacesService | undefined;
-	get workspaces(): WorkspacesService {
-		if (this._workspaces == null) {
-			this._disposables.push(
-				(this._workspaces = new WorkspacesService(
-					this,
-					new WorkspacesApi(this, this._connection),
-					undefined,
-					this.repositoryLocator,
-				)),
-			);
-		}
-		return this._workspaces;
 	}
 
 	private ensureModeApplied() {

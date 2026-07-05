@@ -69,7 +69,6 @@ export interface Preferences {
 	indentGuides: 'none' | 'onHover' | 'always';
 	/** Working (WIP) file list sort, honoring VS Code's `scm.defaultViewSortKey` (list layout only). */
 	workingFilesOrderBy: WorkingFileSorting;
-	aiEnabled: boolean;
 	enableSmartCommit: boolean;
 	showSignatureBadges: boolean;
 	/** Whether the file-tree search box is visible. Persisted per workspace; defaults to `true`. */
@@ -145,7 +144,6 @@ export interface State extends WebviewState<'gitlens.views.commitDetails'> {
 	pinned: boolean;
 	preferences: Preferences;
 	orgSettings: {
-		ai: boolean;
 		drafts: boolean;
 	};
 
