@@ -5,9 +5,6 @@ import type {
 	AIProviders,
 	GraphColumnConfig,
 	OrganizationRole,
-	Subscription,
-	SubscriptionAccount,
-	SubscriptionStateString,
 } from './community/stubs/pro.js';
 import type { GitContributionTiers } from '@gitlens/git/models/contributor.js';
 import type { Flatten } from '@gitlens/utils/object.js';
@@ -15,7 +12,6 @@ import type { Config, GraphBranchesVisibility, GraphConfig } from './config.js';
 import type { GlCommands, GlCommandsDeprecated } from './constants.commands.js';
 import type { IntegrationIds, SupportedCloudIntegrationIds } from './constants.integrations.js';
 import type { WalkthroughSteps } from './constants.js';
-import type { SubscriptionState } from './constants.subscription.js';
 import type {
 	CustomEditorTypes,
 	TreeViewTypes,
@@ -24,7 +20,6 @@ import type {
 	WebviewViewTypes,
 } from './constants.views.js';
 import type { GraphWalkthroughContextKeys, WalkthroughContextKeys } from './constants.walkthroughs.js';
-import type { FeaturePreviews, FeaturePreviewStatus } from './features.js';
 
 export declare type AttributeValue =
 	| string
@@ -35,7 +30,7 @@ export declare type AttributeValue =
 	| Array<null | undefined | boolean>;
 export type TelemetryEventData = Record<string, AttributeValue | null | undefined>;
 
-export interface TelemetryGlobalContext extends SubscriptionEventData {
+export interface TelemetryGlobalContext {
 	'cloudIntegrations.connected.count': number;
 	'cloudIntegrations.connected.ids': string;
 	debugging: boolean;
@@ -276,9 +271,6 @@ export interface TelemetryEvents extends WebviewShowAbortedEvents, WebviewShownE
 	/** Sent when a background git command waited in the queue */
 	'op/git/queueWait': OperationGitQueueWaitEvent;
 
-	/** Sent when fetching the product config fails */
-	'productConfig/failed': ProductConfigFailedEvent;
-
 	/** Sent when the "context" of the workspace changes (e.g. repo added, integration connected, etc) */
 	'providers/context': void;
 
@@ -396,14 +388,6 @@ export interface TelemetryEvents extends WebviewShowAbortedEvents, WebviewShownE
 	'associateIssueWithBranch/title/action': StartWorkTitleActionEvent;
 	/** Sent when the user chooses to manage integrations */
 	'associateIssueWithBranch/action': StartWorkActionEvent;
-
-	/** Sent when the subscription is loaded */
-	subscription: SubscriptionEventData;
-
-	/** Sent when the user takes an action on the subscription */
-	'subscription/action': SubscriptionActionEventData;
-	/** Sent when the subscription changes */
-	'subscription/changed': SubscriptionEventDataWithPrevious;
 
 	/** Sent when a "tracked feature" is interacted with, today that is only when webview/webviewView/custom editor is shown */
 	'usage/track': UsageTrackEvent;
@@ -802,14 +786,6 @@ interface CommitSigningSetupWizardOpenedEvent {
 	alreadyConfigured: boolean;
 }
 
-export type FeaturePreviewDayEventData = Record<`day.${number}.startedOn`, string>;
-export type FeaturePreviewEventData = {
-	feature: FeaturePreviews;
-	status: FeaturePreviewStatus;
-	day?: number;
-	startedOn?: string;
-} & FeaturePreviewDayEventData;
-
 type GitCommandType = 'merge' | 'rebase' | 'cherry-pick' | 'revert' | 'stash-apply' | 'stash-pop';
 
 interface GitCommandRunEvent {
@@ -1040,13 +1016,6 @@ interface OperationGitQueueWaitEvent {
 	'queued.background': number;
 	/** Configured max concurrent processes */
 	maxConcurrent: number;
-}
-
-interface ProductConfigFailedEvent {
-	reason: 'fetch' | 'validation';
-	json: string | undefined;
-	exception?: string;
-	statusCode?: number | undefined;
 }
 
 interface ProvidersRegistrationCompleteEvent {
@@ -1309,71 +1278,6 @@ type AgentResolvedEventData =
 			'agent.id': string;
 			'agent.kind': AgentDescriptor['kind'];
 	  };
-
-export type SubscriptionFeaturePreviewsEventData = {
-	[F in FeaturePreviews]: {
-		[K in Exclude<
-			keyof FeaturePreviewEventData,
-			'feature'
-		> as `subscription.featurePreviews.${F}.${K}`]: NonNullable<FeaturePreviewEventData[K]>;
-	};
-}[FeaturePreviews];
-
-export interface SubscriptionCurrentEventData
-	extends
-		Flatten<Omit<SubscriptionAccount, 'name' | 'email'>, 'account', true>,
-		Omit<
-			Flatten<Subscription['plan'], 'subscription', true>,
-			'subscription.actual.name' | 'subscription.effective.name'
-		>,
-		SubscriptionFeaturePreviewsEventData {}
-
-export interface SubscriptionPreviousEventData
-	extends
-		Flatten<Omit<SubscriptionAccount, 'name' | 'email'>, 'previous.account', true>,
-		Omit<
-			Flatten<Subscription['plan'], 'previous.subscription', true>,
-			'previous.subscription.actual.name' | 'previous.subscription.effective.name'
-		> {}
-
-export interface SubscriptionEventData extends Partial<SubscriptionCurrentEventData> {
-	/** Promo key (identifier) associated with the upgrade */
-	'subscription.promo.key'?: string;
-	/** Promo discount code associated with the upgrade */
-	'subscription.promo.code'?: string;
-	'subscription.state'?: SubscriptionState;
-	'subscription.stateString'?: SubscriptionStateString;
-}
-
-type SubscriptionActionEventData =
-	| {
-			action:
-				| 'sign-up'
-				| 'sign-in'
-				| 'sign-out'
-				| 'manage'
-				| 'manage-subscription'
-				| 'reactivate'
-				| 'refer-friend'
-				| 'resend-verification'
-				| 'pricing';
-	  }
-	| {
-			action: 'upgrade';
-			/** `true` if the user cancels the VS Code prompt to open the browser */
-			aborted: boolean;
-			/** Promo key (identifier) associated with the upgrade */
-			'promo.key'?: string;
-			/** Promo discount code associated with the upgrade */
-			'promo.code'?: string;
-	  }
-	| {
-			action: 'visibility';
-			visible: boolean;
-	  };
-
-export interface SubscriptionEventDataWithPrevious
-	extends SubscriptionEventData, Partial<SubscriptionPreviousEventData> {}
 
 interface UsageTrackEvent {
 	'usage.key': TrackedUsageKeys;

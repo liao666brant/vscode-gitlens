@@ -36,7 +36,6 @@ export async function getIntegrationStates(container: Container): Promise<Integr
 			supports:
 				descriptor?.supports ??
 				(meta.type === 'git' ? ['prs', 'issues'] : meta.type === 'issues' ? ['issues'] : []),
-			requiresPro: descriptor?.requiresPro ?? false,
 		});
 	}
 

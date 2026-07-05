@@ -235,16 +235,6 @@ export class ResetCommand extends GlCommandBase {
 				await this.container.storage.resetWorkspace();
 				break;
 			default:
-				if (DEBUG) {
-					switch (reset) {
-						case 'subscription':
-							await this.container.storage.delete('premium:subscription');
-							break;
-						case 'previews':
-							await this.container.storage.deleteWithPrefix('plus:preview');
-							break;
-					}
-				}
 				break;
 		}
 	}

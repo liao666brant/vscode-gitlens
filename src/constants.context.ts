@@ -1,7 +1,6 @@
 import type { Uri } from 'vscode';
 import type { FileAnnotationType } from './config.js';
 import type { AnnotationStatus, Keys } from './constants.js';
-import type { SubscriptionState } from './constants.subscription.js';
 import type {
 	CustomEditorTypes,
 	GroupableTreeViewTypes,
@@ -10,7 +9,7 @@ import type {
 } from './constants.views.js';
 import type { GraphWalkthroughContextKeys, WalkthroughContextKeys } from './constants.walkthroughs.js';
 import type { Features } from './features.js';
-import type { OrgAIProviders, PromoKeys, SubscriptionPlanIds } from './community/stubs/pro.js';
+import type { OrgAIProviders } from './community/stubs/pro.js';
 
 interface CompareSelectedInfo {
 	label: string;
@@ -41,15 +40,7 @@ export type ContextKeys = {
 	'gitlens:install:new': boolean;
 	/** Indicates that this is the first run after an upgrade of WeGit */
 	'gitlens:install:upgradedFrom': string;
-	'gitlens:plus': Exclude<SubscriptionPlanIds, 'community'>;
-	'gitlens:plus:disabled': boolean;
-	/** Pipe-delimited view IDs to allow showing pro views when hidden */
-	'gitlens:plus:disabled:view:overrides': string;
-	'gitlens:plus:disallowedRepos': string[];
-	'gitlens:plus:required': boolean;
-	'gitlens:plus:state': SubscriptionState;
 	'gitlens:prerelease': boolean;
-	'gitlens:promo': PromoKeys;
 	'gitlens:readonly': boolean;
 	'gitlens:rebase:editor:enabled': boolean;
 	'gitlens:repos:withRemotes': string[];

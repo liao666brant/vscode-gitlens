@@ -31,7 +31,7 @@ import type {
 import type { Container } from '../container.js';
 import { getSubscriptionNextPaidPlanId } from '../community/stubs/pro.js';
 import { executeCommand, executeCoreCommand } from '../system/-webview/command.js';
-import { removeFromContextDelimitedString, setContext } from '../system/-webview/context.js';
+import { setContext } from '../system/-webview/context.js';
 import { getViewFocusCommand } from '../system/-webview/vscode/views.js';
 import { serializeIpcData } from '../system/ipcSerialize.js';
 import type { WebviewContext } from '../system/webview.js';
@@ -304,14 +304,6 @@ export class WebviewController<
 		});
 	}
 
-	private async removePlusFeatureOverride() {
-		if (!this.descriptor.plusFeature) {
-			return;
-		}
-
-		return removeFromContextDelimitedString('gitlens:plus:disabled:view:overrides', [this.descriptor.id]);
-	}
-
 	private _disposed: boolean = false;
 	dispose(): void {
 		this._disposed = true;
@@ -324,8 +316,6 @@ export class WebviewController<
 		this._replayEnabled = false;
 		this._replayBuffer.length = 0;
 		resetContextKeys(this.descriptor.contextKeyPrefix);
-
-		void this.removePlusFeatureOverride();
 
 		this.provider?.onFocusChanged?.(false);
 		this.provider?.onVisibilityChanged?.(false);
@@ -801,14 +791,10 @@ export class WebviewController<
 				this.provider.onActiveChanged?.(active);
 				if (!active) {
 					this.handleFocusChanged(false);
-
-					void this.removePlusFeatureOverride();
 				}
 			}
 		} else {
 			resetContextKeys(this.descriptor.contextKeyPrefix);
-
-			void this.removePlusFeatureOverride();
 
 			if (active != null) {
 				this.provider.onActiveChanged?.(false);

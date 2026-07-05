@@ -55,19 +55,6 @@ export type ProAIFeatures =
 
 export type AdvancedFeatures = never;
 
-export type AIFeatures = ProAIFeatures;
-
-export function isProFeature(feature: PlusFeatures): feature is ProFeatures {
-	switch (feature) {
-		case 'timeline':
-		case 'worktrees':
-		case 'graph':
-			return true;
-		default:
-			return isProFeatureOnAllRepos(feature);
-	}
-}
-
 export function isAdvancedFeature(_feature: PlusFeatures): _feature is AdvancedFeatures {
 	return false;
 }

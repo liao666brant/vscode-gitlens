@@ -5,9 +5,6 @@ import type {
 	GraphSidebarPanel,
 	GraphTreemapMode,
 	IntegrationConnectedKey,
-	OrganizationSettings,
-	PaidSubscriptionPlanIds,
-	Subscription,
 	TimelinePeriod,
 	TimelineSliceBy,
 	VisualizationMode,
@@ -15,11 +12,9 @@ import type {
 import type { GitRevisionRangeNotation } from '@gitlens/git/models/revision.js';
 import type { GraphBranchesVisibility, ViewShowBranchComparison } from './config.js';
 import type { IntegrationIds } from './constants.integrations.js';
-import type { SubscriptionState } from './constants.subscription.js';
 import type { TrackedUsage, TrackedUsageKeys } from './constants.telemetry.js';
 import type { GroupableTreeViewTypes, TreeViewTypes } from './constants.views.js';
 import type { Environment } from './container.js';
-import type { FeaturePreviews } from './features.js';
 import type { OnboardingStorage } from './onboarding/models/onboarding.js';
 import type { DeepLinkServiceState } from './uris/deepLinks/deepLink.js';
 import type { OverviewRecentThreshold } from './webviews/shared/overviewBranches.js';
@@ -79,8 +74,6 @@ interface GlobalStorageCore {
 	'confirm:ai:tos': boolean;
 	repoVisibility: [string, StoredRepoVisibilityInfo][];
 	pendingWhatsNewOnFocus: boolean;
-	// Don't change this key name ('premium`) as its the stored subscription
-	'premium:subscription': Stored<Subscription & { lastValidatedAt: number | undefined }>;
 	'synced:version': string;
 	// Keep the pre-release version separate from the released version
 	'synced:preVersion': string;
@@ -88,7 +81,6 @@ interface GlobalStorageCore {
 	version: string;
 	// Keep the pre-release version separate from the released version
 	preVersion: string;
-	'product:config': Stored<StoredProductConfig>;
 	'confirm:draft:storage': boolean;
 	'graph:searchMode': StoredGraphSearchMode;
 	'graph:useNaturalLanguageSearch': boolean;
@@ -97,14 +89,7 @@ interface GlobalStorageCore {
 	'onboarding:state': OnboardingStorage;
 }
 
-type GlobalStorageDynamic = Record<`plus:preview:${FeaturePreviews}:usages`, StoredFeaturePreviewUsagePeriod[]> &
-	Record<
-		`plus:organization:${string}:settings`,
-		Stored<(OrganizationSettings & { lastValidatedAt: number }) | undefined>
-	> &
-	Record<`provider:authentication:skip:${string}`, boolean> &
-	Record<`gk:promo:${string}:ai:allAccess:dismissed`, boolean> &
-	Record<`gk:promo:${string}:ai:allAccess:notified`, boolean> &
+type GlobalStorageDynamic = Record<`provider:authentication:skip:${string}`, boolean> &
 	Record<`gk:${string}:organizations`, Stored<StoredOrganization[]>> &
 	Record<`jira:${string}:organizations`, Stored<StoredJiraOrganization[] | undefined>> &
 	Record<`jira:${string}:projects`, Stored<StoredJiraProject[] | undefined>> &
@@ -145,21 +130,6 @@ export interface StoredConfiguredIntegrationDescriptor {
 	domain?: string;
 	expiresAt?: string;
 	scopes: string;
-}
-
-export interface StoredProductConfig {
-	promos: StoredPromo[];
-}
-
-export interface StoredPromo {
-	key: string;
-	code?: string;
-	plan?: PaidSubscriptionPlanIds;
-	states?: SubscriptionState[];
-	locations?: ('account' | 'badge' | 'gate')[];
-	expiresOn?: number;
-	startsOn?: number;
-	percentile?: number;
 }
 
 export type DeprecatedWorkspaceStorage = {
@@ -462,8 +432,3 @@ export type StoredSearchAndCompareItem = StoredComparison | StoredSearch;
 export type StoredSearchAndCompareItems = Record<string, StoredSearchAndCompareItem>;
 export type StoredStarred = Record<string, boolean>;
 export type StoredRecentUsage = Record<string, number>;
-
-export interface StoredFeaturePreviewUsagePeriod {
-	startedOn: string;
-	expiresOn: string;
-}

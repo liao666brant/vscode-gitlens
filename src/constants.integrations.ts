@@ -31,10 +31,6 @@ export type IssuesHostIntegrationIds = IssuesCloudHostIntegrationId;
 
 export type IntegrationIds = GitHostIntegrationIds | IssuesHostIntegrationIds;
 
-export const supportedOrderedCloudIssuesIntegrationIds = [
-	IssuesCloudHostIntegrationId.Jira,
-	IssuesCloudHostIntegrationId.Linear,
-];
 export const supportedOrderedCloudIntegrationIds = [
 	GitCloudHostIntegrationId.GitHub,
 	GitSelfManagedHostIntegrationId.CloudGitHubEnterprise,
@@ -81,7 +77,6 @@ export interface IntegrationDescriptor {
 	name: string;
 	icon: string;
 	supports: IntegrationFeatures[];
-	requiresPro: boolean;
 }
 
 export const supportedCloudIntegrationDescriptors: IntegrationDescriptor[] = [
@@ -90,69 +85,59 @@ export const supportedCloudIntegrationDescriptors: IntegrationDescriptor[] = [
 		name: 'GitHub',
 		icon: 'gl-provider-github',
 		supports: ['prs', 'issues'],
-		requiresPro: false,
 	},
 	{
 		id: GitSelfManagedHostIntegrationId.CloudGitHubEnterprise,
 		name: 'GitHub Enterprise',
 		icon: 'gl-provider-github',
 		supports: ['prs', 'issues'],
-		requiresPro: true,
 	},
 	{
 		id: GitCloudHostIntegrationId.GitLab,
 		name: 'GitLab',
 		icon: 'gl-provider-gitlab',
 		supports: ['prs', 'issues'],
-		requiresPro: false,
 	},
 	{
 		id: GitSelfManagedHostIntegrationId.CloudGitLabSelfHosted,
 		name: 'GitLab Self-Hosted',
 		icon: 'gl-provider-gitlab',
 		supports: ['prs', 'issues'],
-		requiresPro: true,
 	},
 	{
 		id: GitCloudHostIntegrationId.AzureDevOps,
 		name: 'Azure DevOps',
 		icon: 'gl-provider-azdo',
 		supports: ['prs', 'issues'],
-		requiresPro: true,
 	},
 	{
 		id: GitSelfManagedHostIntegrationId.AzureDevOpsServer,
 		name: 'Azure DevOps Server',
 		icon: 'gl-provider-azdo',
 		supports: ['prs', 'issues'],
-		requiresPro: true,
 	},
 	{
 		id: GitCloudHostIntegrationId.Bitbucket,
 		name: 'Bitbucket',
 		icon: 'gl-provider-bitbucket',
 		supports: ['prs', 'issues'],
-		requiresPro: false,
 	},
 	{
 		id: GitSelfManagedHostIntegrationId.BitbucketServer,
 		name: 'Bitbucket Data Center',
 		icon: 'gl-provider-bitbucket',
 		supports: ['prs'],
-		requiresPro: true,
 	},
 	{
 		id: IssuesCloudHostIntegrationId.Jira,
 		name: 'Jira',
 		icon: 'gl-provider-jira',
 		supports: ['issues'],
-		requiresPro: true,
 	},
 	{
 		id: IssuesCloudHostIntegrationId.Linear,
 		name: 'Linear',
 		icon: 'gl-provider-linear',
 		supports: ['issues'],
-		requiresPro: true,
 	},
 ];

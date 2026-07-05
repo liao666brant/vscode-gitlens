@@ -1,4 +1,3 @@
-// NOTE: Pay attention to gitlens:plus:state in the `package.json` when modifying this enum
 // NOTE: This is reported in telemetry so we should NOT change the values
 export const enum SubscriptionState {
 	/** Indicates a user who hasn't verified their email address yet */

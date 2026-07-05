@@ -126,7 +126,6 @@ export interface IntegrationStateInfo {
 	readonly icon: string;
 	readonly connected: boolean;
 	readonly supports: string[];
-	readonly requiresPro: boolean;
 }
 
 /**
