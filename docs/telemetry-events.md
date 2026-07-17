@@ -23,7 +23,6 @@
   'vscodeUIKind': string,
   'vscodeVersion': string
 
-  [`global.account.${string}`]: string,
   'global.cloudIntegrations.connected.count': number,
   'global.cloudIntegrations.connected.ids': string,
   'global.debugging': boolean,
@@ -46,19 +45,6 @@
   'global.repositories.withHostingIntegrations': number,
   'global.repositories.withHostingIntegrationsConnected': number,
   'global.repositories.withRemotes': number,
-  'global.subscription.actual.id': 'community',
-  'global.subscription.effective.id': 'community',
-  'global.subscription.featurePreviews.graph.day': number,
-  [`global.subscription.featurePreviews.graph.day.${number}.startedOn`]: string,
-  'global.subscription.featurePreviews.graph.startedOn': string,
-  'global.subscription.featurePreviews.graph.status': 'eligible' | 'active' | 'expired',
-  'global.subscription.id': 'community',
-  // Promo discount code associated with the upgrade
-  'global.subscription.promo.code': string,
-  // Promo key (identifier) associated with the upgrade
-  'global.subscription.promo.key': string,
-  'global.subscription.state': -1 | 0 | 1 | 2 | 3 | 4 | 5 | 6,
-  'global.subscription.stateString': string,
   'global.upgrade': boolean,
   'global.upgradedFrom': string,
   'global.workspace.isTrusted': boolean
@@ -92,609 +78,6 @@
 }
 ```
 
-### agents/hookInstalled
-
-> Sent when an agent hook is installed
-
-```typescript
-{
-  'agent.provider': string
-}
-```
-
-### agents/hookUninstalled
-
-> Sent when an agent hook is uninstalled
-
-```typescript
-{
-  'agent.provider': string
-}
-```
-
-### agents/permission/resolved
-
-> Sent when a permission request is resolved
-
-```typescript
-{
-  'agent.provider': string,
-  'permission.decision': string,
-  'permission.tool': string
-}
-```
-
-### agents/session/ended
-
-> Sent when an agent session ends
-
-```typescript
-{
-  'agent.provider': string
-}
-```
-
-### agents/session/started
-
-> Sent when an agent session starts
-
-```typescript
-{
-  'agent.provider': string
-}
-```
-
-### agents/session/syncDiscrepancy
-
-> Sent when a reconciliation poll (`list-sessions`) finds the polled session set differs from
-what the live IPC hook path had already tracked. In a single window this should be rare and
-usually means a hook event was dropped; a nonzero `sync.discovered` is expected in multi-window
-setups, where the machine-wide poll can surface a session owned by another window that never
-routed its hook events here — so don't treat every event as a dropped IPC signal
-
-```typescript
-{
-  'agent.provider': string,
-  // Sessions the poll reported alive that the live IPC path had not tracked.
-  'sync.discovered': number,
-  // Tracked sessions the poll no longer reports alive (teardown the live path missed).
-  'sync.missing': number,
-  // Total alive sessions reported by the poll.
-  'sync.polled': number,
-  // Total sessions tracked (from the live path) before the poll reconciled.
-  'sync.tracked': number
-}
-```
-
-### ai/credits/addOnClicked
-
-> Sent when the user clicks "Get More Credits" on the weekly AI usage-limit notification
-
-```typescript
-{
-  'organization.role': string
-}
-```
-
-### ai/credits/addOnDismissed
-
-> Sent when the user dismisses the weekly AI usage-limit notification
-
-```typescript
-{
-  'organization.role': string
-}
-```
-
-### ai/enabled
-
-> Sent when AI is enabled
-
-```typescript
-void
-```
-
-### ai/explain
-
-> Sent when explaining changes from wip, commits, stashes, patches, etc.
-
-```typescript
-{
-  'changeType': 'wip' | 'stash' | 'commit' | 'branch' | 'compare' | 'draft-stash' | 'draft-patch' | 'draft-suggested_pr_change',
-  'config.largePromptThreshold': number,
-  'config.usedCustomInstructions': boolean,
-  'correlationId': string,
-  'customInstructions.commitMessage.setting.length': number,
-  'customInstructions.commitMessage.setting.used': boolean,
-  'customInstructions.length': number,
-  'customInstructions.setting.length': number,
-  'customInstructions.setting.used': boolean,
-  'customInstructions.used': boolean,
-  'diff.files.count': number,
-  'diff.hash': string,
-  'diff.hunks.count': number,
-  'diff.lines.count': number,
-  'duration': number,
-  'failed': boolean,
-  'failed.cancelled.reason': 'large-prompt',
-  'failed.error': string,
-  'failed.error.detail': string,
-  'failed.reason': 'user-declined' | 'user-cancelled' | 'error',
-  'id': string,
-  'input.length': number,
-  'model.id': string,
-  'model.provider.id': string,
-  'model.provider.name': string,
-  'output.length': number,
-  'retry.count': number,
-  'type': 'change',
-  'usage.completionTokens': number,
-  'usage.limits.limit': number,
-  'usage.limits.resetsOn': string,
-  'usage.limits.used': number,
-  'usage.promptTokens': number,
-  'usage.totalTokens': number,
-  'warning.exceededLargePromptThreshold': boolean,
-  'warning.promptTruncated': boolean
-}
-```
-
-### ai/feedback
-
-> Sent when a user provides feedback (rating and optional details) for an AI feature
-
-```typescript
-{
-  'feature': string,
-  'id': string,
-  'model.id': string,
-  'model.provider.id': string,
-  'model.provider.name': string,
-  'sentiment': 'helpful' | 'unhelpful',
-  // The AI feature that feedback was submitted for
-  'type': string,
-  // Custom feedback provided (if any)
-  'unhelpful.custom': string,
-  // Unhelpful reasons selected (if any) - comma-separated list of AIFeedbackUnhelpfulReasons values
-  'unhelpful.reasons': string,
-  'usage.completionTokens': number,
-  'usage.limits.limit': number,
-  'usage.limits.resetsOn': string,
-  'usage.limits.used': number,
-  'usage.promptTokens': number,
-  'usage.totalTokens': number
-}
-```
-
-### ai/generate
-
-> Sent when generating summaries from commits, stashes, patches, etc.
-
-```typescript
-{
-  'config.largePromptThreshold': number,
-  'config.usedCustomInstructions': boolean,
-  'correlationId': string,
-  'customInstructions.commitMessage.setting.length': number,
-  'customInstructions.commitMessage.setting.used': boolean,
-  'customInstructions.length': number,
-  'customInstructions.setting.length': number,
-  'customInstructions.setting.used': boolean,
-  'customInstructions.used': boolean,
-  'diff.files.count': number,
-  'diff.hash': string,
-  'diff.hunks.count': number,
-  'diff.lines.count': number,
-  'duration': number,
-  'failed': boolean,
-  'failed.cancelled.reason': 'large-prompt',
-  'failed.error': string,
-  'failed.error.detail': string,
-  'failed.reason': 'user-declined' | 'user-cancelled' | 'error',
-  'id': string,
-  'input.length': number,
-  'model.id': string,
-  'model.provider.id': string,
-  'model.provider.name': string,
-  'output.length': number,
-  'retry.count': number,
-  'type': 'changelog',
-  'usage.completionTokens': number,
-  'usage.limits.limit': number,
-  'usage.limits.resetsOn': string,
-  'usage.limits.used': number,
-  'usage.promptTokens': number,
-  'usage.totalTokens': number,
-  'warning.exceededLargePromptThreshold': boolean,
-  'warning.promptTruncated': boolean
-}
-```
-
-or
-
-```typescript
-{
-  'config.largePromptThreshold': number,
-  'config.usedCustomInstructions': boolean,
-  'correlationId': string,
-  'customInstructions.commitMessage.setting.length': number,
-  'customInstructions.commitMessage.setting.used': boolean,
-  'customInstructions.length': number,
-  'customInstructions.setting.length': number,
-  'customInstructions.setting.used': boolean,
-  'customInstructions.used': boolean,
-  'diff.files.count': number,
-  'diff.hash': string,
-  'diff.hunks.count': number,
-  'diff.lines.count': number,
-  'duration': number,
-  'failed': boolean,
-  'failed.cancelled.reason': 'large-prompt',
-  'failed.error': string,
-  'failed.error.detail': string,
-  'failed.reason': 'user-declined' | 'user-cancelled' | 'error',
-  'id': string,
-  'input.length': number,
-  'model.id': string,
-  'model.provider.id': string,
-  'model.provider.name': string,
-  'output.length': number,
-  'retry.count': number,
-  'type': 'commitMessage',
-  'usage.completionTokens': number,
-  'usage.limits.limit': number,
-  'usage.limits.resetsOn': string,
-  'usage.limits.used': number,
-  'usage.promptTokens': number,
-  'usage.totalTokens': number,
-  'warning.exceededLargePromptThreshold': boolean,
-  'warning.promptTruncated': boolean
-}
-```
-
-or
-
-```typescript
-{
-  'config.largePromptThreshold': number,
-  'config.usedCustomInstructions': boolean,
-  'correlationId': string,
-  'customInstructions.commitMessage.setting.length': number,
-  'customInstructions.commitMessage.setting.used': boolean,
-  'customInstructions.length': number,
-  'customInstructions.setting.length': number,
-  'customInstructions.setting.used': boolean,
-  'customInstructions.used': boolean,
-  'diff.files.count': number,
-  'diff.hash': string,
-  'diff.hunks.count': number,
-  'diff.lines.count': number,
-  'draftType': 'stash' | 'patch' | 'suggested_pr_change',
-  'duration': number,
-  'failed': boolean,
-  'failed.cancelled.reason': 'large-prompt',
-  'failed.error': string,
-  'failed.error.detail': string,
-  'failed.reason': 'user-declined' | 'user-cancelled' | 'error',
-  'id': string,
-  'input.length': number,
-  'model.id': string,
-  'model.provider.id': string,
-  'model.provider.name': string,
-  'output.length': number,
-  'retry.count': number,
-  'type': 'draftMessage',
-  'usage.completionTokens': number,
-  'usage.limits.limit': number,
-  'usage.limits.resetsOn': string,
-  'usage.limits.used': number,
-  'usage.promptTokens': number,
-  'usage.totalTokens': number,
-  'warning.exceededLargePromptThreshold': boolean,
-  'warning.promptTruncated': boolean
-}
-```
-
-or
-
-```typescript
-{
-  'config.largePromptThreshold': number,
-  'config.usedCustomInstructions': boolean,
-  'correlationId': string,
-  'customInstructions.commitMessage.setting.length': number,
-  'customInstructions.commitMessage.setting.used': boolean,
-  'customInstructions.length': number,
-  'customInstructions.setting.length': number,
-  'customInstructions.setting.used': boolean,
-  'customInstructions.used': boolean,
-  'diff.files.count': number,
-  'diff.hash': string,
-  'diff.hunks.count': number,
-  'diff.lines.count': number,
-  'duration': number,
-  'failed': boolean,
-  'failed.cancelled.reason': 'large-prompt',
-  'failed.error': string,
-  'failed.error.detail': string,
-  'failed.reason': 'user-declined' | 'user-cancelled' | 'error',
-  'id': string,
-  'input.length': number,
-  'model.id': string,
-  'model.provider.id': string,
-  'model.provider.name': string,
-  'output.length': number,
-  'retry.count': number,
-  'type': 'createPullRequest',
-  'usage.completionTokens': number,
-  'usage.limits.limit': number,
-  'usage.limits.resetsOn': string,
-  'usage.limits.used': number,
-  'usage.promptTokens': number,
-  'usage.totalTokens': number,
-  'warning.exceededLargePromptThreshold': boolean,
-  'warning.promptTruncated': boolean
-}
-```
-
-or
-
-```typescript
-{
-  'config.largePromptThreshold': number,
-  'config.usedCustomInstructions': boolean,
-  'correlationId': string,
-  'customInstructions.commitMessage.setting.length': number,
-  'customInstructions.commitMessage.setting.used': boolean,
-  'customInstructions.length': number,
-  'customInstructions.setting.length': number,
-  'customInstructions.setting.used': boolean,
-  'customInstructions.used': boolean,
-  'diff.files.count': number,
-  'diff.hash': string,
-  'diff.hunks.count': number,
-  'diff.lines.count': number,
-  'duration': number,
-  'failed': boolean,
-  'failed.cancelled.reason': 'large-prompt',
-  'failed.error': string,
-  'failed.error.detail': string,
-  'failed.reason': 'user-declined' | 'user-cancelled' | 'error',
-  'id': string,
-  'input.length': number,
-  'model.id': string,
-  'model.provider.id': string,
-  'model.provider.name': string,
-  'output.length': number,
-  'retry.count': number,
-  'type': 'commits',
-  'usage.completionTokens': number,
-  'usage.limits.limit': number,
-  'usage.limits.resetsOn': string,
-  'usage.limits.used': number,
-  'usage.promptTokens': number,
-  'usage.totalTokens': number,
-  'warning.exceededLargePromptThreshold': boolean,
-  'warning.promptTruncated': boolean
-}
-```
-
-or
-
-```typescript
-{
-  'config.largePromptThreshold': number,
-  'config.usedCustomInstructions': boolean,
-  'correlationId': string,
-  'customInstructions.commitMessage.setting.length': number,
-  'customInstructions.commitMessage.setting.used': boolean,
-  'customInstructions.length': number,
-  'customInstructions.setting.length': number,
-  'customInstructions.setting.used': boolean,
-  'customInstructions.used': boolean,
-  'diff.files.count': number,
-  'diff.hash': string,
-  'diff.hunks.count': number,
-  'diff.lines.count': number,
-  'duration': number,
-  'failed': boolean,
-  'failed.cancelled.reason': 'large-prompt',
-  'failed.error': string,
-  'failed.error.detail': string,
-  'failed.reason': 'user-declined' | 'user-cancelled' | 'error',
-  'id': string,
-  'input.length': number,
-  'model.id': string,
-  'model.provider.id': string,
-  'model.provider.name': string,
-  'output.length': number,
-  'retry.count': number,
-  'type': 'resolveConflicts',
-  'usage.completionTokens': number,
-  'usage.limits.limit': number,
-  'usage.limits.resetsOn': string,
-  'usage.limits.used': number,
-  'usage.promptTokens': number,
-  'usage.totalTokens': number,
-  'warning.exceededLargePromptThreshold': boolean,
-  'warning.promptTruncated': boolean
-}
-```
-
-or
-
-```typescript
-{
-  'config.largePromptThreshold': number,
-  'config.usedCustomInstructions': boolean,
-  'correlationId': string,
-  'customInstructions.commitMessage.setting.length': number,
-  'customInstructions.commitMessage.setting.used': boolean,
-  'customInstructions.length': number,
-  'customInstructions.setting.length': number,
-  'customInstructions.setting.used': boolean,
-  'customInstructions.used': boolean,
-  'diff.files.count': number,
-  'diff.hash': string,
-  'diff.hunks.count': number,
-  'diff.lines.count': number,
-  'duration': number,
-  'failed': boolean,
-  'failed.cancelled.reason': 'large-prompt',
-  'failed.error': string,
-  'failed.error.detail': string,
-  'failed.reason': 'user-declined' | 'user-cancelled' | 'error',
-  'id': string,
-  'input.length': number,
-  'model.id': string,
-  'model.provider.id': string,
-  'model.provider.name': string,
-  'output.length': number,
-  'retry.count': number,
-  'type': 'searchQuery',
-  'usage.completionTokens': number,
-  'usage.limits.limit': number,
-  'usage.limits.resetsOn': string,
-  'usage.limits.used': number,
-  'usage.promptTokens': number,
-  'usage.totalTokens': number,
-  'warning.exceededLargePromptThreshold': boolean,
-  'warning.promptTruncated': boolean
-}
-```
-
-or
-
-```typescript
-{
-  'config.largePromptThreshold': number,
-  'config.usedCustomInstructions': boolean,
-  'correlationId': string,
-  'customInstructions.commitMessage.setting.length': number,
-  'customInstructions.commitMessage.setting.used': boolean,
-  'customInstructions.length': number,
-  'customInstructions.setting.length': number,
-  'customInstructions.setting.used': boolean,
-  'customInstructions.used': boolean,
-  'diff.files.count': number,
-  'diff.hash': string,
-  'diff.hunks.count': number,
-  'diff.lines.count': number,
-  'duration': number,
-  'failed': boolean,
-  'failed.cancelled.reason': 'large-prompt',
-  'failed.error': string,
-  'failed.error.detail': string,
-  'failed.reason': 'user-declined' | 'user-cancelled' | 'error',
-  'id': string,
-  'input.length': number,
-  'model.id': string,
-  'model.provider.id': string,
-  'model.provider.name': string,
-  'output.length': number,
-  'retry.count': number,
-  'type': 'stashMessage',
-  'usage.completionTokens': number,
-  'usage.limits.limit': number,
-  'usage.limits.resetsOn': string,
-  'usage.limits.used': number,
-  'usage.promptTokens': number,
-  'usage.totalTokens': number,
-  'warning.exceededLargePromptThreshold': boolean,
-  'warning.promptTruncated': boolean
-}
-```
-
-### ai/review
-
-> Sent when reviewing changes from wip, commits, or commit ranges
-
-```typescript
-{
-  'config.largePromptThreshold': number,
-  'config.usedCustomInstructions': boolean,
-  'correlationId': string,
-  'customInstructions.commitMessage.setting.length': number,
-  'customInstructions.commitMessage.setting.used': boolean,
-  'customInstructions.length': number,
-  'customInstructions.setting.length': number,
-  'customInstructions.setting.used': boolean,
-  'customInstructions.used': boolean,
-  'diff.files.count': number,
-  'diff.hash': string,
-  'diff.hunks.count': number,
-  'diff.lines.count': number,
-  'duration': number,
-  'failed': boolean,
-  'failed.cancelled.reason': 'large-prompt',
-  'failed.error': string,
-  'failed.error.detail': string,
-  'failed.reason': 'user-declined' | 'user-cancelled' | 'error',
-  'id': string,
-  'input.length': number,
-  'model.id': string,
-  'model.provider.id': string,
-  'model.provider.name': string,
-  'output.length': number,
-  'retry.count': number,
-  'reviewMode': 'single-pass' | 'two-pass',
-  'reviewType': 'wip' | 'commit' | 'compare',
-  'type': 'review',
-  'usage.completionTokens': number,
-  'usage.limits.limit': number,
-  'usage.limits.resetsOn': string,
-  'usage.limits.used': number,
-  'usage.promptTokens': number,
-  'usage.totalTokens': number,
-  'warning.exceededLargePromptThreshold': boolean,
-  'warning.promptTruncated': boolean
-}
-```
-
-### ai/switchModel
-
-> Sent when switching ai models
-
-```typescript
-{
-  'model.id': string,
-  'model.provider.id': string,
-  'model.provider.name': string
-}
-```
-
-or
-
-```typescript
-{
-  'failed': true
-}
-```
-
-### aiAllAccess/bannerDismissed
-
-> Sent when user dismisses the AI All Access banner
-
-```typescript
-void
-```
-
-### aiAllAccess/opened
-
-> Sent when user opens the AI All Access page
-
-```typescript
-void
-```
-
-### aiAllAccess/optedIn
-
-> Sent when user opts in to AI All Access
-
-```typescript
-void
-```
-
 ### associateIssueWithBranch/action
 
 > Sent when the user chooses to manage integrations
@@ -704,8 +87,6 @@ void
   'instance': number,
   'action': 'manage' | 'connect',
   'connected': boolean,
-  // Route requested by the caller for the manual-vs-agent flow; `undefined` when the caller didn't opt in.
-  'context.showOpenInAgent': string,
   'items.count': number
 }
 ```
@@ -719,8 +100,6 @@ void
   'instance': number,
   'action': 'soft-open',
   'connected': boolean,
-  // Route requested by the caller for the manual-vs-agent flow; `undefined` when the caller didn't opt in.
-  'context.showOpenInAgent': string,
   [`item.${string}`]: string | number | boolean,
   'items.count': number
 }
@@ -734,8 +113,6 @@ void
 {
   'instance': number,
   'connected': boolean,
-  // Route requested by the caller for the manual-vs-agent flow; `undefined` when the caller didn't opt in.
-  'context.showOpenInAgent': string,
   [`item.${string}`]: string | number | boolean,
   'items.count': number
 }
@@ -747,9 +124,7 @@ void
 
 ```typescript
 {
-  'instance': number,
-  // Route requested by the caller for the manual-vs-agent flow; `undefined` when the caller didn't opt in.
-  'context.showOpenInAgent': string
+  'instance': number
 }
 ```
 
@@ -761,8 +136,6 @@ void
 {
   'instance': number,
   'connected': boolean,
-  // Route requested by the caller for the manual-vs-agent flow; `undefined` when the caller didn't opt in.
-  'context.showOpenInAgent': string,
   'items.count': number
 }
 ```
@@ -775,8 +148,6 @@ void
 {
   'instance': number,
   'connected': boolean,
-  // Route requested by the caller for the manual-vs-agent flow; `undefined` when the caller didn't opt in.
-  'context.showOpenInAgent': string,
   'items.count': number
 }
 ```
@@ -789,8 +160,6 @@ void
 {
   'instance': number,
   'connected': boolean,
-  // Route requested by the caller for the manual-vs-agent flow; `undefined` when the caller didn't opt in.
-  'context.showOpenInAgent': string,
   'items.count': number
 }
 ```
@@ -804,8 +173,6 @@ void
   'instance': number,
   'action': 'connect',
   'connected': boolean,
-  // Route requested by the caller for the manual-vs-agent flow; `undefined` when the caller didn't opt in.
-  'context.showOpenInAgent': string,
   'items.count': number
 }
 ```
@@ -830,7 +197,7 @@ void
   'autoInstall': boolean,
   'error.message': string,
   'insiders': boolean,
-  'source': 'account' | 'subscription' | 'graph' | 'settings' | 'rebaseEditor' | 'ai' | 'ai:markdown-preview' | 'ai:markdown-editor' | 'ai:picker' | 'associateIssueWithBranch' | 'commandPalette' | 'deeplink' | 'editor:hover' | 'feature-badge' | 'feature-gate' | 'graph-details' | 'graph-header' | 'graph-kanban' | 'graph-sidebar' | 'graph-treemap' | 'inspect' | 'inspect-overview' | 'integrations' | 'merge-target' | 'notification' | 'prompt' | 'quick-wizard' | 'remoteProvider' | 'scm' | 'scm-input' | 'startReview' | 'startWork' | 'statusbar:hover' | 'view' | 'view:hover' | 'walkthrough' | 'whatsnew'
+  'source': 'settings' | 'graph' | 'rebaseEditor' | 'account' | 'ai' | 'associateIssueWithBranch' | 'commandPalette' | 'deeplink' | 'editor:hover' | 'feature-badge' | 'feature-gate' | 'graph-details' | 'graph-header' | 'graph-kanban' | 'graph-sidebar' | 'graph-treemap' | 'inspect' | 'inspect-overview' | 'integrations' | 'merge-target' | 'notification' | 'prompt' | 'quick-wizard' | 'remoteProvider' | 'scm' | 'scm-input' | 'startReview' | 'startWork' | 'statusbar:hover' | 'subscription' | 'view' | 'view:hover' | 'walkthrough' | 'whatsnew'
 }
 ```
 
@@ -843,7 +210,7 @@ void
   'attempts': number,
   'autoInstall': boolean,
   'insiders': boolean,
-  'source': 'account' | 'subscription' | 'graph' | 'settings' | 'rebaseEditor' | 'ai' | 'ai:markdown-preview' | 'ai:markdown-editor' | 'ai:picker' | 'associateIssueWithBranch' | 'commandPalette' | 'deeplink' | 'editor:hover' | 'feature-badge' | 'feature-gate' | 'graph-details' | 'graph-header' | 'graph-kanban' | 'graph-sidebar' | 'graph-treemap' | 'inspect' | 'inspect-overview' | 'integrations' | 'merge-target' | 'notification' | 'prompt' | 'quick-wizard' | 'remoteProvider' | 'scm' | 'scm-input' | 'startReview' | 'startWork' | 'statusbar:hover' | 'view' | 'view:hover' | 'walkthrough' | 'whatsnew'
+  'source': 'settings' | 'graph' | 'rebaseEditor' | 'account' | 'ai' | 'associateIssueWithBranch' | 'commandPalette' | 'deeplink' | 'editor:hover' | 'feature-badge' | 'feature-gate' | 'graph-details' | 'graph-header' | 'graph-kanban' | 'graph-sidebar' | 'graph-treemap' | 'inspect' | 'inspect-overview' | 'integrations' | 'merge-target' | 'notification' | 'prompt' | 'quick-wizard' | 'remoteProvider' | 'scm' | 'scm-input' | 'startReview' | 'startWork' | 'statusbar:hover' | 'subscription' | 'view' | 'view:hover' | 'walkthrough' | 'whatsnew'
 }
 ```
 
@@ -856,7 +223,7 @@ void
   'attempts': number,
   'autoInstall': boolean,
   'insiders': boolean,
-  'source': 'account' | 'subscription' | 'graph' | 'settings' | 'rebaseEditor' | 'ai' | 'ai:markdown-preview' | 'ai:markdown-editor' | 'ai:picker' | 'associateIssueWithBranch' | 'commandPalette' | 'deeplink' | 'editor:hover' | 'feature-badge' | 'feature-gate' | 'graph-details' | 'graph-header' | 'graph-kanban' | 'graph-sidebar' | 'graph-treemap' | 'inspect' | 'inspect-overview' | 'integrations' | 'merge-target' | 'notification' | 'prompt' | 'quick-wizard' | 'remoteProvider' | 'scm' | 'scm-input' | 'startReview' | 'startWork' | 'statusbar:hover' | 'view' | 'view:hover' | 'walkthrough' | 'whatsnew',
+  'source': 'settings' | 'graph' | 'rebaseEditor' | 'account' | 'ai' | 'associateIssueWithBranch' | 'commandPalette' | 'deeplink' | 'editor:hover' | 'feature-badge' | 'feature-gate' | 'graph-details' | 'graph-header' | 'graph-kanban' | 'graph-sidebar' | 'graph-treemap' | 'inspect' | 'inspect-overview' | 'integrations' | 'merge-target' | 'notification' | 'prompt' | 'quick-wizard' | 'remoteProvider' | 'scm' | 'scm-input' | 'startReview' | 'startWork' | 'statusbar:hover' | 'subscription' | 'view' | 'view:hover' | 'walkthrough' | 'whatsnew',
   'version': string
 }
 ```
@@ -1140,7 +507,7 @@ or
   'context.autolinks': number,
   'context.mode': 'commit',
   'context.pinned': boolean,
-  'context.type': 'stash' | 'commit',
+  'context.type': 'commit' | 'stash',
   'context.uncommitted': boolean,
   'context.webview.host': 'view' | 'editor' | 'panel',
   'context.webview.id': string,
@@ -1233,7 +600,7 @@ or
   'context.config.pullRequests.enabled': boolean,
   'context.mode': 'commit',
   'context.pinned': boolean,
-  'context.type': 'stash' | 'commit',
+  'context.type': 'commit' | 'stash',
   'context.uncommitted': boolean,
   'context.webview.host': 'view' | 'editor' | 'panel',
   'context.webview.id': string,
@@ -1360,27 +727,6 @@ background-upgraded the extension while the host kept running the old build
 {
   'branchesVisibility.new': 'all' | 'smart' | 'current' | 'favorited' | 'agents',
   'branchesVisibility.old': 'all' | 'smart' | 'current' | 'favorited' | 'agents',
-  'context.repository.closed': boolean,
-  'context.repository.folder.scheme': string,
-  'context.repository.id': string,
-  'context.repository.provider.id': string,
-  'context.repository.scheme': string,
-  'context.webview.host': 'view' | 'editor' | 'panel',
-  'context.webview.id': string,
-  'context.webview.instanceId': string,
-  'context.webview.type': string
-}
-```
-
-### graph/columns/changed
-
-> Sent when the user changes the columns on the graph view
-
-```typescript
-{
-  [`column.${string}.isHidden`]: boolean,
-  [`column.${string}.mode`]: string,
-  [`column.${string}.width`]: number,
   'context.repository.closed': boolean,
   'context.repository.folder.scheme': string,
   'context.repository.id': string,
@@ -1652,7 +998,7 @@ background-upgraded the extension while the host kept running the old build
   'failed': boolean,
   'failed.error': string,
   'failed.error.detail': string,
-  'failed.reason': 'error' | 'cancelled',
+  'failed.reason': 'cancelled' | 'error',
   'matches': number,
   'types': string
 }
@@ -1676,7 +1022,7 @@ background-upgraded the extension while the host kept running the old build
   'context.config.defaultItemLimit': number,
   'context.config.details.location': 'right' | 'bottom',
   'context.config.dimMergeCommits': boolean,
-  'context.config.editorOpeningBehavior': 'active' | 'auto',
+  'context.config.editorOpeningBehavior': 'auto' | 'active',
   'context.config.experimental.kanban.enabled': boolean,
   'context.config.experimental.visualizations.activityDecay': '30s' | '1m' | '2m' | '5m' | '10m' | '30m',
   'context.config.experimental.visualizations.enabled': boolean,
@@ -1796,7 +1142,7 @@ background-upgraded the extension while the host kept running the old build
   // How long the panel was open in milliseconds
   'duration': number,
   // Active panel mode at time of close
-  'mode': 'wip' | 'commit' | 'compare' | 'review' | 'multicommit' | 'compose' | 'resolve' | 'none'
+  'mode': 'wip' | 'commit' | 'multicommit' | 'review' | 'compose' | 'resolve' | 'compare' | 'none'
 }
 ```
 
@@ -1815,8 +1161,8 @@ background-upgraded the extension while the host kept running the old build
   'context.webview.id': string,
   'context.webview.instanceId': string,
   'context.webview.type': string,
-  'mode.new': 'wip' | 'commit' | 'compare' | 'review' | 'multicommit' | 'compose' | 'resolve' | 'none',
-  'mode.old': 'wip' | 'commit' | 'compare' | 'review' | 'multicommit' | 'compose' | 'resolve' | 'none'
+  'mode.new': 'wip' | 'commit' | 'multicommit' | 'review' | 'compose' | 'resolve' | 'compare' | 'none',
+  'mode.old': 'wip' | 'commit' | 'multicommit' | 'review' | 'compose' | 'resolve' | 'compare' | 'none'
 }
 ```
 
@@ -1854,7 +1200,7 @@ background-upgraded the extension while the host kept running the old build
   // Where the details panel is anchored relative to the graph
   'location': 'right' | 'bottom',
   // Active panel mode at time of show
-  'mode': 'wip' | 'commit' | 'compare' | 'review' | 'multicommit' | 'compose' | 'resolve' | 'none',
+  'mode': 'wip' | 'commit' | 'multicommit' | 'review' | 'compose' | 'resolve' | 'compare' | 'none',
   // Split-pane position percentage from the closed edge (0–100)
   'position': number,
   // Number of rows currently selected in the graph (0, 1, or N)
@@ -1936,20 +1282,7 @@ background-upgraded the extension while the host kept running the old build
   'repoPrivacy': 'private' | 'public' | 'local',
   'repository.visibility': 'private' | 'public' | 'local',
   // Provided for compatibility with other GK surfaces
-  'source': 'account' | 'subscription' | 'graph' | 'settings' | 'rebaseEditor' | 'ai' | 'ai:markdown-preview' | 'ai:markdown-editor' | 'ai:picker' | 'associateIssueWithBranch' | 'commandPalette' | 'deeplink' | 'editor:hover' | 'feature-badge' | 'feature-gate' | 'graph-details' | 'graph-header' | 'graph-kanban' | 'graph-sidebar' | 'graph-treemap' | 'inspect' | 'inspect-overview' | 'integrations' | 'merge-target' | 'notification' | 'prompt' | 'quick-wizard' | 'remoteProvider' | 'scm' | 'scm-input' | 'startReview' | 'startWork' | 'statusbar:hover' | 'view' | 'view:hover' | 'walkthrough' | 'whatsnew'
-}
-```
-
-### productConfig/failed
-
-> Sent when fetching the product config fails
-
-```typescript
-{
-  'exception': string,
-  'json': string,
-  'reason': 'fetch' | 'validation',
-  'statusCode': number
+  'source': 'settings' | 'graph' | 'rebaseEditor' | 'account' | 'ai' | 'associateIssueWithBranch' | 'commandPalette' | 'deeplink' | 'editor:hover' | 'feature-badge' | 'feature-gate' | 'graph-details' | 'graph-header' | 'graph-kanban' | 'graph-sidebar' | 'graph-treemap' | 'inspect' | 'inspect-overview' | 'integrations' | 'merge-target' | 'notification' | 'prompt' | 'quick-wizard' | 'remoteProvider' | 'scm' | 'scm-input' | 'startReview' | 'startWork' | 'statusbar:hover' | 'subscription' | 'view' | 'view:hover' | 'walkthrough' | 'whatsnew'
 }
 ```
 
@@ -2176,7 +1509,7 @@ void
   'context.webview.instanceId': string,
   'context.webview.type': string,
   // Where the ref is being revealed
-  'location': 'graph' | 'commitDetails',
+  'location': 'commitDetails' | 'graph',
   // Type of ref being revealed
   'ref.type': 'commit' | 'branch'
 }
@@ -2611,38 +1944,6 @@ void
   'instance': number,
   'action': 'manage' | 'connect',
   'connected': boolean,
-  // Route requested by the caller for the manual-vs-agent flow; `undefined` when the caller didn't opt in.
-  'context.showOpenInAgent': string,
-  'items.count': number
-}
-```
-
-### startReview/agent/resolved
-
-> Sent when the manual-vs-agent flow resolves (manual, cancel, or a specific agent)
-
-```typescript
-{
-  'instance': number,
-  'agent.resolution': 'manual' | 'cancel',
-  'connected': boolean,
-  // Route requested by the caller for the manual-vs-agent flow; `undefined` when the caller didn't opt in.
-  'context.showOpenInAgent': string,
-  'items.count': number
-}
-```
-
-or
-
-```typescript
-{
-  'instance': number,
-  'agent.id': string,
-  'agent.kind': string,
-  'agent.resolution': 'agent',
-  'connected': boolean,
-  // Route requested by the caller for the manual-vs-agent flow; `undefined` when the caller didn't opt in.
-  'context.showOpenInAgent': string,
   'items.count': number
 }
 ```
@@ -2653,9 +1954,7 @@ or
 
 ```typescript
 {
-  'instance': number,
-  // Route requested by the caller for the manual-vs-agent flow; `undefined` when the caller didn't opt in.
-  'context.showOpenInAgent': string
+  'instance': number
 }
 ```
 
@@ -2667,8 +1966,6 @@ or
 {
   'instance': number,
   'connected': boolean,
-  // Route requested by the caller for the manual-vs-agent flow; `undefined` when the caller didn't opt in.
-  'context.showOpenInAgent': string,
   'items.count': number
 }
 ```
@@ -2682,8 +1979,6 @@ or
   'instance': number,
   'action': 'soft-open',
   'connected': boolean,
-  // Route requested by the caller for the manual-vs-agent flow; `undefined` when the caller didn't opt in.
-  'context.showOpenInAgent': string,
   [`item.${string}`]: string | number | boolean,
   'items.count': number
 }
@@ -2697,8 +1992,6 @@ or
 {
   'instance': number,
   'connected': boolean,
-  // Route requested by the caller for the manual-vs-agent flow; `undefined` when the caller didn't opt in.
-  'context.showOpenInAgent': string,
   [`item.${string}`]: string | number | boolean,
   'items.count': number
 }
@@ -2712,8 +2005,6 @@ or
 {
   'instance': number,
   'connected': boolean,
-  // Route requested by the caller for the manual-vs-agent flow; `undefined` when the caller didn't opt in.
-  'context.showOpenInAgent': string,
   'items.count': number
 }
 ```
@@ -2726,8 +2017,6 @@ or
 {
   'instance': number,
   'connected': boolean,
-  // Route requested by the caller for the manual-vs-agent flow; `undefined` when the caller didn't opt in.
-  'context.showOpenInAgent': string,
   'items.count': number
 }
 ```
@@ -2741,8 +2030,6 @@ or
   'instance': number,
   'action': 'connect',
   'connected': boolean,
-  // Route requested by the caller for the manual-vs-agent flow; `undefined` when the caller didn't opt in.
-  'context.showOpenInAgent': string,
   'items.count': number
 }
 ```
@@ -2756,38 +2043,6 @@ or
   'instance': number,
   'action': 'manage' | 'connect',
   'connected': boolean,
-  // Route requested by the caller for the manual-vs-agent flow; `undefined` when the caller didn't opt in.
-  'context.showOpenInAgent': string,
-  'items.count': number
-}
-```
-
-### startWork/agent/resolved
-
-> Sent when the manual-vs-agent flow resolves (manual, cancel, or a specific agent)
-
-```typescript
-{
-  'instance': number,
-  'agent.resolution': 'manual' | 'cancel',
-  'connected': boolean,
-  // Route requested by the caller for the manual-vs-agent flow; `undefined` when the caller didn't opt in.
-  'context.showOpenInAgent': string,
-  'items.count': number
-}
-```
-
-or
-
-```typescript
-{
-  'instance': number,
-  'agent.id': string,
-  'agent.kind': string,
-  'agent.resolution': 'agent',
-  'connected': boolean,
-  // Route requested by the caller for the manual-vs-agent flow; `undefined` when the caller didn't opt in.
-  'context.showOpenInAgent': string,
   'items.count': number
 }
 ```
@@ -2801,8 +2056,6 @@ or
   'instance': number,
   'action': 'soft-open',
   'connected': boolean,
-  // Route requested by the caller for the manual-vs-agent flow; `undefined` when the caller didn't opt in.
-  'context.showOpenInAgent': string,
   [`item.${string}`]: string | number | boolean,
   'items.count': number
 }
@@ -2816,8 +2069,6 @@ or
 {
   'instance': number,
   'connected': boolean,
-  // Route requested by the caller for the manual-vs-agent flow; `undefined` when the caller didn't opt in.
-  'context.showOpenInAgent': string,
   [`item.${string}`]: string | number | boolean,
   'items.count': number
 }
@@ -2829,9 +2080,7 @@ or
 
 ```typescript
 {
-  'instance': number,
-  // Route requested by the caller for the manual-vs-agent flow; `undefined` when the caller didn't opt in.
-  'context.showOpenInAgent': string
+  'instance': number
 }
 ```
 
@@ -2843,8 +2092,6 @@ or
 {
   'instance': number,
   'connected': boolean,
-  // Route requested by the caller for the manual-vs-agent flow; `undefined` when the caller didn't opt in.
-  'context.showOpenInAgent': string,
   'items.count': number
 }
 ```
@@ -2857,8 +2104,6 @@ or
 {
   'instance': number,
   'connected': boolean,
-  // Route requested by the caller for the manual-vs-agent flow; `undefined` when the caller didn't opt in.
-  'context.showOpenInAgent': string,
   'items.count': number
 }
 ```
@@ -2871,8 +2116,6 @@ or
 {
   'instance': number,
   'connected': boolean,
-  // Route requested by the caller for the manual-vs-agent flow; `undefined` when the caller didn't opt in.
-  'context.showOpenInAgent': string,
   'items.count': number
 }
 ```
@@ -2886,92 +2129,7 @@ or
   'instance': number,
   'action': 'connect',
   'connected': boolean,
-  // Route requested by the caller for the manual-vs-agent flow; `undefined` when the caller didn't opt in.
-  'context.showOpenInAgent': string,
   'items.count': number
-}
-```
-
-### subscription
-
-> Sent when the subscription is loaded
-
-```typescript
-{
-  [`account.${string}`]: string,
-  'subscription.actual.id': 'community',
-  'subscription.effective.id': 'community',
-  'subscription.featurePreviews.graph.day': number,
-  [`subscription.featurePreviews.graph.day.${number}.startedOn`]: string,
-  'subscription.featurePreviews.graph.startedOn': string,
-  'subscription.featurePreviews.graph.status': 'eligible' | 'active' | 'expired',
-  'subscription.id': 'community',
-  // Promo discount code associated with the upgrade
-  'subscription.promo.code': string,
-  // Promo key (identifier) associated with the upgrade
-  'subscription.promo.key': string,
-  'subscription.state': -1 | 0 | 1 | 2 | 3 | 4 | 5 | 6,
-  'subscription.stateString': string
-}
-```
-
-### subscription/action
-
-> Sent when the user takes an action on the subscription
-
-```typescript
-{
-  'action': 'manage' | 'sign-up' | 'sign-in' | 'sign-out' | 'manage-subscription' | 'reactivate' | 'refer-friend' | 'resend-verification' | 'pricing'
-}
-```
-
-or
-
-```typescript
-{
-  // `true` if the user cancels the VS Code prompt to open the browser
-  'aborted': boolean,
-  'action': 'upgrade',
-  // Promo discount code associated with the upgrade
-  'promo.code': string,
-  // Promo key (identifier) associated with the upgrade
-  'promo.key': string
-}
-```
-
-or
-
-```typescript
-{
-  'action': 'visibility',
-  'visible': boolean
-}
-```
-
-### subscription/changed
-
-> Sent when the subscription changes
-
-```typescript
-{
-  [`account.${string}`]: string,
-  [`previous.account.${string}`]: string,
-  'previous.subscription.actual.id': 'community',
-  'previous.subscription.effective.id': 'community',
-  'previous.subscription.id': 'community',
-  'subscription.actual.id': 'community',
-  'subscription.effective.id': 'community',
-  'subscription.featurePreviews.graph.day': number,
-  [`subscription.featurePreviews.graph.day.${number}.startedOn`]: string,
-  'subscription.featurePreviews.graph.startedOn': string,
-  'subscription.featurePreviews.graph.status': 'eligible' | 'active' | 'expired',
-  'subscription.id': 'community',
-  // Promo discount code associated with the upgrade
-  'subscription.promo.code': string,
-  // Promo key (identifier) associated with the upgrade
-  'subscription.promo.key': string,
-  'subscription.state': -1 | 0 | 1 | 2 | 3 | 4 | 5 | 6,
-  'subscription.stateString': string
 }
 ```
 

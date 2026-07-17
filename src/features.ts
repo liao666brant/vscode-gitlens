@@ -1,6 +1,6 @@
 import type { GitFeatures } from '@gitlens/git/features.js';
 import type { RepositoryVisibility } from '@gitlens/git/providers/types.js';
-import type { RequiredSubscriptionPlanIds, Subscription } from './community/stubs/pro.js';
+import type { RequiredSubscriptionPlanIds, Subscription } from './community/subscription.js';
 
 // Re-export Git feature types and constants from @gitlens/git
 export type { FilteredGitFeatures, GitFeatureOrPrefix, GitFeatures } from '@gitlens/git/features.js';

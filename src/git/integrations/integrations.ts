@@ -1,20 +1,23 @@
-/* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-return, @typescript-eslint/no-unused-vars */
-
+// Community build: cloud/rich integrations are inert. These types and services preserve the
+// integration framework shape so host/webview code compiles and runs without any real
+// authentication, connection, or remote data — every query resolves empty/disconnected.
 import type { IssueOrPullRequest } from '@gitlens/git/models/issueOrPullRequest.js';
 import type { Issue } from '@gitlens/git/models/issue.js';
 import type { CommitAuthor } from '@gitlens/git/models/author.js';
 import type { RemoteProviderId } from '@gitlens/git/models/remoteProvider.js';
 import type { RepositoryMetadata } from '@gitlens/git/models/repositoryMetadata.js';
-import type { ResourceDescriptor } from '@gitlens/git/models/resourceDescriptor.js';
+import type {
+	IssueResourceDescriptor,
+	RepositoryDescriptor,
+	ResourceDescriptor,
+} from '@gitlens/git/models/resourceDescriptor.js';
 import type {
 	CloudGitSelfManagedHostIntegrationIds,
 	IntegrationIds,
 	IssuesCloudHostIntegrationId,
 } from '../../constants.integrations.js';
-import type { GlRepository } from '../../git/models/repository.js';
+import type { GlRepository } from '../models/repository.js';
 
-// MIT replacement for removed commercial modules. It keeps community build paths inert.
-type ProStubAny = any;
 type DisposableLike = { dispose(): void };
 type EventLike<T> = (listener: (e: T) => void, thisArgs?: unknown) => DisposableLike;
 
@@ -34,50 +37,9 @@ class SimpleEmitter<T> {
 	}
 }
 
-const proStubTarget = function proStubTarget() {
-	return undefined;
-};
-
-export const proStub = new Proxy(proStubTarget, {
-	apply: () => undefined,
-	construct: () => ({}),
-	get: (_target, property) => {
-		if (property === Symbol.toPrimitive) return () => '';
-		if (property === 'then') return undefined;
-		return proStub;
-	},
-}) as ProStubAny;
-
-export type CommunityPlan = {
-	id: 'community';
-	actual: { id: 'community' };
-	effective: { id: 'community' };
-};
-
-export type SubscriptionAccount = {
-	id?: string;
-	email?: string;
-	name?: string;
-	verified?: boolean;
-	[key: string]: unknown;
-};
-
-export type Subscription = {
-	account?: SubscriptionAccount;
-	plan: CommunityPlan;
-	state: 0;
-	[key: string]: unknown;
-};
-
-export const communitySubscription: Subscription = {
-	plan: { id: 'community', actual: { id: 'community' }, effective: { id: 'community' } },
-	state: 0,
-};
-
 export type ConfiguredIntegrationDescriptor = {
 	integrationId: IntegrationIds;
 	domain?: string;
-	[key: string]: unknown;
 };
 
 export type ConfiguredIntegrationsChangeEvent = {
@@ -88,9 +50,9 @@ export type ConfiguredIntegrationsChangeEvent = {
 };
 
 export type ConnectionStateChangeEvent = {
+	key: string;
 	reason?: 'connected' | 'disconnected';
 	integrationId?: string;
-	[key: string]: unknown;
 };
 
 export class IntegrationBase {
@@ -214,16 +176,7 @@ export function isGitHostIntegration(integration: Integration | undefined): inte
 	return integration instanceof GitHostIntegration;
 }
 
-export const providersMetadata: Record<string, { name: string; iconKey: string; type: 'git' | 'issues' }> = new Proxy(
-	{},
-	{
-		get: (_target, property) => ({
-			name: String(property),
-			iconKey: String(property),
-			type: 'git',
-		}),
-	},
-) as Record<string, { name: string; iconKey: string; type: 'git' | 'issues' }>;
+export const providersMetadata: Record<string, { name: string; iconKey: string; type: 'git' | 'issues' }> = {};
 
 export function convertRemoteProviderIdToIntegrationId(
 	_providerId: RemoteProviderId | string,
@@ -231,7 +184,9 @@ export function convertRemoteProviderIdToIntegrationId(
 	return undefined;
 }
 
-export function getIntegrationConnectedKey(id: IntegrationIds, domain?: string): `integration:connected:${string}` {
+export type IntegrationConnectedKey = `integration:connected:${string}`;
+
+export function getIntegrationConnectedKey(id: IntegrationIds, domain?: string): IntegrationConnectedKey {
 	return `integration:connected:${domain == null ? id : `${id}:${domain}`}`;
 }
 
@@ -249,25 +204,16 @@ export function isIssueCloudIntegrationId(_id: unknown): _id is IssuesCloudHostI
 	return false;
 }
 
-export function ensureAccess(..._args: unknown[]): Promise<boolean> {
-	return Promise.resolve(false);
-}
-
-export function ensureAccount(..._args: unknown[]): Promise<boolean> {
-	return Promise.resolve(false);
-}
-
-export function ensurePaidPlan(..._args: unknown[]): Promise<boolean> {
-	return Promise.resolve(false);
-}
+export type GitConfigEntityIdentifier = {
+	entityId?: string;
+	[key: string]: unknown;
+};
 
 export function decodeEntityIdentifiersFromGitConfig(encoded: string): GitConfigEntityIdentifier[] {
 	const parsed = JSON.parse(encoded) as unknown;
 	return Array.isArray(parsed) ? (parsed as GitConfigEntityIdentifier[]) : [];
 }
 
-export const DidChangeNotification: ProStubAny = proStub;
-export type DidChangeNotification<T = ProStubAny, T2 = ProStubAny, T3 = ProStubAny, T4 = ProStubAny> = ProStubAny;
 export function encodeIssueOrPullRequestForGitConfig(
 	issue: IssueOrPullRequest,
 	_owner: ResourceDescriptor,
@@ -276,6 +222,7 @@ export function encodeIssueOrPullRequestForGitConfig(
 		entityId: issue.nodeId,
 	};
 }
+
 export function getIssueFromGitConfigEntityIdentifier(
 	_container: unknown,
 	_identifier: GitConfigEntityIdentifier,
@@ -283,55 +230,7 @@ export function getIssueFromGitConfigEntityIdentifier(
 ): Promise<Issue | undefined> {
 	return Promise.resolve(undefined);
 }
-export const getIssueOwner: ProStubAny = proStub;
-export type getIssueOwner<T = ProStubAny, T2 = ProStubAny, T3 = ProStubAny, T4 = ProStubAny> = ProStubAny;
-export const GitConfigEntityIdentifier: ProStubAny = proStub;
-export type GitConfigEntityIdentifier = {
-	entityId?: string;
-	[key: string]: unknown;
-};
-export const GitHubAuthorityMetadata: ProStubAny = proStub;
-export type GitHubAuthorityMetadata<T = ProStubAny, T2 = ProStubAny, T3 = ProStubAny, T4 = ProStubAny> = ProStubAny;
-export const IntegrationConnectedKey: ProStubAny = proStub;
-export type IntegrationConnectedKey = `integration:connected:${string}`;
 
-// Live consumers below this point keep their ProStubAny aliases verbatim.
-
-export const AgentDescriptor: ProStubAny = proStub;
-export type AgentDescriptor = { id: string; label: string; kind?: string; [key: string]: unknown };
-export const AIGenerateChangelogChange: ProStubAny = proStub;
-export type AIGenerateChangelogChange<T = ProStubAny, T2 = ProStubAny, T3 = ProStubAny, T4 = ProStubAny> = ProStubAny;
-export const AIGenerateChangelogChanges: ProStubAny = proStub;
-export type AIGenerateChangelogChanges<T = ProStubAny, T2 = ProStubAny, T3 = ProStubAny, T4 = ProStubAny> = ProStubAny;
-export const AuthenticationRequiredError: ProStubAny = proStub;
-export type AuthenticationRequiredError<T = ProStubAny, T2 = ProStubAny, T3 = ProStubAny, T4 = ProStubAny> = ProStubAny;
-export const Change: ProStubAny = proStub;
-export type Change = {
-	repository: GlRepository | { name?: string; path: string; uri: string };
-	checked?: boolean | 'staged';
-	files?: { staged?: boolean; [key: string]: unknown }[] | unknown[];
-	[key: string]: unknown;
-};
-export const chipStateSuffix: ProStubAny = proStub;
-export type chipStateSuffix<T = ProStubAny, T2 = ProStubAny, T3 = ProStubAny, T4 = ProStubAny> = ProStubAny;
-export const GraphItemRefContext: ProStubAny = proStub;
-export type GraphItemRefContext<T = ProStubAny, T2 = ProStubAny, T3 = ProStubAny, T4 = ProStubAny> = ProStubAny;
-export const GraphItemRefGroupContext: ProStubAny = proStub;
-export type GraphItemRefGroupContext<T = ProStubAny, T2 = ProStubAny, T3 = ProStubAny, T4 = ProStubAny> = ProStubAny;
-export const linkStyles: ProStubAny = proStub;
-export type linkStyles<T = ProStubAny, T2 = ProStubAny, T3 = ProStubAny, T4 = ProStubAny> = ProStubAny;
-export const NaturalLanguageSearchOptions: ProStubAny = proStub;
-export type NaturalLanguageSearchOptions<
-	T = ProStubAny,
-	T2 = ProStubAny,
-	T3 = ProStubAny,
-	T4 = ProStubAny,
-> = ProStubAny;
-export const RequiredSubscriptionPlanIds: ProStubAny = proStub;
-export type RequiredSubscriptionPlanIds = string;
-export const ruleStyles: ProStubAny = proStub;
-export type ruleStyles<T = ProStubAny, T2 = ProStubAny, T3 = ProStubAny, T4 = ProStubAny> = ProStubAny;
-export const RunningOperationExecState: ProStubAny = proStub;
-export type RunningOperationExecState<T = ProStubAny, T2 = ProStubAny, T3 = ProStubAny, T4 = ProStubAny> = ProStubAny;
-export const statusIconFor: ProStubAny = proStub;
-export type statusIconFor<T = ProStubAny, T2 = ProStubAny, T3 = ProStubAny, T4 = ProStubAny> = ProStubAny;
+export function getIssueOwner(_issue: unknown): IssueResourceDescriptor | RepositoryDescriptor | undefined {
+	return undefined;
+}

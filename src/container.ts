@@ -21,7 +21,7 @@ import { registerPublishListener } from './git/publishListener.js';
 import { OnboardingService } from './onboarding/onboardingService.js';
 import { UsageTracker } from './onboarding/usageTracker.js';
 import { WalkthroughStateProvider } from './onboarding/walkthroughStateProvider.js';
-import { IntegrationService, RepositoryIdentityService } from './community/stubs/pro.js';
+import { IntegrationService, RepositoryIdentityService } from './git/integrations/integrations.js';
 import { StatusBarController } from './statusbar/statusBarController.js';
 import { executeCommand } from './system/-webview/command.js';
 import { configuration } from './system/-webview/configuration.js';

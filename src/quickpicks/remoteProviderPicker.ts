@@ -22,7 +22,7 @@ import {
 	openRemoteProviderUrl,
 	setRemoteAsDefault,
 } from '../git/utils/-webview/remote.utils.js';
-import { convertRemoteProviderIdToIntegrationId, providersMetadata } from '../community/stubs/pro.js';
+import { convertRemoteProviderIdToIntegrationId, providersMetadata } from '../git/integrations/integrations.js';
 import { getQuickPickIgnoreFocusOut } from '../system/-webview/vscode.js';
 import { CommandQuickPickItem, createQuickPickItemOfT } from './items/common.js';
 import { createDirectiveQuickPickItem, Directive } from './items/directive.js';

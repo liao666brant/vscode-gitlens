@@ -1,15 +1,27 @@
 import type { Uri } from 'vscode';
 import type { GitGraphRow, GitGraphRowContexts, GraphContext, GraphRowProcessor } from '@gitlens/git/models/graph.js';
 import { GitGraphRowContextFlags } from '@gitlens/git/models/graph.js';
-import type { GitBranchReference } from '@gitlens/git/models/reference.js';
+import type { GitBranchReference, GitStashReference, GitTagReference } from '@gitlens/git/models/reference.js';
 import { createReference } from '@gitlens/git/utils/reference.utils.js';
 import { getCachedAvatarUri } from '../avatars.js';
 import type { Container } from '../container.js';
 import { emojify } from '../emojis.js';
 import { serializeWebviewItemContext } from '../system/webview.js';
-import type { GraphItemRefContext, GraphItemRefGroupContext } from '../community/stubs/pro.js';
+import type { WebviewItemContext, WebviewItemGroupContext } from '../system/webview.js';
 import { formatCurrentUserDisplayName } from './utils/-webview/commit.utils.js';
 import { getRemoteIconUri } from './utils/-webview/icons.js';
+
+/** Ref-shaped context value carried by branch/tag/stash webview items in the graph. */
+interface GraphRefContextValue {
+	type: string;
+	ref: GitBranchReference | GitTagReference | GitStashReference;
+}
+
+/** Branch-only context value; `ref` is assigned into the local/remote grouping maps. */
+interface GraphBranchContextValue {
+	type: string;
+	ref: GitBranchReference;
+}
 
 export class GlGraphRowProcessor implements GraphRowProcessor {
 	constructor(
@@ -28,7 +40,7 @@ export class GlGraphRowProcessor implements GraphRowProcessor {
 		// Enrich tags with serialized webview contexts
 		if (row.tags) {
 			for (const tag of row.tags) {
-				tag.context = serializeWebviewItemContext<GraphItemRefContext>({
+				tag.context = serializeWebviewItemContext<WebviewItemContext<GraphRefContextValue>>({
 					webviewItem: 'gitlens:tag',
 					webviewItemValue: {
 						type: 'tag',
@@ -46,7 +58,7 @@ export class GlGraphRowProcessor implements GraphRowProcessor {
 		if (row.heads) {
 			for (const head of row.heads) {
 				const branch = context.branches.get(head.name);
-				const ctx: GraphItemRefContext = {
+				const ctx: WebviewItemContext<GraphBranchContextValue> = {
 					webviewItem: `gitlens:branch${head.isCurrentHead ? '+current' : ''}${
 						branch?.upstream != null ? '+tracking' : ''
 					}${
@@ -70,7 +82,7 @@ export class GlGraphRowProcessor implements GraphRowProcessor {
 					},
 				};
 
-				head.context = serializeWebviewItemContext<GraphItemRefContext>(ctx);
+				head.context = serializeWebviewItemContext<WebviewItemContext<GraphRefContextValue>>(ctx);
 
 				let group = groupedRefs.get(head.name);
 				if (group == null) {
@@ -96,7 +108,7 @@ export class GlGraphRowProcessor implements GraphRowProcessor {
 					(remote != null ? getRemoteIconUri(this.container, remote, this.asWebviewUri) : undefined)
 				)?.toString(true);
 
-				const ctx: GraphItemRefContext = {
+				const ctx: WebviewItemContext<GraphBranchContextValue> = {
 					webviewItem: `gitlens:branch+remote${context.branches.get(fullName)?.starred ? '+starred' : ''}${
 						pinnedRefId != null && remoteHead.id === pinnedRefId ? '+pinned' : ''
 					}`,
@@ -112,7 +124,7 @@ export class GlGraphRowProcessor implements GraphRowProcessor {
 					},
 				};
 
-				remoteHead.context = serializeWebviewItemContext<GraphItemRefContext>(ctx);
+				remoteHead.context = serializeWebviewItemContext<WebviewItemContext<GraphRefContextValue>>(ctx);
 
 				let group = groupedRefs.get(remoteHead.name);
 				if (group == null) {
@@ -134,7 +146,7 @@ export class GlGraphRowProcessor implements GraphRowProcessor {
 				((group.local != null && group.remotes.length > 0) || group.remotes.length > 1)
 			) {
 				contexts.refGroups ??= {};
-				contexts.refGroups[groupName] = serializeWebviewItemContext<GraphItemRefGroupContext>({
+				contexts.refGroups[groupName] = serializeWebviewItemContext<WebviewItemGroupContext>({
 					webviewItemGroup: `gitlens:refGroup${group.head ? '+current' : ''}`,
 					webviewItemGroupValue: {
 						type: 'refGroup',
@@ -148,7 +160,7 @@ export class GlGraphRowProcessor implements GraphRowProcessor {
 		if (row.type === 'stash-node') {
 			const stash = context.stashes?.get(row.sha);
 			if (stash != null) {
-				contexts.row = serializeWebviewItemContext<GraphItemRefContext>({
+				contexts.row = serializeWebviewItemContext<WebviewItemContext<GraphRefContextValue>>({
 					webviewItem: 'gitlens:stash',
 					webviewItemValue: {
 						type: 'stash',

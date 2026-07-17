@@ -20,7 +20,6 @@ import type { Container } from '../../container.js';
 import { openComparisonChanges, openFileAtRevision } from '../../git/actions/commit.js';
 import { executeGitCommand } from '../../git/actions.js';
 import type { GlRepository, RepositoryChangeEvent } from '../../git/models/repository.js';
-import { ensureAccount, ensurePaidPlan } from '../../community/stubs/pro.js';
 import { createQuickPickSeparator } from '../../quickpicks/items/common.js';
 import { executeCommand } from '../../system/-webview/command.js';
 import { configuration } from '../../system/-webview/configuration.js';
@@ -681,28 +680,10 @@ export class DeepLinkService implements Disposable {
 						break;
 					}
 
-					if (
-						!(await ensureAccount(
-							this.container,
-							`Opening ${deepLinkTypeToString(
-								targetType,
-							)} links is a Preview feature and requires an account.`,
-							{
-								source: 'deeplink',
-								detail: {
-									action: 'open',
-									type: targetType,
-									friendlyType: deepLinkTypeToString(targetType),
-								},
-							},
-						))
-					) {
-						action = DeepLinkServiceAction.DeepLinkErrored;
-						message = 'Account required to open link';
-						break;
-					}
-
-					action = DeepLinkServiceAction.AccountCheckPassed;
+					// Community build has no Draft/Workspace implementation — block rather than
+					// fall through to a non-existent downstream handler.
+					action = DeepLinkServiceAction.DeepLinkErrored;
+					message = `Opening ${deepLinkTypeToString(targetType)} links is unavailable in this community build`;
 					break;
 				}
 				case DeepLinkServiceState.PlanCheck: {
@@ -716,25 +697,7 @@ export class DeepLinkService implements Disposable {
 						break;
 					}
 
-					if (
-						!(await ensurePaidPlan(
-							this.container,
-							`Opening ${deepLinkTypeToString(targetType)} links is unavailable in this community build.`,
-							{
-								source: 'deeplink',
-								detail: {
-									action: 'open',
-									type: targetType,
-									friendlyType: deepLinkTypeToString(targetType),
-								},
-							},
-						))
-					) {
-						action = DeepLinkServiceAction.DeepLinkErrored;
-						message = 'This link targets a feature that is unavailable in this community build';
-						break;
-					}
-
+					// Community build has no paid-plan gate
 					action = DeepLinkServiceAction.PlanCheckPassed;
 					break;
 				}

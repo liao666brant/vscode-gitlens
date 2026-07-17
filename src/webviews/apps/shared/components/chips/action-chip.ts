@@ -2,7 +2,7 @@ import { css, html, LitElement, nothing } from 'lit';
 import { customElement, property, query } from 'lit/decorators.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
 import { getAltKeySymbol } from '@env/platform.js';
-import { linkStyles, ruleStyles } from '../../../../../community/stubs/pro.js';
+import { linkStyles, ruleStyles } from '../vscode.css.js';
 import { ModifierKeysController } from '../../controllers/modifier-keys.js';
 import { handleUnsafeOverlayContent } from '../overlays/overlays.utils.js';
 import { focusOutline } from '../styles/lit/a11y.css.js';

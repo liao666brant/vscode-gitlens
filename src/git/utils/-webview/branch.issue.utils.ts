@@ -8,12 +8,12 @@ import { getSettledValue, pauseOnCancelOrTimeout } from '@gitlens/utils/promise.
 import { getRepositoryKey } from '@gitlens/utils/uri.js';
 import type { GkConfigKeys } from '../../../constants.js';
 import type { Container } from '../../../container.js';
-import type { GitConfigEntityIdentifier } from '../../../community/stubs/pro.js';
+import type { GitConfigEntityIdentifier } from '../../integrations/integrations.js';
 import {
 	decodeEntityIdentifiersFromGitConfig,
 	encodeIssueOrPullRequestForGitConfig,
 	getIssueFromGitConfigEntityIdentifier,
-} from '../../../community/stubs/pro.js';
+} from '../../integrations/integrations.js';
 
 export async function addAssociatedIssueToBranch(
 	container: Container,

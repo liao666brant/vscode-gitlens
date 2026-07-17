@@ -60,7 +60,7 @@ import { isUriScopedGitCacheReset } from '../eventBus.js';
 import type { FeatureAccess, PlusFeatures, RepoFeatureAccess } from '../features.js';
 import { isAdvancedFeature, isProFeatureOnAllRepos } from '../features.js';
 import { showBlameInvalidIgnoreRevsFileWarningMessage } from '../messages.js';
-import { communitySubscription } from '../community/stubs/pro.js';
+import { communitySubscription } from '../community/subscription.js';
 import type { RepoComparisonKey } from '../repositories.js';
 import { asRepoComparisonKey, Repositories } from '../repositories.js';
 import { configuration } from '../system/-webview/configuration.js';

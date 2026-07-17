@@ -9,13 +9,13 @@ import { ensureArray } from '@gitlens/utils/array.js';
 import { getSettledValue } from '@gitlens/utils/promise.js';
 import { GitCloudHostIntegrationId } from '../../../constants.integrations.js';
 import { Container } from '../../../container.js';
-import type { GitHostIntegration } from '../../../community/stubs/pro.js';
+import type { GitHostIntegration } from '../../integrations/integrations.js';
 import {
 	convertRemoteProviderIdToIntegrationId,
 	getIntegrationConnectedKey,
 	getIntegrationIdForRemote,
 	isGitHostIntegration,
-} from '../../../community/stubs/pro.js';
+} from '../../integrations/integrations.js';
 import { openUrl } from '../../../system/-webview/vscode/uris.js';
 import type { GlRepository } from '../../models/repository.js';
 import { describePullRequestWithAI } from './pullRequest.utils.js';

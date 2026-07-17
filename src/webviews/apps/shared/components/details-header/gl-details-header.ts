@@ -1,8 +1,8 @@
 import { html, LitElement, nothing } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
 import { classMap } from 'lit/directives/class-map.js';
-import type { RunningOperationExecState } from '../../../../../community/stubs/pro.js';
-import { chipStateSuffix, statusIconFor } from '../../../../../community/stubs/pro.js';
+import type { RunningOperationExecState } from '../runningOperationStatus.js';
+import { chipStateSuffix, statusIconFor } from '../runningOperationStatus.js';
 import { elementBase } from '../styles/lit/base.css.js';
 import { modeHeaderStyles, modeToggleStyles } from '../styles/lit/mode.css.js';
 import { detailsHeaderStyles } from './gl-details-header.css.js';

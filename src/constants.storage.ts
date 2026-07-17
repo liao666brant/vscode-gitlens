@@ -1,4 +1,4 @@
-import type { IntegrationConnectedKey } from './community/stubs/pro.js';
+import type { IntegrationConnectedKey } from './git/integrations/integrations.js';
 import type { GitRevisionRangeNotation } from '@gitlens/git/models/revision.js';
 import type { GraphBranchesVisibility, ViewShowBranchComparison } from './config.js';
 import type { IntegrationIds } from './constants.integrations.js';

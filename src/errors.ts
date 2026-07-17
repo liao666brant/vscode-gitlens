@@ -1,11 +1,10 @@
 import type { Uri } from 'vscode';
 import { AuthenticationError } from '@gitlens/git/errors.js';
-import type { RequiredSubscriptionPlanIds, Subscription } from './community/stubs/pro.js';
+import type { RequiredSubscriptionPlanIds, Subscription } from './community/subscription.js';
 
 export type { AuthTokenInfo } from '@gitlens/git/errors.js';
 export { AuthenticationError, AuthenticationErrorReason } from '@gitlens/git/errors.js';
 export { RequestClientError, RequestNotFoundError, RequestRateLimitError } from '@gitlens/git/errors.js';
-export { AuthenticationRequiredError } from './community/stubs/pro.js';
 
 export class AccessDeniedError extends Error {
 	public readonly subscription: Subscription;

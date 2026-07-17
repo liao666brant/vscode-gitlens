@@ -317,7 +317,7 @@ export interface DeepLinkServiceContext {
 	issueData?: IssueShape | undefined;
 	instructions?: string | undefined;
 	/** Optional agent descriptor for Start Work / Start Review with `showOpenInAgent`. */
-	agent?: import('../../community/stubs/pro.js').AgentDescriptor | undefined;
+	agent?: { id: string; label: string; kind?: string } | undefined;
 	/** Worktree path for CLI dispatch `cwd`. */
 	worktreePath?: string | undefined;
 }

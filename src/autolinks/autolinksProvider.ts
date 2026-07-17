@@ -24,13 +24,13 @@ import {
 	convertRemoteProviderIdToIntegrationId,
 	getIntegrationIdForRemote,
 	IntegrationBase,
-} from '../community/stubs/pro.js';
+} from '../git/integrations/integrations.js';
 import type {
 	ConfiguredIntegrationsChangeEvent,
 	GitHostIntegration,
 	Integration,
 	IssuesIntegration,
-} from '../community/stubs/pro.js';
+} from '../git/integrations/integrations.js';
 import { configuration } from '../system/-webview/configuration.js';
 import type {
 	Autolink,

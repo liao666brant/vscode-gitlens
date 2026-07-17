@@ -12,7 +12,11 @@ import { areUrisEqual } from '@gitlens/utils/uri.js';
 import { getQueryDataFromScmGitUri } from '../@types/vscode.git.uri.js';
 import { Schemes } from '../constants.js';
 import { Container } from '../container.js';
-import type { GitHubAuthorityMetadata } from '../community/stubs/pro.js';
+
+/** Minimal shape of the GitHub remote-hub authority metadata decoded below. */
+interface GitHubAuthorityMetadata {
+	ref?: { id?: string };
+}
 import { configuration } from '../system/-webview/configuration.js';
 import { formatPath } from '../system/-webview/formatPath.js';
 import { getBestPath, relativeDir, splitPath } from '../system/-webview/path.js';

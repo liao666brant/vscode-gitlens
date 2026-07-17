@@ -9,7 +9,7 @@ import {
 	supportedOrderedCloudIntegrationIds,
 } from '../../../constants.integrations.js';
 import type { Container } from '../../../container.js';
-import { providersMetadata } from '../../../community/stubs/pro.js';
+import { providersMetadata } from '../../../git/integrations/integrations.js';
 import type { EventVisibilityBuffer, SubscriptionTracker } from '../eventVisibilityBuffer.js';
 import { bufferEventHandler } from '../eventVisibilityBuffer.js';
 import type { IntegrationChangeEventData, IntegrationStateInfo, RpcEventSubscription, Unsubscribe } from './types.js';

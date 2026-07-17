@@ -4,8 +4,27 @@ import { filterMap, map } from '@gitlens/utils/iterable.js';
 import { getSettledValue } from '@gitlens/utils/promise.js';
 import type { Autolink } from '../../../autolinks/models/autolinks.js';
 import type { Container } from '../../../container.js';
-import type { AIGenerateChangelogChange, AIGenerateChangelogChanges } from '../../../community/stubs/pro.js';
 import { getBestRemoteWithIntegration } from './remote.utils.js';
+
+interface ChangelogRef {
+	ref: string;
+	label: string;
+}
+
+interface ChangelogRange {
+	base: ChangelogRef;
+	head: ChangelogRef;
+}
+
+export interface AIGenerateChangelogChange {
+	message: string;
+	issues: { id: string; url?: string; title?: string }[];
+}
+
+export interface AIGenerateChangelogChanges {
+	changes: AIGenerateChangelogChange[];
+	range: ChangelogRange;
+}
 
 export async function getChangesForChangelog(
 	container: Container,
@@ -49,7 +68,7 @@ export async function getChangesForChangelog(
 	}
 
 	for (const change of changes) {
-		(change.issues as Mutable<typeof change.issues>).push(
+		change.issues.push(
 			...map(change.links, ([key, link]) => {
 				const issue = issues.get(key);
 				return {

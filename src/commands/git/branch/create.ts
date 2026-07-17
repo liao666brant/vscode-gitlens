@@ -17,7 +17,7 @@ import type { Container } from '../../../container.js';
 import type { GlRepository } from '../../../git/models/repository.js';
 import { addAssociatedIssueToBranch } from '../../../git/utils/-webview/branch.issue.utils.js';
 import { showGitErrorMessage } from '../../../messages.js';
-import { getIssueOwner } from '../../../community/stubs/pro.js';
+import { getIssueOwner } from '../../../git/integrations/integrations.js';
 import type { FlagsQuickPickItem } from '../../../quickpicks/items/flags.js';
 import { createFlagsQuickPickItem } from '../../../quickpicks/items/flags.js';
 import type {

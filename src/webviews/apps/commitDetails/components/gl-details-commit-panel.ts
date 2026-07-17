@@ -17,7 +17,7 @@ import type {
 	DetailsItemTypedContext,
 } from '../../../commitDetails/protocol.js';
 import { buildFolderContext, messageHeadlineSplitterToken } from '../../../commitDetails/protocol.js';
-import type { RunningOperationExecState } from '../../../../community/stubs/pro.js';
+import type { RunningOperationExecState } from '../../shared/components/runningOperationStatus.js';
 import { renderLearnAboutAutolinks } from '../../shared/components/chips/learn-about-autolinks.js';
 import type { TreeItemAction, TreeItemBase } from '../../shared/components/tree/base.js';
 import { ModifierKeysController } from '../../shared/controllers/modifier-keys.js';
