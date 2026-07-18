@@ -676,9 +676,18 @@ function getWebviewConfig(webviews, overrides, mode, env) {
 						]
 					: [],
 			splitChunks: {
-				// Disable all non-async code splitting
-				// chunks: () => false,
-				cacheGroups: { default: false, vendors: false },
+				chunks: 'all',
+				minSize: 20000,
+				cacheGroups: {
+					default: false,
+					vendors: {
+						test: /[\\/]node_modules[\\/]/,
+						name: 'shared-vendors',
+						chunks: 'all',
+						minChunks: 2,
+						priority: 10,
+					},
+				},
 			},
 		},
 		module: {
