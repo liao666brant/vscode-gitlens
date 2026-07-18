@@ -109,39 +109,29 @@ src/
 ├── extension.ts              # Extension entry point, activation logic
 ├── container.ts              # Service Locator - manages all services (singleton)
 ├── @types/                   # TypeScript type definitions
-├── annotations/              # Editor decoration providers
+├── annotations/              # Editor decoration providers (blame/changes/heatmap)
+├── api/                      # Action runners API surface
 ├── autolinks/                # Auto-linking issues/PRs in commit messages & branch names
-├── codelens/                 # Editor CodeLens providers
 ├── commands/                 # 100+ command implementations
 │   ├── git/                  # Git-wizard sub-commands
 │   └── *.ts                  # Individual command files
+├── community/                # Community-build identity & subscription stub
 ├── env/                             # Environment-specific implementations
 │   ├── node/                        # Node.js (desktop) implementations
 │   │   └── git/
-│   │       ├── git.ts               # Git command execution
-│   │       ├── localGitProvider.ts  # Local Git provider (child_process)
-│   │       ├── vslsGitProvider.ts   # Local Live Share Git provider
-│   │       └── sub-providers/       # Local sub-providers for specific Git operations
-│   │           ├── branches.ts
-│   │           ├── commits.ts
-│   │           └── ... (15 total)
+│   │       ├── cliGitProvider.ts    # CLI Git provider (child_process) — consolidated single file
+│   │       ├── squashEditor.ts      # Squash commit editor helper
+│   │       └── vslsGitProvider.ts    # Live Share Git provider
 │   └── browser/              # Browser/webworker implementations
 ├── git/                      # Git abstraction layer
 │   ├── gitProvider.ts        # Git provider interface
 │   ├── gitProviderService.ts # Manages multiple Git providers
 │   ├── models/               # Git model types (Branch, Commit, etc.)
-│   ├── parsers/              # Output parsers for Git command results
+│   ├── formatters/           # Commit message/patch formatting
+│   ├── integrations/         # Git host & issue tracker integrations (GitHub, GitLab, Jira, etc.)
 │   ├── remotes/              # Remote provider and integration management
-│   └── sub-providers/        # Shared sub-providers for specific Git operations
-├── hovers/                   # Editor hover providers
-├── plus/                     # Pro features (non-OSS, see LICENSE.plus)
-│   ├── ai/                   # AI features (commit messages, explanations, changelogs)
-│   ├── gk/                   # legacy account/integration features (account, subscription, etc.)
-│   └── integrations/         # Rich Git host & issue tracker integrations (GitHub, GitLab, Jira, etc.)
-│       └── providers/
-│           └── github/
-│               ├── githubGitProvider.ts
-│               └── sub-providers/  # 11 GitHub-specific sub-providers
+│   └── actions/              # Higher-level Git workflow actions
+├── onboarding/               # Dismissible UI / walkthrough state provider
 ├── quickpicks/               # Quick pick/input (quick menus) implementations
 ├── statusbar/                # Status bar item management
 ├── system/                   # Utility libraries
@@ -152,25 +142,21 @@ src/
 ├── trackers/                 # Tracks document state and blames
 ├── uris/                     # Deep link uri handling
 ├── views/                    # Tree view providers (sidebar views)
-│   ├── commitsView.ts
-│   ├── branchesView.ts
-│   └── ...
+│   ├── nodes/                # Tree node implementations (branch/commit/file history, etc.)
+│   ├── abstract/             # Abstract base classes for view nodes
+│   └── *.ts                  # Individual view files (commitsView, branchesView, etc.)
+├── virtual/                  # Virtual file system providers
 ├── vsls/                     # Live Share support
 └── webviews/                 # Webview implementations
     ├── apps/                 # Webview UI apps (Lit only)
     │   ├── shared/           # Common UI components using Lit
     │   ├── commitDetails/
+    │   ├── media/
     │   ├── rebase/
-    │   ├── settings/
-    │   └── plus/             # Pro webview apps
-    │       ├── graph/
-    │       ├── timeline/
-    │       ├── patchDetails/
-    │       └── composer/
+    │   └── settings/
     ├── protocol.ts           # IPC protocol for webview communication
     └── webviewController.ts  # Base controller for all webviews
 tests/                        # E2E and Unit tests
-walkthroughs/                 # Welcome and tips walkthroughs
 custom-elements.json          # Custom Elements Manifest - generated web component metadata
 ```
 
@@ -258,7 +244,7 @@ When implementing something new, look at these files first:
 | IPC protocol                    | `src/webviews/rebase/protocol.ts`              |
 | Webview provider                | `src/webviews/rebase/rebaseWebviewProvider.ts` |
 | Webview app (Lit)               | `src/webviews/apps/rebase/`                    |
-| Unit test                       | `src/system/__tests__/iterable.test.ts`        |
+| Unit test                       | `src/autolinks/__tests__/autolinks.test.ts`    |
 | E2E test                        | `tests/e2e/specs/smoke.test.ts`                |
 | E2E page object                 | `tests/e2e/pageObjects/gitLensPage.ts`         |
 

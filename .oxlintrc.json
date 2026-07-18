@@ -310,15 +310,10 @@
 			"files": [
 				"src/**/*",
 				"tests/**/*",
-				"src/constants.subscription.ts",
-				"src/plus/gk/__debug__accountDebug.ts",
 				"packages/utils/src/**/*",
 				"packages/ipc/src/**/*",
 				"packages/git/src/**/*",
-				"packages/git-cli/src/**/*",
-				"packages/plus/git-github/src/**/*",
-				"packages/plus/ai/src/**/*",
-				"packages/plus/agents/src/**/*"
+				"packages/git-cli/src/**/*"
 			],
 			"rules": {
 				"curly": ["error", "multi-line", "consistent"],
@@ -570,7 +565,7 @@
 			"env": { "browser": true }
 		},
 		{
-			"files": ["tests/**/*", "src/constants.subscription.ts", "src/plus/gk/__debug__accountDebug.ts"],
+			"files": ["tests/**/*"],
 			"rules": {
 				"no-restricted-imports": "off"
 			},
@@ -597,10 +592,7 @@
 				"packages/utils/src/**/*",
 				"packages/ipc/src/**/*",
 				"packages/git/src/**/*",
-				"packages/git-cli/src/**/*",
-				"packages/plus/git-github/src/**/*",
-				"packages/plus/ai/src/**/*",
-				"packages/plus/agents/src/**/*"
+				"packages/git-cli/src/**/*"
 			],
 			"rules": {
 				"no-restricted-imports": [

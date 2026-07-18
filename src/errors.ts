@@ -28,22 +28,6 @@ export class AccessDeniedError extends Error {
 	}
 }
 
-export class AccountValidationError extends Error {
-	readonly original?: Error;
-	readonly statusCode?: number;
-	readonly statusText?: string;
-
-	constructor(message: string, original?: Error, statusCode?: number, statusText?: string) {
-		message += `; status=${statusCode}: ${statusText}`;
-		super(message);
-
-		this.original = original;
-		this.statusCode = statusCode;
-		this.statusText = statusText;
-		Error.captureStackTrace?.(this, new.target);
-	}
-}
-
 export class ExtensionNotFoundError extends Error {
 	constructor(
 		public readonly extensionId: string,

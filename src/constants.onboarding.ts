@@ -5,9 +5,6 @@ export const onboardingDefinitions = {
 	// MCP Banner
 	'mcp:banner': { schema: '17.8.0', scope: 'global' },
 
-	// AI Hooks Banner
-	'hooks:banner': { schema: '17.12.0', scope: 'global' },
-
 	// Rebase Editor
 	'rebaseEditor:closeWarning': { schema: '17.8.0', scope: 'global' },
 
@@ -18,15 +15,6 @@ export const onboardingDefinitions = {
 		reshowAfter: '17.9.0',
 		// eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
 		state: undefined as unknown as { stepReached: number },
-	},
-
-	// Graph Visualizations Toggle (first-interaction callout)
-	'graph:visualizations:buttonCallout': { schema: '18.0.0', scope: 'global' },
-
-	// Graph Walkthrough Banner
-	'graph-walkthrough:banner': {
-		schema: '18.0.0',
-		scope: 'global',
 	},
 
 	// Views

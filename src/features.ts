@@ -52,7 +52,3 @@ export function isProFeatureOnAllRepos(feature: PlusFeatures): feature is ProFea
 			return false;
 	}
 }
-
-export type FeaturePreviews = 'graph';
-
-export type FeaturePreviewStatus = 'eligible' | 'active' | 'expired';

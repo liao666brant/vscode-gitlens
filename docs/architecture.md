@@ -53,11 +53,9 @@ pnpm run watch          # Watch mode (includes E2E tests)
 
 - `GitProviderService` manages Git providers for local and supported virtual repositories.
 - Allows environment-specific implementations:
-  - **LocalGitProvider** (`src/env/node/git/localGitProvider.ts`): Executes Git via `child_process` for Node.js
+  - **CliGitProvider** (`src/env/node/git/cliGitProvider.ts`): Executes Git via `child_process` for Node.js — consolidated single file containing all Git operations
 - Each provider implements the `GitProvider` interface
-  - Both providers use a shared set of sub-providers (in `src/git/sub-providers/`) for specific Git operations
-  - LocalGitProvider uses 15 specialized sub-providers (in `src/env/node/git/sub-providers/`):
-    - `branches`, `commits`, `config`, `contributors`, `diff`, `graph`, `patch`, `refs`, `remotes`, `revision`, `staging`, `stash`, `status`, `tags`, `worktrees`
+  - Git operations (branches, commits, config, diff, status, tags, worktrees, etc.) are implemented as methods within the consolidated provider file rather than as separate sub-provider modules
 
 ### 3. Layered Architecture
 
@@ -231,12 +229,9 @@ Strongly typed Git entities throughout the codebase (located in `src/git/models/
 
 1. Find the relevant Git provider:
    - Shared Git provider interface: `src/git/gitProvider.ts`
-   - Shared sub-operations: `src/git/sub-providers/`
-   - For Local (Node.js): `src/env/node/git/localGitProvider.ts`
-   - For Local sub-operations: `src/env/node/git/sub-providers/`
+   - For Local (Node.js): `src/env/node/git/cliGitProvider.ts` (consolidated CLI provider, all operations in one file)
 2. Update provider method with new logic
-3. Update Git command execution in `src/env/node/git/git.ts` if needed (for LocalGitProvider)
-4. Update parsers in `src/git/parsers/` if output format changes
-5. Update models in `src/git/models/` if data structure changes
-6. Consider caching implications (update `GitCache` if needed)
-7. Add tests in `__tests__/` directory
+3. Update Git command execution in the CLI provider if needed
+4. Update models in `src/git/models/` if data structure changes
+5. Consider caching implications (update `GitCache` if needed)
+6. Add tests in `__tests__/` directory

@@ -16766,7 +16766,6 @@
 		"marked": "18.0.4",
 		"os-browserify": "0.3.0",
 		"path-browserify": "1.0.1",
-		"react": "19.2.6",
 		"signal-polyfill": "0.2.2",
 		"signal-utils": "0.21.1",
 		"vscode-uri": "3.1.0"
@@ -16810,7 +16809,6 @@
 		"eslint-plugin-import-x": "4.16.2",
 		"eslint-plugin-lit": "2.3.1",
 		"eslint-plugin-oxlint": "^1.67.0",
-		"eslint-plugin-react-hooks": "7.1.1",
 		"eslint-plugin-wc": "3.1.0",
 		"fantasticon": "4.1.0",
 		"fork-ts-checker-webpack-plugin": "9.1.0",

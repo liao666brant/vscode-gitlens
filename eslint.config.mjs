@@ -33,9 +33,6 @@ const filePatterns = {
 		'packages/ipc/src/**/*',
 		'packages/git/src/**/*',
 		'packages/git-cli/src/**/*',
-		'packages/plus/git-github/src/**/*',
-		'packages/plus/ai/src/**/*',
-		'packages/plus/agents/src/**/*',
 	],
 	src: ['src/**/*'],
 	envNode: ['src/env/node/**/*'],
@@ -59,8 +56,6 @@ const filePatterns = {
 	tests: [
 		// Keep in sync with `./tsconfig.e2e.json`
 		'tests/**/*',
-		'src/constants.subscription.ts',
-		'src/plus/gk/__debug__accountDebug.ts',
 	],
 	unitTests: ['src/**/__tests__/**/*', 'packages/**/src/**/__tests__/**/*'],
 };

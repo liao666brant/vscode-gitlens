@@ -735,7 +735,6 @@ function getWebviewConfig(webviews, overrides, mode, env) {
 				'signal-polyfill': path.resolve(__dirname, 'node_modules', 'signal-polyfill'),
 				...getLibraryAliases(),
 				...getUtilsEnvAliases('webworker'),
-				react: path.resolve(__dirname, 'node_modules', 'react'),
 				...overrides.alias,
 			},
 			extensionAlias: { '.js': ['.ts', '.js'], '.jsx': ['.tsx', '.jsx'] },
