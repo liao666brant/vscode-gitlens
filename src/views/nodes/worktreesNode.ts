@@ -1,6 +1,5 @@
 import { ThemeIcon, TreeItem, TreeItemCollapsibleState } from 'vscode';
 import { makeHierarchical } from '@gitlens/utils/array.js';
-import { GlyphChars } from '../../constants.js';
 import type { GitUri } from '../../git/gitUri.js';
 import type { GlRepository } from '../../git/models/repository.js';
 import { sortWorktrees } from '../../git/utils/-webview/sorting.js';
@@ -35,9 +34,6 @@ export class WorktreesNode extends CacheableChildrenViewNode<'worktrees', ViewsW
 
 	async getChildren(): Promise<ViewNode[]> {
 		if (this.children == null) {
-			const access = await this.repo.git.access('worktrees');
-			if (!access.allowed) return [];
-
 			const worktrees = await this.repo.git.worktrees?.getWorktrees();
 			if (!worktrees?.length) return [new MessageNode(this.view, this, '未找到任何工作树。')];
 
@@ -74,16 +70,10 @@ export class WorktreesNode extends CacheableChildrenViewNode<'worktrees', ViewsW
 		return this.children;
 	}
 
-	async getTreeItem(): Promise<TreeItem> {
-		const access = await this.repo.git.access('worktrees');
-
-		const item = new TreeItem(
-			'工作树',
-			access.allowed ? TreeItemCollapsibleState.Collapsed : TreeItemCollapsibleState.None,
-		);
+	getTreeItem(): TreeItem {
+		const item = new TreeItem('工作树', TreeItemCollapsibleState.Collapsed);
 		item.id = this.id;
 		item.contextValue = ContextValues.Worktrees;
-		item.description = access.allowed ? undefined : ` ${GlyphChars.Warning}  此功能在当前社区构建中不可用`;
 		// TODO `folder` icon won't work here for some reason
 		item.iconPath = new ThemeIcon('folder-opened');
 		return item;

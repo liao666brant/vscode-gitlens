@@ -37,7 +37,6 @@ import type {
 } from '../../quick-wizard/models/steps.js';
 import { StepResultBreak } from '../../quick-wizard/models/steps.js';
 import { QuickCommand } from '../../quick-wizard/quickCommand.js';
-import { ensureAccessStep } from '../../quick-wizard/steps/access.js';
 import { inputBranchNameStep } from '../../quick-wizard/steps/branches.js';
 import { pickBranchOrTagStep } from '../../quick-wizard/steps/references.js';
 import { canSkipRepositoryPick, pickRepositoryStep } from '../../quick-wizard/steps/repositories.js';
@@ -56,7 +55,6 @@ import type { WorktreeOpenState } from './open.js';
 
 const Steps = {
 	PickRepo: 'worktree-create-pick-repo',
-	EnsureAccess: 'worktree-create-ensure-access',
 	PickRef: 'worktree-create-pick-ref',
 	InputBranchName: 'worktree-create-input-branch-name',
 	Confirm: 'worktree-create-confirm',
@@ -163,16 +161,6 @@ export class WorktreeCreateGitCommand extends QuickCommand<State> {
 				}
 
 				assertStepState<State<GlRepository>>(state);
-
-				if (steps.isAtStepOrUnset(Steps.EnsureAccess)) {
-					using step = steps.enterStep(Steps.EnsureAccess);
-
-					const result = yield* ensureAccessStep(this.container, 'worktrees', state, context, step);
-					if (result === StepResultBreak) {
-						if (step.goBack() == null) break;
-						continue;
-					}
-				}
 
 				context.defaultUri ??= state.repo.git.worktrees?.getWorktreesDefaultUri();
 				context.pickedRootFolder = undefined;

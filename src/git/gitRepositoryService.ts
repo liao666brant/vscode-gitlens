@@ -20,7 +20,7 @@ import { getSettledValue } from '@gitlens/utils/promise.js';
 import { GlyphChars, Schemes } from '../constants.js';
 import type { Source } from '../constants.telemetry.js';
 import type { EventBus } from '../eventBus.js';
-import type { FeatureAccess, Features, PlusFeatures } from '../features.js';
+import type { Features } from '../features.js';
 import { showGitErrorMessage } from '../messages.js';
 import { configuration } from '../system/-webview/configuration.js';
 import { exists } from '../system/-webview/vscode/uris.js';
@@ -320,11 +320,6 @@ export class GitRepositoryService {
 
 	get provider(): GitProviderDescriptor {
 		return this._provider.descriptor;
-	}
-
-	@debug()
-	access(feature?: PlusFeatures): Promise<FeatureAccess> {
-		return this._svc.access(feature, this.getRepository()?.uri);
 	}
 
 	containsUri(uri: Uri): boolean {

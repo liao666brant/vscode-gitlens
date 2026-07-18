@@ -55,12 +55,9 @@ import { areUrisEqual, coerceUri, getRepositoryKey } from '@gitlens/utils/uri.js
 import { resetAvatarCache } from '../avatars.js';
 import { Schemes } from '../constants.js';
 import type { Container } from '../container.js';
-import { AccessDeniedError, ProviderNotFoundError, ProviderNotSupportedError } from '../errors.js';
+import { ProviderNotFoundError, ProviderNotSupportedError } from '../errors.js';
 import { isUriScopedGitCacheReset } from '../eventBus.js';
-import type { FeatureAccess, PlusFeatures, RepoFeatureAccess } from '../features.js';
-import { isAdvancedFeature, isProFeatureOnAllRepos } from '../features.js';
 import { showBlameInvalidIgnoreRevsFileWarningMessage } from '../messages.js';
-import { communitySubscription } from '../community/subscription.js';
 import type { RepoComparisonKey } from '../repositories.js';
 import { asRepoComparisonKey, Repositories } from '../repositories.js';
 import { configuration } from '../system/-webview/configuration.js';
@@ -162,7 +159,6 @@ export class GitProviderService implements UnifiedDisposable {
 			needsInvalidation = !this.allHaveKnownCommonRepo(added);
 		}
 		if (needsInvalidation) {
-			this.clearAccessCache();
 			this._reposVisibilityCache.invalidate('visibility');
 		}
 
@@ -370,7 +366,6 @@ export class GitProviderService implements UnifiedDisposable {
 		if (DEBUG) {
 			void import(/* webpackChunkName: "__debug__" */ './__debug__visibilityDebug.js').then(m => {
 				m.registerVisibilityDebug(this, {
-					clearAccessCache: () => this.clearAccessCache(),
 					invalidateReposVisibilityCache: () => this._reposVisibilityCache.invalidate('visibility'),
 					fireRepositoriesChanged: () =>
 						this._onDidChangeRepositories.fire({ added: [], removed: [], etag: this._etag }),
@@ -932,134 +927,6 @@ export class GitProviderService implements UnifiedDisposable {
 	): Promise<GlRepository[]> {
 		const { provider } = this.getProvider(uri);
 		return provider.discoverRepositories(uri, options);
-	}
-
-	private _accessCache = new Map<PlusFeatures | undefined, Promise<FeatureAccess>>();
-	private _accessCacheByRepo = new Map<string /* path */, Promise<RepoFeatureAccess>>();
-	private clearAccessCache(): void {
-		this._accessCache.clear();
-		this._accessCacheByRepo.clear();
-	}
-
-	async access(feature: PlusFeatures | undefined, repoPath: string | Uri): Promise<RepoFeatureAccess>;
-	async access(feature?: PlusFeatures, repoPath?: string | Uri): Promise<FeatureAccess | RepoFeatureAccess>;
-	@trace({ exit: r => `returned allowed=${r.allowed}, plan=${r.subscription.current.plan.effective.id}` })
-	async access(feature?: PlusFeatures, repoPath?: string | Uri): Promise<FeatureAccess | RepoFeatureAccess> {
-		if (repoPath == null) {
-			let access = this._accessCache.get(feature);
-			if (access == null) {
-				access = this.accessCore(feature);
-				this._accessCache.set(feature, access);
-			}
-			return access;
-		}
-
-		const { path } = this.getProvider(repoPath);
-		const cacheKey = path;
-
-		let access = this._accessCacheByRepo.get(cacheKey);
-		if (access == null) {
-			access = this.accessCore(feature, repoPath);
-			this._accessCacheByRepo.set(cacheKey, access);
-		}
-
-		return access;
-	}
-
-	private async accessCore(feature: PlusFeatures | undefined, repoPath: string | Uri): Promise<RepoFeatureAccess>;
-	private async accessCore(
-		feature?: PlusFeatures,
-		repoPath?: string | Uri,
-	): Promise<FeatureAccess | RepoFeatureAccess>;
-	@trace({ exit: r => `returned allowed=${r.allowed}, plan=${r.subscription.current.plan.effective.id}` })
-	private async accessCore(
-		feature?: PlusFeatures,
-		repoPath?: string | Uri,
-	): Promise<FeatureAccess | RepoFeatureAccess> {
-		const subscription = communitySubscription;
-
-		if (this.container.telemetry.enabled) {
-			queueMicrotask(() => void this.visibility());
-		}
-
-		if (feature != null && (isProFeatureOnAllRepos(feature) || isAdvancedFeature(feature))) {
-			return { allowed: false, subscription: { current: subscription, required: 'pro' } };
-		}
-
-		function getRepoAccess(
-			this: GitProviderService,
-			repoPath: string | Uri,
-			force: boolean = false,
-		): Promise<RepoFeatureAccess> {
-			const { path: cacheKey } = this.getProvider(repoPath);
-
-			let access = force ? undefined : this._accessCacheByRepo.get(cacheKey);
-			if (access == null) {
-				access = this.visibility(repoPath).then(
-					visibility => {
-						if (visibility === 'private') {
-							return {
-								allowed: false,
-								subscription: { current: subscription, required: 'pro' },
-								visibility: visibility,
-							};
-						}
-
-						return {
-							allowed: true,
-							subscription: { current: subscription },
-							visibility: visibility,
-						};
-					},
-					// If there is a failure assume access is allowed
-					() => ({ allowed: true, subscription: { current: subscription } }),
-				);
-
-				this._accessCacheByRepo.set(cacheKey, access);
-			}
-
-			return access;
-		}
-
-		if (repoPath == null) {
-			const repositories = this.openRepositories;
-			if (repositories.length === 0) {
-				return { allowed: false, subscription: { current: subscription } };
-			}
-
-			if (repositories.length === 1) {
-				return getRepoAccess.call(this, repositories[0].path);
-			}
-
-			const visibility = await this.visibility();
-			switch (visibility) {
-				case 'private':
-					return {
-						allowed: false,
-						subscription: { current: subscription, required: 'pro' },
-						visibility: 'private',
-					};
-				case 'mixed':
-					return {
-						allowed: 'mixed',
-						subscription: { current: subscription, required: 'pro' },
-					};
-				default:
-					return {
-						allowed: true,
-						subscription: { current: subscription },
-						visibility: 'public',
-					};
-			}
-		}
-
-		// Pass force = true to bypass the cache and avoid a promise loop (where we used the cached promise we just created to try to resolve itself 🤦)
-		return getRepoAccess.call(this, repoPath, true);
-	}
-
-	async ensureAccess(feature: PlusFeatures, repoPath?: string): Promise<void> {
-		const { allowed, subscription } = await this.access(feature, repoPath);
-		if (allowed === false) throw new AccessDeniedError(subscription.current, subscription.required);
 	}
 
 	/** Single-value cache for the aggregate `visibility()` result. Handles coalescing, soft-

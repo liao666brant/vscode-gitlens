@@ -1,32 +1,9 @@
 import type { Uri } from 'vscode';
 import { AuthenticationError } from '@gitlens/git/errors.js';
-import type { RequiredSubscriptionPlanIds, Subscription } from './community/subscription.js';
 
 export type { AuthTokenInfo } from '@gitlens/git/errors.js';
 export { AuthenticationError, AuthenticationErrorReason } from '@gitlens/git/errors.js';
 export { RequestClientError, RequestNotFoundError, RequestRateLimitError } from '@gitlens/git/errors.js';
-
-export class AccessDeniedError extends Error {
-	public readonly subscription: Subscription;
-	public readonly required: RequiredSubscriptionPlanIds | undefined;
-
-	constructor(subscription: Subscription, required: RequiredSubscriptionPlanIds | undefined) {
-		let message;
-		if (subscription.account?.verified === false) {
-			message = '需要验证邮箱';
-		} else if (required != null) {
-			message = '此功能在当前社区构建中不可用';
-		} else {
-			message = '需要订阅计划';
-		}
-
-		super(message);
-
-		this.subscription = subscription;
-		this.required = required;
-		Error.captureStackTrace?.(this, new.target);
-	}
-}
 
 export class ExtensionNotFoundError extends Error {
 	constructor(

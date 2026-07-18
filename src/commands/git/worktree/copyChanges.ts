@@ -21,7 +21,6 @@ import type {
 import { StepResultBreak } from '../../quick-wizard/models/steps.js';
 import type { QuickPickStep } from '../../quick-wizard/models/steps.quickpick.js';
 import { QuickCommand } from '../../quick-wizard/quickCommand.js';
-import { ensureAccessStep } from '../../quick-wizard/steps/access.js';
 import { canSkipRepositoryPick, pickRepositoryStep } from '../../quick-wizard/steps/repositories.js';
 import { pickWorktreeStep } from '../../quick-wizard/steps/worktrees.js';
 import { StepsController } from '../../quick-wizard/stepsController.js';
@@ -31,7 +30,6 @@ import type { WorktreeContext } from '../worktree.js';
 
 const Steps = {
 	PickRepo: 'worktree-copy-changes-pick-repo',
-	EnsureAccess: 'worktree-copy-changes-ensure-access',
 	PickWorktree: 'worktree-copy-changes-pick-worktree',
 	Confirm: 'worktree-copy-changes-confirm',
 } as const;
@@ -115,16 +113,6 @@ export class WorktreeCopyChangesGitCommand extends QuickCommand<State> {
 			}
 
 			assertStepState<State<GlRepository>>(state);
-
-			if (steps.isAtStepOrUnset(Steps.EnsureAccess)) {
-				using step = steps.enterStep(Steps.EnsureAccess);
-
-				const result = yield* ensureAccessStep(this.container, 'worktrees', state, context, step);
-				if (result === StepResultBreak) {
-					if (step.goBack() == null) break;
-					continue;
-				}
-			}
 
 			context.worktrees ??= (await state.repo.git.worktrees?.getWorktrees()) ?? [];
 

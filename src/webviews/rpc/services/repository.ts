@@ -27,7 +27,6 @@ import { pluralize } from '@gitlens/utils/string.js';
 import type { DiffWithCommandArgs } from '../../../commands/diffWith.js';
 import type { Container } from '../../../container.js';
 import { ProviderNotSupportedError } from '../../../errors.js';
-import type { FeatureAccess, PlusFeatures } from '../../../features.js';
 import * as BranchActions from '../../../git/actions/branch.js';
 import * as RepoActions from '../../../git/actions/repository.js';
 import * as StashActions from '../../../git/actions/stash.js';
@@ -40,7 +39,6 @@ import {
 import { countConflictMarkers } from '../../../git/utils/-webview/mergeConflicts.utils.js';
 import { getReferenceFromBranch } from '../../../git/utils/-webview/reference.utils.js';
 import { executeCommand, executeCoreCommand } from '../../../system/-webview/command.js';
-import { serialize } from '../../../system/serialize.js';
 import type { EventVisibilityBuffer, SubscriptionTracker } from '../eventVisibilityBuffer.js';
 import { bufferEventHandler } from '../eventVisibilityBuffer.js';
 import type { ClassifiedCommitFailure, CommitResult } from './commitFailure.js';
@@ -183,14 +181,6 @@ export class RepositoryService {
 		const signature = await getCommitSignature(repoPath, sha);
 		signal?.throwIfAborted();
 		return signature != null ? serializeSignature(signature) : undefined;
-	}
-
-	async getFeatureAccess(feature: PlusFeatures, repoUri?: string): Promise<FeatureAccess> {
-		const access =
-			repoUri != null
-				? await this.container.git.access(feature, Uri.parse(repoUri))
-				: await this.container.git.access(feature);
-		return serialize(access);
 	}
 
 	async hasRemotes(repoPath: string): Promise<boolean> {
