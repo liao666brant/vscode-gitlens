@@ -28,7 +28,6 @@ export function registerCommand(
 	command: GlCommands | GlCommandsDeprecated,
 	callback: CommandCallback,
 	thisArg?: any,
-	options?: { returnResult?: boolean },
 ): Disposable {
 	return commands.registerCommand(
 		command,
@@ -55,12 +54,11 @@ export function registerCommand(
 			);
 
 			void Container.instance.usage.track(`command:${command}:executed`).catch();
-			if (options?.returnResult) {
-				// eslint-disable-next-line @typescript-eslint/no-unsafe-return
-				return callback.call(this, ...args);
-			}
 
-			callback.call(this, ...args);
+			// Return the callback result (sync value or Promise) so `executeCommand` can await it and
+			// propagate rejections to the caller instead of dropping the promise (unhandled rejection).
+			// eslint-disable-next-line @typescript-eslint/no-unsafe-return
+			return callback.call(this, ...args);
 		},
 		thisArg,
 	);
@@ -70,7 +68,6 @@ export function registerWebviewCommand(
 	command: GlWebviewCommands,
 	callback: CommandCallback,
 	thisArg?: any,
-	options?: { returnResult?: boolean },
 ): Disposable {
 	return commands.registerCommand(
 		command,
@@ -83,12 +80,11 @@ export function registerWebviewCommand(
 			});
 
 			void Container.instance.usage.track(`command:${command}:executed`).catch();
-			if (options?.returnResult) {
-				// eslint-disable-next-line @typescript-eslint/no-unsafe-return
-				return callback.call(this, ...args);
-			}
 
-			callback.call(this, ...args);
+			// Return the callback result (sync value or Promise) so `executeCommand` can await it and
+			// propagate rejections to the caller instead of dropping the promise (unhandled rejection).
+			// eslint-disable-next-line @typescript-eslint/no-unsafe-return
+			return callback.call(this, ...args);
 		},
 		thisArg,
 	);

@@ -174,12 +174,17 @@ export class PromiseCache<K, V> {
 		const promise = factory(cacheable, abortAgg.signal);
 		void promise
 			.finally(() => {
-				if (cacheable.invalidated) {
-					this.cache.delete(key);
+				// Only tear down state if we are still the current generation for this key —
+				// a newer entry (fallback replacement, or a re-create after delete/expiry) has
+				// its own aggregate and controller that must not be clobbered.
+				if (this.aborts.get(key) === abortAgg) {
+					if (cacheable.invalidated) {
+						this.cache.delete(key);
+					}
+					this.aborts.delete(key);
+					this.controllers.delete(key);
 				}
 				abortAgg.dispose();
-				this.aborts.delete(key);
-				this.controllers.delete(key);
 			})
 			// Swallow the cleanup chain's rejection so it doesn't surface as an unhandled rejection
 			// separate from the caller-facing promise's own handling (e.g. on cancellation).
@@ -188,21 +193,25 @@ export class PromiseCache<K, V> {
 		if (options?.onError != null) {
 			// Wrap the promise to handle errors with the onError callback
 			const errorHandled = promise.catch((ex: unknown) => {
-				const result = options.onError!(ex);
-				if (result != null) {
-					// Replace the entry with a resolved fallback value for subsequent callers
-					const errorNow = Date.now();
-					this.cache.set(key, {
-						promise: Promise.resolve(result.value),
-						created: errorNow,
-						accessed: errorNow,
-						createTTL: result.createTTL ?? options.createTTL,
-						accessTTL: options.accessTTL,
-					});
-					// suppress: return fallback to first caller; otherwise re-throw
-					if (result.suppress) return result.value;
-				} else {
-					this.cache.delete(key);
+				// Only mutate the cache if this entry is still the current generation —
+				// a stale rejection must not overwrite or evict a newer entry for the same key.
+				if (this.cache.get(key) === entry) {
+					const result = options.onError!(ex);
+					if (result != null) {
+						// Replace the entry with a resolved fallback value for subsequent callers
+						const errorNow = Date.now();
+						this.cache.set(key, {
+							promise: Promise.resolve(result.value),
+							created: errorNow,
+							accessed: errorNow,
+							createTTL: result.createTTL ?? options.createTTL,
+							accessTTL: options.accessTTL,
+						});
+						// suppress: return fallback to first caller; otherwise re-throw
+						if (result.suppress) return result.value;
+					} else {
+						this.cache.delete(key);
+					}
 				}
 				throw ex;
 			});
@@ -219,14 +228,18 @@ export class PromiseCache<K, V> {
 			// Cache resolved undefined for subsequent callers, re-throw to first caller
 			const errorTTL = options.errorTTL;
 			const errorHandled = promise.catch((ex: unknown) => {
-				const errorNow = Date.now();
-				this.cache.set(key, {
-					promise: Promise.resolve(undefined as V),
-					created: errorNow,
-					accessed: errorNow,
-					createTTL: errorTTL,
-					accessTTL: options.accessTTL,
-				});
+				// Only cache the error placeholder if this entry is still the current
+				// generation — a stale rejection must not overwrite a newer entry.
+				if (this.cache.get(key) === entry) {
+					const errorNow = Date.now();
+					this.cache.set(key, {
+						promise: Promise.resolve(undefined as V),
+						created: errorNow,
+						accessed: errorNow,
+						createTTL: errorTTL,
+						accessTTL: options.accessTTL,
+					});
+				}
 				throw ex;
 			});
 
@@ -249,7 +262,13 @@ export class PromiseCache<K, V> {
 			this.cache.set(key, entry);
 
 			if (options?.expireOnError ?? true) {
-				promise.catch(() => this.cache.delete(key));
+				promise.catch(() => {
+					// Only evict if this entry is still the current generation — a stale
+					// rejection must not evict a newer entry for the same key.
+					if (this.cache.get(key) === entry) {
+						this.cache.delete(key);
+					}
+				});
 			}
 		}
 
@@ -339,7 +358,13 @@ export class PromiseCache<K, V> {
 		this.cache.set(key, entry);
 
 		if (this.options.expireOnError ?? true) {
-			promise.catch(() => this.cache.delete(key));
+			promise.catch(() => {
+				// Only evict if this promise is still the cached entry — a newer set()/getOrCreate
+				// generation must not be evicted by a stale rejection.
+				if (this.cache.get(key)?.promise === promise) {
+					this.cache.delete(key);
+				}
+			});
 		}
 	}
 }
@@ -395,16 +420,25 @@ export class PromiseMap<K, V> {
 
 		const promise = factory(cacheable, aborts.signal);
 
-		// Automatically remove failed promises from the cache
-		promise.catch(() => this.cache.delete(key));
+		// Automatically remove failed promises from the cache — but only if this promise is
+		// still the current entry; a stale rejection must not evict a newer generation.
+		promise.catch(() => {
+			if (this.cache.get(key) === promise) {
+				this.cache.delete(key);
+			}
+		});
 		void promise
 			.finally(() => {
-				if (cacheable.invalidated) {
-					this.cache.delete(key);
+				// Only tear down state if we are still the current generation for this key —
+				// a re-created entry after delete/expiry has its own aggregate and controller.
+				if (this.aborts.get(key) === aborts) {
+					if (cacheable.invalidated) {
+						this.cache.delete(key);
+					}
+					this.aborts.delete(key);
+					this.controllers.delete(key);
 				}
 				aborts.dispose();
-				this.aborts.delete(key);
-				this.controllers.delete(key);
 			})
 			// Swallow the cleanup chain's rejection so it doesn't surface as an unhandled rejection
 			// separate from the caller-facing promise's own handling (e.g. on cancellation).
@@ -463,7 +497,11 @@ export class PromiseMap<K, V> {
 
 		// Automatically remove failed promises from the cache
 		promise.catch(() => {
-			this.cache.delete(key);
+			// Only evict if this promise is still the cached entry — a newer set()/getOrCreate
+			// generation must not be evicted by a stale rejection.
+			if (this.cache.get(key) === promise) {
+				this.cache.delete(key);
+			}
 		});
 
 		return this;

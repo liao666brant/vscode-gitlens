@@ -57,47 +57,12 @@ export function gate<T extends (...args: any[]) => any>(
 					return originalPromise;
 				}
 
-				if (timeout > 0) {
-					// Apply timeout if configured - this prevents indefinite hangs
-					const timeoutPromise = new Promise((resolve, reject) => {
-						const timeoutId = setTimeout(() => {
-							Logger.warn(`[gate] ${key} timeout after ${timeout}ms, forcing gate clear`, `prop=${prop}`);
-							onDeadlock?.({ key: key, prop: prop, timeout: timeout, status: 'aborted' });
-
-							// Clear the gate to allow future calls
-							this[prop] = undefined;
-
-							if (rejectOnTimeout) {
-								reject(new CancellationError(new Error(`Gate timeout: ${key} exceeded ${timeout}ms`)));
-							} else {
-								// Retry the operation now that the gate is cleared
-								const retryResult = fn.apply(this, args);
-								if (isPromise(retryResult)) {
-									retryResult.then(resolve, reject);
-								} else {
-									resolve(retryResult);
-								}
-							}
-						}, timeout);
-
-						originalPromise.then(
-							(result: any) => {
-								clearTimeout(timeoutId);
-								resolve(result);
-							},
-							(error: unknown) => {
-								clearTimeout(timeoutId);
-								reject(error instanceof Error ? error : new Error(String(error)));
-							},
-						);
-					});
-					promise = timeoutPromise;
-				} else {
-					promise = originalPromise;
-				}
-
-				this[prop] = promise;
-				const p = promise;
+				// The gate tracks the in-flight operation itself, and is cleared only when
+				// that operation settles. A timeout must never open the gate while the
+				// operation is still running: Git operations are not cancellable, so an
+				// open gate would let callers start a duplicate execution concurrently.
+				this[prop] = originalPromise;
+				const p = originalPromise;
 				void p
 					.finally(() => {
 						if (this[prop] === p) {
@@ -105,6 +70,76 @@ export function gate<T extends (...args: any[]) => any>(
 						}
 					})
 					.catch(() => {});
+
+				if (timeout > 0) {
+					// Apply timeout if configured - this prevents indefinite hangs for the
+					// caller, without releasing the gate on a still-running operation.
+					promise = new Promise((resolve, reject) => {
+						let retryPending = false;
+
+						const timeoutId = setTimeout(() => {
+							Logger.warn(
+								`[gate] ${key} timeout after ${timeout}ms (gate held until the in-flight op settles)`,
+								`prop=${prop}`,
+							);
+							onDeadlock?.({ key: key, prop: prop, timeout: timeout, status: 'aborted' });
+
+							if (rejectOnTimeout) {
+								reject(new CancellationError(new Error(`Gate timeout: ${key} exceeded ${timeout}ms`)));
+							} else {
+								// Don't reject; the operation will be re-run once the in-flight
+								// (non-cancellable) one settles - never concurrently with it.
+								retryPending = true;
+							}
+						}, timeout);
+
+						p.then(
+							(result: any) => {
+								clearTimeout(timeoutId);
+								if (!retryPending) {
+									resolve(result);
+								}
+							},
+							(error: unknown) => {
+								clearTimeout(timeoutId);
+								if (!retryPending) {
+									reject(error instanceof Error ? error : new Error(String(error)));
+								}
+							},
+						);
+
+						if (!rejectOnTimeout) {
+							// Retry only after the in-flight op settles, and keep the gate held
+							// through the retry so concurrent callers join it instead of duplicating.
+							void p
+								.catch(() => {})
+								.then(() => {
+									if (!retryPending) return;
+
+									let retryResult: unknown;
+									try {
+										retryResult = fn.apply(this, args);
+									} catch (ex) {
+										reject(ex instanceof Error ? ex : new Error(String(ex)));
+										return;
+									}
+
+									const retryPromise = Promise.resolve(retryResult);
+									this[prop] = retryPromise;
+									void retryPromise
+										.finally(() => {
+											if (this[prop] === retryPromise) {
+												this[prop] = undefined;
+											}
+										})
+										.catch(() => {});
+									retryPromise.then(resolve, reject);
+								});
+						}
+					});
+				} else {
+					promise = p;
+				}
 
 				// Set up deadlock warning timeouts (only for warnings that would fire before the timeout)
 				const warningsDisposable = scheduleDeadlockWarnings(key, prop, timeout, onDeadlock);

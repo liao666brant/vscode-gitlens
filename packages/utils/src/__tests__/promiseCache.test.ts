@@ -460,6 +460,29 @@ suite('PromiseCache Test Suite', () => {
 
 			assert.deepStrictEqual(captured, [], 'cleanup chain must not produce an unhandled rejection');
 		});
+
+		test('stale rejection after the entry is replaced does not evict the new entry', async () => {
+			const cache = new PromiseCache<string, number>();
+			const d1 = deferred<number>();
+			const p1 = cache.getOrCreate('k', () => d1.promise);
+			// The caller-facing promise rejects unhandled here — swallow it like a real caller would.
+			p1.catch(() => {});
+
+			// Entry replaced by a new generation (delete + re-create)
+			cache.delete('k');
+			const d2 = deferred<number>();
+			const p2 = cache.getOrCreate('k', () => d2.promise);
+			const entryPromise = cache.get('k');
+			assert.ok(entryPromise != null, 'new generation entry must be cached');
+
+			// Old promise rejects — must not evict the new generation's entry
+			d1.reject(new Error('stale'));
+			await flush();
+
+			assert.strictEqual(cache.get('k'), entryPromise, 'new generation entry must survive a stale rejection');
+			d2.resolve(7);
+			assert.strictEqual(await p2, 7);
+		});
 	});
 });
 

@@ -138,7 +138,7 @@ export class GitFileSystemProvider implements FileSystemProvider, Disposable {
 
 		let treeItem;
 
-		const searchTree = this._searchTreeMap.get(ref);
+		const searchTree = this._searchTreeMap.get(this.getSearchTreeCacheKey(ref, repoPath));
 		if (searchTree != null) {
 			// Add the fake root folder to the path
 			treeItem = (await searchTree).get(`/~/${path}`);
@@ -183,8 +183,14 @@ export class GitFileSystemProvider implements FileSystemProvider, Disposable {
 		return searchTree;
 	}
 
+	private getSearchTreeCacheKey(ref: string, repoPath: string): string {
+		return `${normalizePath(repoPath)}:${ref}`;
+	}
+
 	private getOrCreateSearchTree(ref: string, repoPath: string) {
-		return this._searchTreeMap.getOrCreate(ref, () => this.createSearchTree(ref, repoPath));
+		return this._searchTreeMap.getOrCreate(this.getSearchTreeCacheKey(ref, repoPath), () =>
+			this.createSearchTree(ref, repoPath),
+		);
 	}
 
 	private async getTree(path: string, ref: string, repoPath: string) {
