@@ -1,272 +1,274 @@
-# WeGit Development Guide
+# WeGit 开发指南
 
-This workspace contains **WeGit** - a powerful VS Code extension that supercharges Git functionality. It provides blame annotations, commit history visualization, repository exploration, and many advanced Git workflows. The codebase supports both desktop VS Code (Node.js) and VS Code for Web (browser/webworker) environments.
+本工作区包含 **WeGit** —— 一个强大的 VS Code 扩展，大幅增强 Git 功能。它提供 blame 注释、提交历史可视化、仓库探索以及许多高级 Git 工作流。代码库同时支持桌面版 VS Code（Node.js）和 Web 版 VS Code（browser/webworker）环境。
 
-## Working Style Expectations
+## 工作风格期望
 
-1. **Accuracy over speed** — Read the actual code before proposing changes. Do not guess at method names, decorator behaviors, or class interfaces. Verify they exist first by searching the codebase.
-2. **Simplicity over abstraction** — Prefer the simplest correct solution. Do not introduce new types, enums, marker interfaces, migration flags, or wrapper abstractions unless they serve multiple consumers. When the user simplifies your approach, adopt it immediately.
-3. **Completeness over iteration** — Before presenting a multi-file change as complete, audit ALL affected locations: call sites, subclass overrides, both Node.js and browser code paths, and sub-providers.
-4. **Fixing over disabling** — When asked to fix a feature, fix the root cause. Do not disable, remove, or work around it unless explicitly asked. "Fix" and "disable" are different instructions.
-5. **Confirming over assuming** — When debugging, present your hypothesis with evidence before implementing. If a request is ambiguous, ask for clarification. Do not silently start editing on non-trivial changes without stating your approach.
-6. **Purposeful changes** — Refactoring and renaming to improve clarity, maintainability, and codebase health are encouraged. Explain what you're changing and why. Do not make silent drive-by changes unrelated to the task at hand.
-7. **Branch ownership** — The current branch owns ALL of its issues, not just those from your current task. Do not dismiss build errors, type errors, or test failures as "pre-existing" without verifying against the base branch (`git diff main --stat` or similar). If an issue exists on this branch but not on the base branch, it is the branch's responsibility regardless of when it was introduced. After completing your current task, address any remaining branch issues. If the scope of remaining issues is too large to handle, ask the user how to proceed.
+1. **准确性优先于速度** — 提出变更前先阅读实际代码。不要臆测方法名、装饰器行为或类接口。先通过搜索代码库确认它们确实存在。
+2. **简洁性优先于抽象** — 优先选择最简单的正确方案。不要引入新的类型、枚举、标记接口、迁移标志或包装抽象，除非它们服务多个消费者。当用户简化你的方案时，立即采纳。
+3. **完整性优先于迭代** — 在把多文件变更视为完成之前，审计所有受影响的位置：调用点、子类覆写、Node.js 和浏览器两条代码路径、以及子 provider。
+4. **修复优先于禁用** — 当被要求修复某个功能时，修复根本原因。除非明确要求，否则不要禁用、移除或绕过它。"修复"和"禁用"是不同的指令。
+5. **确认优先于假设** — 调试时，先提出带证据的假设再实现。如果请求有歧义，请澄清。对于非平凡的变更，不要不说明方案就默默开始编辑。
+6. **有目的的变更** — 鼓励为提升清晰度、可维护性和代码库健康而做的重构与重命名。说明你在改什么以及为什么。不要做与当前任务无关的静默越权改动。
+7. **分支归属** — 当前分支承担**所有**问题，而不仅仅是你当前任务引入的。不要在没有对照基础分支验证（`git diff main --stat` 或类似命令）的情况下，就把构建错误、类型错误或测试失败当作"先前已存在"而不予理会。如果某个问题存在于当前分支但不在基础分支上，无论它何时引入，都是该分支的责任。完成当前任务后，处理剩余的分支问题。如果剩余问题范围过大无法处理，请询问用户如何继续。
 
-## Issue Accountability During Work
+## 工作中的问题归属
 
-### Branch vs. Repository Issues
+### 分支问题 vs 仓库问题
 
-- **Branch issues**: Errors that exist on the current branch but NOT on the base branch. These are the branch's responsibility regardless of which task or session introduced them.
-- **Repository issues**: Errors that also exist on the base branch. These are truly pre-existing and can be noted but not prioritized.
+- **分支问题**：当前分支存在但基础分支不存在的错误。无论由哪个任务或会话引入，都属于当前分支的责任。
+- **仓库问题**：基础分支上也存在的错误。这些属于真正先前已存在的问题，可以记录但不需要优先处理。
 
-### Workflow
+### 工作流
 
-1. **Focus first** — Complete your current task
-2. **Then fix** — After your task is done, address any remaining build errors, type errors, or test failures on the branch
-3. **Ask if too large** — If the remaining issues are extensive or unclear, inform the user and ask how to proceed rather than ignoring them
+1. **先聚焦** — 完成当前任务
+2. **再修复** — 任务完成后，处理分支上剩余的构建错误、类型错误或测试失败
+3. **过大则询问** — 如果剩余问题范围广泛或不清楚，告知用户并询问如何继续，而不是忽略它们
 
-### Completion Criteria
+### 完成标准
 
-A task is not complete until:
+在以下条件满足前，任务不算完成：
 
-- The code compiles cleanly (`pnpm run build` or relevant build command succeeds)
-- Related tests pass
-- Any remaining branch issues have been either fixed or raised to the user
+- 代码干净地编译通过（`pnpm run build` 或相关构建命令成功）
+- 相关测试通过
+- 任何剩余的分支问题已被修复或已向用户提出
 
-## Development Environment
+## 开发环境
 
-- **Node.js** ≥ 22.12.0, **pnpm** ≥ 10.x (install via corepack: `corepack enable`), **Corepack** ≥ 0.31.0, **Git** ≥ 2.7.2
-- WeGit supports **Node.js** (desktop) and **Web Worker** (browser/vscode.dev) environments — shared code with abstractions in `src/env/`
-- Test both environments during development
+- **Node.js** ≥ 22.12.0，**pnpm** ≥ 10.x（通过 corepack 安装：`corepack enable`），**Corepack** ≥ 0.31.0，**Git** ≥ 2.7.2
+- WeGit 支持 **Node.js**（桌面）和 **Web Worker**（browser/vscode.dev）环境 —— 共享代码通过 `src/env/` 中的抽象实现
+- 开发时同时测试两种环境
 
-### Performance Considerations
+### 性能考量
 
-- Use lazy loading for heavy services
-- Leverage caching layers (GitCache, PromiseCache, @memoize)
-- Debounce expensive operations
-- Consider webview refresh performance
-- Monitor telemetry for performance regressions
+- 对重量级服务使用懒加载
+- 利用缓存层（GitCache、PromiseCache、@memoize）
+- 对昂贵的操作进行防抖
+- 考虑 webview 刷新性能
+- 监控遥测数据中的性能回退
 
-## Development Commands
-
-```bash
-pnpm install              # Install dependencies
-```
-
-### Build & Development
+## 开发命令
 
 ```bash
-pnpm run rebuild          # Complete rebuild from scratch
-pnpm run build            # Full development build (everything including e2e and unit tests)
-pnpm run bundle           # Production bundle
-pnpm run bundle:e2e       # E2E tests production bundle (with DEBUG for account simulation)
+pnpm install              # 安装依赖
 ```
 
-### Testing
+### 构建与开发
 
 ```bash
-pnpm run test             # Run unit tests (VS Code extension tests)
-pnpm run test:e2e         # Run Playwright E2E tests
+pnpm run rebuild          # 从零完整重建
+pnpm run build            # 完整开发构建（包括 e2e 和单元测试的所有内容）
+pnpm run bundle           # 生产环境打包
+pnpm run bundle:e2e       # E2E 测试的生产环境打包（带 DEBUG 用于账户模拟）
 ```
 
-> For detailed test running patterns, output interpretation, and debugging: see `docs/testing.md`
-
-### Quality
+### 测试
 
 ```bash
-pnpm run check            # Run type-checking and lint rules (also run automatically as part of `pnpm run build`)
-pnpm run check:fix        # Run type-checking and lint rules with auto-fix (better to use so you don't have to deal with auto-fixable issues)
-pnpm run pretty           # Format code with Prettier
-pnpm run pretty:check     # Check formatting
+pnpm run test             # 运行单元测试（VS Code 扩展测试）
+pnpm run test:e2e         # 运行 Playwright E2E 测试
 ```
 
-### Specialized Commands (typically not needed during normal development as they are part of build/watch)
+> 详细的测试运行模式、输出解读与调试方法：参见 `docs/testing.md`
+
+### 质量
 
 ```bash
-pnpm run generate:contributions  # Generate package.json contributions from contributions.json
-pnpm run extract:contributions   # Extract contributions from package.json to contributions.json
-pnpm run generate:commandTypes   # Generate command types from contributions
-pnpm run build:icons             # Build icon font from SVG sources
+pnpm run check            # 运行类型检查和 lint 规则（也会作为 `pnpm run build` 的一部分自动运行）
+pnpm run check:fix        # 运行类型检查和 lint 规则并自动修复（更好用，无需自行处理可自动修复的问题）
+pnpm run pretty           # 使用 Prettier 格式化代码
+pnpm run pretty:check     # 检查格式
 ```
 
-## Git & Repository Guidelines
+### 专用命令（常规开发通常不需要，它们已包含在 build/watch 中）
 
-For commit message format and workflow, use `/commit`. For CHANGELOG format and entry guidelines, use `/audit-commits`. For code reviewing, use `/review` or `/deep-review`. For debugging methodology and common misdiagnosis patterns, use `/investigate`.
+```bash
+pnpm run generate:contributions  # 根据 contributions.json 生成 package.json contributions
+pnpm run extract:contributions   # 从 package.json 提取 contributions 到 contributions.json
+pnpm run generate:commandTypes   # 根据 contributions 生成命令类型
+pnpm run build:icons             # 从 SVG 源文件构建图标字体
+```
 
-### Branching Guidelines
+## Git 与仓库指南
 
-- Feature branches from `main` or from another feature branch if stacking
-- Prefix with an appropriate type: `feature/`, `bug/`, `debt/`
-- Use descriptive names: `feature/search-natural-language`, `bug/graph-performance`
-- If there is a related issue, reference it in the branch name: `feature/#1234-search-natural-language`
+提交消息格式与流程，使用 `/commit`。CHANGELOG 格式与条目指南，使用 `/audit-commits`。代码审查，使用 `/review` 或 `/deep-review`。调试方法论与常见误诊模式，使用 `/investigate`。
 
-## High-Level Architecture
+### 分支指南
 
-### Directory Structure
+- 从 `main` 或其他功能分支拉取功能分支（若需堆叠）
+- 使用合适的类型前缀：`feature/`、`bug/`、`debt/`
+- 使用描述性名称：`feature/search-natural-language`、`bug/graph-performance`
+- 如有相关 issue，在分支名中引用：`feature/#1234-search-natural-language`
+
+## 高层架构
+
+### 目录结构
 
 ```
 src/
-├── extension.ts              # Extension entry point, activation logic
-├── container.ts              # Service Locator - manages all services (singleton)
-├── @types/                   # TypeScript type definitions
-├── annotations/              # Editor decoration providers (blame/changes/heatmap)
-├── api/                      # Action runners API surface
-├── autolinks/                # Auto-linking issues/PRs in commit messages & branch names
-├── commands/                 # 100+ command implementations
-│   ├── git/                  # Git-wizard sub-commands
-│   └── *.ts                  # Individual command files
-├── community/                # Community-build identity & subscription stub
-├── env/                             # Environment-specific implementations
-│   ├── node/                        # Node.js (desktop) implementations
+├── extension.ts              # 扩展入口点，激活逻辑
+├── container.ts              # Service Locator —— 管理所有服务（单例）
+├── @types/                   # TypeScript 类型定义
+├── annotations/              # 编辑器装饰 provider（blame/changes/heatmap）
+├── api/                      # Action runners API 表面
+├── autolinks/                # 在提交消息和分支名中自动链接 issues/PRs
+├── commands/                 # 命令实现（64 个顶层文件 + 子目录）
+│   ├── git/                  # Git 子命令
+│   ├── ghpr/                 # GitHub PR 相关命令
+│   ├── quick-wizard/         # 快速向导命令
+│   ├── signing/              # 提交签名命令
+│   └── *.ts                  # 单个命令文件
+├── env/                             # 环境特定的实现
+│   ├── node/                        # Node.js（桌面）实现
 │   │   └── git/
-│   │       ├── cliGitProvider.ts    # CLI Git provider (child_process) — consolidated single file
-│   │       ├── squashEditor.ts      # Squash commit editor helper
+│   │       ├── cliGitProvider.ts    # CLI Git provider（child_process）—— 合并的单一文件
+│   │       ├── squashEditor.ts      # Squash 提交编辑器辅助
 │   │       └── vslsGitProvider.ts    # Live Share Git provider
-│   └── browser/              # Browser/webworker implementations
-├── git/                      # Git abstraction layer
-│   ├── gitProvider.ts        # Git provider interface
-│   ├── gitProviderService.ts # Manages multiple Git providers
-│   ├── models/               # Git model types (Branch, Commit, etc.)
-│   ├── formatters/           # Commit message/patch formatting
-│   ├── integrations/         # Git host & issue tracker integrations (GitHub, GitLab, Jira, etc.)
-│   ├── remotes/              # Remote provider and integration management
-│   └── actions/              # Higher-level Git workflow actions
-├── onboarding/               # Dismissible UI / walkthrough state provider
-├── quickpicks/               # Quick pick/input (quick menus) implementations
-├── statusbar/                # Status bar item management
-├── system/                   # Utility libraries
-│   ├── utils/                # Utilities usable in both host and webviews
-│   └── utils/-webview/       # Extension host-specific utilities
-├── telemetry/                # Usage analytics and error reporting
-├── terminal/                 # Terminal integration providers
-├── trackers/                 # Tracks document state and blames
-├── uris/                     # Deep link uri handling
-├── views/                    # Tree view providers (sidebar views)
-│   ├── nodes/                # Tree node implementations (branch/commit/file history, etc.)
-│   ├── abstract/             # Abstract base classes for view nodes
-│   └── *.ts                  # Individual view files (commitsView, branchesView, etc.)
-├── virtual/                  # Virtual file system providers
-├── vsls/                     # Live Share support
-└── webviews/                 # Webview implementations
-    ├── apps/                 # Webview UI apps (Lit only)
-    │   ├── shared/           # Common UI components using Lit
+│   └── browser/              # 浏览器/webworker 实现
+├── git/                      # Git 抽象层
+│   ├── gitProvider.ts        # Git provider 接口
+│   ├── gitProviderService.ts # 管理多个 Git provider
+│   ├── models/               # Git 模型类型（Branch、Commit 等）
+│   ├── formatters/           # 提交消息/补丁格式化
+│   ├── integrations/         # Git 托管与 issue tracker 集成（GitHub、GitLab、Jira 等）
+│   ├── remotes/              # 远程 provider 与集成管理
+│   └── actions/              # 更高级的 Git 工作流操作
+├── onboarding/               # 可关闭的 UI / 引导状态 provider
+├── quickpicks/               # Quick pick/input（快速菜单）实现
+├── statusbar/                # 状态栏项管理
+├── system/                   # 工具库
+│   ├── utils/                # 在 host 和 webviews 中都可用的工具
+│   └── utils/-webview/       # 仅扩展宿主使用的工具
+├── telemetry/                # 使用分析与错误上报
+├── terminal/                 # 终端集成 provider
+├── trackers/                 # 跟踪文档状态与 blames
+├── uris/                     # 深链接 uri 处理
+├── views/                    # 树视图 provider（侧边栏视图）
+│   ├── nodes/                # 树节点实现（分支/提交/文件历史等）
+│   ├── abstract/             # 视图节点的抽象基类
+│   └── *.ts                  # 单个视图文件（commitsView、branchesView 等）
+├── virtual/                  # 虚拟文件系统 provider
+├── vsls/                     # Live Share 支持
+└── webviews/                 # Webview 实现
+    ├── apps/                 # Webview UI 应用（仅 Lit）
+    │   ├── shared/           # 使用 Lit 的通用 UI 组件
     │   ├── commitDetails/
     │   ├── media/
     │   ├── rebase/
     │   └── settings/
-    ├── protocol.ts           # IPC protocol for webview communication
-    └── webviewController.ts  # Base controller for all webviews
-tests/                        # E2E and Unit tests
-custom-elements.json          # Custom Elements Manifest - generated web component metadata
+    ├── protocol.ts           # webview 通信的 IPC 协议
+    └── webviewController.ts  # 所有 webview 的基类控制器
+tests/                        # E2E 与单元测试
+custom-elements.json          # Custom Elements Manifest —— 生成的 web 组件元数据
 ```
 
-> For detailed architecture (patterns, services, environment abstraction, webviews, build config): see `docs/architecture.md`
+> 详细架构（模式、服务、环境抽象、webviews、构建配置）：参见 `docs/architecture.md`
 
-## Coding Standards & Style Rules
+## 编码标准与风格规则
 
-- **Strict TypeScript** — no `any` usage (exceptions only for external APIs)
-- **Explicit return types** for public methods; **prefer `type` over `interface`** for unions
-- **Use path aliases**: `@env/` for environment-specific code
-- **Import order**: node built-ins → external → internal → relative
-- **No default exports** use `import type` for type-only imports
-- **Always use `.js` extension** in imports (ESM requirement)
-- **Naming**: Classes PascalCase (no `I` prefix), methods/variables camelCase, constants camelCase (not SCREAMING_SNAKE_CASE), files camelCase.ts
-- **Folders**: Models under `models/`, utilities under `utils/` (both host + webview), host-specific in `utils/-webview/`, webview apps under `webviews/apps/`
+- **严格 TypeScript** — 不允许使用 `any`（外部 API 除外）
+- 公共方法**显式返回类型**；联合类型**优先 `type` 而非 `interface`**
+- **使用路径别名**：`@env/` 用于环境特定代码
+- **导入顺序**：node 内置 → 外部 → 内部 → 相对
+- **不使用默认导出**；纯类型导入使用 `import type`
+- 导入中**始终使用 `.js` 扩展名**（ESM 要求）
+- **命名**：类 PascalCase（无 `I` 前缀），方法/变量 camelCase，常量 camelCase（非 SCREAMING_SNAKE_CASE），文件 camelCase.ts
+- **文件夹**：模型放 `models/`，工具放 `utils/`（host + webview 两者），仅宿主专用放 `utils/-webview/`，webview 应用放 `webviews/apps/`
 
-> For error handling patterns, implementation quality rules, and completeness checklist: see `docs/coding-standards.md`
+> 错误处理模式、实现质量规则与完整性清单：参见 `docs/coding-standards.md`
 >
-> For webview accessibility requirements: see `docs/accessibility.md`
+> webview 无障碍要求：参见 `docs/accessibility.md`
 
-### Decorator System
+### 装饰器系统
 
-The codebase uses method decorators (`src/system/decorators/`) that significantly alter runtime behavior:
+代码库使用方法装饰器（`src/system/decorators/`），它们显著改变运行时行为：
 
-| Decorator                           | Purpose                                              | Key Gotcha                                                                 |
-| ----------------------------------- | ---------------------------------------------------- | -------------------------------------------------------------------------- |
-| `@info()` / `@debug()` / `@trace()` | Logging with scope tracking                          | `getScopedLogger()` must be called BEFORE any `await` (browser limitation) |
-| `@gate()`                           | Deduplicates concurrent calls (returns same promise) | 5-min timeout; most common cause of method hangs                           |
-| `@memoize()`                        | Caches return value permanently on instance          | Caches rejected Promises too; use `invalidateMemoized()` to clear          |
-| `@sequentialize()`                  | Queues calls to execute one at a time                | Different from `@gate()` — queues instead of deduplicating                 |
-| `@debounce()`                       | Debounces method calls per-instance                  |                                                                            |
-| `@command()`                        | Registers VS Code command class                      | Class decorator, not method decorator                                      |
+| 装饰器                              | 用途                               | 关键陷阱                                                          |
+| ----------------------------------- | ---------------------------------- | ----------------------------------------------------------------- |
+| `@info()` / `@debug()` / `@trace()` | 带作用域跟踪的日志                 | `getScopedLogger()` 必须在任何 `await` **之前**调用（浏览器限制） |
+| `@gate()`                           | 并发调用去重（返回同一个 promise） | 5 分钟超时；方法挂起最常见的原因                                  |
+| `@memoize()`                        | 在实例上永久缓存返回值             | 连被拒绝的 Promise 也会缓存；使用 `invalidateMemoized()` 清除     |
+| `@sequentialize()`                  | 排队调用，一次执行一个             | 与 `@gate()` 不同 —— 排队而不是去重                               |
+| `@debounce()`                       | 按实例对方法调用防抖               |                                                                   |
+| `@command()`                        | 注册 VS Code 命令类                | 类装饰器，而非方法装饰器                                          |
 
-Stacking executes bottom-up (outermost runs first). When debugging: check `@gate()` first for hangs, `@memoize()` for stale data, logging decorators last.
+装饰器堆叠自底向上执行（最外层先运行）。调试时：先检查 `@gate()` 是否挂起，再检查 `@memoize()` 是否有过期数据，最后再检查日志装饰器。
 
-For detailed decorator behavior and investigation methodology, use `/investigate`.
+详细的装饰器行为与调查方法论，使用 `/investigate`。
 
-## Quick Lookup
+## 快速查找
 
-Reference examples and critical rules for common tasks.
+常见任务的参考示例与关键规则。
 
-### Available Skills
+### 可用技能
 
-Skills provide detailed, step-by-step workflows for common tasks. Invoke with `/{skill-name}`.
+技能为常见任务提供详细的分步工作流。使用 `/{skill-name}` 调用。
 
-| Skill              | Purpose                                                                     |
-| ------------------ | --------------------------------------------------------------------------- |
-| `/triage`          | Triage GitHub issues — verdicts, confidence levels, recommended actions     |
-| `/investigate`     | Structured bug investigation with root cause analysis                       |
-| `/prioritize`      | Prioritize triaged issues — shortlist, backlog, won't fix, community        |
-| `/update-issues`   | Update GitHub issues from triage/investigation/prioritization reports       |
-| `/dev-scope`       | Scope work into a goals doc — defines what and why, not how                 |
-| `/deep-planning`   | Design implementation approach — investigates codebase, presents trade-offs |
-| `/challenge-plan`  | Stress-test a proposed plan or architecture decision                        |
-| `/analyze`         | Deep design/implementation analysis, devil's advocate                       |
-| `/review`          | Code review against standards + impact completeness audit                   |
-| `/deep-review`     | Deep merge-blocking review — traces code paths for correctness              |
-| `/ux-review`       | UX review — traces user flows against goals doc                             |
-| `/a11y-audit`      | Audit a component/file/directory for WCAG 2.1 AA accessibility              |
-| `/a11y-flow-audit` | Audit a page or flow for WCAG 2.1 AA composition-level compliance           |
-| `/a11y-remediate`  | Turn /a11y-audit findings into a leader-facing remediation proposal         |
-| `/modern-css`      | Guide CSS authoring/review — modern patterns, tokens, shadow DOM safety     |
-| `/commit`          | Git commit with WeGit conventions                                           |
-| `/create-issue`    | Create GitHub issues from code changes                                      |
-| `/audit-commits`   | Audit commit range for issues and CHANGELOG entries                         |
-| `/worktree`        | Create isolated git worktrees for feature work                              |
-| `/add-command`     | Scaffold a new VS Code command                                              |
-| `/add-webview`     | Scaffold a new webview with IPC, Lit app, registration                      |
-| `/add-test`        | Generate unit or E2E test files                                             |
-| `/add-icon`        | Add icon to GL Icons font                                                   |
-| `/add-ai-provider` | Add a new AI provider integration                                           |
-| `/live-inspect`    | Launch VS Code with WeGit via Playwright inspect UI/logs                    |
-| `/live-exercise`   | Live operation + audit + fix loop for UI-bearing work                       |
-| `/live-perf`       | Live performance measurement + improvement with three-tier discipline       |
-| `/live-pair`       | Interactive pair-programming with a live instance (user-driven feedback)    |
+| Skill              | 用途                                                       |
+| ------------------ | ---------------------------------------------------------- |
+| `/triage`          | 对 GitHub issues 进行分流 —— 判定、置信度、建议操作        |
+| `/investigate`     | 带根因分析的结构化缺陷调查                                 |
+| `/prioritize`      | 对已分流 issues 排序 —— 候选清单、积压、不修复、社区       |
+| `/update-issues`   | 根据分流/调查/排序报告更新 GitHub issues                   |
+| `/dev-scope`       | 将工作范围定义为目标文档 —— 定义做什么和为什么，而非怎么做 |
+| `/deep-planning`   | 设计实现方案 —— 调查代码库，给出权衡取舍                   |
+| `/challenge-plan`  | 压力测试拟议的方案或架构决策                               |
+| `/analyze`         | 深入的设计/实现分析，魔鬼代言人                            |
+| `/review`          | 对照标准进行代码审查 + 影响完整性审计                      |
+| `/deep-review`     | 深度合并阻断审查 —— 追踪代码路径以验证正确性               |
+| `/ux-review`       | UX 审查 —— 对照目标文档追踪用户流程                        |
+| `/a11y-audit`      | 审计组件/文件/目录的 WCAG 2.1 AA 无障碍性                  |
+| `/a11y-flow-audit` | 审计页面或流程的 WCAG 2.1 AA 组合级合规性                  |
+| `/a11y-remediate`  | 将 /a11y-audit 结果转化为面向决策者的补救提案              |
+| `/modern-css`      | CSS 编写/审查指南 —— 现代模式、tokens、shadow DOM 安全     |
+| `/commit`          | 按 WeGit 约定进行 git 提交                                 |
+| `/create-issue`    | 根据代码变更创建 GitHub issues                             |
+| `/audit-commits`   | 审计提交范围，检查 issues 与 CHANGELOG 条目                |
+| `/worktree`        | 为功能开发创建隔离的 git worktrees                         |
+| `/add-command`     | 搭建一个新的 VS Code 命令                                  |
+| `/add-webview`     | 搭建新的 webview，包含 IPC、Lit 应用、注册                 |
+| `/add-test`        | 生成单元或 E2E 测试文件                                    |
+| `/add-icon`        | 向 GL Icons 字体添加图标                                   |
+| `/add-ai-provider` | 添加新的 AI provider 集成                                  |
+| `/live-inspect`    | 通过 Playwright 启动带 WeGit 的 VS Code，检查 UI/日志      |
+| `/live-exercise`   | 面向 UI 工作的实时操作 + 审计 + 修复循环                   |
+| `/live-perf`       | 带三级纪律的实时性能测量与改进                             |
+| `/live-pair`       | 与实时实例进行交互式结对编程（用户驱动的反馈）             |
 
-### Canonical Examples
+### 典型示例
 
-When implementing something new, look at these files first:
+实现新内容时，先看这些文件：
 
-| Task                            | Example File                                   |
-| ------------------------------- | ---------------------------------------------- |
-| Simple command                  | `src/commands/copyCurrentBranch.ts`            |
-| Complex command (multi-command) | `src/commands/gitWizard.ts`                    |
-| IPC protocol                    | `src/webviews/rebase/protocol.ts`              |
-| Webview provider                | `src/webviews/rebase/rebaseWebviewProvider.ts` |
-| Webview app (Lit)               | `src/webviews/apps/rebase/`                    |
-| Unit test                       | `src/autolinks/__tests__/autolinks.test.ts`    |
-| E2E test                        | `tests/e2e/specs/smoke.test.ts`                |
-| E2E page object                 | `tests/e2e/pageObjects/gitLensPage.ts`         |
+| 任务                | 示例文件                                       |
+| ------------------- | ---------------------------------------------- |
+| 简单命令            | `src/commands/copyCurrentBranch.ts`            |
+| 复杂命令（多命令）  | `src/commands/gitWizard.ts`                    |
+| IPC 协议            | `src/webviews/rebase/protocol.ts`              |
+| Webview provider    | `src/webviews/rebase/rebaseWebviewProvider.ts` |
+| Webview 应用（Lit） | `src/webviews/apps/rebase/`                    |
+| 单元测试            | `src/autolinks/__tests__/autolinks.test.ts`    |
+| E2E 测试            | `tests/e2e/specs/smoke.test.ts`                |
+| E2E 页面对象        | `tests/e2e/pageObjects/gitLensPage.ts`         |
 
-### Critical Rules
+### 关键规则
 
-**contributions.json** (only applies to `contributes/commands`, `contributes/menus`, `contributes/submenus`, `contributes/keybindings`, and `contributes/views`)
+**contributions.json**（仅适用于 `contributes/commands`、`contributes/menus`、`contributes/submenus`、`contributes/keybindings` 和 `contributes/views`）
 
-- Never edit these sections in `package.json` directly — edit `contributions.json` instead
-- Run `pnpm run generate:contributions` after editing (or let the watcher handle it)
-- Run `pnpm run generate:commandTypes` after adding commands (or let the watcher handle it)
+- 绝不在 `package.json` 中直接编辑这些部分 —— 请编辑 `contributions.json`
+- 编辑后运行 `pnpm run generate:contributions`（或让 watcher 处理）
+- 添加命令后运行 `pnpm run generate:commandTypes`（或让 watcher 处理）
 
-**Imports**
+**导入**
 
-- Always use `.js` extension in imports (ESM requirement)
-- Use named exports only (no `default` exports)
+- 导入中始终使用 `.js` 扩展名（ESM 要求）
+- 仅使用命名导出（无 `default` 导出）
 
 **IPC**
 
-- `IpcCommand` = fire-and-forget (no response)
-- `IpcRequest` = expects a response (use `await`)
-- `IpcNotification` = extension → webview state updates
+- `IpcCommand` = 即发即弃（无响应）
+- `IpcRequest` = 期望响应（使用 `await`）
+- `IpcNotification` = 扩展 → webview 状态更新
 
-**Testing**
+**测试**
 
-- When debugging test failures, DON'T simplify NOR change the intent of the tests just to get them to pass. Instead, INVESTIGATE and UNDERSTAND the root cause of the failure and address that directly, or raise an issue to the user if you can't resolve it.
+- 调试测试失败时，不要为了通过测试而简化或改变测试意图。相反，调查并理解失败的根因并直接处理它，如果无法解决则向用户提出。
