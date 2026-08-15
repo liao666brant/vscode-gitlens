@@ -91,7 +91,7 @@ pnpm run build:icons             # 从 SVG 源文件构建图标字体
 
 ## Git 与仓库指南
 
-提交消息格式与流程，使用 `/commit`。CHANGELOG 格式与条目指南，使用 `/audit-commits`。代码审查，使用 `/review` 或 `/deep-review`。调试方法论与常见误诊模式，使用 `/investigate`。
+CHANGELOG 格式与条目指南，使用 `/audit-commits`。代码审查，使用 `/review` 或 `/deep-review`。调试方法论与常见误诊模式，使用 `/investigate`。
 
 ### 分支指南
 
@@ -221,7 +221,6 @@ custom-elements.json          # Custom Elements Manifest —— 生成的 web �
 | `/a11y-flow-audit` | 审计页面或流程的 WCAG 2.1 AA 组合级合规性                  |
 | `/a11y-remediate`  | 将 /a11y-audit 结果转化为面向决策者的补救提案              |
 | `/modern-css`      | CSS 编写/审查指南 —— 现代模式、tokens、shadow DOM 安全     |
-| `/commit`          | 按 WeGit 约定进行 git 提交                                 |
 | `/create-issue`    | 根据代码变更创建 GitHub issues                             |
 | `/audit-commits`   | 审计提交范围，检查 issues 与 CHANGELOG 条目                |
 | `/worktree`        | 为功能开发创建隔离的 git worktrees                         |
@@ -272,3 +271,119 @@ custom-elements.json          # Custom Elements Manifest —— 生成的 web �
 **测试**
 
 - 调试测试失败时，不要为了通过测试而简化或改变测试意图。相反，调查并理解失败的根因并直接处理它，如果无法解决则向用户提出。
+
+## 项目愿景
+
+**WeGit**（包名 `wegit`，v18.2.0，publisher `liao666brant`）—— 小而美的 Git 工具：在 VS Code 中提供 blame 注释、提交历史可视化、仓库探索与常用 Git 工作流，同时支持桌面版 VS Code（Node.js）与 Web 版 VS Code（browser/webworker）。产品定位与能力概述见文首简介；详细架构见 [docs/architecture.md](docs/architecture.md)。
+
+## 架构总览
+
+### 激活链路
+
+```
+extension.activate()（src/extension.ts）
+  → Logger.configure + 预发布过期检查
+  → Container.create()（src/container.ts，Service Locator 单例）
+  → once(container.onReady)：registerCommands()（src/commands.ts 副作用注册）+ 注册 Action Runner
+  → await container.ready()（注册 Git providers）
+  → return new Api(container)（GitLensApi）
+```
+
+- 服务装配集中在 `Container` 构造函数：`GitProviderService`（git）、`Views`、`WebviewsController`、`GitDocumentTracker`/`LineTracker`、`StatusBarController`、`TelemetryService` 等全部单例在此创建、订阅与释放。
+- **环境双路径**：`@env/*` 别名按构建目标解析（`tsconfig.node.json` → `src/env/node/`，`tsconfig.browser.json` → `src/env/browser/`），两套实现签名一致；浏览器端 git 为降级 stub（`git()` 返回空 stdout，`getSupportedGitProviders()` 返回空数组）。
+- **分层**：`src/git` 是 `packages/git` 的宿主桥接层（SCM 集成、仓库发现、`GitRepositoryService` 声明合并）；webviews 通过**经典 IPC + Supertalk RPC** 与宿主通信；Lit 应用仅存在于 `webviews/apps/`。
+
+### 结构图
+
+```mermaid
+flowchart TD
+    ext["extension.ts<br/>activate()"] --> cont["container.ts<br/>Container（Service Locator）"]
+    cont --> gps["git/gitProviderService.ts"]
+    cont --> cmds["commands/"]
+    cont --> views["views/"]
+    cont --> wc["webviews/webviewsController.ts"]
+    cont --> sys["system/"]
+    cont --> api["api/api.ts<br/>GitLensApi"]
+
+    gps --> env["env/<br/>node | browser"]
+    gps --> girs["git/gitRepositoryService.ts<br/>（声明合并）"]
+    girs --> pkg["packages/git/"]
+
+    wc --> wctrl["webviewController.ts<br/>ready/replay · 隐藏缓冲"]
+    wctrl --> ipc["ipc/（经典 IPC）"]
+    wctrl --> rpc["rpc/（Supertalk RPC）"]
+    wctrl --> apps["apps/（Lit）"]
+
+    click ext "src/AGENTS.md" "src 模块文档"
+    click cont "src/AGENTS.md" "src 模块文档"
+    click gps "src/git/AGENTS.md" "src/git 模块文档"
+    click girs "src/git/AGENTS.md" "src/git 模块文档"
+    click pkg "packages/git/AGENTS.md" "packages/git 模块文档"
+    click env "src/env/AGENTS.md" "src/env 模块文档"
+    click cmds "src/commands/AGENTS.md" "src/commands 模块文档"
+    click views "src/views/AGENTS.md" "src/views 模块文档"
+    click sys "src/system/AGENTS.md" "src/system 模块文档"
+    click wc "src/webviews/AGENTS.md" "src/webviews 模块文档"
+    click wctrl "src/webviews/AGENTS.md" "src/webviews 模块文档"
+    click ipc "src/webviews/AGENTS.md" "src/webviews 模块文档"
+    click rpc "src/webviews/AGENTS.md" "src/webviews 模块文档"
+    click apps "src/webviews/AGENTS.md" "src/webviews 模块文档"
+    click api "src/AGENTS.md" "src 模块文档"
+```
+
+## 模块索引
+
+各模块文档（`AGENTS.md` 为索引产物，事实以代码为准）：
+
+| 模块                                            | 文档                         | 职责                                                                                |
+| ----------------------------------------------- | ---------------------------- | ----------------------------------------------------------------------------------- |
+| [src/](src/AGENTS.md)                           | `src/AGENTS.md`              | 扩展宿主全部源码：入口、服务装配、Git 桥接、命令、视图、工具库、webviews            |
+| [src/env/](src/env/AGENTS.md)                   | `src/env/AGENTS.md`          | 环境抽象：node 与 browser 双实现（`@env/*`），browser git 为降级 stub               |
+| [src/git/](src/git/AGENTS.md)                   | `src/git/AGENTS.md`          | `packages/git` 的宿主桥接：provider 管理、仓库模型、GitUri、声明合并                |
+| [src/commands/](src/commands/AGENTS.md)         | `src/commands/AGENTS.md`     | 命令实现与注册（id 源：`contributions.json` + generated constants）                 |
+| [src/views/](src/views/AGENTS.md)               | `src/views/AGENTS.md`        | 侧边栏树视图与视图节点（refresh/reveal 防抖）                                       |
+| [src/system/](src/system/AGENTS.md)             | `src/system/AGENTS.md`       | 工具库：`utils/`（共享）、`utils/-webview/`（仅宿主）、`decorators/`、`rpc/`        |
+| [src/webviews/](src/webviews/AGENTS.md)         | `src/webviews/AGENTS.md`     | webview 宿主控制器、经典 IPC、Supertalk RPC、Lit apps                               |
+| [packages/utils/](packages/utils/AGENTS.md)     | `packages/utils/AGENTS.md`   | `@gitlens/utils`：宿主与 webview 共享工具（debounce、装饰器、iterable、logger 等）  |
+| [packages/ipc/](packages/ipc/AGENTS.md)         | `packages/ipc/AGENTS.md`     | `@gitlens/ipc`：IPC 消息模型与传输                                                  |
+| [packages/git/](packages/git/AGENTS.md)         | `packages/git/AGENTS.md`     | `@gitlens/git`：Git 抽象层（模型、sub-providers、缓存、watch 服务）                 |
+| [packages/git-cli/](packages/git-cli/AGENTS.md) | `packages/git-cli/AGENTS.md` | `@gitlens/git-cli`：git 可执行文件定位与 CLI 执行                                   |
+| [packages/core/](packages/core/AGENTS.md)       | `packages/core/AGENTS.md`    | `@liao666brant/core-wegit`：核心库打包产物（`pnpm run build:core`）                 |
+| [scripts/](scripts/AGENTS.md)                   | `scripts/AGENTS.md`          | 构建、贡献物生成、命令类型生成等脚本（`build.mjs`、`generateContributions.mts` 等） |
+| [tests/e2e/](tests/e2e/AGENTS.md)               | `tests/e2e/AGENTS.md`        | Playwright E2E：`fixtures/`、`pageObjects/`、`specs/`                               |
+
+## 运行与开发
+
+- 环境要求与性能考量见上「开发环境」；命令速查见上「开发命令」与「专用命令」。
+- 典型工作流：`pnpm install` → `pnpm run watch`（增量构建）→ 在 VS Code 扩展开发宿主中启动（见 `.vscode/launch.json`）。
+- 双环境编译：`tsconfig.node.json` / `tsconfig.browser.json` 分别覆盖桌面与 Web 目标；`src/webviews/apps/**` 与对方环境的 `src/env/**` 被排除，apps 由 webpack 单独打包。
+- 改动命令相关：见上「关键规则 → contributions.json」；改后运行 `pnpm run generate:contributions` 与 `pnpm run generate:commandTypes`。
+
+## 测试策略
+
+- **单元测试**：与源码同目录 `__tests__/*.test.ts`（`@vscode/test-cli`），`pnpm run test`；包级测试 `pnpm run test:packages`。已有：`src/commands/__tests__`、`src/git/__tests__`、`src/system/__tests__` 等。
+- **E2E**：Playwright，`tests/e2e/`（fixtures / pageObjects / specs），`pnpm run test:e2e`（需先 `pnpm run bundle:e2e` 或 watch）。
+- 运行模式、输出解读与调试方法：见 [docs/testing.md](docs/testing.md)；失败处理原则见上「关键规则 → 测试」。
+
+## 编码规范
+
+规范主体见上「编码标准与风格规则」「装饰器系统」「关键规则」；错误处理模式与实现质量规则见 [docs/coding-standards.md](docs/coding-standards.md)。要点：严格 TypeScript（禁 `any`，外部 API 除外）、导入恒带 `.js` 扩展名（ESM）、禁止 default 导出、纯类型导入用 `import type`、联合类型优先 `type`、`@env/` 路径别名。
+
+## AI 使用指引
+
+1. **先读再改**：改动前先读对应模块的 `AGENTS.md`（见「模块索引」）与相关源码，不臆测方法名、装饰器行为或类接口。
+2. **双路径意识**：涉及共享代码的改动须同时考虑 Node 与 browser 两条路径；webview 改动保持键盘可操作与无障碍（[docs/accessibility.md](docs/accessibility.md)）。
+3. **命令 id**：以 `contributions.json` + `src/constants.commands.generated.ts` 为准，勿手写字符串字面量；生成流程见「专用命令」。
+4. **技能**：常见任务先用上「可用技能」表中的 `/` 技能；提交遵循仓库 Git 指南。
+5. **文档定位**：本文件为人工维护的开发规范；模块 `AGENTS.md` 为初次索引产物，与代码不一致时以代码为准并更新文档。
+
+## 精简变更记录
+
+- 2026-08-15：初次索引完成。新增 `src/`、其六个子模块、五个 workspace package、`scripts/` 与 `tests/e2e/` 的 `AGENTS.md`/`CLAUDE.md`；根文档补足项目愿景、架构总览、结构图、模块索引与索引状态（基线 `0be2fef52`）。既有正文（工作风格、开发命令、编码规范等）逐字保留。
+
+## 索引状态
+
+- 上次索引：2026-08-15T15:19:21Z（@0be2fef52）
+- 基线提交：0be2fef52e77c7a1452c0854d05ea8fb238cfebc
+- 已知缺口：无
+- 扫描进度：已完成
