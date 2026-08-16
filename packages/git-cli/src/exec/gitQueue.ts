@@ -281,11 +281,17 @@ const optionsTakingValue = new Set([
 /**
  * Infers a queue priority from the git command being invoked.
  *
- * Intentionally narrow: only returns 'background' for commands that are
- * *always* read-only AND *always* potentially expensive. Polymorphic commands
- * like `log` and `rev-list` (which can be quick bounded lookups or full-history
- * walks) are deliberately omitted — call sites that perform heavy walks must
- * pass `priority: 'background'` explicitly. Never upgrades to 'interactive'.
+ * Downgrades: only returns 'background' for commands that are *always* read-only AND
+ * *always* potentially expensive. Polymorphic commands like `log` and `rev-list` (which
+ * can be quick bounded lookups or full-history walks) are deliberately omitted — call
+ * sites that perform heavy walks must pass `priority: 'background'` explicitly.
+ *
+ * Upgrades: `blame`, `diff`, `show`, and `status` are always read-only AND always bound
+ * to a user-visible latency surface (hover, status bar, commit details click), so they
+ * are auto-upgraded to 'interactive' — letting them preempt queued background walks and
+ * use the interactive burst allowance instead of waiting behind a full queue (see the
+ * onSlowQueue notes about "commit details click stuck behind graph load"). Other
+ * commands are never upgraded.
  *
  * No subcommand awareness (e.g. `stash list`, `branch -l`): the risk of
  * misclassifying a write subcommand as background outweighs the gain.
@@ -309,6 +315,11 @@ export function inferGitCommandPriority(args: readonly (string | undefined)[]): 
 	}
 
 	switch (command) {
+		case 'blame':
+		case 'diff':
+		case 'show':
+		case 'status':
+			return 'interactive';
 		case 'for-each-ref':
 		case 'shortlog':
 		case 'reflog':

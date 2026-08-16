@@ -496,28 +496,28 @@ suite('inferGitCommandPriority() Test Suite', () => {
 		assert.strictEqual(inferGitCommandPriority(['push', 'origin', 'main']), 'normal');
 	});
 
-	test('status is normal priority', () => {
-		assert.strictEqual(inferGitCommandPriority(['status', '--porcelain']), 'normal');
+	test('status is interactive priority (always read-only, always user-latency-bound)', () => {
+		assert.strictEqual(inferGitCommandPriority(['status', '--porcelain']), 'interactive');
 	});
 
 	test('merge-base is normal priority', () => {
 		assert.strictEqual(inferGitCommandPriority(['merge-base', 'A', 'B']), 'normal');
 	});
 
-	test('blame is normal priority', () => {
-		assert.strictEqual(inferGitCommandPriority(['blame', 'file.ts']), 'normal');
+	test('blame is interactive priority (always read-only, always user-latency-bound)', () => {
+		assert.strictEqual(inferGitCommandPriority(['blame', 'file.ts']), 'interactive');
 	});
 
 	test('ls-files is normal priority', () => {
 		assert.strictEqual(inferGitCommandPriority(['ls-files']), 'normal');
 	});
 
-	test('diff is normal priority', () => {
-		assert.strictEqual(inferGitCommandPriority(['diff', 'HEAD']), 'normal');
+	test('diff is interactive priority (always read-only, always user-latency-bound)', () => {
+		assert.strictEqual(inferGitCommandPriority(['diff', 'HEAD']), 'interactive');
 	});
 
-	test('show is normal priority', () => {
-		assert.strictEqual(inferGitCommandPriority(['show', 'HEAD']), 'normal');
+	test('show is interactive priority (always read-only, always user-latency-bound)', () => {
+		assert.strictEqual(inferGitCommandPriority(['show', 'HEAD']), 'interactive');
 	});
 
 	test('skips -c flag and its value arg to find the real command', () => {

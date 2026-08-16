@@ -38,6 +38,11 @@ export interface GitRepositoryService extends RepositoryService {}
 
 const skipOverlappingProperties = new Set(['path', 'provider', 'getAbsoluteUri', 'exec', 'run']);
 
+type BranchAndTagTipsLookup = (
+	sha: string,
+	options?: { compact?: boolean; icons?: boolean; pills?: boolean | { cssClass: string } },
+) => string | undefined;
+
 // oxlint-disable-next-line @typescript-eslint/no-unsafe-declaration-merging
 export class GitRepositoryService {
 	constructor(
@@ -152,15 +157,31 @@ export class GitRepositoryService {
 		return this._provider.getBestRevisionUri(this.path, this._provider.getRelativePath(path, this.path), rev);
 	}
 
+	private _tipsLookup: { key: string; etag: number; promise: Promise<BranchAndTagTipsLookup> } | undefined;
+
+	/**
+	 * Builds a lookup resolving branch/tag tips for a commit SHA. The lookup only depends on
+	 * repository state (branches/tags/remotes) and the suppressed name — not on the queried
+	 * SHA — so it is memoized per `repo.etag` to avoid rebuilding the whole grouped structure
+	 * on every status-bar commit change or gutter hover.
+	 */
 	@debug()
-	async getBranchesAndTagsTipsLookup(
-		suppressName?: string,
-	): Promise<
-		(
-			sha: string,
-			options?: { compact?: boolean; icons?: boolean; pills?: boolean | { cssClass: string } },
-		) => string | undefined
-	> {
+	async getBranchesAndTagsTipsLookup(suppressName?: string): Promise<BranchAndTagTipsLookup> {
+		if (this.path == null) return () => undefined;
+
+		const etag = this.getRepository()?.etag ?? 0;
+		const key = suppressName ?? '';
+		if (this._tipsLookup?.key === key && this._tipsLookup.etag === etag) {
+			return this._tipsLookup.promise;
+		}
+
+		const promise = this.getBranchesAndTagsTipsLookupCore(suppressName);
+		this._tipsLookup = { key: key, etag: etag, promise: promise };
+
+		return promise;
+	}
+
+	private async getBranchesAndTagsTipsLookupCore(suppressName?: string): Promise<BranchAndTagTipsLookup> {
 		if (this.path == null) return () => undefined;
 
 		type Tip = { name: string; icon: string; compactName: string | undefined; type: 'branch' | 'tag' };

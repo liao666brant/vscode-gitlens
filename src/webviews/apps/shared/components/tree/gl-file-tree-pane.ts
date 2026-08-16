@@ -66,6 +66,23 @@ export interface FileChangeListItemDetail extends FileItem {
 	files?: readonly FileItem[];
 }
 
+/**
+ * Fingerprint of the `FileItem` fields the tree structure and rendering depend on (order-sensitive —
+ * `buildGroupedTree` tie-breaking can rely on input order). Used to detect content-identical `files`
+ * arrays arriving as new references, which don't warrant a tree rebuild.
+ */
+function computeTreeFilesFingerprint(files: readonly FileItem[]): string {
+	let fingerprint = '';
+	for (const f of files) {
+		fingerprint += `${f.path}\u0001${f.originalPath ?? ''}\u0001${f.status}\u0001${f.staged ? 1 : 0}\u0001${
+			f.mode ?? ''
+		}\u0001${f.submodule?.oid ?? ''}\u0001${f.stats?.additions ?? -1}\u0001${f.stats?.deletions ?? -1}\u0001${
+			f.conflictMarkers ?? -1
+		}\u0002`;
+	}
+	return fingerprint;
+}
+
 @customElement('gl-file-tree-pane')
 export class GlFileTreePane extends LitElement {
 	static override styles = [elementBase, fileTreeStyles];
@@ -251,6 +268,8 @@ export class GlFileTreePane extends LitElement {
 	searchBoxFilter?: boolean;
 
 	private _cachedTreeModel?: TreeModel[];
+	/** Fingerprint of the `files` content the cached model was built from — see {@link computeTreeFilesFingerprint} */
+	private _cachedTreeFilesFingerprint?: string;
 	private _pendingScrollRestore?: number;
 	// Drives a re-render when alt is pressed/released so the header tooltip can swap between
 	// the primary and alt-action labels. Per-file checkbox tooltips swap inside `gl-tree-item`,
@@ -339,8 +358,8 @@ export class GlFileTreePane extends LitElement {
 		// callbacks/arrays consumed during model creation but don't affect tree structure.
 		// Including them causes unnecessary rebuilds (losing expansion state) because
 		// callers often pass new references on every render.
-		if (
-			changedProperties.has('files') ||
+		const filesChanged = changedProperties.has('files');
+		const structuralChanged =
 			changedProperties.has('filesLayout') ||
 			changedProperties.has('orderBy') ||
 			changedProperties.has('showFileIcons') ||
@@ -349,65 +368,77 @@ export class GlFileTreePane extends LitElement {
 			changedProperties.has('checkableStates') ||
 			changedProperties.has('checkableStateDefault') ||
 			changedProperties.has('searchContext') ||
-			changedProperties.has('_contextMatchVisibility')
-		) {
-			const files = (this.files as Files) ?? [];
+			changedProperties.has('_contextMatchVisibility');
+		if (!filesChanged && !structuralChanged) return;
 
-			// Only when `files` actually changed: capture scroll position if the new path-set
-			// mostly overlaps the old (>50%) — keeps scroll across a re-fetch of the same view,
-			// drops it on a real navigation (different commit / repo).
-			if (changedProperties.has('files')) {
-				const prev = changedProperties.get('files') as readonly FileItem[] | undefined;
-				if (prev?.length && files.length) {
-					const prevPaths = new Set<string>();
-					for (const f of prev) {
-						prevPaths.add(f.path);
-					}
-					let overlap = 0;
-					for (const f of files) {
-						if (prevPaths.has(f.path)) {
-							overlap++;
-						}
-					}
-					if (overlap / Math.max(prevPaths.size, files.length) > 0.5) {
-						const scrollable = this.getTreeScrollContainer();
-						if (scrollable != null) {
-							this._pendingScrollRestore = scrollable.scrollTop;
-						}
+		const files = (this.files as Files) ?? [];
+
+		// Only when `files` actually changed: capture scroll position if the new path-set
+		// mostly overlaps the old (>50%) — keeps scroll across a re-fetch of the same view,
+		// drops it on a real navigation (different commit / repo).
+		if (filesChanged) {
+			const prev = changedProperties.get('files') as readonly FileItem[] | undefined;
+			if (prev?.length && files.length) {
+				const prevPaths = new Set<string>();
+				for (const f of prev) {
+					prevPaths.add(f.path);
+				}
+				let overlap = 0;
+				for (const f of files) {
+					if (prevPaths.has(f.path)) {
+						overlap++;
 					}
 				}
-
-				// Reconcile the multi-selection against the new files: drop paths that are gone and
-				// re-point survivors to the new FileItem objects. The tree's own prune only re-emits
-				// when its id-set actually changes, so a model swap whose paths overlap would otherwise
-				// leave `_selectedFiles` holding the previous commit's file shapes (wrong diff refs).
-				if (this._selectedFiles.length) {
-					const byPath = new Map(files.map(f => [f.path, f]));
-					const reconciled = this._selectedFiles
-						.map(f => byPath.get(f.path))
-						.filter((f): f is FileItem => f != null);
-					if (
-						reconciled.length !== this._selectedFiles.length ||
-						reconciled.some((f, i) => f !== this._selectedFiles[i])
-					) {
-						this._selectedFiles = reconciled;
+				if (overlap / Math.max(prevPaths.size, files.length) > 0.5) {
+					const scrollable = this.getTreeScrollContainer();
+					if (scrollable != null) {
+						this._pendingScrollRestore = scrollable.scrollTop;
 					}
 				}
 			}
 
-			this._cachedTreeModel = buildGroupedTree({
-				files: files,
-				isTree: isTreeLayout(this.fileLayout, files.length, this.filesLayout?.threshold ?? 5),
-				compact: this.filesLayout?.compact ?? true,
-				grouping: this.grouping,
-				checkable: this.checkable,
-				contextMatchVisibility: this._contextMatchVisibility,
-				searchContext: this.searchContext,
-				fileToModel: (file, opts, flat) => this.fileToTreeModel(file, opts, flat),
-				folderToContextData: this.folderContext,
-				orderBy: this.orderBy,
-			});
+			// Reconcile the multi-selection against the new files: drop paths that are gone and
+			// re-point survivors to the new FileItem objects. The tree's own prune only re-emits
+			// when its id-set actually changes, so a model swap whose paths overlap would otherwise
+			// leave `_selectedFiles` holding the previous commit's file shapes (wrong diff refs).
+			if (this._selectedFiles.length) {
+				const byPath = new Map(files.map(f => [f.path, f]));
+				const reconciled = this._selectedFiles
+					.map(f => byPath.get(f.path))
+					.filter((f): f is FileItem => f != null);
+				if (
+					reconciled.length !== this._selectedFiles.length ||
+					reconciled.some((f, i) => f !== this._selectedFiles[i])
+				) {
+					this._selectedFiles = reconciled;
+				}
+			}
 		}
+
+		// Same tree-relevant content in a new `files` array reference (e.g. a re-fetch or
+		// enrichment re-emit of the same commit) — the cached model is still accurate, so skip
+		// the rebuild and the DOM churn (plus expansion-state loss) it causes
+		if (
+			filesChanged &&
+			!structuralChanged &&
+			computeTreeFilesFingerprint(files) === this._cachedTreeFilesFingerprint
+		) {
+			return;
+		}
+
+		this._cachedTreeFilesFingerprint = computeTreeFilesFingerprint(files);
+		this._cachedTreeModel = buildGroupedTree({
+			files: files,
+			isTree: isTreeLayout(this.fileLayout, files.length, this.filesLayout?.threshold ?? 5),
+			compact: this.filesLayout?.compact ?? true,
+			grouping: this.grouping,
+			checkable: this.checkable,
+			contextMatchVisibility: this._contextMatchVisibility,
+			searchContext: this.searchContext,
+			fileToModel: (file, opts, flat) => this.fileToTreeModel(file, opts, flat),
+			folderToContextData: this.folderContext,
+			orderBy: this.orderBy,
+		});
 	}
 
 	override updated(): void {

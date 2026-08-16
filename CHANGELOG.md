@@ -6,6 +6,12 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/) and this p
 
 ## [Unreleased]
 
+### Perf
+
+- Prevents user-facing git reads from stalling behind background work — `blame`, `diff`, `show`, and `status` commands now run at interactive queue priority, preempting queued background walks (e.g. commit graph loads) instead of waiting behind them
+- Memoizes the branch/tag tips lookup per repository state — status-bar commit changes and gutter hovers no longer rebuild the whole grouped branches/tags structure on every SHA change
+- Reuses the commit details file tree when a re-fetched file list is content-identical — skips the tree rebuild (and its DOM churn + expansion-state loss) for enrichment re-emits of the same commit
+
 ## [20.0.0] - 2026-08-16
 
 ### Perf
