@@ -274,7 +274,7 @@ custom-elements.json          # Custom Elements Manifest —— 生成的 web �
 
 ## 项目愿景
 
-**WeGit**（包名 `wegit`，v20.0.1，publisher `liao666brant`）—— 小而美的 Git 工具：在 VS Code 中提供 blame 注释、提交历史可视化、仓库探索与常用 Git 工作流，同时支持桌面版 VS Code（Node.js）与 Web 版 VS Code（browser/webworker）。产品定位与能力概述见文首简介；详细架构见 [docs/architecture.md](docs/architecture.md)。
+**WeGit**（包名 `wegit`，v20.0.2，publisher `liao666brant`）—— 小而美的 Git 工具：在 VS Code 中提供 blame 注释、提交历史可视化、仓库探索与常用 Git 工作流，同时支持桌面版 VS Code（Node.js）与 Web 版 VS Code（browser/webworker）。产品定位与能力概述见文首简介；详细架构见 [docs/architecture.md](docs/architecture.md)。
 
 ## 架构总览
 

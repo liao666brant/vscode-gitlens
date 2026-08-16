@@ -6,6 +6,12 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/) and this p
 
 ## [Unreleased]
 
+## [20.0.2] - 2026-08-16
+
+### Perf
+
+- Trims the extension package size by ~630 KB (uncompressed) — the bundled changelog now carries only WeGit-era entries (the upstream GitLens history back to v18.1.0 is archived in the repository as `CHANGELOG.upstream.md`), stray development artifacts (`.work/`, `skills-lock.json`) are excluded from the package, and 7 unused settings-page preview images are removed
+
 ## [20.0.1] - 2026-08-16
 
 ### Perf
@@ -40,7 +46,8 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/) and this p
 - Updates the design and readbility of the Pro feature gates (e.g. _Commit Graph_, _Visual History_) &mdash; with an optional _Switch Repos_ action to move to a repository where the feature is available ([#5335](https://github.com/gitkraken/vscode-gitlens/issues/5335))
 - Improves the AI weekly usage-limit message with a _Get More Credits_ action to purchase additional AI credits for users who can buy credits, or guidance to contact an org admin for those who can't ([#5298](https://github.com/gitkraken/vscode-gitlens/issues/5298))
 
-[unreleased]: https://github.com/gitkraken/vscode-gitlens/compare/v20.0.1...HEAD
+[unreleased]: https://github.com/gitkraken/vscode-gitlens/compare/v20.0.2...HEAD
+[20.0.2]: https://github.com/gitkraken/vscode-gitlens/compare/v20.0.1...gitkraken:v20.0.2
 [20.0.1]: https://github.com/gitkraken/vscode-gitlens/compare/v20.0.0...gitkraken:v20.0.1
 [20.0.0]: https://github.com/gitkraken/vscode-gitlens/compare/v18.2.0...gitkraken:v20.0.0
 [18.2.0]: https://github.com/gitkraken/vscode-gitlens/compare/v18.1.0...gitkraken:v18.2.0
