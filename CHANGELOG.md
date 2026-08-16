@@ -6,6 +6,8 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/) and this p
 
 ## [Unreleased]
 
+## [20.0.0] - 2026-08-16
+
 ### Perf
 
 - Significantly reduces git process churn while editing — saving or staging a file no longer invalidates blame/diff results for every file in the repository: with working-tree watching active, file-scoped caches are invalidated per changed path, and open editors keep their in-memory blame snapshots instead of re-running `git blame` after every save
@@ -7004,7 +7006,8 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/) and this p
 
 - Initial release but still heavily a work in progress.
 
-[unreleased]: https://github.com/gitkraken/vscode-gitlens/compare/v18.2.0...HEAD
+[unreleased]: https://github.com/gitkraken/vscode-gitlens/compare/v20.0.0...HEAD
+[20.0.0]: https://github.com/gitkraken/vscode-gitlens/compare/v18.2.0...gitkraken:v20.0.0
 [18.2.0]: https://github.com/gitkraken/vscode-gitlens/compare/v18.1.0...gitkraken:v18.2.0
 [18.1.0]: https://github.com/gitkraken/vscode-gitlens/compare/v18.0.0...gitkraken:v18.1.0
 [18.0.0]: https://github.com/gitkraken/vscode-gitlens/compare/v17.12.2...gitkraken:v18.0.0

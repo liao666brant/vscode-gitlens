@@ -2,7 +2,7 @@
 	"name": "wegit",
 	"displayName": "WeGit — 小而美的 Git 工具",
 	"description": "小而美的 Git 工具：在 VS Code 中查看提交、分支、文件历史、blame 注释和常用 Git 工作流。",
-	"version": "18.2.0",
+	"version": "20.0.0",
 	"engines": {
 		"node": ">= 22.18.0",
 		"pnpm": ">= 10.0.0",
