@@ -6,6 +6,8 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/) and this p
 
 ## [Unreleased]
 
+## [20.0.1] - 2026-08-16
+
 ### Perf
 
 - Prevents user-facing git reads from stalling behind background work — `blame`, `diff`, `show`, and `status` commands now run at interactive queue priority, preempting queued background walks (e.g. commit graph loads) instead of waiting behind them
@@ -7012,7 +7014,8 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/) and this p
 
 - Initial release but still heavily a work in progress.
 
-[unreleased]: https://github.com/gitkraken/vscode-gitlens/compare/v20.0.0...HEAD
+[unreleased]: https://github.com/gitkraken/vscode-gitlens/compare/v20.0.1...HEAD
+[20.0.1]: https://github.com/gitkraken/vscode-gitlens/compare/v20.0.0...gitkraken:v20.0.1
 [20.0.0]: https://github.com/gitkraken/vscode-gitlens/compare/v18.2.0...gitkraken:v20.0.0
 [18.2.0]: https://github.com/gitkraken/vscode-gitlens/compare/v18.1.0...gitkraken:v18.2.0
 [18.1.0]: https://github.com/gitkraken/vscode-gitlens/compare/v18.0.0...gitkraken:v18.1.0
