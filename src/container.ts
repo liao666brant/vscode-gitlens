@@ -248,7 +248,10 @@ export class Container {
 		this._ready = true;
 		this._readyAt = Date.now();
 		await this.registerGitProviders();
-		queueMicrotask(() => this._onReady.fire());
+		// Fire on a macrotask so `activate()` resolves before the onReady subscribers (view
+		// creation, command registration) run — keeps that work off the measured activation
+		// path without delaying it beyond the current event-loop turn by any noticeable amount
+		setTimeout(() => this._onReady.fire(), 0);
 	}
 
 	@debug()

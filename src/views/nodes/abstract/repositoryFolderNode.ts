@@ -68,8 +68,7 @@ export abstract class RepositoryFolderNode<
 	}
 
 	async getTreeItem(): Promise<TreeItem> {
-		const branch = await this.repo.git.branches.getBranch();
-		this._cachedBranch = branch;
+		const { branch, lastFetched } = await this.getTreeItemData();
 
 		let label = this.repo.name ?? this.uri.repoPath ?? '';
 		if (this.options?.showBranchAndLastFetched && branch != null) {
@@ -100,9 +99,6 @@ export abstract class RepositoryFolderNode<
 		item.iconPath = getRepositoryIconPath(this.repo);
 
 		if (branch != null && this.options?.showBranchAndLastFetched) {
-			const lastFetched = (await this.repo.getLastFetched()) ?? 0;
-			this._cachedLastFetched = lastFetched;
-
 			const status = GitBranch.getTrackingStatus(branch);
 			if (status) {
 				item.description = status;
@@ -114,11 +110,33 @@ export abstract class RepositoryFolderNode<
 				item.description = `${item.description ?? ''}上次获取于 ${formatLastFetched(lastFetched)}`;
 			}
 		} else {
-			this._cachedLastFetched = undefined;
 			item.tooltip = this.repo.name ? `${this.repo.name}\n${this.uri.repoPath}` : (this.uri.repoPath ?? '');
 		}
 
 		return item;
+	}
+
+	private _treeItemEtag: number | undefined;
+
+	/**
+	 * Resolves this node's tree-item data, memoized per repo `etag` — VS Code calls
+	 * `getTreeItem` for every visible node on every refresh, and without the memo each
+	 * call re-runs the `getBranch`/`getLastFetched` async chains for every folder node.
+	 */
+	private async getTreeItemData(): Promise<{ branch: GitBranch | undefined; lastFetched: number | undefined }> {
+		const etag = this.repo.etag;
+		if (etag === this._treeItemEtag) {
+			return { branch: this._cachedBranch, lastFetched: this._cachedLastFetched };
+		}
+
+		this._treeItemEtag = etag;
+		this._cachedBranch = await this.repo.git.branches.getBranch();
+		this._cachedLastFetched =
+			this._cachedBranch != null && this.options?.showBranchAndLastFetched
+				? ((await this.repo.getLastFetched()) ?? 0)
+				: undefined;
+
+		return { branch: this._cachedBranch, lastFetched: this._cachedLastFetched };
 	}
 
 	override async resolveTreeItem(item: TreeItem, _token: CancellationToken): Promise<TreeItem> {
@@ -173,7 +191,7 @@ export abstract class RepositoryFolderNode<
 		return this.child;
 	}
 
-	@gate()
+	@gate(undefined, { timeout: 30000, rejectOnTimeout: false }) // 30 second timeout to prevent indefinite hangs
 	@trace()
 	override async refresh(reset: boolean = false): Promise<void> {
 		await super.refresh(reset);
@@ -220,9 +238,23 @@ export abstract class RepositoryFolderNode<
 		}
 
 		if (this.changed(e)) {
+			// Index-only events (saves, staging) rarely change tree structure — they mostly
+			// affect descriptions, which re-render via `getTreeItem` when VS Code re-renders the
+			// visible subtree. Unless the view opts in, downgrade to a non-reset change so the
+			// child node instances (and their cached data) are preserved instead of disposing and
+			// rebuilding the whole subtree on every save.
+			const reset = !e.changedExclusive('index') || this.resetsOnIndex;
+
 			// If we are sorting by last fetched, then we need to trigger the parent to resort
 			const node = !this.loaded || this.repo.orderByLastFetched ? (this.parent ?? this) : this;
-			void node.triggerChange(true);
+			void node.triggerChange(reset);
 		}
 	}
+
+	/**
+	 * Whether this view's tree structure depends on index-only changes (e.g. the commits
+	 * view includes uncommitted/staged pseudo-commits in its children). See
+	 * {@link onRepositoryChanged} for how this affects index-only refreshes.
+	 */
+	protected resetsOnIndex = false;
 }

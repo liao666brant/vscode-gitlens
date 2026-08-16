@@ -31,6 +31,10 @@ import type { CopyNodeCommandArgs } from './viewCommands.js';
 import { registerViewCommand } from './viewCommands.js';
 
 export class CommitsRepositoryNode extends RepositoryFolderNode<CommitsView, BranchNode> {
+	// Children include uncommitted/staged pseudo-commits whose presence flips with the
+	// index, so index-only events must still reset (restructure) this subtree
+	protected override resetsOnIndex = true;
+
 	async getChildren(): Promise<ViewNode[]> {
 		this.view.message = undefined;
 
@@ -66,7 +70,7 @@ export class CommitsRepositoryNode extends RepositoryFolderNode<CommitsView, Bra
 		return this.child.getChildren();
 	}
 
-	@gate()
+	@gate(undefined, { timeout: 30000, rejectOnTimeout: false }) // 30 second timeout to prevent indefinite hangs
 	@trace()
 	override async refresh(reset: boolean = false): Promise<void> {
 		if (reset) {

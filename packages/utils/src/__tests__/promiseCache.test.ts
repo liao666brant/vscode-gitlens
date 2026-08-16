@@ -580,4 +580,26 @@ suite('RepoPromiseCacheMap Test Suite', () => {
 		assert.strictEqual(await pA, 1);
 		assert.strictEqual(await pB, 2);
 	});
+
+	test('deleteByKeyPredicate deletes only matching keys for the repo', async () => {
+		const cache = new RepoPromiseCacheMap<string, number>();
+		cache.set('/repo', 'src/a.ts:staged', Promise.resolve(1));
+		cache.set('/repo', 'src/a.ts:~abc', Promise.resolve(2));
+		cache.set('/other', 'src/a.ts:staged', Promise.resolve(3));
+
+		const deleted = cache.deleteByKeyPredicate('/repo', key => key.includes('staged'));
+
+		assert.strictEqual(deleted, true);
+		assert.strictEqual(cache.get('/repo', 'src/a.ts:staged'), undefined);
+		assert.notStrictEqual(cache.get('/repo', 'src/a.ts:~abc'), undefined);
+		// Entries of other repos are untouched
+		assert.notStrictEqual(cache.get('/other', 'src/a.ts:staged'), undefined);
+
+		// A second pass with nothing left to delete reports false
+		assert.strictEqual(
+			cache.deleteByKeyPredicate('/repo', key => key.includes('staged')),
+			false,
+		);
+		await Promise.resolve();
+	});
 });

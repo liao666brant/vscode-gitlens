@@ -45,7 +45,6 @@
 	"activationEvents": [
 		"onFileSystem:gitlens",
 		"onStartupFinished",
-		"onTerminal:*",
 		"onUri",
 		"onWebviewPanel:gitlens.settings"
 	],

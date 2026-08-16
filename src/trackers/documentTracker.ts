@@ -18,7 +18,7 @@ import type { Container } from '../container.js';
 import type { RepositoriesChangeEvent } from '../git/gitProviderService.js';
 import type { GitUri } from '../git/gitUri.js';
 import { isGitUri } from '../git/gitUri.js';
-import type { RepositoryChangeEvent } from '../git/models/repository.js';
+import type { RepositoryChangeEvent, RepositoryWorkingTreeChangeEvent } from '../git/models/repository.js';
 import { configuration } from '../system/-webview/configuration.js';
 import { setContext } from '../system/-webview/context.js';
 import { UriSet } from '../system/-webview/uriMap.js';
@@ -75,6 +75,8 @@ export class GitDocumentTracker implements Disposable {
 	private _dirtyStateChangedDebounced: Deferrable<(e: DocumentDirtyStateChangeEvent) => void> | undefined;
 	private readonly _disposable: Disposable;
 	private readonly _documentMap = new Map<TextDocument, Promise<TrackedGitDocument>>();
+	/** Per-repo working-tree subscriptions — only fire while a working-tree watcher is active */
+	private readonly _workingTreeSubscriptions = new Map<string, Disposable>();
 
 	constructor(private readonly container: Container) {
 		this._disposable = Disposable.from(
@@ -99,6 +101,11 @@ export class GitDocumentTracker implements Disposable {
 
 	dispose(): void {
 		this._disposable.dispose();
+
+		for (const subscription of this._workingTreeSubscriptions.values()) {
+			subscription.dispose();
+		}
+		this._workingTreeSubscriptions.clear();
 
 		void this.clear();
 	}
@@ -152,6 +159,8 @@ export class GitDocumentTracker implements Disposable {
 	}
 
 	private onRepositoriesChanged(e: RepositoriesChangeEvent) {
+		this.syncWorkingTreeSubscriptions(e);
+
 		void this.refreshDocuments({
 			addedOrChangedRepoPaths: e.added.length
 				? new Set<string>(e.added.map(r => r.path.toLowerCase()))
@@ -160,9 +169,54 @@ export class GitDocumentTracker implements Disposable {
 		});
 	}
 
+	private syncWorkingTreeSubscriptions(e: RepositoriesChangeEvent) {
+		for (const repo of e.added) {
+			if (this._workingTreeSubscriptions.has(repo.path)) continue;
+
+			this._workingTreeSubscriptions.set(
+				repo.path,
+				repo.onDidChangeWorkingTree(wtEvent => this.onWorkingTreeChanged(wtEvent)),
+			);
+		}
+
+		for (const repo of e.removed) {
+			this._workingTreeSubscriptions.get(repo.path)?.dispose();
+			this._workingTreeSubscriptions.delete(repo.path);
+		}
+	}
+
+	private onWorkingTreeChanged(e: RepositoryWorkingTreeChangeEvent) {
+		if (this._documentMap.size === 0) return;
+
+		const changedPaths = new Set(Array.from(e.uris, u => u.fsPath.toLocaleLowerCase()));
+		for (const d of this._documentMap.values()) {
+			void d.then(doc => {
+				// Skip dirty documents — their blame is computed from the editor contents, not the disk file
+				if (doc.dirty || doc.document.isDirty) return;
+
+				if (!changedPaths.has(doc.document.uri.fsPath.toLocaleLowerCase())) return;
+
+				// Disk contents changed beneath a clean document (external edit, checkout, stash) —
+				// refresh the snapshot from the reloaded text, exactly like a save
+				doc.refresh('saved');
+			});
+		}
+	}
+
 	private onRepositoryChanged(e: RepositoryChangeEvent) {
 		if (e.changed('index', 'heads', 'pausedOp', 'unknown')) {
-			void this.refreshDocuments({ addedOrChangedRepoPaths: new Set([e.repository.path]) });
+			// Index-only events with a working-tree watcher active are handled precisely (per-path
+			// snapshot refreshes + staged-only cache clears), so preserve blame snapshots and only
+			// re-check tracked state — otherwise every save (VS Code's git refreshes .git/index on
+			// save) would discard snapshots and re-blame every open document in the repository.
+			const preserveBlameSnapshots =
+				e.changedExclusive('index') &&
+				(this.container.git.watchService.getSession(e.repository.path)?.workingTreeSubscriberCount ?? 0) > 0;
+
+			void this.refreshDocuments({
+				addedOrChangedRepoPaths: new Set([e.repository.path]),
+				reason: preserveBlameSnapshots ? 'indexChanged' : 'repositoryChanged',
+			});
 		}
 	}
 
@@ -482,6 +536,7 @@ export class GitDocumentTracker implements Disposable {
 	private async refreshDocuments(changed?: {
 		addedOrChangedRepoPaths?: Set<string>;
 		removedRepoPaths?: Set<string>;
+		reason?: 'repositoryChanged' | 'indexChanged';
 	}) {
 		if (this._documentMap.size === 0) return;
 
@@ -493,7 +548,7 @@ export class GitDocumentTracker implements Disposable {
 			if (changed?.removedRepoPaths?.has(repoPath)) {
 				void this.remove(doc.document, doc);
 			} else if (changed == null ? true : changed.addedOrChangedRepoPaths?.has(repoPath)) {
-				doc.refresh('repositoryChanged');
+				doc.refresh(changed?.reason ?? 'repositoryChanged');
 			}
 		}
 	}

@@ -114,7 +114,7 @@ export class SearchAndCompareViewNode extends ViewNode<'search-compare', SearchA
 		this.view.triggerNodeChange();
 	}
 
-	@gate()
+	@gate(undefined, { timeout: 30000, rejectOnTimeout: false }) // 30 second timeout to prevent indefinite hangs
 	@trace()
 	override async refresh(reset: boolean = false): Promise<void> {
 		const children = this.children;

@@ -237,9 +237,13 @@ export async function activate(context: ExtensionContext): Promise<GitLensApi | 
 	await container.ready();
 
 	// TODO: do we want to capture any vscode settings that are relevant to WeGit?
-	const flatCfg = flatten(configuration.getAll(true) as unknown as Record<string, unknown>, 'config', {
-		joinArrays: true,
-	});
+	// (the full-configuration flatten only feeds the `activate` telemetry event — skip it
+	// entirely when telemetry is disabled, it's several hundred keys on every activation)
+	const flatCfg = container.telemetry.enabled
+		? flatten(configuration.getAll(true) as unknown as Record<string, unknown>, 'config', {
+				joinArrays: true,
+			})
+		: undefined;
 
 	container.telemetry.setGlobalAttributes({
 		debugging: container.debugging,

@@ -89,7 +89,7 @@ export class BlameGitSubProvider implements GitBlameSubProvider {
 		);
 	}
 
-	private async getProgressiveBlameCore(
+	private getProgressiveBlameCore(
 		repoPath: string,
 		path: string,
 		cacheKey: string,
@@ -97,10 +97,14 @@ export class BlameGitSubProvider implements GitBlameSubProvider {
 		contents?: string,
 		options?: GitBlameOptions,
 	): Promise<ProgressiveGitBlame> {
-		const [user, mtime] = await Promise.all([
-			this.provider.config.getCurrentUser(repoPath),
-			this.getFileMtime(repoPath, path),
-		]);
+		// Kick these off immediately but don't await — they only matter once parsed blame
+		// entries arrive, so the config/mailmap spawns overlap with git blame startup
+		// instead of blocking the stream behind two serial processes on the cold path.
+		const userPromise = this.provider.config.getCurrentUser(repoPath);
+		// Mark handled up front: if the stream setup below throws before `streamBlame` gets to
+		// await this promise, its rejection must not surface as unhandled
+		void userPromise.catch(() => undefined);
+		const mtimePromise = this.getFileMtime(repoPath, path);
 
 		const { progressive, writer } = createProgressiveGitBlame(repoPath);
 		const blameOptions: BlameArgOptions = {
@@ -110,7 +114,7 @@ export class BlameGitSubProvider implements GitBlameSubProvider {
 		};
 
 		// Start streaming in the background
-		void this.streamBlame(writer, repoPath, path, blameOptions, user, mtime);
+		void this.streamBlame(writer, repoPath, path, blameOptions, userPromise, mtimePromise);
 
 		// If streaming fails, progressive.completed rejects. Evict the cache entry
 		// so the next call retries instead of serving the failed GitBlameProgressive.
@@ -118,7 +122,7 @@ export class BlameGitSubProvider implements GitBlameSubProvider {
 			this.cache.blame.delete(repoPath, cacheKey);
 		});
 
-		return progressive;
+		return Promise.resolve(progressive);
 	}
 
 	private async streamBlame(
@@ -126,12 +130,16 @@ export class BlameGitSubProvider implements GitBlameSubProvider {
 		repoPath: string,
 		path: string,
 		options: BlameArgOptions,
-		currentUser: GitUser | undefined,
-		modifiedTime: number | undefined,
+		currentUser: Promise<GitUser | undefined>,
+		modifiedTime: Promise<number | undefined>,
 	): Promise<void> {
 		try {
 			const { root, file, params, stdin } = await this.buildBlameArgs(repoPath, path, options);
 			const stream = this.git.stream({ cwd: root, stdin: stdin }, ...params, '--', file);
+
+			// Resolve the current user + mtime while the blame process boots — parsing
+			// can't start before they resolve, but by now git is already running
+			const [user, mtime] = await Promise.all([currentUser, modifiedTime]);
 
 			const normalizedRepoPath = normalizePath(repoPath);
 			const repoUri = fileUri(normalizedRepoPath);
@@ -164,17 +172,7 @@ export class BlameGitSubProvider implements GitBlameSubProvider {
 			let batchNewLines: number[] = [];
 
 			for await (const entry of parseGitBlameAsync(stream)) {
-				applyBlameEntry(
-					entry,
-					repoPath,
-					authors,
-					commits,
-					lines,
-					currentUser,
-					modifiedTime,
-					getPathUri,
-					getPreviousPathUri,
-				);
+				applyBlameEntry(entry, repoPath, authors, commits, lines, user, mtime, getPathUri, getPreviousPathUri);
 
 				// Track which line indices were resolved in this entry
 				for (let i = 0; i < entry.lineCount; i++) {
@@ -250,6 +248,10 @@ export class BlameGitSubProvider implements GitBlameSubProvider {
 		}
 
 		const lineToBlame = editorLine + 1;
+		// Mark handled up front: if the blame exec rejects first, the concurrent user lookup
+		// must not surface as an unhandled rejection (mtime never rejects — it catches internally)
+		const userPromise = this.provider.config.getCurrentUser(repoPath);
+		void userPromise.catch(() => undefined);
 		const [result, user, mtime] = await Promise.all([
 			this.blameExecCore(repoPath, path, {
 				...(contents != null ? { contents: contents } : { ref: rev }),
@@ -258,7 +260,7 @@ export class BlameGitSubProvider implements GitBlameSubProvider {
 				startLine: lineToBlame,
 				endLine: lineToBlame,
 			}),
-			this.provider.config.getCurrentUser(repoPath),
+			userPromise,
 			this.getFileMtime(repoPath, path),
 		]);
 		const blame = parseGitBlame(repoPath, result?.stdout, user, mtime);

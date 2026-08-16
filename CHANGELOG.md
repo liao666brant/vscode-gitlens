@@ -6,6 +6,14 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/) and this p
 
 ## [Unreleased]
 
+### Perf
+
+- Significantly reduces git process churn while editing — saving or staging a file no longer invalidates blame/diff results for every file in the repository: with working-tree watching active, file-scoped caches are invalidated per changed path, and open editors keep their in-memory blame snapshots instead of re-running `git blame` after every save
+- Speeds up the first blame of a file — the current-user lookup (`git config` + `git check-mailmap`) now overlaps with the `git blame` process startup instead of blocking it, and `git ls-files` re-checks are skipped for already-tracked documents on index-only changes
+- Reduces sidebar view churn — index-only changes (saves, staging) no longer fully rebuild affected view subtrees when their structure can't change, and per-node `getBranch`/`last-fetched` lookups are memoized between repository changes
+- Reduces activation cost — removes the `onTerminal:*` activation trigger (activation still happens on startup), moves view/command registration off the measured activation path, and skips the full-configuration telemetry flatten when telemetry is disabled
+- Converges remaining 5-minute `@gate` timeouts on view refresh paths to 30-second non-rejecting timeouts, aligning with the earlier view-hang fixes
+
 ## [18.2.0] - 2026-06-15
 
 ### Added

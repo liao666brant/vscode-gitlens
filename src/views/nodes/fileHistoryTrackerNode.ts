@@ -113,7 +113,7 @@ export class FileHistoryTrackerNode extends SubscribeableViewNode<'file-history-
 		return item;
 	}
 
-	@gate()
+	@gate(undefined, { timeout: 30000, rejectOnTimeout: false }) // 30 second timeout to prevent indefinite hangs
 	@trace({ exit: true })
 	override async refresh(reset: boolean = false): Promise<{ cancel: boolean }> {
 		const scope = getScopedLogger();
@@ -160,7 +160,9 @@ export class FileHistoryTrackerNode extends SubscribeableViewNode<'file-history-
 		void this.triggerChange();
 	}
 
-	@gate()
+	// No @gate: this awaits a user-interactive reference picker that can legitimately stay
+	// open past any gate timeout — a queued re-run after timeout would surprise the user
+	// with an unexpected second picker
 	@debug()
 	async changeBase(): Promise<void> {
 		const pick = await showReferencePicker(this.uri.repoPath!, '更改文件历史基准', '选择一个引用作为新的基准', {

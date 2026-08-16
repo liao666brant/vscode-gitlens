@@ -2,6 +2,7 @@ import * as assert from 'assert';
 import { Cache } from '@gitlens/git/cache.js';
 import type { GitBranch } from '@gitlens/git/models/branch.js';
 import type { GitDir } from '@gitlens/git/models/repository.js';
+import { uncommittedStaged } from '@gitlens/git/models/revision.js';
 import { GitTag } from '@gitlens/git/models/tag.js';
 import { CancellationError } from '@gitlens/utils/cancellation.js';
 import type { PagedResult } from '@gitlens/utils/paging.js';
@@ -727,6 +728,85 @@ suite('Cache Test Suite', () => {
 				'v2.0',
 				'sibling worktree must not serve stale mapper after a factory self-invalidation',
 			);
+		});
+	});
+
+	suite('Index-Only Invalidation', () => {
+		const repoPath = '/code/project';
+
+		// Seeds file-scoped caches with one entry per key shape: working-tree blame/diff
+		// (content-keyed or HEAD-pinned), staged (pinned to the `uncommittedStaged`
+		// pseudo-revision), commit-pinned blame, and a fileLog entry
+		function seedFileCaches(cache: Cache): void {
+			cache.blame.set(repoPath, 'src/a.ts:~37a22b15', Promise.resolve(undefined));
+			cache.blame.set(repoPath, `src/a.ts:${uncommittedStaged}`, Promise.resolve(undefined));
+			cache.blame.set(repoPath, 'src/a.ts:1234567890abcdef', Promise.resolve(undefined));
+			cache.diff.set(repoPath, 'src/a.ts:HEAD:', Promise.resolve(undefined));
+			cache.diff.set(repoPath, `src/a.ts:${uncommittedStaged}:HEAD`, Promise.resolve(undefined));
+			cache.fileLog.set(repoPath, 'src/a.ts@main', Promise.resolve(undefined));
+		}
+
+		test('index-only with workingTreeWatched clears only staged entries', () => {
+			const cache = new Cache();
+			seedFileCaches(cache);
+
+			cache.onRepositoryChanged(repoPath, ['index'], { workingTreeWatched: true });
+
+			// Staged entries — the only file-scoped results an index rewrite changes without
+			// working-tree changes (e.g. `git add`) — are cleared
+			assert.strictEqual(cache.blame.get(repoPath, `src/a.ts:${uncommittedStaged}`), undefined);
+			assert.strictEqual(cache.diff.get(repoPath, `src/a.ts:${uncommittedStaged}:HEAD`), undefined);
+
+			// Working-tree and commit-pinned entries survive — per-path signals own their invalidation
+			assert.notStrictEqual(cache.blame.get(repoPath, 'src/a.ts:~37a22b15'), undefined);
+			assert.notStrictEqual(cache.blame.get(repoPath, 'src/a.ts:1234567890abcdef'), undefined);
+			assert.notStrictEqual(cache.diff.get(repoPath, 'src/a.ts:HEAD:'), undefined);
+
+			// fileLog (history-based) never depends on the index
+			assert.notStrictEqual(cache.fileLog.get(repoPath, 'src/a.ts@main'), undefined);
+		});
+
+		test('index-only with workingTreeWatched still clears the tracking cache', () => {
+			const cache = new Cache();
+			cache.trackedPaths.set(repoPath, 'src/a.ts', Promise.resolve([repoPath, 'src/a.ts']));
+
+			cache.onRepositoryChanged(repoPath, ['index'], { workingTreeWatched: true });
+
+			// Tracked↔untracked flips ride the index (`git add` of an untracked file), so the
+			// trackedPaths entry must still be evicted in precise mode
+			assert.strictEqual(cache.trackedPaths.get(repoPath, 'src/a.ts'), undefined);
+		});
+
+		test('index-only without workingTreeWatched falls back to the conservative whole-repo clear', () => {
+			const cache = new Cache();
+			seedFileCaches(cache);
+
+			cache.onRepositoryChanged(repoPath, ['index']);
+
+			assert.strictEqual(cache.blame.get(repoPath, 'src/a.ts:~37a22b15'), undefined);
+			assert.strictEqual(cache.blame.get(repoPath, 'src/a.ts:1234567890abcdef'), undefined);
+			assert.strictEqual(cache.diff.get(repoPath, 'src/a.ts:HEAD:'), undefined);
+			assert.strictEqual(cache.fileLog.get(repoPath, 'src/a.ts@main'), undefined);
+		});
+
+		test('heads co-fired with index forces the conservative clear even when watched', () => {
+			const cache = new Cache();
+			seedFileCaches(cache);
+
+			cache.onRepositoryChanged(repoPath, ['index', 'heads'], { workingTreeWatched: true });
+
+			assert.strictEqual(cache.blame.get(repoPath, 'src/a.ts:~37a22b15'), undefined);
+			assert.strictEqual(cache.fileLog.get(repoPath, 'src/a.ts@main'), undefined);
+		});
+
+		test('pausedOp co-fired with index forces the conservative clear even when watched', () => {
+			const cache = new Cache();
+			seedFileCaches(cache);
+
+			cache.onRepositoryChanged(repoPath, ['index', 'pausedOp'], { workingTreeWatched: true });
+
+			assert.strictEqual(cache.blame.get(repoPath, 'src/a.ts:~37a22b15'), undefined);
+			assert.strictEqual(cache.diff.get(repoPath, 'src/a.ts:HEAD:'), undefined);
 		});
 	});
 

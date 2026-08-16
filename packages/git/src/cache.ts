@@ -20,6 +20,7 @@ import type { GitBranchReference, GitRefTip, RefRecord } from './models/referenc
 import type { GitRemote } from './models/remote.js';
 import type { RemoteProvider } from './models/remoteProvider.js';
 import type { GitDir, RepositoryChange } from './models/repository.js';
+import { uncommittedStaged } from './models/revision.js';
 import type { GitStash } from './models/stash.js';
 import type { GitTag } from './models/tag.js';
 import type { GitUser } from './models/user.js';
@@ -661,6 +662,16 @@ export class Cache implements Disposable {
 		return commonPath != null && commonPath !== repoPath;
 	}
 
+	/**
+	 * Clears blame/diff entries pinned to the staged pseudo-revision (`uncommittedStaged`) — the only
+	 * file-scoped entries whose result changes when the index is rewritten without the working tree
+	 * changing (e.g. `git add`). All other blame/diff keys are content- or commit-keyed and unaffected.
+	 */
+	private clearStagedFileCaches(repoPath: string): void {
+		this._caches.blame?.deleteByKeyPredicate(repoPath, key => key.includes(uncommittedStaged));
+		this._caches.diff?.deleteByKeyPredicate(repoPath, key => key.includes(uncommittedStaged));
+	}
+
 	/** Clears file-scoped caches (blame, diff, fileLog) for a specific path within a repo */
 	clearForPath(repoPath: string, path: string, ...types: UriScopedCachedGitTypes[]): void {
 		const prefix = `${normalizePath(path)}:`;
@@ -759,7 +770,11 @@ export class Cache implements Disposable {
 	}
 
 	@debug({ onlyExit: true })
-	onRepositoryChanged(repoPath: string, changes: RepositoryChange[]): void {
+	onRepositoryChanged(
+		repoPath: string,
+		changes: RepositoryChange[],
+		options?: { workingTreeWatched?: boolean },
+	): void {
 		const changesSet = new Set(changes);
 
 		const hasAny = (...c: RepositoryChange[]) => c.some(ch => changesSet.has(ch));
@@ -776,9 +791,18 @@ export class Cache implements Disposable {
 		}
 
 		if (hasAny('index', 'heads', 'pausedOp')) {
-			types.add('blame');
-			types.add('diff');
-			types.add('fileLog');
+			if (options?.workingTreeWatched && hasAny('index') && !hasAny('heads', 'pausedOp')) {
+				// Index-only event with a working-tree watcher active. Staging rewrites the index,
+				// but working-tree blame/diff/fileLog results don't depend on it — only entries
+				// pinned to the staged pseudo-revision do. Content changes are invalidated
+				// precisely per-path by the working-tree event pipeline instead, so avoid the
+				// whole-repo clear that would re-spawn blame for every cached file on each save.
+				this.clearStagedFileCaches(repoPath);
+			} else {
+				types.add('blame');
+				types.add('diff');
+				types.add('fileLog');
+			}
 		}
 
 		if (hasAny('index')) {

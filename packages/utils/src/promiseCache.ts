@@ -734,10 +734,34 @@ export class RepoPromiseCacheMap<K, V> {
 	}
 
 	/**
-	 * Invalidates all keys matching a prefix from a repository's cache. See `PromiseCache.invalidate`
-	 * for semantics — in-flight entries are marked invalidated and shared with new callers; settled
-	 * entries are hard-deleted. Prefer over `deleteByKeyPrefix` when the eviction is a "data has
-	 * changed" event and in-flight factories' results would still be valid for current waiters.
+	 * Deletes all keys matching a predicate from a repository's cache.
+	 * @param repoPath - The repository path
+	 * @param predicate - Key predicate to match
+	 * @returns true if something was deleted
+	 */
+	deleteByKeyPredicate(
+		this: RepoPromiseCacheMap<string, V>,
+		repoPath: string,
+		predicate: (key: string) => boolean,
+	): boolean {
+		const repoCache = this.cache.get(repoPath);
+		if (repoCache == null) return false;
+
+		let deleted = false;
+		for (const key of repoCache.keys()) {
+			if (predicate(key)) {
+				repoCache.delete(key);
+				deleted = true;
+			}
+		}
+		return deleted;
+	}
+
+	/**
+	 * Invalidates all keys matching a prefix from a repository's cache. See `PromiseCache.invalidate` for
+	 * semantics — in-flight entries are marked invalidated and shared with new callers; settled entries
+	 * are hard-deleted. Prefer over `deleteByKeyPrefix` when the eviction is a "data has changed" event
+	 * and in-flight factories' results would still be valid for current waiters.
 	 * @param repoPath - The repository path
 	 * @param prefix - Key prefix to match
 	 * @returns true if something was invalidated

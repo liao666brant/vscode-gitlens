@@ -128,7 +128,7 @@ export class TrackedGitDocument implements Disposable {
 	}
 
 	@trace()
-	refresh(reason: 'changed' | 'saved' | 'visible' | 'repositoryChanged'): void {
+	refresh(reason: 'changed' | 'saved' | 'visible' | 'repositoryChanged' | 'indexChanged'): void {
 		if (this._pendingUpdates == null && reason === 'visible') return;
 
 		this._dirtyIdle = false;
@@ -157,6 +157,13 @@ export class TrackedGitDocument implements Disposable {
 				if (this.blameSnapshot == null) {
 					this._pendingUpdates = { ...this._pendingUpdates, reason: reason, forceBlameChange: true };
 				}
+				break;
+			case 'indexChanged':
+				// Index-only change with a working-tree watcher active. Snapshot invalidation
+				// is owned by the precise per-path signals (save/working-tree events), so keep
+				// the snapshot and only re-check the tracked state (a `git add` of a previously
+				// untracked file flips tracked→blameable without touching the working tree).
+				this._pendingUpdates = { ...this._pendingUpdates, reason: reason };
 				break;
 			case 'repositoryChanged':
 				// Full reset on repository changes — git state changed externally
@@ -209,7 +216,17 @@ export class TrackedGitDocument implements Disposable {
 		const wasBlameable = updates?.forceBlameChange ? undefined : this.blameable;
 
 		const repo = this.container.git.getRepository(this._uri);
-		this._tracked = repo != null ? await this.container.git.isTracked(this._uri) : false;
+		// On precise index-only events, re-query only documents not currently tracked — only
+		// they can flip to tracked via `git add` (which never touches the working tree). A
+		// tracked→untracked flip (`git rm --cached`) is rare and self-heals via the tracked
+		// TTL, while re-querying every tracked document after each save (VS Code's git
+		// refreshes the index on save) would spawn `git ls-files` per open document.
+		const skipTrackedRecheck = updates?.reason === 'indexChanged' && this._tracked;
+		this._tracked = skipTrackedRecheck
+			? this._tracked
+			: repo != null
+				? await this.container.git.isTracked(this._uri)
+				: false;
 
 		this.tracker.updateContext(this.document.uri, this.blameable, this._tracked);
 

@@ -278,7 +278,9 @@ export class GlCliGitProvider implements GlGitProvider {
 		const repo = new GlRepository(this.container, this.descriptor, folder, uri, gitDir, root, opened);
 
 		repo.onDidChange(e => {
-			this.cache.onRepositoryChanged(repo.path, [...e.changes]);
+			this.cache.onRepositoryChanged(repo.path, [...e.changes], {
+				workingTreeWatched: this.isWorkingTreeWatched(repo.path),
+			});
 
 			if (!e.changed('unknown', 'closed')) {
 				if (e.changed('head')) {
@@ -294,7 +296,21 @@ export class GlCliGitProvider implements GlGitProvider {
 			this._onDidChangeRepository.fire(e);
 		});
 
+		// Precise per-path invalidation for file-scoped caches (blame/diff/fileLog) whenever
+		// working-tree watchers are active. Piggybacks on existing watch leases — this event
+		// only fires while someone else holds a `watchWorkingTree()` subscription, so it never
+		// creates a watcher on its own.
+		repo.onDidChangeWorkingTree(e => {
+			for (const uri of e.uris) {
+				this.cache.clearForPath(repo.path, this.getRelativePath(uri.fsPath, repo.path));
+			}
+		});
+
 		return repo;
+	}
+
+	private isWorkingTreeWatched(repoPath: string): boolean {
+		return (this.container.git.watchService.getSession(repoPath)?.workingTreeSubscriberCount ?? 0) > 0;
 	}
 
 	private _gitLocator: Promise<GitLocation> | undefined;
