@@ -7,31 +7,27 @@ This project incorporates components from the projects listed below.
 2. @eamodio/supertalk-core version 0.0.6 (https://github.com/eamodio/supertalk)
 3. @eamodio/supertalk-signals version 0.0.6 (https://github.com/eamodio/supertalk)
 4. @eamodio/supertalk version 0.0.7 (https://github.com/eamodio/supertalk)
-5. @gitlens/git-cli version 0.0.1 (undefined)
-6. @gitlens/git version 0.0.1 (undefined)
-7. @lit-labs/signals version 0.3.0 (https://github.com/lit/lit)
-8. @lit-labs/virtualizer version 2.1.1 (https://github.com/lit/lit)
-9. @lit/context version 1.1.6 (https://github.com/lit/lit)
-10. @lit/react version 1.0.8 (https://github.com/lit/lit)
-11. @opentelemetry/api version 1.9.1 (https://github.com/open-telemetry/opentelemetry-js)
-12. @opentelemetry/exporter-trace-otlp-http version 0.218.0 (https://github.com/open-telemetry/opentelemetry-js)
-13. @opentelemetry/resources version 2.7.1 (https://github.com/open-telemetry/opentelemetry-js)
-14. @opentelemetry/sdk-trace-base version 2.7.1 (https://github.com/open-telemetry/opentelemetry-js)
-15. @opentelemetry/semantic-conventions version 1.41.1 (https://github.com/open-telemetry/opentelemetry-js)
-16. @vscode/codicons version 0.0.45 (https://github.com/microsoft/vscode-codicons)
-17. driver.js version 1.4.0 (https://github.com/kamranahmedse/driver.js)
-18. fflate version 0.8.3 (https://github.com/101arrowz/fflate)
-19. ignore version 7.0.5 (https://github.com/kaelzhang/node-ignore)
-20. lit version 3.3.3 (https://github.com/lit/lit)
-21. marked version 18.0.4 (https://github.com/markedjs/marked)
-22. microsoft/vscode (https://github.com/microsoft/vscode)
-23. os-browserify version 0.3.0 (https://github.com/CoderPuppy/os-browserify)
-24. path-browserify version 1.0.1 (https://github.com/browserify/path-browserify)
-25. react version 19.2.6 (https://github.com/facebook/react)
-26. signal-polyfill version 0.2.2 (https://github.com/proposal-signals/signal-polyfill)
-27. signal-utils version 0.21.1 (https://github.com/proposal-signals/signal-utils)
-28. vscode-uri version 3.1.0 (https://github.com/microsoft/vscode-uri)
-29. wegit version 18.2.0 (https://github.com/liao666brant/vscode-gitlens)
+5. @lit-labs/signals version 0.3.0 (https://github.com/lit/lit)
+6. @lit-labs/virtualizer version 2.1.1 (https://github.com/lit/lit)
+7. @lit/context version 1.1.6 (https://github.com/lit/lit)
+8. @lit/react version 1.0.8 (https://github.com/lit/lit)
+9. @opentelemetry/api version 1.9.1 (https://github.com/open-telemetry/opentelemetry-js)
+10. @opentelemetry/exporter-trace-otlp-http version 0.218.0 (https://github.com/open-telemetry/opentelemetry-js)
+11. @opentelemetry/resources version 2.7.1 (https://github.com/open-telemetry/opentelemetry-js)
+12. @opentelemetry/sdk-trace-base version 2.7.1 (https://github.com/open-telemetry/opentelemetry-js)
+13. @opentelemetry/semantic-conventions version 1.41.1 (https://github.com/open-telemetry/opentelemetry-js)
+14. @vscode/codicons version 0.0.45 (https://github.com/microsoft/vscode-codicons)
+15. driver.js version 1.4.0 (https://github.com/kamranahmedse/driver.js)
+16. fflate version 0.8.3 (https://github.com/101arrowz/fflate)
+17. ignore version 7.0.5 (https://github.com/kaelzhang/node-ignore)
+18. lit version 3.3.3 (https://github.com/lit/lit)
+19. marked version 18.0.4 (https://github.com/markedjs/marked)
+20. microsoft/vscode (https://github.com/microsoft/vscode)
+21. os-browserify version 0.3.0 (https://github.com/CoderPuppy/os-browserify)
+22. path-browserify version 1.0.1 (https://github.com/browserify/path-browserify)
+23. signal-polyfill version 0.2.2 (https://github.com/proposal-signals/signal-polyfill)
+24. signal-utils version 0.21.1 (https://github.com/proposal-signals/signal-utils)
+25. vscode-uri version 3.1.0 (https://github.com/microsoft/vscode-uri)
 
 %% @awesome.me/webawesome NOTICES AND INFORMATION BEGIN HERE
 =========================================
@@ -1345,62 +1341,6 @@ MIT
 
 =========================================
 END OF  @eamodio/supertalk NOTICES AND INFORMATION
-
-%% @gitlens/git-cli NOTICES AND INFORMATION BEGIN HERE
-=========================================
-The MIT License (MIT)
-
-Copyright (c) 2021-2026 Axosoft, LLC dba GitKraken ("GitKraken")
-Copyright (c) 2016-2021 Eric Amodio
-
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.
-
-=========================================
-END OF  @gitlens/git-cli NOTICES AND INFORMATION
-
-%% @gitlens/git NOTICES AND INFORMATION BEGIN HERE
-=========================================
-The MIT License (MIT)
-
-Copyright (c) 2021-2026 Axosoft, LLC dba GitKraken ("GitKraken")
-Copyright (c) 2016-2021 Eric Amodio
-
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.
-
-=========================================
-END OF  @gitlens/git NOTICES AND INFORMATION
 
 %% @lit-labs/signals NOTICES AND INFORMATION BEGIN HERE
 =========================================
@@ -3217,33 +3157,6 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 =========================================
 END OF  path-browserify NOTICES AND INFORMATION
 
-%% react NOTICES AND INFORMATION BEGIN HERE
-=========================================
-MIT License
-
-Copyright (c) Meta Platforms, Inc. and affiliates.
-
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.
-
-=========================================
-END OF  react NOTICES AND INFORMATION
-
 %% signal-polyfill NOTICES AND INFORMATION BEGIN HERE
 =========================================
                                  Apache License
@@ -3490,31 +3403,3 @@ The above copyright notice and this permission notice shall be included in all c
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 =========================================
 END OF  vscode-uri NOTICES AND INFORMATION
-
-%% wegit NOTICES AND INFORMATION BEGIN HERE
-=========================================
-The MIT License (MIT)
-
-Copyright (c) 2021-2026 Axosoft, LLC dba GitKraken ("GitKraken")
-Copyright (c) 2016-2021 Eric Amodio
-
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.
-
-=========================================
-END OF  wegit NOTICES AND INFORMATION

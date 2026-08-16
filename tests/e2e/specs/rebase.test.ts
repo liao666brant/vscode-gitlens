@@ -16,7 +16,6 @@ const test = base.extend({
 			vscodeVersion: process.env.VSCODE_VERSION ?? 'stable',
 			userSettings: {
 				'gitlens.mode.active': false,
-				'gitlens.graph.autorefresh.enabled': false,
 				'gitlens.views.repositories.autoRefresh': false,
 			},
 			setup: async () => {
@@ -63,9 +62,10 @@ function startInteractiveRebase(
 async function openRebaseEditor(vscode: VSCodeInstance, todoFilePath: string): Promise<void> {
 	await vscode.gitlens.openFile(todoFilePath, true);
 
-	// Wait for the rebase editor tab to appear
-	const rebaseTab = vscode.page.getByRole('tab', { name: /Interactive Rebase/i });
-	await rebaseTab.waitFor({ state: 'visible', timeout: 5000 });
+	// Verify the rebase editor opened via its stable viewType — the visible tab
+	// title is localized, so it can't be used for matching
+	const opened = await vscode.gitlens.waitForCustomEditorOpen('gitlens.rebase', 5000);
+	expect(opened, 'rebase editor (gitlens.rebase) did not open within 5s').toBe(true);
 }
 
 /**
@@ -76,7 +76,7 @@ async function openRebaseEditor(vscode: VSCodeInstance, todoFilePath: string): P
 async function getRebaseWebviewWithRetry(
 	vscode: VSCodeInstance,
 ): Promise<NonNullable<Awaited<ReturnType<typeof vscode.gitlens.getRebaseWebview>>>> {
-	const frame = await vscode.gitlens.getWeGitWebview('Interactive Rebase', 'customEditor', 30000);
+	const frame = await vscode.gitlens.getRebaseWebview(30000);
 	if (!frame) {
 		throw new Error('Rebase webview frame not found after 30s');
 	}
@@ -204,8 +204,8 @@ test.describe('Editor — Core', () => {
 			expect(currentHead).toBe(originalHead);
 
 			// Verify the rebase editor tab is closed
-			const rebaseTab = page.getByRole('tab', { name: /Interactive Rebase/i });
-			await expect(rebaseTab).not.toBeVisible({ timeout: 3000 });
+			const closed = await vscode.gitlens.waitForCustomEditorClosed('gitlens.rebase', 3000);
+			expect(closed, 'rebase editor (gitlens.rebase) did not close after abort').toBe(true);
 
 			currentRebaseContext = null;
 
@@ -487,8 +487,7 @@ test.describe('Editor — Core', () => {
 				}
 			} catch {}
 			await startButton.click();
-			const rebaseTab = page.getByRole('tab', { name: /Interactive Rebase/i });
-			await expect(rebaseTab).not.toBeVisible({ timeout: DefaultTimeout });
+			expect(await vscode.gitlens.waitForCustomEditorClosed('gitlens.rebase', DefaultTimeout)).toBe(true);
 
 			// Signal the wait editor to exit so git can complete the rebase
 			await signalEditorDone();
@@ -501,7 +500,7 @@ test.describe('Editor — Core', () => {
 			expect(newHead).not.toBe(originalHead);
 
 			// Verify editor closed
-			await expect(rebaseTab).not.toBeVisible({ timeout: 5000 });
+			expect(await vscode.gitlens.waitForCustomEditorClosed('gitlens.rebase', 5000)).toBe(true);
 
 			currentRebaseContext = null;
 		});
@@ -543,8 +542,7 @@ test.describe('Editor — Core', () => {
 				}
 			} catch {}
 			await startButton.click();
-			const rebaseTab = page.getByRole('tab', { name: /Interactive Rebase/i });
-			await expect(rebaseTab).not.toBeVisible({ timeout: 3000 });
+			expect(await vscode.gitlens.waitForCustomEditorClosed('gitlens.rebase', 3000)).toBe(true);
 
 			// Signal the wait editor to exit so git can complete the rebase
 			await signalEditorDone();

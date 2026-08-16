@@ -61,6 +61,26 @@ export class VSCodePage {
 		) as Promise<T>;
 	}
 
+	/**
+	 * Execute a command via the VS Code API without waiting for its returned promise.
+	 *
+	 * Commands like `gitlens.gitCommands` only resolve when the Quick Wizard UI closes,
+	 * so awaiting them would deadlock tests that need to drive the Quick Pick. The
+	 * evaluator request itself completes immediately — the command promise keeps
+	 * running in the extension host, and the test observes its effects via the UI.
+	 */
+	async executeCommandFireAndForget(command: string, ...args: any[]): Promise<void> {
+		await this.evaluate(
+			(vscode, cmd, ...cmdArgs) => {
+				// Do not await the command promise, and swallow rejections — a failed
+				// launch surfaces in the test as the Quick Pick UI never appearing.
+				void vscode.commands.executeCommand(cmd, ...cmdArgs).then(undefined, () => {});
+			},
+			command,
+			...args,
+		);
+	}
+
 	/** Check if a command is registered */
 	async hasCommand(command: string): Promise<boolean> {
 		return this.evaluate(async (vscode, command) => {

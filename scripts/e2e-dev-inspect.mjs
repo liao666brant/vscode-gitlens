@@ -5,19 +5,17 @@
  *
  *   Development mode (default):
  *     - ExtensionMode.Development → container.debugging=true
- *     - gitkraken.env setting is respected (dev/staging APIs)
  *     - Inspection via aria snapshots, DOM queries, frame traversal
  *
  *   Test mode (--with-evaluator):
  *     - Enables the HTTP test runner bridge for evaluate() access
  *     - Can call vscode.* APIs, read variables, execute arbitrary code
- *     - Trade-off: container.debugging=false, gitkraken.env ignored
+ *     - Trade-off: container.debugging=false
  *
  * Usage:
  *   node scripts/e2e-dev-inspect.mjs [options] [actions...]
  *
  * Options:
- *   --env <env>              Set gitkraken.env (e.g. "dev", "staging")
  *   --with-evaluator         Enable HTTP evaluator bridge (Test mode)
  *   --keep-open              Keep VS Code running (Ctrl+C to stop)
  *   --setting <key=value>    Add a custom VS Code setting (repeatable)
@@ -55,11 +53,8 @@
  *     --pause 2000 \
  *     --screenshot /tmp/after-click.png
  *
- *   # Check feature flag logs with dev env
- *   node scripts/e2e-dev-inspect.mjs --env dev --logs FeatureFlagService
- *
  *   # Keep open for manual inspection
- *   node scripts/e2e-dev-inspect.mjs --env dev --keep-open
+ *   node scripts/e2e-dev-inspect.mjs --keep-open
  */
 import { execFileSync, spawn } from 'node:child_process';
 import { existsSync, readFileSync } from 'node:fs';
@@ -74,7 +69,6 @@ const extensionRoot = path.resolve(__dirname, '..');
 // --- Argument parsing -------------------------------------------------------
 function parseArgs(argv) {
 	const opts = {
-		env: undefined,
 		withEvaluator: false,
 		keepOpen: false,
 		downloadVSCode: false,
@@ -97,9 +91,6 @@ function parseArgs(argv) {
 
 	for (let i = 2; i < argv.length; i++) {
 		switch (argv[i]) {
-			case '--env':
-				opts.env = requireArg(argv, ++i, '--env');
-				break;
 			case '--with-evaluator':
 				opts.withEvaluator = true;
 				break;
@@ -547,7 +538,6 @@ async function main() {
 	try {
 		// Write settings
 		const settings = { ...defaultSettings, ...opts.settings };
-		if (opts.env) settings['gitkraken.env'] = opts.env;
 		await writeFile(path.join(settingsDir, 'settings.json'), JSON.stringify(settings, null, '\t'));
 
 		// Build launch args
@@ -584,7 +574,6 @@ async function main() {
 		console.log(`Launching VS Code in ${mode} mode...`);
 		console.log(`  binary: ${vscodePath}`);
 		if (display) console.log(`  display: ${display}`);
-		if (opts.env) console.log(`  gitkraken.env: "${opts.env}"`);
 
 		electronApp = await _electron.launch({
 			executablePath: vscodePath,

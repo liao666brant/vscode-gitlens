@@ -1,5 +1,6 @@
-import type { FrameLocator, Locator } from '@playwright/test';
+import type { FrameLocator, Locator, Page } from '@playwright/test';
 import { MaxTimeout, ShortTimeout } from '../baseTest.js';
+import type { VSCodeEvaluator } from '../fixtures/vscodeEvaluator.js';
 import { VSCodePage } from './vscodePage.js';
 
 /**
@@ -7,44 +8,86 @@ import { VSCodePage } from './vscodePage.js';
  * Extends VSCodePage with WeGit views, commands, and components.
  */
 export class WeGitPage extends VSCodePage {
-	async isActivated(): Promise<boolean> {
-		return this.gitlensTab.isVisible();
+	/** Evaluator for VS Code Extension API access (VSCodePage keeps its handle private) */
+	private readonly evaluator: VSCodeEvaluator['evaluate'];
+
+	constructor(page: Page, evaluate: VSCodeEvaluator['evaluate']) {
+		super(page, evaluate);
+		this.evaluator = evaluate;
+	}
+
+	// ============================================================================
+	// Custom Editors (identified by their stable viewType via the VS Code API)
+	// ============================================================================
+
+	/**
+	 * Wait for a WeGit custom editor (identified by its stable `viewType`, e.g.
+	 * `gitlens.rebase`) to be open. Verified via the VS Code Extension API
+	 * (`TabInputCustom.viewType`), so it doesn't depend on the localized tab title.
+	 *
+	 * @returns true when an editor with the viewType is open; false if it didn't open in time
+	 */
+	async waitForCustomEditorOpen(viewType: string, timeout = MaxTimeout): Promise<boolean> {
+		return this.waitForCustomEditorState(viewType, true, timeout);
 	}
 
 	/**
-	 * Get the count of WeGit-related tabs in the activity bar
-	 * Should be 2: WeGit and WeGit Inspect
+	 * Wait for a WeGit custom editor (identified by its stable `viewType`) to be closed.
+	 *
+	 * @returns true when no editor with the viewType is open; false if it didn't close in time
+	 */
+	async waitForCustomEditorClosed(viewType: string, timeout = MaxTimeout): Promise<boolean> {
+		return this.waitForCustomEditorState(viewType, false, timeout);
+	}
+
+	private async waitForCustomEditorState(viewType: string, open: boolean, timeout: number): Promise<boolean> {
+		return this.evaluator(
+			async (vscode, viewType, open, timeout) => {
+				const startTime = Date.now();
+				while (Date.now() - startTime < timeout) {
+					const tabs = vscode.window.tabGroups.all.flatMap(group => group.tabs);
+					const found = tabs.some(
+						tab => tab.input instanceof vscode.TabInputCustom && tab.input.viewType === viewType,
+					);
+					if (found === open) return true;
+
+					await new Promise(resolve => setTimeout(resolve, 250));
+				}
+				return false;
+			},
+			viewType,
+			open,
+			timeout,
+		);
+	}
+
+	/**
+	 * Get the current (possibly localized) tab label of an open WeGit custom editor,
+	 * resolved via the VS Code API by its stable `viewType`. Returns undefined if no
+	 * such editor is open.
+	 */
+	private async getCustomEditorTabLabel(viewType: string): Promise<string | undefined> {
+		return this.evaluator((vscode, viewType) => {
+			const tabs = vscode.window.tabGroups.all.flatMap(group => group.tabs);
+			const tab = tabs.find(t => t.input instanceof vscode.TabInputCustom && t.input.viewType === viewType);
+			return tab?.label;
+		}, viewType);
+	}
+	/**
+	 * Get the count of WeGit-related tabs in the activity bar.
+	 * Only WeGit Inspect remains as its own tab (WeGit's main views are grouped
+	 * in the built-in Source Control container), so this is expected to be 1.
 	 */
 	async getActivityBarTabCount(): Promise<number> {
-		return this.activityBar.countTabs(/WeGit/);
-	}
-
-	/**
-	 * Wait for WeGit extension to fully activate
-	 * This is indicated by the WeGit activity bar icon becoming visible
-	 */
-	async waitForActivation(timeout = MaxTimeout): Promise<void> {
-		await this.gitlensTab.waitFor({ state: 'visible', timeout: timeout });
-	}
-
-	/** The WeGit activity bar tab */
-	get gitlensTab(): Locator {
-		return this.activityBar.getTab('WeGit', true);
-	}
-
-	/** The WeGit Inspect activity bar tab */
-	get gitlensInspectTab(): Locator {
-		return this.activityBar.getTab(/WeGit (Inspect|检查)/, false);
-	}
-
-	/**
-	 * Open the WeGit sidebar and ensure it's visible.
-	 * Handles the case where the sidebar may be hidden.
-	 * Only clicks the tab if it's not already active (to avoid closing it).
-	 */
-	async openWeGitSidebar(): Promise<void> {
-		await this.sidebar.open();
-		await this.activityBar.openTab('WeGit', true);
+		// Activity bar container tabs render asynchronously after extension activation,
+		// so poll briefly for the first WeGit tab to appear before giving up.
+		const startTime = Date.now();
+		let count = await this.activityBar.countTabs(/WeGit/);
+		while (count === 0 && Date.now() - startTime < MaxTimeout) {
+			await this.page.waitForTimeout(ShortTimeout);
+			count = await this.activityBar.countTabs(/WeGit/);
+		}
+		return count;
 	}
 
 	/**
@@ -115,49 +158,16 @@ export class WeGitPage extends VSCodePage {
 	}
 
 	// ============================================================================
-	// WeGit Panel Views (Bottom Panel)
-	// ============================================================================
-
-	/** WeGit tab in the bottom panel */
-	get gitlensPanel(): Locator {
-		return this.panel.getTab('WeGit', true);
-	}
-
-	/** Commit Graph view section in the panel (matched via its panel toolbar) */
-	get commitGraphViewSection(): Locator {
-		// When the Commit Graph view is open, its panel toolbar is labelled
-		// "WeGit: Commit Graph: <repo> actions" and stays visible in both the gated (Community)
-		// and loaded (Pro) states. Match that toolbar by accessible name — the panel title <h2>
-		// itself is sr-hidden, and a bare "Graph" text match resolved to the hidden generic
-		// "WeGit: Graph" header.
-		return this.panel.locator.getByRole('toolbar', { name: /Commit Graph/ }).first();
-	}
-
-	/** Commit Graph webview in the panel */
-	get commitGraphViewWebview(): Promise<FrameLocator | null> {
-		return this.getWeGitWebview('Graph', 'webviewView');
-	}
-
-	async showCommitGraphView(): Promise<void> {
-		await this.executeCommand('gitlens.showGraphView');
-	}
-
-	/** Commit Graph Details tab in the panel */
-	get commitGraphDetailsViewSection(): Locator {
-		return this.panel.getTab(/^Graph Details$/i, false);
-	}
-
-	/** Commit Graph Details webview in the panel */
-	get commitGraphDetailsViewWebview(): Promise<FrameLocator | null> {
-		return this.getWeGitWebview('Graph Details', 'webviewView');
-	}
-
-	// ============================================================================
 	// WeGit View/WebviewView Commands
 	// ============================================================================
 
+	/**
+	 * Show the WeGit sidebar view.
+	 * The WeGit (SCM grouped) view is contributed to the built-in Source Control
+	 * container, so focus that container with the built-in command.
+	 */
 	async showWeGitView(): Promise<void> {
-		await this.executeCommand('gitlens.views.scm.grouped.focus');
+		await this.executeCommand('workbench.view.scm');
 	}
 
 	get gitlensViewSection(): Locator {
@@ -186,10 +196,6 @@ export class WeGitPage extends VSCodePage {
 
 	async showTagsView(): Promise<void> {
 		await this.executeCommand('gitlens.showTagsView');
-	}
-
-	async showWorktreesView(): Promise<void> {
-		await this.executeCommand('gitlens.showWorktreesView');
 	}
 
 	async showContributorsView(): Promise<void> {
@@ -239,8 +245,29 @@ export class WeGitPage extends VSCodePage {
 	// Webviews
 	// ============================================================================
 
-	async getRebaseWebview(): Promise<FrameLocator | null> {
-		return this.getWeGitWebview('Interactive Rebase', 'customEditor');
+	/**
+	 * Get the rebase editor's webview frame, identified by its stable `gitlens.rebase`
+	 * viewType. The runtime (localized) tab label is resolved via the VS Code API and
+	 * the iframe is matched by that label, so no hardcoded title is needed.
+	 * The branch suffix (e.g. " (main)") is stripped so the existing prefix matching
+	 * in getWeGitWebview covers both titled and suffix-less frames.
+	 * The label is re-read each pass because the webview title (and thus tab label)
+	 * is set asynchronously after the editor tab appears.
+	 */
+	async getRebaseWebview(timeout = MaxTimeout / 2): Promise<FrameLocator | null> {
+		const startTime = Date.now();
+		while (Date.now() - startTime < timeout) {
+			const label = await this.getCustomEditorTabLabel('gitlens.rebase');
+			if (label != null) {
+				const baseTitle = label.split(' (')[0];
+				// Short attempt so the label gets re-read as the webview title settles
+				const frame = await this.getWeGitWebview(baseTitle, 'customEditor', ShortTimeout * 4);
+				if (frame != null) return frame;
+			}
+
+			await this.page.waitForTimeout(ShortTimeout);
+		}
+		return null;
 	}
 
 	/**
@@ -314,7 +341,7 @@ export class WeGitPage extends VSCodePage {
 						const activeFrame = outerFrame.locator(`iframe#active-frame[title*="${title}"]`);
 						if ((await activeFrame.count()) > 0) {
 							const actualTitle = await activeFrame.getAttribute('title');
-							// Accept exact match or title with branch suffix, e.g. "Interactive Rebase (main)"
+							// Accept exact match or title with branch suffix, e.g. "交互式变基 (main)"
 							if (
 								actualTitle != null &&
 								(actualTitle === title ||

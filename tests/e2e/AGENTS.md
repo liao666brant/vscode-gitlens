@@ -9,7 +9,7 @@
 - 启动真实 VS Code（Electron）并加载扩展，通过扩展宿主内的 HTTP evaluator 调用 VS Code API 执行断言。
 - 提供 Git 测试夹具（真实 git 命令构造仓库/分支/提交/rebase 状态）与 WeGit 页面对象（活动栏、sidebar、视图交互）。
 - MCP 辅助：E2E 中定位 `gk` CLI 与 IPC discovery 文件。
-- 覆盖场景：smoke（激活/基础导航）、rebase（交互式 rebase 全流程）、blame、graph（details/pin/review）、quick wizard、tree view。
+- 覆盖场景：smoke（激活/基础导航）、rebase（交互式 rebase 全流程）、blame、quick wizard。
 
 ## 入口与启动
 
@@ -27,7 +27,7 @@ pnpm run bundle:e2e               # 前置：生产模式打包扩展（--mode p
 - `baseTest.ts` 导出 `test`（fixture：`vscodeOptions`、`GitFixture`、`VSCodeEvaluator`、`WeGitPage`）、`expect`、`MaxTimeout`(10s)/`DefaultTimeout`(2s)/`ShortTimeout`(500ms)、`createTmpDir`。
 - `VSCodeEvaluator`：HTTP 客户端，连接 runner 的 `evaluate(fn, ...params)`，回调内可直接用 `vscode` API（类型 `VSCode`）。
 - `GitFixture`：`init`/`commit`/`branch`/`checkout`/`tag`/`stash`/`rebase` 系列/`cleanupRebaseState`（删除 `.git/rebase-merge`、`.git/rebase-apply`）等。
-- `WeGitPage`/`VSCodePage`：页面对象，`waitForActivation`/`openWeGitSidebar`/活动栏与 sidebar 交互。
+- `WeGitPage`/`VSCodePage`：页面对象；fixture 通过 Extension API 确认 WeGit 已激活，页面对象负责活动栏与 sidebar 交互。
 - `mcpHelper.ts`：`findGkCliFromArgs`（从 `--user-data-dir` 推导临时 `gk` 路径）、IPC discovery 文件查找。
 
 ## 关键依赖与配置
@@ -55,7 +55,7 @@ pnpm run test:e2e -- --project "VSCode stable" --grep smoke   # 单 spec 过滤
 ## 常见问题
 
 - **`Error: Unable to find VS Code`**：先跑一次 `setup`（或 CI 流程），确保 VS Code stable 已下载。
-- **扩展未激活/行为陈旧**：先 `pnpm run bundle:e2e` 重建扩展 bundle；`userSettings` 中关闭 graph/repositories 自动刷新可减少时序抖动。
+- **扩展未激活/行为陈旧**：先 `pnpm run bundle:e2e` 重建扩展 bundle；`userSettings` 中关闭 repositories 自动刷新可减少时序抖动。
 - **rebase 用例互相影响**：交互式 rebase 依赖 todo 文件与 `REBASE_HEAD`，务必在清理阶段删除 `rebase-merge`/`rebase-apply` 并 abort 未完成 rebase。
 - **evaluator 超时**：runner 需先被 `setup.ts` 构建；改 runner 源码后必须重跑 `pnpm run build:e2e-runner`。
 
@@ -74,4 +74,5 @@ pnpm run test:e2e -- --project "VSCode stable" --grep smoke   # 单 spec 过滤
 
 ## 精简变更记录
 
+- 2026-08-16：移除已删除 Graph UI 的 E2E 覆盖（graphDetails/graphPin/graphReview/treeView spec 删除；gitLensPage 清理 Graph helpers 与 showWorktreesView；showWeGitView 改用内建 `workbench.view.scm`；删除 tests/docker 基建）。
 - 2026-08-15：初版 agent 索引创建。

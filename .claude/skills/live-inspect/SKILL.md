@@ -106,12 +106,12 @@ teardown
 
 ### Two Modes
 
-| Mode                  | Flag               | ExtensionMode | `container.debugging` | `gitkraken.env` | `evaluate()` |
-| --------------------- | ------------------ | ------------- | --------------------- | --------------- | ------------ |
-| Development (default) | _(none)_           | Development   | `true`                | ✅ respected    | ❌           |
-| Test                  | `--with-evaluator` | Test          | `false`               | ❌ ignored      | ✅           |
+| Mode                  | Flag               | ExtensionMode | `container.debugging` | `evaluate()` |
+| --------------------- | ------------------ | ------------- | --------------------- | ------------ |
+| Development (default) | _(none)_           | Development   | `true`                | ❌           |
+| Test                  | `--with-evaluator` | Test          | `false`               | ✅           |
 
-Use **Development mode** when you need `gitkraken.env` (e.g. testing feature flags against dev API).
+Use **Development mode** when you need DEBUG-build features gated on `container.debugging` (e.g. the subscription/AI simulators, feature flags).
 Use **Test mode** when you need `evaluate()` to inspect runtime values (e.g. `vscode.env.machineId`).
 
 ## Common Recipes
@@ -155,10 +155,10 @@ node scripts/e2e-dev-inspect.mjs --with-evaluator \
   --eval "vscode.env.appName"
 ```
 
-### Check feature flag behavior with dev environment
+### Check feature flag behavior (Development mode)
 
 ```bash
-node scripts/e2e-dev-inspect.mjs --env dev \
+node scripts/e2e-dev-inspect.mjs \
   --command gitlens.showWelcomeView \
   --query-frame h1 \
   --logs FeatureFlagService
@@ -168,7 +168,7 @@ node scripts/e2e-dev-inspect.mjs --env dev \
 
 ```bash
 node scripts/e2e-dev-inspect.mjs --logs "error"
-node scripts/e2e-dev-inspect.mjs --env dev --logs ConfigCat
+node scripts/e2e-dev-inspect.mjs --logs ConfigCat
 ```
 
 ### Take a screenshot
@@ -180,7 +180,7 @@ node scripts/e2e-dev-inspect.mjs --command gitlens.showGraphView --screenshot /t
 ### Keep VS Code open for manual interaction
 
 ```bash
-node scripts/e2e-dev-inspect.mjs --env dev --keep-open
+node scripts/e2e-dev-inspect.mjs --keep-open
 ```
 
 ### Add custom settings
@@ -294,7 +294,6 @@ Use `resize_window` only when explicitly testing a responsive breakpoint — it 
 
 | Flag                          | Description                                      |
 | ----------------------------- | ------------------------------------------------ |
-| `--env <env>`                 | Set `gitkraken.env` (e.g. `dev`, `staging`)      |
 | `--with-evaluator`            | Enable HTTP evaluator bridge (Test mode)         |
 | `--keep-open`                 | Keep VS Code running (Ctrl+C to stop)            |
 | `--setting <key=value>`       | Custom VS Code setting (repeatable)              |

@@ -442,7 +442,6 @@ export type ContributedCommands =
 	| 'gitlens.views.searchAndCompare.viewOptionsTitle'
 	| 'gitlens.views.selectFileForCompare'
 	| 'gitlens.views.selectForCompare'
-	| 'gitlens.views.setAsDefault'
 	| 'gitlens.views.setBranchComparisonToBranch'
 	| 'gitlens.views.setBranchComparisonToWorking'
 	| 'gitlens.views.setContributorsStatisticsOff'
@@ -664,4 +663,4 @@ export type ContributedKeybindingCommands =
  * Commands that are not contributed anywhere, not the command palette, menus (or alts), nor keybindings.
  * Either their contribution point is missing or are simply internal and should be removed at some point
  */
-export type ContributedOrphansOrInternalCommands = 'gitlens.copyRemotePullRequestUrl' | 'gitlens.openIssueOnRemote';
+export type ContributedOrphansOrInternalCommands = 'gitlens.openIssueOnRemote';

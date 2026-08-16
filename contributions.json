@@ -612,10 +612,6 @@
 				]
 			}
 		},
-		"gitlens.copyRemotePullRequestUrl": {
-			"label": "复制拉取请求 URL",
-			"icon": "$(copy)"
-		},
 		"gitlens.copyRemoteRepositoryUrl": {
 			"label": "复制远程仓库 URL",
 			"icon": "$(copy)",
@@ -10236,18 +10232,6 @@
 						"when": "viewItem =~ /gitlens:worktree\\b(?=.*?\\b\\+branch\\b)/ && !listMultiSelection",
 						"group": "4_gitlens_compare",
 						"order": 99
-					}
-				]
-			}
-		},
-		"gitlens.views.setAsDefault": {
-			"label": "设为默认",
-			"menus": {
-				"view/item/context": [
-					{
-						"when": "viewItem =~ /gitlens:remote\\b(?=.*?\\b\\+default\\b)/ && !listMultiSelection",
-						"group": "8_gitlens_actions",
-						"order": 1
 					}
 				]
 			}

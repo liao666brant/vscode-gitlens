@@ -2354,6 +2354,34 @@
 						"scope": "window",
 						"order": 40
 					},
+					"gitlens.worktrees.defaultLocation": {
+						"type": "string",
+						"default": null,
+						"markdownDescription": "Specifies the default path in which new worktrees will be created",
+						"scope": "resource",
+						"order": 11
+					},
+					"gitlens.worktrees.openAfterCreate": {
+						"type": "string",
+						"default": "prompt",
+						"enum": [
+							"always",
+							"alwaysNewWindow",
+							"onlyWhenEmpty",
+							"never",
+							"prompt"
+						],
+						"enumDescriptions": [
+							"Always open the new worktree in the current window",
+							"Always open the new worktree in a new window",
+							"Only open the new worktree in the current window when no folder is opened",
+							"Never open the new worktree",
+							"Always prompt to open the new worktree"
+						],
+						"markdownDescription": "Specifies how and when to open a worktree after it is created",
+						"scope": "resource",
+						"order": 12
+					},
 					"gitlens.sortContributorsBy": {
 						"type": "string",
 						"default": "count:desc",
@@ -3840,11 +3868,6 @@
 			{
 				"command": "gitlens.copyRemoteFileUrlWithoutRange",
 				"title": "复制远程文件 URL",
-				"icon": "$(copy)"
-			},
-			{
-				"command": "gitlens.copyRemotePullRequestUrl",
-				"title": "复制拉取请求 URL",
 				"icon": "$(copy)"
 			},
 			{
@@ -6334,10 +6357,6 @@
 				"title": "选择用于比较"
 			},
 			{
-				"command": "gitlens.views.setAsDefault",
-				"title": "设为默认"
-			},
-			{
 				"command": "gitlens.views.setBranchComparisonToBranch",
 				"title": "与分支（HEAD）比较",
 				"icon": "$(compare-changes)"
@@ -7245,10 +7264,6 @@
 				},
 				{
 					"command": "gitlens.copyRemoteFileUrlWithoutRange",
-					"when": "false"
-				},
-				{
-					"command": "gitlens.copyRemotePullRequestUrl",
 					"when": "false"
 				},
 				{
@@ -9225,10 +9240,6 @@
 				},
 				{
 					"command": "gitlens.views.selectForCompare",
-					"when": "false"
-				},
-				{
-					"command": "gitlens.views.setAsDefault",
 					"when": "false"
 				},
 				{
@@ -12244,11 +12255,6 @@
 				},
 				{
 					"command": "gitlens.unsetRemoteAsDefault:views",
-					"when": "viewItem =~ /gitlens:remote\\b(?=.*?\\b\\+default\\b)/ && !listMultiSelection",
-					"group": "8_gitlens_actions@1"
-				},
-				{
-					"command": "gitlens.views.setAsDefault",
 					"when": "viewItem =~ /gitlens:remote\\b(?=.*?\\b\\+default\\b)/ && !listMultiSelection",
 					"group": "8_gitlens_actions@1"
 				},

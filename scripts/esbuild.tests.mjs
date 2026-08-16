@@ -1,9 +1,10 @@
 /** @typedef {import('esbuild').BuildOptions} BuildOptions **/
 /** @typedef {import('esbuild').WatchOptions} WatchOptions **/
 
+import * as fs from 'node:fs';
+import * as path from 'node:path';
+import { fileURLToPath } from 'node:url';
 import * as esbuild from 'esbuild';
-import * as path from 'path';
-import { fileURLToPath } from 'url';
 import { nodeExternalsPlugin } from 'esbuild-node-externals';
 
 const __filename = fileURLToPath(import.meta.url);
@@ -64,7 +65,8 @@ async function buildTests(target) {
 }
 
 try {
-	await Promise.allSettled([buildTests('node')]);
+	fs.rmSync(path.join(__dirname, 'out', 'tests'), { force: true, recursive: true });
+	await buildTests('node');
 } catch (ex) {
 	console.error(ex);
 	process.exit(1);

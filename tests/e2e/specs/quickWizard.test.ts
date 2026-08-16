@@ -133,17 +133,17 @@ async function selectCommandAndWaitForStepWithOptionalRepo(
 	step: Step,
 	multipleRepos?: boolean,
 ): Promise<void> {
-	await gitlens.executeCommand('gitlens.gitCommands');
+	await gitlens.executeCommandFireAndForget('gitlens.gitCommands');
 	await quickPick.waitForVisible();
 
 	// Select the command
-	await quickPick.waitForStep({ placeholder: /Choose a command/ });
+	await quickPick.waitForStep({ placeholder: /选择一个命令/ });
 	// Type the command to filter the list
 	await quickPick.enterTextAndWaitForItems(command);
 	await quickPick.selectItem(new RegExp(command, 'i'));
 
 	// May get a repo picker step if multiple repos exist
-	const index = await quickPick.waitForAnyStep([{ placeholder: /Choose a repository/ }, step]);
+	const index = await quickPick.waitForAnyStep([{ placeholder: /选择仓库/ }, step]);
 	if (index === 0) {
 		// Repo picker, select repo then wait for step
 		await quickPick.enterTextAndWaitForItems('gltest');
@@ -166,11 +166,11 @@ async function selectCommandSubcommandAndWaitForStepWithOptionalRepo(
 	subcommand: string,
 	step: Step,
 ): Promise<void> {
-	await gitlens.executeCommand('gitlens.gitCommands');
+	await gitlens.executeCommandFireAndForget('gitlens.gitCommands');
 	await quickPick.waitForVisible();
 
 	// Select the command
-	await quickPick.waitForStep({ placeholder: /Choose a command/ });
+	await quickPick.waitForStep({ placeholder: /选择一个命令/ });
 	// Type the command to filter the list
 	await quickPick.enterTextAndWaitForItems(command);
 	await quickPick.selectItem(new RegExp(command, 'i'));
@@ -180,7 +180,7 @@ async function selectCommandSubcommandAndWaitForStepWithOptionalRepo(
 	await quickPick.selectItem(new RegExp(subcommand, 'i'));
 
 	// Select subcommand - but first check if a repo picker appeared
-	const index = await quickPick.waitForAnyStep([{ placeholder: /Choose a repository/ }, step]);
+	const index = await quickPick.waitForAnyStep([{ placeholder: /选择仓库/ }, step]);
 	if (index === 0) {
 		// Repo picker, select repo then wait for step
 		await quickPick.enterTextAndWaitForItems('gltest');
@@ -199,13 +199,10 @@ async function reverseCommandAndRepo({ gitlens: { quickPick }, page }: VSCodeIns
 
 	// Back from current step → (repo) → command
 	await quickPick.goBack();
-	const index = await quickPick.waitForAnyStep([
-		{ placeholder: /Choose a repository/ },
-		{ placeholder: /Choose a command/ },
-	]);
+	const index = await quickPick.waitForAnyStep([{ placeholder: /选择仓库/ }, { placeholder: /选择一个命令/ }]);
 	if (index === 0) {
 		// Back from repo → command
-		await quickPick.goBackAndWaitForStep({ placeholder: /Choose a command/ });
+		await quickPick.goBackAndWaitForStep({ placeholder: /选择一个命令/ });
 	}
 }
 
@@ -219,7 +216,7 @@ async function reverseCommandSubcommandAndRepo(
 	// Back from current step → (repo) → subcommand
 	await quickPick.goBack();
 	const index = await quickPick.waitForAnyStep([
-		{ placeholder: /Choose a repository/ },
+		{ placeholder: /选择仓库/ },
 		{ placeholder: new RegExp(`Choose a ${command} command`, 'i') },
 	]);
 	if (index === 0) {
@@ -228,7 +225,7 @@ async function reverseCommandSubcommandAndRepo(
 	}
 
 	// Back from subcommand → command
-	await quickPick.goBackAndWaitForStep({ placeholder: /Choose a command/ });
+	await quickPick.goBackAndWaitForStep({ placeholder: /选择一个命令/ });
 }
 
 /**
@@ -238,7 +235,7 @@ async function reverseCommandSubcommandAndRepo(
 async function testDirectGitCommand(gitlens: WeGitPage, suffix: string, step: Step): Promise<void> {
 	const { quickPick } = gitlens;
 
-	await gitlens.executeCommand(`gitlens.git.${suffix}`);
+	await gitlens.executeCommandFireAndForget(`gitlens.git.${suffix}`);
 	await quickPick.waitForVisible();
 	await quickPick.waitForStep(step);
 
@@ -255,27 +252,27 @@ test.describe('Quick Wizard — Branch Commands', () => {
 			},
 		}) => {
 			await selectCommandSubcommandAndWaitForStepWithOptionalRepo(vscode, 'branch', 'create', {
-				title: /Create Branch/,
-				placeholder: /Choose a base/i,
+				title: /选择创建分支的基准/,
+				placeholder: /选择新分支的基准来源/,
 			});
 
 			// Select `main` as base reference
 			await quickPick.selectItem(/main/i);
 
 			// Enter branch name
-			await quickPick.waitForStep({ title: /Create Branch/, placeholder: /Branch name/i });
+			await quickPick.waitForStep({ title: /创建分支 from/, placeholder: /分支名称/ });
 			await quickPick.enterTextAndSubmit('test-branch-create');
 
 			// Confirm step
-			await quickPick.waitForStep({ title: /Confirm Create Branch/i });
+			await quickPick.waitForStep({ title: /确认创建分支/ });
 
 			// === REVERSE NAVIGATION ===
 
 			// Back from confirm → name
-			await quickPick.goBackAndWaitForStep({ title: /Create Branch/, placeholder: /Branch name/i });
+			await quickPick.goBackAndWaitForStep({ title: /创建分支 from/, placeholder: /分支名称/ });
 
 			// Back from name → reference
-			await quickPick.goBackAndWaitForStep({ title: /Create Branch/, placeholder: /Choose a base/i });
+			await quickPick.goBackAndWaitForStep({ title: /选择创建分支的基准/, placeholder: /选择新分支的基准来源/ });
 
 			await reverseCommandSubcommandAndRepo(vscode, 'branch');
 
@@ -292,8 +289,8 @@ test.describe('Quick Wizard — Branch Commands', () => {
 			},
 		}) => {
 			await selectCommandSubcommandAndWaitForStepWithOptionalRepo(vscode, 'branch', 'delete', {
-				title: /Delete Branch/,
-				placeholder: /Choose branch/i,
+				title: /删除分支/,
+				placeholder: /选择要删除的分支/,
 			});
 
 			// Select a branch to delete (use feature-2 which has no worktree)
@@ -301,12 +298,12 @@ test.describe('Quick Wizard — Branch Commands', () => {
 			await quickPick.selectItemMulti(/feature-2/);
 
 			// Confirm step
-			await quickPick.waitForStep({ title: /Confirm Delete Branch/i });
+			await quickPick.waitForStep({ title: /确认删除分支/ });
 
 			// === REVERSE NAVIGATION ===
 
 			// Back from confirm → branch
-			await quickPick.goBackAndWaitForStep({ title: /Delete Branch/, placeholder: /Choose branch/i });
+			await quickPick.goBackAndWaitForStep({ title: /删除分支/, placeholder: /选择要删除的分支/ });
 
 			await reverseCommandSubcommandAndRepo(vscode, 'branch');
 
@@ -321,8 +318,8 @@ test.describe('Quick Wizard — Branch Commands', () => {
 			},
 		}) => {
 			await selectCommandSubcommandAndWaitForStepWithOptionalRepo(vscode, 'branch', 'delete', {
-				title: /Delete Branch/,
-				placeholder: /Choose branch/i,
+				title: /删除分支/,
+				placeholder: /选择要删除的分支/,
 			});
 
 			// Select the branch that has a worktree
@@ -330,7 +327,7 @@ test.describe('Quick Wizard — Branch Commands', () => {
 			await quickPick.selectItemMulti(/feature-with-worktree/i);
 
 			// Confirm worktree deletion
-			await quickPick.waitForStep({ title: /Delete Worktree for Branch/i });
+			await quickPick.waitForStep({ title: /删除工作树（分支）/ });
 
 			// Note: The full flow would continue to delete the worktree then delete the branch,
 			// but we stop here to test navigation without actually performing destructive operations
@@ -338,7 +335,7 @@ test.describe('Quick Wizard — Branch Commands', () => {
 			// === REVERSE NAVIGATION ===
 
 			// Back from worktree confirm → branch
-			await quickPick.goBackAndWaitForStep({ title: /Delete Branch/, placeholder: /Choose branch/i });
+			await quickPick.goBackAndWaitForStep({ title: /删除分支/, placeholder: /选择要删除的分支/ });
 
 			await reverseCommandSubcommandAndRepo(vscode, 'branch');
 
@@ -355,27 +352,27 @@ test.describe('Quick Wizard — Branch Commands', () => {
 			},
 		}) => {
 			await selectCommandSubcommandAndWaitForStepWithOptionalRepo(vscode, 'branch', 'rename', {
-				title: /Rename Branch/,
-				placeholder: /Choose a branch/i,
+				title: /重命名分支/,
+				placeholder: /选择要重命名的分支/,
 			});
 
 			// Select a branch to rename (feature-2)
 			await quickPick.selectItem('feature-2');
 
 			// Enter new name
-			await quickPick.waitForStep({ title: /Rename Branch/, placeholder: /Branch name/i });
+			await quickPick.waitForStep({ title: /重命名分支/, placeholder: /分支名称/ });
 			await quickPick.enterTextAndSubmit('feature-2-renamed');
 
 			// Confirm step
-			await quickPick.waitForStep({ title: /Confirm Rename Branch/i });
+			await quickPick.waitForStep({ title: /确认重命名分支/ });
 
 			// === REVERSE NAVIGATION ===
 
 			// Back from confirm → name
-			await quickPick.goBackAndWaitForStep({ title: /Rename Branch/, placeholder: /Branch name/i });
+			await quickPick.goBackAndWaitForStep({ title: /重命名分支/, placeholder: /分支名称/ });
 
 			// Back from name → branch
-			await quickPick.goBackAndWaitForStep({ title: /Rename Branch/, placeholder: /Choose a branch/i });
+			await quickPick.goBackAndWaitForStep({ title: /重命名分支/, placeholder: /选择要重命名的分支/ });
 
 			await reverseCommandSubcommandAndRepo(vscode, 'branch');
 
@@ -392,30 +389,30 @@ test.describe('Quick Wizard — Branch Commands', () => {
 			},
 		}) => {
 			await selectCommandSubcommandAndWaitForStepWithOptionalRepo(vscode, 'branch', 'upstream', {
-				title: /Change Upstream/i,
-				placeholder: /Choose a branch/i,
+				title: /更改上游/,
+				placeholder: /选择要更改上游跟踪的分支/,
 			});
 
 			// Select a branch to change upstream
 			await quickPick.selectItem(/feature-1/i);
 
 			// Select an upstream remote branch
-			await quickPick.waitForStep({ title: /Change Upstream/i, placeholder: /Choose an upstream/i });
+			await quickPick.waitForStep({ title: /更改上游/, placeholder: /选择要跟踪的上游分支/ });
 			await quickPick.selectItem(/origin\/main/i);
 
 			// Confirm step
-			await quickPick.waitForStep({ title: /Confirm (Change|Set|Unset) Upstream/i });
+			await quickPick.waitForStep({ title: /确认(更改|设置|取消)上游/ });
 
 			// === REVERSE NAVIGATION ===
 
 			// Back from confirm → upstream
 			await quickPick.goBackAndWaitForStep({
-				title: /Change Upstream/i,
-				placeholder: /Choose an upstream/i,
+				title: /更改上游/,
+				placeholder: /选择要跟踪的上游分支/,
 			});
 
 			// Back from upstream → branch
-			await quickPick.goBackAndWaitForStep({ title: /Change Upstream/i, placeholder: /Choose a branch/i });
+			await quickPick.goBackAndWaitForStep({ title: /更改上游/, placeholder: /选择要更改上游跟踪的分支/ });
 
 			await reverseCommandSubcommandAndRepo(vscode, 'branch');
 
@@ -432,20 +429,20 @@ test.describe('Quick Wizard — Branch Commands', () => {
 			},
 		}) => {
 			await selectCommandSubcommandAndWaitForStepWithOptionalRepo(vscode, 'branch', 'prune', {
-				title: /Prune Branch/,
-				placeholder: /Choose branches/i,
+				title: /清理分支/,
+				placeholder: /选择要删除的上游缺失分支/,
 			});
 
 			// Select a branch with missing upstreams
 			await quickPick.selectItemMulti(/stale-feature/i);
 
 			// Confirm step
-			await quickPick.waitForStep({ title: /Confirm Prune Branch/i });
+			await quickPick.waitForStep({ title: /确认清理分支/ });
 
 			// === REVERSE NAVIGATION ===
 
 			// Back from confirm → branch
-			await quickPick.goBackAndWaitForStep({ title: /Prune Branch/, placeholder: /Choose branches/i });
+			await quickPick.goBackAndWaitForStep({ title: /清理分支/, placeholder: /选择要删除的上游缺失分支/ });
 
 			await reverseCommandSubcommandAndRepo(vscode, 'branch');
 
@@ -466,8 +463,8 @@ test.describe('Quick Wizard — Switch Command', () => {
 			vscode,
 			'switch',
 			{
-				title: /Switch/i,
-				placeholder: /Choose a branch/i,
+				title: /切换/,
+				placeholder: /选择要切换到的分支/,
 			},
 			true,
 		);
@@ -477,12 +474,12 @@ test.describe('Quick Wizard — Switch Command', () => {
 		await quickPick.selectItem(/feature-1/i);
 
 		// Confirm step
-		await quickPick.waitForStep({ title: /Confirm Switch/i });
+		await quickPick.waitForStep({ title: /确认切换/ });
 
 		// === REVERSE NAVIGATION ===
 
 		// Back from confirm → branch
-		await quickPick.goBackAndWaitForStep({ title: /Switch/i, placeholder: /Choose a branch/i });
+		await quickPick.goBackAndWaitForStep({ title: /切换/, placeholder: /选择要切换到的分支/ });
 
 		await reverseCommandAndRepo(vscode);
 
@@ -500,34 +497,37 @@ test.describe('Quick Wizard — Tag Commands', () => {
 			},
 		}) => {
 			await selectCommandSubcommandAndWaitForStepWithOptionalRepo(vscode, 'tag', 'create', {
-				title: /Create Tag/,
-				placeholder: /Choose a branch or tag/i,
+				title: /创建标签/,
+				placeholder: /选择一个分支或标签作为新标签的来源/,
 			});
 
 			// Select `main` branch as reference
 			await quickPick.selectItem(/main/i);
 
 			// Enter tag name
-			await quickPick.waitForStep({ title: /Create Tag/, placeholder: /Tag name/i });
+			await quickPick.waitForStep({ title: /创建标签 于/, placeholder: /标签名称/ });
 			await quickPick.enterTextAndSubmit('v2.0.0');
 
 			// Enter tag message
-			await quickPick.waitForStep({ title: /Create Tag/, placeholder: /provide an optional message/i });
+			await quickPick.waitForStep({ title: /创建标签 于/, placeholder: /可选：输入用于注解标签的消息/ });
 			await quickPick.enterTextAndSubmit('Release 2.0.0');
 
 			// Confirm step
-			await quickPick.waitForStep({ title: /Confirm Create Tag/i });
+			await quickPick.waitForStep({ title: /确认创建标签/ });
 
 			// === REVERSE NAVIGATION ===
 
 			// Back from confirm → message
-			await quickPick.goBackAndWaitForStep({ title: /Create Tag/, placeholder: /provide an optional message/i });
+			await quickPick.goBackAndWaitForStep({ title: /创建标签 于/, placeholder: /可选：输入用于注解标签的消息/ });
 
 			// Back from message → name
-			await quickPick.goBackAndWaitForStep({ title: /Create Tag/, placeholder: /Tag name/i });
+			await quickPick.goBackAndWaitForStep({ title: /创建标签 于/, placeholder: /标签名称/ });
 
 			// Back from name → reference
-			await quickPick.goBackAndWaitForStep({ title: /Create Tag/, placeholder: /Choose a branch or tag/i });
+			await quickPick.goBackAndWaitForStep({
+				title: /创建标签/,
+				placeholder: /选择一个分支或标签作为新标签的来源/,
+			});
 
 			await reverseCommandSubcommandAndRepo(vscode, 'tag');
 
@@ -544,20 +544,20 @@ test.describe('Quick Wizard — Tag Commands', () => {
 			},
 		}) => {
 			await selectCommandSubcommandAndWaitForStepWithOptionalRepo(vscode, 'tag', 'delete', {
-				title: /Delete Tag/,
-				placeholder: /Choose tags to delete/i,
+				title: /删除标签/,
+				placeholder: /选择要删除的标签/,
 			});
 
 			// Select a tag to delete (use v1.1.0)
 			await quickPick.selectItemMulti(/v1\.1\.0/);
 
 			// Confirm step
-			await quickPick.waitForStep({ title: /Confirm Delete Tag/i });
+			await quickPick.waitForStep({ title: /确认删除标签/ });
 
 			// === REVERSE NAVIGATION ===
 
 			// Back from confirm → tag
-			await quickPick.goBackAndWaitForStep({ title: /Delete Tag/, placeholder: /Choose tags to delete/i });
+			await quickPick.goBackAndWaitForStep({ title: /删除标签/, placeholder: /选择要删除的标签/ });
 
 			await reverseCommandSubcommandAndRepo(vscode, 'tag');
 
@@ -582,22 +582,22 @@ test.describe('Quick Wizard — Stash Commands', () => {
 			// `stash-push:command`. If `stash-push:menu` is ever added to `gitCommands.skipConfirmations`,
 			// the confirm step vanishes and this test would time out on the (now-absent) confirm step.
 			await selectCommandSubcommandAndWaitForStepWithOptionalRepo(vscode, 'stash', 'push', {
-				title: /Confirm Push Stash/i,
-				placeholder: /Confirm Push Stash/i,
+				title: /确认创建存储/,
+				placeholder: /确认创建存储/,
 			});
 
-			// Select the plain "Push Stash" confirmation option (negative lookahead excludes the
-			// "Snapshot" / "& …" variants, so this is order-independent rather than relying on `.first()`)
-			await quickPick.selectItem(/Push Stash(?! Snapshot| &)/);
+			// Select the plain "创建存储" confirmation option (negative lookahead excludes the
+			// "快照" / "并…" variants, so this is order-independent rather than relying on `.first()`)
+			await quickPick.selectItem(/创建存储(?!并|快照)/);
 
-			// Message step (placeholder distinguishes it from the still-matching "Confirm Push Stash" title)
-			await quickPick.waitForStep({ title: /Push Stash/i, placeholder: /Stash message/i });
+			// Message step (placeholder distinguishes it from the still-matching "确认创建存储" title)
+			await quickPick.waitForStep({ title: /创建存储/, placeholder: /存储消息/ });
 
 			// === REVERSE NAVIGATION ===
 			// Do not submit a message — submitting would execute the stash. Navigate back instead.
 
 			// Back from message → confirm
-			await quickPick.goBackAndWaitForStep({ title: /Confirm Push Stash/i, placeholder: /Confirm Push Stash/i });
+			await quickPick.goBackAndWaitForStep({ title: /确认创建存储/, placeholder: /确认创建存储/ });
 
 			await reverseCommandSubcommandAndRepo(vscode, 'stash');
 
@@ -614,8 +614,8 @@ test.describe('Quick Wizard — Stash Commands', () => {
 			},
 		}) => {
 			await selectCommandSubcommandAndWaitForStepWithOptionalRepo(vscode, 'stash', 'list', {
-				title: /Stashes/i,
-				placeholder: /Choose a stash/i,
+				title: /存储列表/,
+				placeholder: /选择一个贮藏/,
 			});
 
 			// Ensure items appear
@@ -627,24 +627,24 @@ test.describe('Quick Wizard — Stash Commands', () => {
 			await quickPick.selectItem(/Test stash/i);
 
 			// Show step - starts in commands mode (placeholder is the stash description)
-			await quickPick.waitForStep({ title: /Stash #/i, placeholder: /Stash #.*Test stash/i });
+			await quickPick.waitForStep({ title: /存储 #/i, placeholder: /存储 #.*Test stash/i });
 
 			// Verify we're in commands mode by checking for the toggle to files hint
 			let items: string[] = await quickPick.getVisibleItems();
-			expect(items.some(item => /Click to see.*files/i.test(item))).toBeTruthy();
+			expect(items.some(item => item.includes('点击查看所有已更改文件'))).toBeTruthy();
 
 			// Toggle to files mode (click the toggle item with hint about files)
-			await quickPick.selectItem(/Click to see.*files/i);
+			await quickPick.selectItem(/点击查看所有已更改文件/);
 
 			// Verify we're now in files mode by checking for the toggle back to actions hint
-			await quickPick.waitForStep({ title: /Stash #/i });
+			await quickPick.waitForStep({ title: /存储 #/i });
 			items = await quickPick.getVisibleItems();
-			expect(items.some(item => /Click to see.*actions/i.test(item))).toBeTruthy();
+			expect(items.some(item => item.includes('点击查看存储操作'))).toBeTruthy();
 
 			// === REVERSE NAVIGATION ===
 
 			// Back from files → stash picker (toggle doesn't add to history, so back skips commands mode)
-			await quickPick.goBackAndWaitForStep({ title: /Stashes/i, placeholder: /Choose a stash/i });
+			await quickPick.goBackAndWaitForStep({ title: /存储列表/, placeholder: /选择一个贮藏/ });
 
 			await reverseCommandSubcommandAndRepo(vscode, 'stash');
 
@@ -660,33 +660,33 @@ test.describe('Quick Wizard — Stash Commands', () => {
 			},
 		}) => {
 			await selectCommandSubcommandAndWaitForStepWithOptionalRepo(vscode, 'stash', 'list', {
-				title: /Stashes/i,
-				placeholder: /Choose a stash/i,
+				title: /存储列表/,
+				placeholder: /选择一个贮藏/,
 			});
 
 			// Select a stash to show
 			await quickPick.selectItem(/Test stash/i);
 
 			// Start in commands mode
-			await quickPick.waitForStep({ title: /Stash #/i });
+			await quickPick.waitForStep({ title: /存储 #/i });
 			let items: string[] = await quickPick.getVisibleItems();
-			expect(items.some(item => /Click to see.*files/i.test(item))).toBeTruthy();
+			expect(items.some(item => item.includes('点击查看所有已更改文件'))).toBeTruthy();
 
 			// Toggle to files mode
-			await quickPick.selectItem(/Click to see.*files/i);
-			await quickPick.waitForStep({ title: /Stash #/i });
+			await quickPick.selectItem(/点击查看所有已更改文件/);
+			await quickPick.waitForStep({ title: /存储 #/i });
 			items = await quickPick.getVisibleItems();
-			expect(items.some(item => /Click to see.*actions/i.test(item))).toBeTruthy();
+			expect(items.some(item => item.includes('点击查看存储操作'))).toBeTruthy();
 
 			// Toggle back to commands mode
-			await quickPick.selectItem(/Click to see.*actions/i);
+			await quickPick.selectItem(/点击查看存储操作/);
 			await page.waitForTimeout(ShortTimeout); // Give time for the step to update
-			await quickPick.waitForStep({ title: /Stash #/i });
+			await quickPick.waitForStep({ title: /存储 #/i });
 			items = await quickPick.getVisibleItems();
-			expect(items.some(item => /Click to see.*files/i.test(item))).toBeTruthy();
+			expect(items.some(item => item.includes('点击查看所有已更改文件'))).toBeTruthy();
 
 			// Back from commands → should go directly to stash picker (not through files mode)
-			await quickPick.goBackAndWaitForStep({ title: /Stashes/i, placeholder: /Choose a stash/i });
+			await quickPick.goBackAndWaitForStep({ title: /存储列表/, placeholder: /选择一个贮藏/ });
 
 			await quickPick.cancel();
 			expect(await quickPick.isVisible()).toBeFalsy();
@@ -701,20 +701,20 @@ test.describe('Quick Wizard — Stash Commands', () => {
 			},
 		}) => {
 			await selectCommandSubcommandAndWaitForStepWithOptionalRepo(vscode, 'stash', 'apply', {
-				title: /Apply Stash/i,
-				placeholder: /Choose a stash/i,
+				title: /应用存储/,
+				placeholder: /选择要应用到工作树的存储/,
 			});
 
 			// Select a stash to apply
 			await quickPick.selectItem(/Test stash/i);
 
 			// Confirm step
-			await quickPick.waitForStep({ title: /Confirm Apply Stash/i });
+			await quickPick.waitForStep({ title: /确认应用存储/ });
 
 			// === REVERSE NAVIGATION ===
 
 			// Back from confirm → stash
-			await quickPick.goBackAndWaitForStep({ title: /Apply Stash/i, placeholder: /Choose a stash/i });
+			await quickPick.goBackAndWaitForStep({ title: /应用存储/, placeholder: /选择要应用到工作树的存储/ });
 
 			await reverseCommandSubcommandAndRepo(vscode, 'stash');
 
@@ -731,20 +731,20 @@ test.describe('Quick Wizard — Stash Commands', () => {
 			},
 		}) => {
 			await selectCommandSubcommandAndWaitForStepWithOptionalRepo(vscode, 'stash', 'pop', {
-				title: /Pop Stash/i,
-				placeholder: /Choose a stash/i,
+				title: /弹出存储/,
+				placeholder: /选择要弹出的存储/,
 			});
 
 			// Select a stash to pop
 			await quickPick.selectItem(/Test stash/i);
 
 			// Confirm step
-			await quickPick.waitForStep({ title: /Confirm Pop Stash/i });
+			await quickPick.waitForStep({ title: /确认弹出存储/ });
 
 			// === REVERSE NAVIGATION ===
 
 			// Back from confirm → stash
-			await quickPick.goBackAndWaitForStep({ title: /Pop Stash/i, placeholder: /Choose a stash/i });
+			await quickPick.goBackAndWaitForStep({ title: /弹出存储/, placeholder: /选择要弹出的存储/ });
 
 			await reverseCommandSubcommandAndRepo(vscode, 'stash');
 
@@ -761,20 +761,20 @@ test.describe('Quick Wizard — Stash Commands', () => {
 			},
 		}) => {
 			await selectCommandSubcommandAndWaitForStepWithOptionalRepo(vscode, 'stash', 'drop', {
-				title: /Drop Stash/i,
-				placeholder: /Choose stashes/i,
+				title: /删除存储/,
+				placeholder: /选择要删除的存储/,
 			});
 
 			// Select a stash to drop
 			await quickPick.selectItemMulti(/Test stash/i);
 
 			// Confirm step
-			await quickPick.waitForStep({ title: /Confirm Drop Stash/i });
+			await quickPick.waitForStep({ title: /确认删除存储/ });
 
 			// === REVERSE NAVIGATION ===
 
 			// Back from confirm → stash
-			await quickPick.goBackAndWaitForStep({ title: /Drop Stash/i, placeholder: /Choose stashes/i });
+			await quickPick.goBackAndWaitForStep({ title: /删除存储/, placeholder: /选择要删除的存储/ });
 
 			await reverseCommandSubcommandAndRepo(vscode, 'stash');
 
@@ -791,27 +791,27 @@ test.describe('Quick Wizard — Stash Commands', () => {
 			},
 		}) => {
 			await selectCommandSubcommandAndWaitForStepWithOptionalRepo(vscode, 'stash', 'rename', {
-				title: /Rename Stash/i,
-				placeholder: /Choose a stash/i,
+				title: /重命名存储/,
+				placeholder: /选择要重命名的存储/,
 			});
 
 			// Select a stash to rename
 			await quickPick.selectItem(/Test stash/i);
 
 			// Enter new message
-			await quickPick.waitForStep({ title: /Rename Stash/i, placeholder: /Stash message/i });
+			await quickPick.waitForStep({ title: /重命名存储/, placeholder: /存储消息/ });
 			await quickPick.enterTextAndSubmit('Renamed stash');
 
 			// Confirm step
-			await quickPick.waitForStep({ title: /Confirm Rename Stash/i });
+			await quickPick.waitForStep({ title: /确认重命名存储/ });
 
 			// === REVERSE NAVIGATION ===
 
 			// Back from confirm → message input
-			await quickPick.goBackAndWaitForStep({ title: /Rename Stash/i, placeholder: /Stash message/i });
+			await quickPick.goBackAndWaitForStep({ title: /重命名存储/, placeholder: /存储消息/ });
 
 			// Back from message input → stash picker (input fields require two backs)
-			await quickPick.goBackAndWaitForStep({ title: /Rename Stash/i, placeholder: /Choose a stash/i });
+			await quickPick.goBackAndWaitForStep({ title: /重命名存储/, placeholder: /选择要重命名的存储/ });
 
 			// Now use helper to navigate back through subcommand to command
 			await reverseCommandSubcommandAndRepo(vscode, 'stash');
@@ -831,27 +831,27 @@ test.describe('Quick Wizard — Remote Commands', () => {
 			},
 		}) => {
 			await selectCommandSubcommandAndWaitForStepWithOptionalRepo(vscode, 'remote', 'add', {
-				title: /Add Remote/i,
-				placeholder: /Remote name/i,
+				title: /添加远程/,
+				placeholder: /远程仓库名称/,
 			});
 
 			// Enter new remote name
 			await quickPick.enterTextAndSubmit('upstream');
 
 			// Enter remote url
-			await quickPick.waitForStep({ title: /Add Remote/i, placeholder: /Remote URL/i });
+			await quickPick.waitForStep({ title: /添加远程/, placeholder: /远程仓库 URL/ });
 			await quickPick.enterTextAndSubmit('https://github.com/example/repo.git');
 
 			// Confirm step
-			await quickPick.waitForStep({ title: /Confirm Add Remote/i });
+			await quickPick.waitForStep({ title: /确认添加远程/ });
 
 			// === REVERSE NAVIGATION ===
 
 			// Back from confirm → url input
-			await quickPick.goBackAndWaitForStep({ title: /Add Remote/i, placeholder: /Remote URL/i });
+			await quickPick.goBackAndWaitForStep({ title: /添加远程/, placeholder: /远程仓库 URL/ });
 
 			// Back from url input → name input
-			await quickPick.goBackAndWaitForStep({ title: /Add Remote/i, placeholder: /Remote name/i });
+			await quickPick.goBackAndWaitForStep({ title: /添加远程/, placeholder: /远程仓库名称/ });
 
 			await reverseCommandSubcommandAndRepo(vscode, 'remote');
 
@@ -868,20 +868,20 @@ test.describe('Quick Wizard — Remote Commands', () => {
 			},
 		}) => {
 			await selectCommandSubcommandAndWaitForStepWithOptionalRepo(vscode, 'remote', 'prune', {
-				title: /Prune Remote/i,
-				placeholder: /Choose a remote/i,
+				title: /清理远程/,
+				placeholder: /选择要清理的远程/,
 			});
 
 			// Select remote to prune
 			await quickPick.selectItem(/origin/i);
 
 			// Confirm step
-			await quickPick.waitForStep({ title: /Confirm Prune Remote/i });
+			await quickPick.waitForStep({ title: /确认清理远程/ });
 
 			// === REVERSE NAVIGATION ===
 
 			// Back from confirm → remote picker
-			await quickPick.goBackAndWaitForStep({ title: /Prune Remote/i, placeholder: /Choose a remote/i });
+			await quickPick.goBackAndWaitForStep({ title: /清理远程/, placeholder: /选择要清理的远程/ });
 
 			await reverseCommandSubcommandAndRepo(vscode, 'remote');
 
@@ -898,20 +898,20 @@ test.describe('Quick Wizard — Remote Commands', () => {
 			},
 		}) => {
 			await selectCommandSubcommandAndWaitForStepWithOptionalRepo(vscode, 'remote', 'remove', {
-				title: /Remove Remote/i,
-				placeholder: /Choose remote/i,
+				title: /移除远程/,
+				placeholder: /选择要移除的远程/,
 			});
 
 			// Select remote to remove
 			await quickPick.selectItem(/origin/i);
 
 			// Confirm step
-			await quickPick.waitForStep({ title: /Confirm Remove Remote/i });
+			await quickPick.waitForStep({ title: /确认移除远程/ });
 
 			// === REVERSE NAVIGATION ===
 
 			// Back from confirm → remote picker
-			await quickPick.goBackAndWaitForStep({ title: /Remove Remote/i, placeholder: /Choose remote/i });
+			await quickPick.goBackAndWaitForStep({ title: /移除远程/, placeholder: /选择要移除的远程/ });
 
 			await reverseCommandSubcommandAndRepo(vscode, 'remote');
 
@@ -929,7 +929,7 @@ test.describe('Quick Wizard — Fetch/Pull/Push Commands', () => {
 				gitlens: { quickPick },
 			},
 		}) => {
-			await selectCommandAndWaitForStepWithOptionalRepo(vscode, 'fetch', { title: /Confirm Fetch/i }, true);
+			await selectCommandAndWaitForStepWithOptionalRepo(vscode, 'fetch', { title: /确认抓取/ }, true);
 
 			// === REVERSE NAVIGATION ===
 
@@ -947,7 +947,7 @@ test.describe('Quick Wizard — Fetch/Pull/Push Commands', () => {
 				gitlens: { quickPick },
 			},
 		}) => {
-			await selectCommandAndWaitForStepWithOptionalRepo(vscode, 'pull', { title: /Confirm Pull/i }, true);
+			await selectCommandAndWaitForStepWithOptionalRepo(vscode, 'pull', { title: /确认拉取/ }, true);
 
 			// === REVERSE NAVIGATION ===
 
@@ -965,7 +965,7 @@ test.describe('Quick Wizard — Fetch/Pull/Push Commands', () => {
 				gitlens: { quickPick },
 			},
 		}) => {
-			await selectCommandAndWaitForStepWithOptionalRepo(vscode, 'push', { title: /Confirm Push/i }, true);
+			await selectCommandAndWaitForStepWithOptionalRepo(vscode, 'push', { title: /确认推送/ }, true);
 
 			// === REVERSE NAVIGATION ===
 
@@ -986,8 +986,8 @@ test.describe('Quick Wizard — Merge/Rebase/Cherry-pick/Reset/Revert Commands',
 			},
 		}) => {
 			await selectCommandAndWaitForStepWithOptionalRepo(vscode, 'merge', {
-				title: /Merge/i,
-				placeholder: /Choose a branch/i,
+				title: /合并到 main/,
+				placeholder: /选择要合并的分支/,
 			});
 
 			// Select a branch to merge (feature-1 has unique commits)
@@ -995,12 +995,12 @@ test.describe('Quick Wizard — Merge/Rebase/Cherry-pick/Reset/Revert Commands',
 			await quickPick.selectItem(/feature-1/i);
 
 			// Confirm step
-			await quickPick.waitForStep({ title: /Confirm Merge feature-1 into main/i });
+			await quickPick.waitForStep({ title: /确认将 feature-1 合并到 main/ });
 
 			// === REVERSE NAVIGATION ===
 
 			// Back from confirm → branch
-			await quickPick.goBackAndWaitForStep({ title: /Merge/i, placeholder: /Choose a branch/i });
+			await quickPick.goBackAndWaitForStep({ title: /合并到 main/, placeholder: /选择要合并的分支/ });
 
 			await reverseCommandAndRepo(vscode);
 
@@ -1015,8 +1015,8 @@ test.describe('Quick Wizard — Merge/Rebase/Cherry-pick/Reset/Revert Commands',
 			},
 		}) => {
 			await selectCommandAndWaitForStepWithOptionalRepo(vscode, 'merge', {
-				title: /Merge/i,
-				placeholder: /Choose a branch/i,
+				title: /合并到 main/,
+				placeholder: /选择要合并的分支/,
 			});
 
 			// Select the current branch (main) - this should force commit selection
@@ -1024,19 +1024,22 @@ test.describe('Quick Wizard — Merge/Rebase/Cherry-pick/Reset/Revert Commands',
 			await quickPick.selectItem(/^\s*main\s/i);
 
 			// Select a commit to merge
-			await quickPick.waitForStep({ title: /Merge/i, placeholder: /Choose a commit/i });
+			await quickPick.waitForStep({ title: /合并到 main/, placeholder: /选择要合并到 分支 main 的提交/ });
 			await quickPick.enterTextAndWaitForItems('Fourth');
 			await quickPick.selectItem(/Fourth commit/i);
 
-			await quickPick.waitForStep({ title: /Confirm Merge/i });
+			await quickPick.waitForStep({ title: /确认将/ });
 
 			// === REVERSE NAVIGATION ===
 
 			// Back from confirm → commits
-			await quickPick.goBackAndWaitForStep({ title: /Merge/i, placeholder: /Choose a commit/i });
+			await quickPick.goBackAndWaitForStep({
+				title: /合并到 main/,
+				placeholder: /选择要合并到 分支 main 的提交/,
+			});
 
 			// Back from commits → branch
-			await quickPick.goBackAndWaitForStep({ title: /Merge/i, placeholder: /Choose a branch/i });
+			await quickPick.goBackAndWaitForStep({ title: /合并到 main/, placeholder: /选择要合并的分支/ });
 
 			await quickPick.cancel();
 			expect(await quickPick.isVisible()).toBeFalsy();
@@ -1050,13 +1053,13 @@ test.describe('Quick Wizard — Merge/Rebase/Cherry-pick/Reset/Revert Commands',
 			},
 		}) => {
 			await selectCommandAndWaitForStepWithOptionalRepo(vscode, 'merge', {
-				title: /Merge/i,
-				placeholder: /Choose a branch/i,
+				title: /合并到 main/,
+				placeholder: /选择要合并的分支/,
 			});
 
-			// At branch selection step, click the commit toggle button (initially shows "Choose a Branch")
-			// The button tooltip when off is "Choose a Branch or Tag", click to toggle to commit mode
-			await quickPick.clickActionButton(/Choose a Branch/i);
+			// At branch selection step, click the commit toggle button (initially shows "选择分支")
+			// The button tooltip when off is "选择分支", click to toggle to commit mode
+			await quickPick.clickActionButton(/选择分支/);
 
 			// Select a branch (after toggle, selecting a branch will then show commits)
 			await quickPick.enterTextAndWaitForItems('feature-1');
@@ -1064,21 +1067,24 @@ test.describe('Quick Wizard — Merge/Rebase/Cherry-pick/Reset/Revert Commands',
 			await page.waitForTimeout(ShortTimeout);
 
 			// Should go to commit selection step (because toggle was enabled)
-			await quickPick.waitForStep({ title: /Merge/i, placeholder: /Choose a commit/i });
+			await quickPick.waitForStep({ title: /合并到 main/, placeholder: /选择要合并到 分支 main 的提交/ });
 
 			// Select a commit to merge
 			await quickPick.selectItem(/Feature 1 commit/i);
 
 			// Confirm step
-			await quickPick.waitForStep({ title: /Confirm Merge/i });
+			await quickPick.waitForStep({ title: /确认将/ });
 
 			// === REVERSE NAVIGATION ===
 
 			// Back from confirm → commits
-			await quickPick.goBackAndWaitForStep({ title: /Merge/i, placeholder: /Choose a commit/i });
+			await quickPick.goBackAndWaitForStep({
+				title: /合并到 main/,
+				placeholder: /选择要合并到 分支 main 的提交/,
+			});
 
 			// Back from commits → branch
-			await quickPick.goBackAndWaitForStep({ title: /Merge/i, placeholder: /Choose a branch/i });
+			await quickPick.goBackAndWaitForStep({ title: /合并到 main/, placeholder: /选择要合并的分支/ });
 
 			await quickPick.cancel();
 			expect(await quickPick.isVisible()).toBeFalsy();
@@ -1093,8 +1099,8 @@ test.describe('Quick Wizard — Merge/Rebase/Cherry-pick/Reset/Revert Commands',
 			},
 		}) => {
 			await selectCommandAndWaitForStepWithOptionalRepo(vscode, 'rebase', {
-				title: /Rebase/i,
-				placeholder: /Choose a branch/i,
+				title: /变基 main 到/,
+				placeholder: /选择要变基到的分支/,
 			});
 
 			// Select a branch to rebase onto
@@ -1102,12 +1108,12 @@ test.describe('Quick Wizard — Merge/Rebase/Cherry-pick/Reset/Revert Commands',
 			await quickPick.selectItem(/feature-1/i);
 
 			// Confirm step
-			await quickPick.waitForStep({ title: /Confirm Rebase/i });
+			await quickPick.waitForStep({ title: /确认变基/ });
 
 			// === REVERSE NAVIGATION ===
 
 			// Back from confirm → branch
-			await quickPick.goBackAndWaitForStep({ title: /Rebase/i, placeholder: /Choose a branch/i });
+			await quickPick.goBackAndWaitForStep({ title: /变基 main 到/, placeholder: /选择要变基到的分支/ });
 
 			await reverseCommandAndRepo(vscode);
 
@@ -1123,8 +1129,8 @@ test.describe('Quick Wizard — Merge/Rebase/Cherry-pick/Reset/Revert Commands',
 			},
 		}) => {
 			await selectCommandAndWaitForStepWithOptionalRepo(vscode, 'rebase', {
-				title: /Rebase/i,
-				placeholder: /Choose a branch/i,
+				title: /变基 main 到/,
+				placeholder: /选择要变基到的分支/,
 			});
 
 			// Select the current branch (main) forces commit selection
@@ -1133,19 +1139,22 @@ test.describe('Quick Wizard — Merge/Rebase/Cherry-pick/Reset/Revert Commands',
 			await page.waitForTimeout(ShortTimeout);
 
 			// Select the most recent commit (Fourth commit) - rebasing onto HEAD results in "Nothing to rebase"
-			await quickPick.waitForStep({ title: /Rebase/i, placeholder: /Choose a commit/i });
+			await quickPick.waitForStep({ title: /变基 main 到/, placeholder: /选择要让 分支 main 变基到的提交/ });
 			await quickPick.enterTextAndWaitForItems('Fourth');
 			await quickPick.selectItem(/Fourth commit/i);
 
-			await quickPick.waitForStep({ title: /Confirm Rebase main onto/i, placeholder: /Nothing to rebase/i });
+			await quickPick.waitForStep({ title: /确认变基 main 到/, placeholder: /无可变基内容/ });
 
 			// === REVERSE NAVIGATION ===
 
 			// Back confirm → commits
-			await quickPick.goBackAndWaitForStep({ title: /Rebase/i, placeholder: /Choose a commit/i });
+			await quickPick.goBackAndWaitForStep({
+				title: /变基 main 到/,
+				placeholder: /选择要让 分支 main 变基到的提交/,
+			});
 
 			// Back from commits → branch
-			await quickPick.goBackAndWaitForStep({ title: /Rebase/i, placeholder: /Choose a branch/i });
+			await quickPick.goBackAndWaitForStep({ title: /变基 main 到/, placeholder: /选择要变基到的分支/ });
 
 			await quickPick.cancel();
 			expect(await quickPick.isVisible()).toBeFalsy();
@@ -1159,8 +1168,8 @@ test.describe('Quick Wizard — Merge/Rebase/Cherry-pick/Reset/Revert Commands',
 			},
 		}) => {
 			await selectCommandAndWaitForStepWithOptionalRepo(vscode, 'rebase', {
-				title: /Rebase/i,
-				placeholder: /Choose a branch/i,
+				title: /变基 main 到/,
+				placeholder: /选择要变基到的分支/,
 			});
 
 			// Select the current branch (main) forces commit selection
@@ -1169,19 +1178,22 @@ test.describe('Quick Wizard — Merge/Rebase/Cherry-pick/Reset/Revert Commands',
 			await page.waitForTimeout(ShortTimeout);
 
 			// Select an older commit (Third commit) - allows a real rebase operation
-			await quickPick.waitForStep({ title: /Rebase/i, placeholder: /Choose a commit/i });
+			await quickPick.waitForStep({ title: /变基 main 到/, placeholder: /选择要让 分支 main 变基到的提交/ });
 			await quickPick.enterTextAndWaitForItems('Third');
 			await quickPick.selectItem(/Third commit/i);
 
-			await quickPick.waitForStep({ title: /Confirm Rebase main onto/i, placeholder: /Confirm Rebase/i });
+			await quickPick.waitForStep({ title: /确认变基 main 到/, placeholder: /Confirm 变基/ });
 
 			// === REVERSE NAVIGATION ===
 
 			// Back confirm → commits
-			await quickPick.goBackAndWaitForStep({ title: /Rebase/i, placeholder: /Choose a commit/i });
+			await quickPick.goBackAndWaitForStep({
+				title: /变基 main 到/,
+				placeholder: /选择要让 分支 main 变基到的提交/,
+			});
 
 			// Back from commits → branch
-			await quickPick.goBackAndWaitForStep({ title: /Rebase/i, placeholder: /Choose a branch/i });
+			await quickPick.goBackAndWaitForStep({ title: /变基 main 到/, placeholder: /选择要变基到的分支/ });
 
 			await quickPick.cancel();
 			expect(await quickPick.isVisible()).toBeFalsy();
@@ -1195,13 +1207,13 @@ test.describe('Quick Wizard — Merge/Rebase/Cherry-pick/Reset/Revert Commands',
 			},
 		}) => {
 			await selectCommandAndWaitForStepWithOptionalRepo(vscode, 'rebase', {
-				title: /Rebase/i,
-				placeholder: /Choose a branch/i,
+				title: /变基 main 到/,
+				placeholder: /选择要变基到的分支/,
 			});
 
-			// At branch selection step, click the commit toggle button (initially shows "Choose a Branch")
-			// The button tooltip when off is "Choose a Branch or Tag", click to toggle to commit mode
-			await quickPick.clickActionButton(/Choose a Branch/i);
+			// At branch selection step, click the commit toggle button (initially shows "选择分支")
+			// The button tooltip when off is "选择分支", click to toggle to commit mode
+			await quickPick.clickActionButton(/选择分支/);
 
 			// Select a branch (after toggle, selecting a branch will then show commits)
 			await quickPick.enterTextAndWaitForItems('feature-1');
@@ -1209,21 +1221,24 @@ test.describe('Quick Wizard — Merge/Rebase/Cherry-pick/Reset/Revert Commands',
 			await page.waitForTimeout(ShortTimeout);
 
 			// Should go to commit selection step (because toggle was enabled)
-			await quickPick.waitForStep({ title: /Rebase/i, placeholder: /Choose a commit/i });
+			await quickPick.waitForStep({ title: /变基 main 到/, placeholder: /选择要让 分支 main 变基到的提交/ });
 
 			// Select a commit to rebase onto
 			await quickPick.selectItem(/Feature 1 commit/i);
 
-			// Confirm step - title is "Confirm Rebase main onto <sha> (<message>)"
-			await quickPick.waitForStep({ title: /Confirm Rebase main onto/i });
+			// Confirm step - title is "确认变基 main 到 feature-1"
+			await quickPick.waitForStep({ title: /确认变基 main 到/ });
 
 			// === REVERSE NAVIGATION ===
 
 			// Back from confirm → commits
-			await quickPick.goBackAndWaitForStep({ title: /Rebase/i, placeholder: /Choose a commit/i });
+			await quickPick.goBackAndWaitForStep({
+				title: /变基 main 到/,
+				placeholder: /选择要让 分支 main 变基到的提交/,
+			});
 
 			// Back from commits → branch
-			await quickPick.goBackAndWaitForStep({ title: /Rebase/i, placeholder: /Choose a branch/i });
+			await quickPick.goBackAndWaitForStep({ title: /变基 main 到/, placeholder: /选择要变基到的分支/ });
 
 			await quickPick.cancel();
 			expect(await quickPick.isVisible()).toBeFalsy();
@@ -1239,8 +1254,8 @@ test.describe('Quick Wizard — Merge/Rebase/Cherry-pick/Reset/Revert Commands',
 			},
 		}) => {
 			await selectCommandAndWaitForStepWithOptionalRepo(vscode, 'cherry', {
-				title: /Cherry Pick/i,
-				placeholder: /Choose a branch/i,
+				title: /拣选提交/,
+				placeholder: /选择要从中拣选提交的分支/,
 			});
 
 			// Select main branch which has commits ahead of current branch
@@ -1250,19 +1265,19 @@ test.describe('Quick Wizard — Merge/Rebase/Cherry-pick/Reset/Revert Commands',
 
 			// Select a commit
 			await page.waitForTimeout(ShortTimeout);
-			await quickPick.waitForStep({ title: /Cherry Pick/i, placeholder: /Choose commit/i });
+			await quickPick.waitForStep({ title: /拣选提交/, placeholder: /选择要拣选到 分支 main 的提交/ });
 			await quickPick.selectItemMulti(/Feature 1 commit/i);
 
 			// Confirm step
-			await quickPick.waitForStep({ title: /Confirm/i });
+			await quickPick.waitForStep({ title: /确认 拣选提交/ });
 
 			// === REVERSE NAVIGATION ===
 
 			// Back from confirm → commits
-			await quickPick.goBackAndWaitForStep({ title: /Cherry Pick/i, placeholder: /Choose commit/i });
+			await quickPick.goBackAndWaitForStep({ title: /拣选提交/, placeholder: /选择要拣选到 分支 main 的提交/ });
 
 			// Back from commits → branch
-			await quickPick.goBackAndWaitForStep({ title: /Cherry Pick/i, placeholder: /Choose a branch/i });
+			await quickPick.goBackAndWaitForStep({ title: /拣选提交/, placeholder: /选择要从中拣选提交的分支/ });
 
 			await reverseCommandAndRepo(vscode);
 
@@ -1277,8 +1292,8 @@ test.describe('Quick Wizard — Merge/Rebase/Cherry-pick/Reset/Revert Commands',
 			},
 		}) => {
 			await selectCommandAndWaitForStepWithOptionalRepo(vscode, 'cherry', {
-				title: /Cherry Pick/i,
-				placeholder: /Choose a branch/i,
+				title: /拣选提交/,
+				placeholder: /选择要从中拣选提交的分支/,
 			});
 
 			// Select a branch to pick from - main is currently checked out, so picking from main has no commits
@@ -1287,12 +1302,12 @@ test.describe('Quick Wizard — Merge/Rebase/Cherry-pick/Reset/Revert Commands',
 			await quickPick.selectItem(/develop/i);
 
 			// Should show "no commits" placeholder
-			await quickPick.waitForStep({ title: /Cherry Pick/i, placeholder: /No pickable commits/i });
+			await quickPick.waitForStep({ title: /拣选提交/, placeholder: /未找到可拣选的提交/ });
 
 			// === REVERSE NAVIGATION ===
 
 			// Back from commits → branch
-			await quickPick.goBackAndWaitForStep({ title: /Cherry Pick/i, placeholder: /Choose a branch/i });
+			await quickPick.goBackAndWaitForStep({ title: /拣选提交/, placeholder: /选择要从中拣选提交的分支/ });
 
 			await reverseCommandAndRepo(vscode);
 
@@ -1309,20 +1324,20 @@ test.describe('Quick Wizard — Merge/Rebase/Cherry-pick/Reset/Revert Commands',
 			},
 		}) => {
 			await selectCommandAndWaitForStepWithOptionalRepo(vscode, 'reset', {
-				title: /Reset Branch/i,
-				placeholder: /Choose a commit/i,
+				title: /重置/,
+				placeholder: /选择要将 main 重置到的提交/,
 			});
 
 			// Select a commit to reset to
 			await quickPick.selectItem(/commit/i);
 
 			// Confirm step
-			await quickPick.waitForStep({ title: /Confirm Reset Branch/i });
+			await quickPick.waitForStep({ title: /确认重置/ });
 
 			// === REVERSE NAVIGATION ===
 
 			// Back from confirm → commit
-			await quickPick.goBackAndWaitForStep({ title: /Reset Branch/i, placeholder: /Choose a commit/i });
+			await quickPick.goBackAndWaitForStep({ title: /重置/, placeholder: /选择要将 main 重置到的提交/ });
 
 			await reverseCommandAndRepo(vscode);
 
@@ -1339,20 +1354,20 @@ test.describe('Quick Wizard — Merge/Rebase/Cherry-pick/Reset/Revert Commands',
 			},
 		}) => {
 			await selectCommandAndWaitForStepWithOptionalRepo(vscode, 'revert', {
-				title: /Revert/i,
-				placeholder: /Choose commit/i,
+				title: /撤销提交/,
+				placeholder: /选择要撤销的提交/,
 			});
 
 			// Select a commit to revert
 			await quickPick.selectItemMulti(/commit/i);
 
 			// Confirm step
-			await quickPick.waitForStep({ title: /Confirm Revert/i });
+			await quickPick.waitForStep({ title: /确认撤销提交/ });
 
 			// === REVERSE NAVIGATION ===
 
 			// Back from confirm → commits
-			await quickPick.goBackAndWaitForStep({ title: /Revert/i, placeholder: /Choose commit/i });
+			await quickPick.goBackAndWaitForStep({ title: /撤销提交/, placeholder: /选择要撤销的提交/ });
 
 			await reverseCommandAndRepo(vscode);
 
@@ -1371,15 +1386,15 @@ test.describe('Quick Wizard — Log/Show/Search Commands', () => {
 			},
 		}) => {
 			await selectCommandAndWaitForStepWithOptionalRepo(vscode, 'log', {
-				title: /Commits/i,
-				placeholder: /Choose a branch/i,
+				title: /提交/,
+				placeholder: /选择要显示其提交历史的分支或标签/,
 			});
 
 			// Select a branch
 			await quickPick.enterTextAndWaitForItems('main');
 			await quickPick.selectItem(/main/i);
 
-			await quickPick.waitForStep({ title: /Commits/i, placeholder: /Choose a commit/i });
+			await quickPick.waitForStep({ title: /提交/, placeholder: /选择一个提交/ });
 
 			// Ensure items appear
 			await quickPick.waitForItems(ShortTimeout);
@@ -1389,20 +1404,20 @@ test.describe('Quick Wizard — Log/Show/Search Commands', () => {
 			// Select a commit
 			await quickPick.selectItem(/commit/i);
 
-			// Show step - title is "Commit <sha> (<message>)" - transitions to show command
-			await quickPick.waitForStep({ title: /Commit [a-f0-9]+/i });
+			// Show step - title is "提交 <sha> (<message>)" - transitions to show command
+			await quickPick.waitForStep({ title: /提交 [a-f0-9]+/i });
 
 			// Verify we're in commands mode by checking for the toggle to files hint
 			const items: string[] = await quickPick.getVisibleItems();
-			expect(items.some(item => /Click to see.*files/i.test(item))).toBeTruthy();
+			expect(items.some(item => item.includes('点击查看所有已更改文件'))).toBeTruthy();
 
 			// === REVERSE NAVIGATION ===
 
 			// Back from show → commits
-			await quickPick.goBackAndWaitForStep({ title: /Commits/i, placeholder: /Choose a commit/i });
+			await quickPick.goBackAndWaitForStep({ title: /提交/, placeholder: /选择一个提交/ });
 
 			// Back from commits → branch
-			await quickPick.goBackAndWaitForStep({ title: /Commits/i, placeholder: /Choose a branch/i });
+			await quickPick.goBackAndWaitForStep({ title: /提交/, placeholder: /选择要显示其提交历史的分支或标签/ });
 
 			await reverseCommandAndRepo(vscode);
 
@@ -1419,24 +1434,29 @@ test.describe('Quick Wizard — Log/Show/Search Commands', () => {
 			},
 		}) => {
 			await selectCommandAndWaitForStepWithOptionalRepo(vscode, 'show', {
-				title: /Show/i,
-				placeholder: /Enter a reference or commit SHA/i,
+				title: /查看/,
+				placeholder: /输入引用或提交 SHA/,
 			});
 
-			// Enter a reference (HEAD or main) and submit
-			await quickPick.enterTextAndSubmit('HEAD');
+			// Enter a reference (HEAD or main) and submit.
+			// Wait for the validated commit item (label is the commit summary, e.g. "Fourth commit")
+			// instead of the empty-state [返回] directive — submitting while the reference validation
+			// is still pending would accept the back directive and return the wizard to the root menu.
+			await quickPick.enterText('HEAD');
+			await quickPick.getVisibleItem(/Fourth commit/);
+			await quickPick.submit();
 
-			// Should show commit details - title is "Commit <sha> (<message>)"
-			await quickPick.waitForStep({ title: /Commit [a-f0-9]+/i });
+			// Should show commit details - title is "提交 <sha> (<message>)"
+			await quickPick.waitForStep({ title: /提交 [a-f0-9]+/i });
 
 			// Verify we're in actions mode by checking for the toggle to files hint
 			const items: string[] = await quickPick.getVisibleItems();
-			expect(items.some(item => /Click to see.*files/i.test(item))).toBeTruthy();
+			expect(items.some(item => item.includes('点击查看所有已更改文件'))).toBeTruthy();
 
 			// === REVERSE NAVIGATION ===
 
 			// Back from commit details → reference input
-			await quickPick.goBackAndWaitForStep({ title: /Show/i, placeholder: /Enter a reference or commit SHA/i });
+			await quickPick.goBackAndWaitForStep({ title: /查看/, placeholder: /输入引用或提交 SHA/ });
 
 			await reverseCommandAndRepo(vscode);
 
@@ -1453,15 +1473,15 @@ test.describe('Quick Wizard — Log/Show/Search Commands', () => {
 			},
 		}) => {
 			await selectCommandAndWaitForStepWithOptionalRepo(vscode, 'search', {
-				title: /Commit Search/i,
-				placeholder: /e.g. "Updates dependencies" author:liao666brant/i,
+				title: /提交搜索/,
+				placeholder: /例如：“更新依赖” author:liao666brant/,
 			});
 
 			// Enter a search query and submit (search for "Fourth" which should match our test commit)
 			await quickPick.enterTextAndSubmit('Fourth');
 
 			// Wait for search results
-			await quickPick.waitForStep({ title: /Commit Search/i, placeholder: /.* results for/i });
+			await quickPick.waitForStep({ title: /提交搜索/, placeholder: /，匹配 Fourth/ });
 
 			// Ensure items appear
 			await quickPick.waitForItems(ShortTimeout);
@@ -1472,24 +1492,25 @@ test.describe('Quick Wizard — Log/Show/Search Commands', () => {
 			await quickPick.enterTextAndWaitForItems('Fourth');
 			await quickPick.selectItem(/Fourth commit/i);
 
-			// Should show commit details - title is "Commit <sha> (<message>)"
-			await quickPick.waitForStep({ title: /Commit [a-f0-9]+/i });
+			// Should show commit details - title is "提交 <sha> (<message>)"
+			await quickPick.waitForStep({ title: /提交 [a-f0-9]+/i });
 
 			// === REVERSE NAVIGATION ===
 
 			// Back from commit details → search results
 			await quickPick.goBack();
 			// May be at search results or back to search input depending on flow
+			// (the results/input title becomes "Commit 按消息搜索" once the query is parsed)
 			const stepIndex = await quickPick.waitForAnyStep([
-				{ title: /Commit Search|Searching for/i, placeholder: /.* results for/i },
-				{ title: /Commit Search/i, placeholder: /e.g. "Updates dependencies"/i },
+				{ title: /提交搜索|Commit 按消息搜索/, placeholder: /，匹配 Fourth/ },
+				{ title: /Commit 按消息搜索/, placeholder: /例如：“更新依赖”/ },
 			]);
 
 			if (stepIndex === 0) {
 				// At search results, go back to search input
 				await quickPick.goBackAndWaitForStep({
-					title: /Commit Search/i,
-					placeholder: /e.g. "Updates dependencies"/i,
+					title: /Commit 按消息搜索/,
+					placeholder: /例如：“更新依赖”/,
 				});
 			}
 
@@ -1514,23 +1535,23 @@ test.describe('Quick Wizard — Log/Show/Search Commands', () => {
 			},
 		}) => {
 			await selectCommandAndWaitForStepWithOptionalRepo(vscode, 'search', {
-				title: /Commit Search/i,
-				placeholder: /e.g. "Updates dependencies" author:liao666brant/i,
+				title: /提交搜索/,
+				placeholder: /例如：“更新依赖” author:liao666brant/,
 			});
 
 			// Verify search operators are shown in the list
 			const items: string[] = await quickPick.getVisibleItems();
 
 			// Check for expected search operators
-			expect(items.some(item => item.includes('Search by Message'))).toBeTruthy();
-			expect(items.some(item => item.includes('Search by Author'))).toBeTruthy();
-			expect(items.some(item => item.includes('Search by Commit SHA'))).toBeTruthy();
-			expect(items.some(item => item.includes('Search by Reference or Range'))).toBeTruthy();
-			expect(items.some(item => item.includes('Search by Type'))).toBeTruthy();
-			expect(items.some(item => item.includes('Search by File'))).toBeTruthy();
-			expect(items.some(item => item.includes('Search by Changes'))).toBeTruthy();
-			expect(items.some(item => item.includes('Search After Date'))).toBeTruthy();
-			expect(items.some(item => item.includes('Search Before Date'))).toBeTruthy();
+			expect(items.some(item => item.includes('按消息搜索'))).toBeTruthy();
+			expect(items.some(item => item.includes('按作者搜索'))).toBeTruthy();
+			expect(items.some(item => item.includes('按提交 SHA 搜索'))).toBeTruthy();
+			expect(items.some(item => item.includes('按引用或范围搜索'))).toBeTruthy();
+			expect(items.some(item => item.includes('按类型搜索'))).toBeTruthy();
+			expect(items.some(item => item.includes('按文件搜索'))).toBeTruthy();
+			expect(items.some(item => item.includes('按更改搜索'))).toBeTruthy();
+			expect(items.some(item => item.includes('搜索某日期之后'))).toBeTruthy();
+			expect(items.some(item => item.includes('搜索某日期之前'))).toBeTruthy();
 
 			await quickPick.cancel();
 			expect(await quickPick.isVisible()).toBeFalsy();
@@ -1544,25 +1565,26 @@ test.describe('Quick Wizard — Log/Show/Search Commands', () => {
 			},
 		}) => {
 			await selectCommandAndWaitForStepWithOptionalRepo(vscode, 'search', {
-				title: /Commit Search/i,
-				placeholder: /e.g. "Updates dependencies" author:liao666brant/i,
+				title: /提交搜索/,
+				placeholder: /例如：“更新依赖” author:liao666brant/,
 			});
 
 			// Search for something that won't exist
 			await quickPick.enterTextAndWaitForItems('xyznonexistentquery123456789');
 			await page.waitForTimeout(ShortTimeout);
-			await quickPick.selectItem(/Search for.*xyznonexistentquery123456789/i);
+			// The item's label is "搜索" and the query is its description
+			await quickPick.selectItem(/搜索.*xyznonexistentquery123456789/);
 
 			// Wait for results - should show "No results"
-			await quickPick.waitForStep({ title: /Commit Search/i, placeholder: /No results for|0 results for/i });
+			await quickPick.waitForStep({ title: /提交搜索/, placeholder: /没有结果/ });
 
 			// === REVERSE NAVIGATION ===
 
 			await quickPick.goBack();
 			await page.waitForTimeout(ShortTimeout);
 			await quickPick.waitForStep({
-				title: /Commit Search by Message/i,
-				placeholder: /e.g. "Updates dependencies"/i,
+				title: /Commit 按消息搜索/,
+				placeholder: /例如：“更新依赖”/,
 			});
 
 			// At search input - if there's a query value, first back clears it
@@ -1586,12 +1608,12 @@ test.describe('Quick Wizard — Log/Show/Search Commands', () => {
 			},
 		}) => {
 			await selectCommandAndWaitForStepWithOptionalRepo(vscode, 'search', {
-				title: /Commit Search/i,
-				placeholder: /e.g. "Updates dependencies" author:liao666brant/i,
+				title: /提交搜索/,
+				placeholder: /例如：“更新依赖” author:liao666brant/,
 			});
 
 			// Select the "Search by Author" operator
-			await quickPick.selectItem(/Search by Author/i);
+			await quickPick.selectItem(/按作者搜索/);
 
 			// The input should now contain "author:" operator
 			await page.waitForTimeout(ShortTimeout / 2);
@@ -1610,12 +1632,12 @@ test.describe('Quick Wizard — Log/Show/Search Commands', () => {
 			},
 		}) => {
 			await selectCommandAndWaitForStepWithOptionalRepo(vscode, 'search', {
-				title: /Commit Search/i,
-				placeholder: /e.g. "Updates dependencies" author:liao666brant/i,
+				title: /提交搜索/,
+				placeholder: /例如：“更新依赖” author:liao666brant/,
 			});
 
 			// Select the "Search by Commit SHA" operator
-			await quickPick.selectItem(/Search by Commit SHA/i);
+			await quickPick.selectItem(/按提交 SHA 搜索/);
 
 			// The input should now contain "commit:" operator
 			await page.waitForTimeout(ShortTimeout / 2);
@@ -1634,8 +1656,8 @@ test.describe('Quick Wizard — Log/Show/Search Commands', () => {
 			},
 		}) => {
 			await selectCommandAndWaitForStepWithOptionalRepo(vscode, 'search', {
-				title: /Commit Search/i,
-				placeholder: /e.g. "Updates dependencies" author:liao666brant/i,
+				title: /提交搜索/,
+				placeholder: /例如：“更新依赖” author:liao666brant/,
 			});
 
 			// Enter a search query (but don't submit)
@@ -1652,8 +1674,8 @@ test.describe('Quick Wizard — Log/Show/Search Commands', () => {
 
 			// Verify we're still on the search step with empty query
 			await quickPick.waitForStep({
-				title: /Commit Search/i,
-				placeholder: /e.g. "Updates dependencies" author:liao666brant/i,
+				title: /提交搜索/,
+				placeholder: /例如：“更新依赖” author:liao666brant/,
 			});
 			inputValue = await quickPick.input.inputValue();
 			expect(inputValue).toBe('');
@@ -1661,8 +1683,8 @@ test.describe('Quick Wizard — Log/Show/Search Commands', () => {
 			// Press back again - now should navigate back (to repo or command)
 			await quickPick.goBack();
 			const stepIndex = await quickPick.waitForAnyStep([
-				{ placeholder: /Choose a repository/ },
-				{ placeholder: /Choose a command/ },
+				{ placeholder: /选择仓库/ },
+				{ placeholder: /选择一个命令/ },
 			]);
 
 			// Verify we navigated back
@@ -1681,7 +1703,7 @@ test.describe('Quick Wizard — Status Command', () => {
 			gitlens: { quickPick },
 		},
 	}) => {
-		await selectCommandAndWaitForStepWithOptionalRepo(vscode, 'status', { title: /Status/i });
+		await selectCommandAndWaitForStepWithOptionalRepo(vscode, 'status', { title: /状态/ });
 
 		// Status step shows repository status information
 		// Verify items are shown (branch info, changed files, etc.)
@@ -1711,8 +1733,8 @@ test.describe('Quick Wizard — Worktree Commands', () => {
 			},
 		}) => {
 			await selectCommandSubcommandAndWaitForStepWithOptionalRepo(vscode, 'worktree', 'create', {
-				title: /Create Worktree/i,
-				placeholder: /Choose a branch/i,
+				title: /创建工作树/,
+				placeholder: /选择用于创建新工作树的分支/,
 			});
 
 			// Select a non-checked-out branch (feature-2 is not checked out and has no worktree)
@@ -1720,16 +1742,16 @@ test.describe('Quick Wizard — Worktree Commands', () => {
 			await quickPick.selectItem(/feature-2/i);
 
 			// Should go directly to confirm step (no branch name input needed)
-			await quickPick.waitForStep({ title: /Confirm Create Worktree.*feature-2/i });
+			await quickPick.waitForStep({ title: /确认 创建工作树 • feature-2/ });
 
 			// Verify the confirm options are shown
 			const items: string[] = await quickPick.getVisibleItems();
-			expect(items.some(item => item.includes('Create Worktree from Branch'))).toBeTruthy();
+			expect(items.some(item => item.includes('从分支创建工作树'))).toBeTruthy();
 
 			// === REVERSE NAVIGATION ===
 
 			// Back from confirm → branch picker
-			await quickPick.goBackAndWaitForStep({ title: /Create Worktree/i, placeholder: /Choose a branch/i });
+			await quickPick.goBackAndWaitForStep({ title: /创建工作树/, placeholder: /选择用于创建新工作树的分支/ });
 
 			await reverseCommandSubcommandAndRepo(vscode, 'worktree');
 
@@ -1744,8 +1766,8 @@ test.describe('Quick Wizard — Worktree Commands', () => {
 			},
 		}) => {
 			await selectCommandSubcommandAndWaitForStepWithOptionalRepo(vscode, 'worktree', 'create', {
-				title: /Create Worktree/i,
-				placeholder: /Choose a branch/i,
+				title: /创建工作树/,
+				placeholder: /选择用于创建新工作树的分支/,
 			});
 
 			// Select the current checked-out branch (main) - this triggers the "create new branch" flow
@@ -1755,26 +1777,26 @@ test.describe('Quick Wizard — Worktree Commands', () => {
 
 			// Should show branch name input step (since main is already checked out)
 			await quickPick.waitForStep({
-				title: /Create Worktree and New Branch from main/i,
-				placeholder: /Branch name/i,
+				title: /创建工作树，并从 main 创建新分支/,
+				placeholder: /分支名称/,
 			});
 
 			// Enter a new branch name
 			await quickPick.enterTextAndSubmit('new-worktree-branch');
 
 			// Confirm step
-			await quickPick.waitForStep({ title: /Confirm Create Worktree.*new-worktree-branch/i });
+			await quickPick.waitForStep({ title: /确认 创建工作树 • new-worktree-branch/ });
 
 			// === REVERSE NAVIGATION ===
 
 			// Back from confirm → branch name input
 			await quickPick.goBackAndWaitForStep({
-				title: /Create Worktree and New Branch from main/i,
-				placeholder: /Branch name/i,
+				title: /创建工作树，并从 main 创建新分支/,
+				placeholder: /分支名称/,
 			});
 
 			// Back from branch name input → branch picker
-			await quickPick.goBackAndWaitForStep({ title: /Create Worktree/i, placeholder: /Choose a branch/i });
+			await quickPick.goBackAndWaitForStep({ title: /创建工作树/, placeholder: /选择用于创建新工作树的分支/ });
 
 			await reverseCommandSubcommandAndRepo(vscode, 'worktree');
 
@@ -1789,8 +1811,8 @@ test.describe('Quick Wizard — Worktree Commands', () => {
 			},
 		}) => {
 			await selectCommandSubcommandAndWaitForStepWithOptionalRepo(vscode, 'worktree', 'create', {
-				title: /Create Worktree/i,
-				placeholder: /Choose a branch/i,
+				title: /创建工作树/,
+				placeholder: /选择用于创建新工作树的分支/,
 			});
 
 			// Select the branch that already has a worktree (feature-with-worktree)
@@ -1800,26 +1822,26 @@ test.describe('Quick Wizard — Worktree Commands', () => {
 
 			// Should show branch name input step (since the branch already has a worktree)
 			await quickPick.waitForStep({
-				title: /Create Worktree and New Branch from feature-with-worktree/i,
-				placeholder: /Branch name/i,
+				title: /创建工作树，并从 feature-with-worktree 创建新分支/,
+				placeholder: /分支名称/,
 			});
 
 			// Enter a new branch name
 			await quickPick.enterTextAndSubmit('new-worktree-branch');
 
 			// Confirm step
-			await quickPick.waitForStep({ title: /Confirm Create Worktree/i });
+			await quickPick.waitForStep({ title: /确认 创建工作树/ });
 
 			// === REVERSE NAVIGATION ===
 
 			// Back from confirm → branch name input
 			await quickPick.goBackAndWaitForStep({
-				title: /Create Worktree and New Branch from feature-with-worktree/i,
-				placeholder: /Branch name/i,
+				title: /创建工作树，并从 feature-with-worktree 创建新分支/,
+				placeholder: /分支名称/,
 			});
 
 			// Back from branch name input → branch picker
-			await quickPick.goBackAndWaitForStep({ title: /Create Worktree/i, placeholder: /Choose a branch/i });
+			await quickPick.goBackAndWaitForStep({ title: /创建工作树/, placeholder: /选择用于创建新工作树的分支/ });
 
 			await reverseCommandSubcommandAndRepo(vscode, 'worktree');
 
@@ -1835,8 +1857,8 @@ test.describe('Quick Wizard — Worktree Commands', () => {
 			},
 		}) => {
 			await selectCommandSubcommandAndWaitForStepWithOptionalRepo(vscode, 'worktree', 'create', {
-				title: /Create Worktree/i,
-				placeholder: /Choose a branch/i,
+				title: /创建工作树/,
+				placeholder: /选择用于创建新工作树的分支/,
 			});
 
 			// Select a non-checked-out branch to get to confirm step quickly
@@ -1844,22 +1866,22 @@ test.describe('Quick Wizard — Worktree Commands', () => {
 			await quickPick.selectItem(/feature-2/i);
 
 			// Wait for confirm step
-			await quickPick.waitForStep({ title: /Confirm Create Worktree.*feature-2/i });
+			await quickPick.waitForStep({ title: /确认 创建工作树 • feature-2/ });
 
 			// Select "Choose Specific Folder..." option
-			await quickPick.selectItem(/Choose Specific Folder/i);
+			await quickPick.selectItem(/选择指定文件夹/);
 
 			// The folder picker dialog should appear - press Escape to cancel it
 			await page.waitForTimeout(ShortTimeout);
 			await page.keyboard.press('Escape');
 
 			// Should return to confirm step after escaping folder picker
-			await quickPick.waitForStep({ title: /Confirm Create Worktree.*feature-2/i });
+			await quickPick.waitForStep({ title: /确认 创建工作树 • feature-2/ });
 
 			// === REVERSE NAVIGATION ===
 
 			// Back from confirm → branch picker
-			await quickPick.goBackAndWaitForStep({ title: /Create Worktree/i, placeholder: /Choose a branch/i });
+			await quickPick.goBackAndWaitForStep({ title: /创建工作树/, placeholder: /选择用于创建新工作树的分支/ });
 
 			await quickPick.cancel();
 			expect(await quickPick.isVisible()).toBeFalsy();
@@ -1873,8 +1895,8 @@ test.describe('Quick Wizard — Worktree Commands', () => {
 			},
 		}) => {
 			await selectCommandSubcommandAndWaitForStepWithOptionalRepo(vscode, 'worktree', 'create', {
-				title: /Create Worktree/i,
-				placeholder: /Choose a branch/i,
+				title: /创建工作树/,
+				placeholder: /选择用于创建新工作树的分支/,
 			});
 
 			// Select a non-checked-out branch to get to confirm step quickly
@@ -1882,22 +1904,22 @@ test.describe('Quick Wizard — Worktree Commands', () => {
 			await quickPick.selectItem(/feature-2/i);
 
 			// Wait for confirm step
-			await quickPick.waitForStep({ title: /Confirm Create Worktree.*feature-2/i });
+			await quickPick.waitForStep({ title: /确认 创建工作树 • feature-2/ });
 
 			// Select "Change Root Folder..." option
-			await quickPick.selectItem(/Change Root Folder/i);
+			await quickPick.selectItem(/更改根文件夹/);
 
 			// The folder picker dialog should appear - press Escape to cancel it
 			await page.waitForTimeout(ShortTimeout);
 			await page.keyboard.press('Escape');
 
 			// Should return to confirm step after escaping folder picker
-			await quickPick.waitForStep({ title: /Confirm Create Worktree.*feature-2/i });
+			await quickPick.waitForStep({ title: /确认 创建工作树 • feature-2/ });
 
 			// === REVERSE NAVIGATION ===
 
 			// Back from confirm → branch picker
-			await quickPick.goBackAndWaitForStep({ title: /Create Worktree/i, placeholder: /Choose a branch/i });
+			await quickPick.goBackAndWaitForStep({ title: /创建工作树/, placeholder: /选择用于创建新工作树的分支/ });
 
 			await quickPick.cancel();
 			expect(await quickPick.isVisible()).toBeFalsy();
@@ -1911,8 +1933,8 @@ test.describe('Quick Wizard — Worktree Commands', () => {
 			},
 		}) => {
 			await selectCommandSubcommandAndWaitForStepWithOptionalRepo(vscode, 'worktree', 'create', {
-				title: /Create Worktree/i,
-				placeholder: /Choose a branch/i,
+				title: /创建工作树/,
+				placeholder: /选择用于创建新工作树的分支/,
 			});
 
 			// Select a non-checked-out branch (feature-2 has no worktree yet)
@@ -1920,23 +1942,23 @@ test.describe('Quick Wizard — Worktree Commands', () => {
 			await quickPick.selectItem(/feature-2/i);
 
 			// Should go directly to confirm step (no branch name input needed)
-			await quickPick.waitForStep({ title: /Confirm Create Worktree.*feature-2/i });
+			await quickPick.waitForStep({ title: /确认 创建工作树 • feature-2/ });
 
 			// Confirm to actually create the worktree
-			// Select the default option "Create Worktree from Branch"
-			await quickPick.selectItem(/Create Worktree from Branch/i);
+			// Select the default option "从分支创建工作树"
+			await quickPick.selectItem(/从分支创建工作树/);
 
 			// After worktree is created, should transition to "Open Worktree" confirm step
 			// The default setting is "prompt" so the open dialog should appear
 			await quickPick.waitForStep(
-				{ title: /Open Worktree.*feature-2|Confirm.*Open.*Worktree/i },
+				{ title: /确认 打开工作树 • feature-2|打开工作树 • feature-2/ },
 				15000, // Worktree creation can take a moment
 			);
 
 			// Verify the open options are shown
 			const items: string[] = await quickPick.getVisibleItems();
-			expect(items.some(item => item.includes('Open Worktree'))).toBeTruthy();
-			expect(items.some(item => item.includes('New Window'))).toBeTruthy();
+			expect(items.some(item => item.includes('打开工作树'))).toBeTruthy();
+			expect(items.some(item => item.includes('在新窗口中打开工作树'))).toBeTruthy();
 
 			// Cancel without opening the worktree (to avoid changing the workspace)
 			await quickPick.cancel();
@@ -1952,8 +1974,8 @@ test.describe('Quick Wizard — Worktree Commands', () => {
 			},
 		}) => {
 			await selectCommandSubcommandAndWaitForStepWithOptionalRepo(vscode, 'worktree', 'open', {
-				title: /Open Worktree|Worktree/i,
-				placeholder: /Choose worktree/i,
+				title: /打开工作树/,
+				placeholder: /选择要打开的工作树/,
 			});
 
 			// Verify worktrees are shown
@@ -1965,19 +1987,19 @@ test.describe('Quick Wizard — Worktree Commands', () => {
 			await quickPick.selectItem(/feature-with-worktree/i);
 
 			// Confirm step with open options
-			await quickPick.waitForStep({ title: /Open Worktree.*feature-with-worktree|Confirm.*Open.*Worktree/i });
+			await quickPick.waitForStep({ title: /确认 打开工作树 • feature-with-worktree/ });
 
 			// Verify confirm options are shown
 			const items: string[] = await quickPick.getVisibleItems();
-			expect(items.some(item => item.includes('Open Worktree'))).toBeTruthy();
-			expect(items.some(item => item.includes('New Window'))).toBeTruthy();
-			expect(items.some(item => item.includes('Add Worktree to Workspace'))).toBeTruthy();
-			expect(items.some(item => item.includes('Reveal in File Explorer'))).toBeTruthy();
+			expect(items.some(item => item.includes('打开工作树'))).toBeTruthy();
+			expect(items.some(item => item.includes('在新窗口中打开工作树'))).toBeTruthy();
+			expect(items.some(item => item.includes('将工作树添加到工作区'))).toBeTruthy();
+			expect(items.some(item => item.includes('在文件资源管理器中显示'))).toBeTruthy();
 
 			// === REVERSE NAVIGATION ===
 
 			// Back from confirm → worktree picker
-			await quickPick.goBackAndWaitForStep({ title: /Open Worktree|Worktree/i, placeholder: /Choose worktree/i });
+			await quickPick.goBackAndWaitForStep({ title: /打开工作树/, placeholder: /选择要打开的工作树/ });
 
 			await reverseCommandSubcommandAndRepo(vscode, 'worktree');
 
@@ -1992,8 +2014,8 @@ test.describe('Quick Wizard — Worktree Commands', () => {
 			},
 		}) => {
 			await selectCommandSubcommandAndWaitForStepWithOptionalRepo(vscode, 'worktree', 'open', {
-				title: /Open Worktree|Worktree/i,
-				placeholder: /Choose worktree/i,
+				title: /打开工作树/,
+				placeholder: /选择要打开的工作树/,
 			});
 
 			// Select a worktree
@@ -2001,15 +2023,15 @@ test.describe('Quick Wizard — Worktree Commands', () => {
 			await quickPick.selectItem(/feature-with-worktree/i);
 
 			// Wait for confirm step
-			await quickPick.waitForStep({ title: /Open Worktree.*feature-with-worktree|Confirm.*Open.*Worktree/i });
+			await quickPick.waitForStep({ title: /确认 打开工作树 • feature-with-worktree/ });
 
 			// Verify all expected options are present
 			// Note: getVisibleItems() returns all text content including descriptions
 			const items: string[] = await quickPick.getVisibleItems();
-			const hasOpenWorktree = items.some(item => item.includes('open the worktree in the current window'));
-			const hasNewWindow = items.some(item => item.includes('New Window'));
-			const hasAddToWorkspace = items.some(item => item.includes('Add Worktree to Workspace'));
-			const hasRevealExplorer = items.some(item => item.includes('Reveal in File Explorer'));
+			const hasOpenWorktree = items.some(item => item.includes('将在当前窗口中打开该工作树'));
+			const hasNewWindow = items.some(item => item.includes('在新窗口中打开工作树'));
+			const hasAddToWorkspace = items.some(item => item.includes('将工作树添加到工作区'));
+			const hasRevealExplorer = items.some(item => item.includes('在文件资源管理器中显示'));
 
 			expect(hasOpenWorktree).toBeTruthy();
 			expect(hasNewWindow).toBeTruthy();
@@ -2029,8 +2051,8 @@ test.describe('Quick Wizard — Worktree Commands', () => {
 			},
 		}) => {
 			await selectCommandSubcommandAndWaitForStepWithOptionalRepo(vscode, 'worktree', 'delete', {
-				title: /Delete Worktree/i,
-				placeholder: /Choose worktrees to delete/i,
+				title: /删除工作树/,
+				placeholder: /选择要删除的工作树/,
 			});
 
 			// Verify worktrees are shown
@@ -2043,12 +2065,12 @@ test.describe('Quick Wizard — Worktree Commands', () => {
 			await quickPick.selectItemMulti(/feature-with-worktree/i);
 
 			// Confirm step
-			await quickPick.waitForStep({ title: /Confirm Delete Worktree/i });
+			await quickPick.waitForStep({ title: /确认 删除工作树/ });
 
 			// === REVERSE NAVIGATION ===
 
 			// Back from confirm → worktree picker
-			await quickPick.goBackAndWaitForStep({ title: /Delete Worktree/i, placeholder: /Choose worktree/i });
+			await quickPick.goBackAndWaitForStep({ title: /删除工作树/, placeholder: /选择要删除的工作树/ });
 
 			await reverseCommandSubcommandAndRepo(vscode, 'worktree');
 
@@ -2063,8 +2085,8 @@ test.describe('Quick Wizard — Worktree Commands', () => {
 			},
 		}) => {
 			await selectCommandSubcommandAndWaitForStepWithOptionalRepo(vscode, 'worktree', 'delete', {
-				title: /Delete Worktree/i,
-				placeholder: /Choose worktrees to delete/i,
+				title: /删除工作树/,
+				placeholder: /选择要删除的工作树/,
 			});
 
 			// Select a worktree
@@ -2072,18 +2094,18 @@ test.describe('Quick Wizard — Worktree Commands', () => {
 			await quickPick.selectItemMulti(/feature-with-worktree/i);
 
 			// Wait for confirm step
-			await quickPick.waitForStep({ title: /Confirm Delete Worktree/i });
+			await quickPick.waitForStep({ title: /确认 删除工作树/ });
 
 			// Verify all expected options are present
 			// Note: getVisibleItems() returns all text content including descriptions
 			const items: string[] = await quickPick.getVisibleItems();
-			// Basic delete has "Will delete worktree" without "forcibly"
+			// Basic delete has "将删除" without "强制"
 			const hasDelete = items.some(
-				item => item.includes('Delete Worktree') && item.includes('Will delete') && !item.includes('forcibly'),
+				item => item.includes('删除工作树') && item.includes('将删除') && !item.includes('强制'),
 			);
-			const hasForceDelete = items.some(item => item.includes('Force Delete Worktree'));
-			const hasDeleteWithBranch = items.some(item => item.includes('Delete Worktree & Branch'));
-			const hasForceDeleteWithBranch = items.some(item => item.includes('Force Delete Worktree & Branch'));
+			const hasForceDelete = items.some(item => item.includes('强制删除工作树'));
+			const hasDeleteWithBranch = items.some(item => item.includes('删除工作树与分支'));
+			const hasForceDeleteWithBranch = items.some(item => item.includes('强制删除工作树与分支'));
 
 			expect(hasDelete).toBeTruthy();
 			expect(hasForceDelete).toBeTruthy();
@@ -2103,8 +2125,8 @@ test.describe('Quick Wizard — Worktree Commands', () => {
 			},
 		}) => {
 			await selectCommandSubcommandAndWaitForStepWithOptionalRepo(vscode, 'worktree', 'copy-changes', {
-				title: /Copy.*Changes to Worktree/i,
-				placeholder: /Choose a worktree to copy/i,
+				title: /复制工作区更改到工作树/,
+				placeholder: /选择要复制工作区更改到的工作树/,
 			});
 
 			// Verify worktrees are shown
@@ -2121,16 +2143,16 @@ test.describe('Quick Wizard — Worktree Commands', () => {
 				await quickPick.selectItem(/feature-with-worktree/i);
 
 				// Wait for confirm step (we have uncommitted changes)
-				await quickPick.waitForStep({ title: /Confirm Copy.*Changes/i });
+				await quickPick.waitForStep({ title: /确认 复制工作区更改到工作树/ });
 
 				// Verify confirm options
 				const items: string[] = await quickPick.getVisibleItems();
-				expect(items.some(item => item.includes('Copy'))).toBeTruthy();
+				expect(items.some(item => item.includes('复制'))).toBeTruthy();
 
 				// === REVERSE NAVIGATION ===
 				await quickPick.goBackAndWaitForStep({
-					title: /Copy.*Changes to Worktree/i,
-					placeholder: /Choose a worktree/i,
+					title: /复制工作区更改到工作树/,
+					placeholder: /选择要复制工作区更改到的工作树/,
 				});
 
 				await reverseCommandSubcommandAndRepo(vscode, 'worktree');
@@ -2150,8 +2172,8 @@ test.describe('Quick Wizard — Worktree Commands', () => {
 			},
 		}) => {
 			await selectCommandSubcommandAndWaitForStepWithOptionalRepo(vscode, 'worktree', 'copy-changes', {
-				title: /Copy.*Changes to Worktree/i,
-				placeholder: /Choose a worktree to copy/i,
+				title: /复制工作区更改到工作树/,
+				placeholder: /选择要复制工作区更改到的工作树/,
 			});
 
 			// Verify worktrees are shown
@@ -2163,16 +2185,16 @@ test.describe('Quick Wizard — Worktree Commands', () => {
 			await quickPick.selectItem(/feature-with-worktree/i);
 
 			// Wait for confirm step (we have uncommitted changes)
-			await quickPick.waitForStep({ title: /Confirm Copy.*Changes/i });
+			await quickPick.waitForStep({ title: /确认 复制工作区更改到工作树/ });
 
 			// Verify confirm options
 			const items: string[] = await quickPick.getVisibleItems();
-			expect(items.some(item => item.includes('OK'))).toBeTruthy();
+			expect(items.some(item => item.includes('确定'))).toBeTruthy();
 
 			// === REVERSE NAVIGATION ===
 			await quickPick.goBackAndWaitForStep({
-				title: /Copy.*Changes to Worktree/i,
-				placeholder: /Choose a worktree/i,
+				title: /复制工作区更改到工作树/,
+				placeholder: /选择要复制工作区更改到的工作树/,
 			});
 
 			await reverseCommandSubcommandAndRepo(vscode, 'worktree');
@@ -2190,7 +2212,7 @@ test.describe('Quick Wizard — Co-Authors Command', () => {
 			gitlens: { quickPick },
 		},
 	}) => {
-		await selectCommandAndWaitForStepWithOptionalRepo(vscode, 'co-author', { title: /Add Co-Author/i });
+		await selectCommandAndWaitForStepWithOptionalRepo(vscode, 'co-author', { title: /添加共同作者/ });
 
 		// === REVERSE NAVIGATION ===
 
@@ -2204,113 +2226,113 @@ test.describe('Quick Wizard — Co-Authors Command', () => {
 test.describe('Quick Wizard — Direct Command Access', () => {
 	test.describe('Branch Direct Commands', () => {
 		test('Direct branch create command opens at create step', async ({ vscode }) => {
-			await testDirectGitCommand(vscode.gitlens, 'branch.create', { title: /Create Branch/i });
+			await testDirectGitCommand(vscode.gitlens, 'branch.create', { title: /选择创建分支的基准/ });
 		});
 
 		test('Direct branch delete command opens at delete step', async ({ vscode }) => {
-			await testDirectGitCommand(vscode.gitlens, 'branch.delete', { title: /Delete Branch/i });
+			await testDirectGitCommand(vscode.gitlens, 'branch.delete', { title: /删除分支/ });
 		});
 
 		test('Direct branch rename command opens at rename step', async ({ vscode }) => {
-			await testDirectGitCommand(vscode.gitlens, 'branch.rename', { title: /Rename Branch/i });
+			await testDirectGitCommand(vscode.gitlens, 'branch.rename', { title: /重命名分支/ });
 		});
 	});
 
 	test.describe('Switch Direct Commands', () => {
 		test('Direct switch command opens at switch step', async ({ vscode }) => {
-			await testDirectGitCommand(vscode.gitlens, 'switch', { title: /Switch/i });
+			await testDirectGitCommand(vscode.gitlens, 'switch', { title: /切换/ });
 		});
 	});
 
 	test.describe('Tag Direct Commands', () => {
 		test('Direct tag create command opens at create step', async ({ vscode }) => {
-			await testDirectGitCommand(vscode.gitlens, 'tag.create', { title: /Create Tag/i });
+			await testDirectGitCommand(vscode.gitlens, 'tag.create', { title: /创建标签/ });
 		});
 
 		test('Direct tag delete command opens at delete step', async ({ vscode }) => {
-			await testDirectGitCommand(vscode.gitlens, 'tag.delete', { title: /Delete Tag/i });
+			await testDirectGitCommand(vscode.gitlens, 'tag.delete', { title: /删除标签/ });
 		});
 	});
 
 	test.describe('Stash Direct Commands', () => {
 		test('Direct stash push command opens at push step', async ({ vscode }) => {
-			await testDirectGitCommand(vscode.gitlens, 'stash.push', { title: /Stash/i });
+			await testDirectGitCommand(vscode.gitlens, 'stash.push', { title: /创建存储/ });
 		});
 
 		test('Direct stash list command opens at list step', async ({ vscode }) => {
-			await testDirectGitCommand(vscode.gitlens, 'stash.list', { title: /Stash/i });
+			await testDirectGitCommand(vscode.gitlens, 'stash.list', { title: /存储列表/ });
 		});
 
 		test('Direct stash pop command opens at pop step', async ({ vscode }) => {
-			await testDirectGitCommand(vscode.gitlens, 'stash.pop', { title: /Stash/i });
+			await testDirectGitCommand(vscode.gitlens, 'stash.pop', { title: /弹出存储/ });
 		});
 
 		test('Direct stash drop command opens at drop step', async ({ vscode }) => {
-			await testDirectGitCommand(vscode.gitlens, 'stash.drop', { title: /Stash/i });
+			await testDirectGitCommand(vscode.gitlens, 'stash.drop', { title: /删除存储/ });
 		});
 
 		test('Direct stash rename command opens at rename step', async ({ vscode }) => {
-			await testDirectGitCommand(vscode.gitlens, 'stash.rename', { title: /Stash/i });
+			await testDirectGitCommand(vscode.gitlens, 'stash.rename', { title: /重命名存储/ });
 		});
 	});
 
 	test.describe('Remote Direct Commands', () => {
 		test('Direct remote add command opens at add step', async ({ vscode }) => {
-			await testDirectGitCommand(vscode.gitlens, 'remote.add', { title: /Remote/i });
+			await testDirectGitCommand(vscode.gitlens, 'remote.add', { title: /添加远程/ });
 		});
 
 		test('Direct remote prune command opens at prune step', async ({ vscode }) => {
-			await testDirectGitCommand(vscode.gitlens, 'remote.prune', { title: /Remote/i });
+			await testDirectGitCommand(vscode.gitlens, 'remote.prune', { title: /清理远程/ });
 		});
 
 		test('Direct remote remove command opens at remove step', async ({ vscode }) => {
-			await testDirectGitCommand(vscode.gitlens, 'remote.remove', { title: /Remote/i });
+			await testDirectGitCommand(vscode.gitlens, 'remote.remove', { title: /移除远程/ });
 		});
 	});
 
 	test.describe('Merge/Rebase/Cherry-pick/Reset/Revert Direct Commands', () => {
 		test('Direct merge command opens at merge step', async ({ vscode }) => {
-			await testDirectGitCommand(vscode.gitlens, 'merge', { title: /Merge/i });
+			await testDirectGitCommand(vscode.gitlens, 'merge', { title: /合并到 main/ });
 		});
 
 		test('Direct rebase command opens at rebase step', async ({ vscode }) => {
-			await testDirectGitCommand(vscode.gitlens, 'rebase', { title: /Rebase/i });
+			await testDirectGitCommand(vscode.gitlens, 'rebase', { title: /变基 main 到/ });
 		});
 
 		test('Direct cherry-pick command opens at cherry-pick step', async ({ vscode }) => {
-			await testDirectGitCommand(vscode.gitlens, 'cherryPick', { title: /Cherry Pick/i });
+			await testDirectGitCommand(vscode.gitlens, 'cherryPick', { title: /拣选提交/ });
 		});
 
 		test('Direct reset command opens at reset step', async ({ vscode }) => {
-			await testDirectGitCommand(vscode.gitlens, 'reset', { title: /Reset/i });
+			await testDirectGitCommand(vscode.gitlens, 'reset', { title: /重置/ });
 		});
 
 		test('Direct revert command opens at revert step', async ({ vscode }) => {
-			await testDirectGitCommand(vscode.gitlens, 'revert', { title: /Revert/i });
+			await testDirectGitCommand(vscode.gitlens, 'revert', { title: /撤销提交/ });
 		});
 	});
 
 	test.describe('Worktree Direct Commands', () => {
 		test('Direct worktree create command opens at create step', async ({ vscode }) => {
-			await testDirectGitCommand(vscode.gitlens, 'worktree.create', { title: /Create Worktree|Worktree/i });
+			await testDirectGitCommand(vscode.gitlens, 'worktree.create', { title: /选择用于创建工作树的分支/ });
 		});
 
 		test('Direct worktree open command opens at open step', async ({ vscode }) => {
-			await testDirectGitCommand(vscode.gitlens, 'worktree.open', { title: /Open Worktree|Worktree/i });
+			await testDirectGitCommand(vscode.gitlens, 'worktree.open', { title: /打开工作树/ });
 		});
 
 		test('Direct worktree delete command opens at delete step', async ({ vscode }) => {
-			await testDirectGitCommand(vscode.gitlens, 'worktree.delete', { title: /Delete Worktree|Worktree/i });
+			await testDirectGitCommand(vscode.gitlens, 'worktree.delete', { title: /删除工作树/ });
 		});
 	});
 
 	test.describe('Show/Status Direct Commands', () => {
 		test('Direct show command opens at show step', async ({ vscode }) => {
-			await testDirectGitCommand(vscode.gitlens, 'show', { title: /Show/i });
+			await testDirectGitCommand(vscode.gitlens, 'show', { title: /查看/ });
 		});
 
 		test('Direct status command opens at status step', async ({ vscode }) => {
-			await testDirectGitCommand(vscode.gitlens, 'status', { title: /Status/i });
+			await testDirectGitCommand(vscode.gitlens, 'status', { title: /状态/ });
 		});
 	});
 });

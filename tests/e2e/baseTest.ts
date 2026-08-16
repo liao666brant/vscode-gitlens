@@ -246,8 +246,34 @@ export const test = base.extend<BaseFixtures, WorkerFixtures>({
 			const page = await electronApp.firstWindow();
 			const gitlens = new WeGitPage(page, evaluate);
 
-			// Wait for WeGit to activate before providing to tests
-			await gitlens.waitForActivation();
+			// Wait for WeGit to activate before providing to tests.
+			// WeGit's views are contributed to the built-in Source Control container,
+			// so there is no WeGit activity bar tab to use as an activation sentinel —
+			// check the Extension API instead.
+			const extensionActivated = await evaluate(async (vscode, extensionId) => {
+				const deadline = Date.now() + 30000;
+				while (Date.now() < deadline) {
+					const extension = vscode.extensions.getExtension(extensionId);
+					if (extension != null) {
+						if (extension.isActive) return true;
+
+						try {
+							await extension.activate();
+						} catch {
+							// Activation may still be in progress — keep polling
+						}
+						if (extension.isActive) return true;
+					}
+
+					await new Promise(resolve => setTimeout(resolve, 250));
+				}
+				return false;
+			}, 'liao666brant.wegit');
+			if (!extensionActivated) {
+				throw new Error(
+					'WeGit extension (liao666brant.wegit) did not activate within 30s — ensure the extension bundle is built (pnpm run bundle:e2e)',
+				);
+			}
 
 			await use({
 				electron: { app: electronApp, ...options, workspacePath: workspacePath },

@@ -18,7 +18,6 @@ walkthroughs/**
 docs/**
 emoji/**
 images/docs
-images/gitlens-icon.png
 images/icons/**
 images/originals/**
 node_modules/**
