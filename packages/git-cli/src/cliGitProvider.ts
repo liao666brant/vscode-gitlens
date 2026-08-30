@@ -344,7 +344,7 @@ export class CliGitProvider implements GitProvider {
 	}
 
 	async excludeIgnoredUris(repoPath: string, uris: Uri[]): Promise<Uri[]> {
-		const filter = this.getIgnoreFilter(repoPath);
+		const filter = this.getIgnoreFilter(normalizePath(repoPath));
 		await filter.ready();
 		return uris.filter(uri => {
 			const relativePath = normalizePath(path.relative(repoPath, toFsPath(uri)));
@@ -353,7 +353,7 @@ export class CliGitProvider implements GitProvider {
 	}
 
 	async getIgnoredUrisFilter(repoPath: string): Promise<(uri: Uri) => boolean> {
-		const filter = this.getIgnoreFilter(repoPath);
+		const filter = this.getIgnoreFilter(normalizePath(repoPath));
 		await filter.ready();
 		return (uri: Uri) => {
 			const relativePath = normalizePath(path.relative(repoPath, toFsPath(uri)));

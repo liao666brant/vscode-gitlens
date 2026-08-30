@@ -832,7 +832,7 @@ export class GlCliGitProvider implements GlGitProvider {
 		}
 
 		scope?.info(`found ${root ? 'root ' : ''}repository in '${uri.fsPath}'`);
-		const gitDir = await this.provider.config.getGitDir?.(uri.fsPath);
+		const gitDir = await this.provider.config.getGitDir?.(getBestPath(uri));
 		if (gitDir == null) {
 			scope?.warn(`Unable to get gitDir for '${uri.toString(true)}'`);
 			return [];
@@ -1318,7 +1318,7 @@ export class GlCliGitProvider implements GlGitProvider {
 										? Uri.file(gitDirInfo.superprojectPath)
 										: undefined,
 								};
-								this.cache.gitDir.set(resultUri.fsPath, gitDir);
+								this.cache.gitDir.set(getBestPath(resultUri), gitDir);
 							}
 							return resultUri;
 						}
@@ -1333,7 +1333,7 @@ export class GlCliGitProvider implements GlGitProvider {
 						commonUri: gitDirInfo.commonGitDir ? Uri.file(gitDirInfo.commonGitDir) : undefined,
 						parentUri: gitDirInfo.superprojectPath ? Uri.file(gitDirInfo.superprojectPath) : undefined,
 					};
-					this.cache.gitDir.set(fallbackUri.fsPath, gitDir);
+					this.cache.gitDir.set(getBestPath(fallbackUri), gitDir);
 				}
 				return fallbackUri;
 			}
@@ -1390,7 +1390,7 @@ export class GlCliGitProvider implements GlGitProvider {
 					commonUri: gitDirInfo.commonGitDir ? Uri.file(gitDirInfo.commonGitDir) : undefined,
 					parentUri: gitDirInfo.superprojectPath ? Uri.file(gitDirInfo.superprojectPath) : undefined,
 				};
-				this.cache.gitDir.set(resultUri.fsPath, gitDir);
+				this.cache.gitDir.set(getBestPath(resultUri), gitDir);
 			}
 
 			return resultUri;
